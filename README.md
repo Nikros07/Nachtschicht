@@ -10,13 +10,22 @@ Läuft im Browser. Eine Datei, keine Installation, kein Konto.
 
 | Taste | Aktion |
 |---|---|
+| `A` / `D` bzw. `←` / `→` | Vor und zurück |
 | `Leertaste` / `W` / `↑` | Springen (kurz antippen = kleiner Hüpfer) |
-| `↓` / `S` | Ducken |
+| `S` / `↓` | Ducken |
 | `X` / `J` / `Shift` | Schlagen |
+| `F` | Vollbild |
 | `P` | Pause |
 | `M` | Ton aus |
 
-Am Handy: drei Flächen unten — links springen, mitte ducken, rechts schlagen.
+Du klebst nicht auf einer Position — Du kannst vorpreschen, um jemanden früher
+zu erwischen, oder zurückweichen, um einem Brocken auszuweichen. Lässt Du los,
+zieht es Dich sanft zurück auf die Ausgangsposition.
+
+**Am Handy:** links unten die beiden Pfeile zum Laufen, rechts unten Schlag und
+Sprung, darüber Ducken. Das Spiel läuft im **Querformat** — im Hochformat kommt
+ein Hinweis zum Drehen. Die erste Berührung schaltet automatisch auf Vollbild
+und versucht, die Ausrichtung zu sperren.
 
 ## Die Mechanik
 
@@ -24,6 +33,11 @@ Am Handy: drei Flächen unten — links springen, mitte ducken, rechts schlagen.
 Ein hoher Pegel heißt: mehr Tempo, bis zu dreifache Punkte — aber das Bild wackelt,
 die Steuerung wird träge, der Blick verengt sich. Bei 100 % ist Blackout.
 Nüchtern wirst Du praktisch nur durch Wasser; von allein passiert fast nichts.
+
+**Die Gegner** sind die Hauptsache, nicht die Hindernisse. Normale Typen gehen
+mit einem Schlag um, Brocken brauchen zwei und sind an der roten Markierung über
+dem Kopf zu erkennen. Tauben kommen auf Kopfhöhe. Gegner treten oft in Gruppen
+zu zweit oder dritt auf — jeder KO in Folge treibt die Combo hoch.
 
 **Die Bosse** kämpfen nach festen Mustern und kündigen jeden Angriff an:
 

@@ -31,14 +31,50 @@
       repeating-linear-gradient(to bottom, rgba(0,0,0,.30) 0 1px, rgba(0,0,0,0) 1px 3px); }
   #crt::after { content:''; position:absolute; inset:0;
     box-shadow:inset 0 0 40px rgba(0,0,0,.8), inset 0 0 90px rgba(0,0,0,.5); }
+  /* ---- Touch-Steuerung: links laufen, rechts kaempfen ---- */
   #touch { position:absolute; inset:0; display:none; }
-  #touch div { position:absolute; bottom:0; height:52%;
-    color:#ffffff26; font:700 11px monospace; letter-spacing:1px;
-    display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; }
-  #tjump { left:0;   width:38%; }
-  #tduck { left:38%; width:24%; }
-  #thit  { right:0;  width:38%; }
-  @media (pointer:coarse){ #touch{display:block;} #marquee,#base{display:none;} }
+  #touch div { position:absolute; border-radius:8px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09);
+    color:#ffffff40; font:700 10px/1 monospace; letter-spacing:1px;
+    display:flex; align-items:center; justify-content:center; user-select:none; }
+  #touch div:active { background:rgba(255,61,139,.22); border-color:rgba(255,61,139,.5); color:#fff; }
+  #tleft  { left:2%;  bottom:6%;  width:13%; height:34%; }
+  #tright { left:16%; bottom:6%;  width:13%; height:34%; }
+  #tduck  { right:2%; bottom:44%; width:27%; height:24%; }
+  #thit   { right:2%; bottom:6%;  width:13%; height:34%; }
+  #tjump  { right:16%;bottom:6%;  width:13%; height:34%; }
+  /* Nicht auf pointer:coarse verlassen - das melden nicht alle Geraete
+     zuverlaessig. Die Klasse setzt JS anhand echter Touch-Faehigkeit. */
+  html.touch #touch { display:block; }
+  html.touch #marquee, html.touch #base { display:none; }
+  html.touch #cab { padding:0; border-radius:0; box-shadow:none; }
+
+  /* ---- Vollbild-Knopf ---- */
+  #fs { position:absolute; top:6px; right:8px; z-index:5;
+    background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
+    border-radius:5px; font:700 9px monospace; letter-spacing:1px;
+    padding:4px 7px; cursor:pointer; }
+  #fs:hover { color:#ffd447; border-color:#ffd447; }
+
+  /* Im Vollbild verschwindet das Gehaeuse, das Bild fuellt alles.
+     ACHTUNG: #cab ist SELBST das Vollbild-Element - also #cab:fullscreen,
+     nicht :fullscreen #cab. Letzteres traefe nur Kindelemente. */
+  #cab:fullscreen, #cab:-webkit-full-screen {
+    padding:0; border-radius:0; box-shadow:none; background:#000;
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  #cab:fullscreen #marquee, #cab:fullscreen #base { display:none; }
+  #cab:fullscreen #screen, #cab:-webkit-full-screen #screen { border-radius:0; }
+
+  /* ---- Handy im Hochformat: bitte drehen ---- */
+  #rotate { position:fixed; inset:0; z-index:99; display:none;
+    background:#07060c; color:#f4f0ff; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px; }
+  #rotate .ph { width:52px; height:88px; border:3px solid #ff3d8b; border-radius:8px;
+    animation:tip 1.8s ease-in-out infinite; }
+  #rotate b { font:700 13px monospace; letter-spacing:3px; color:#ff3d8b; }
+  #rotate span { font:400 10px monospace; letter-spacing:1px; color:#8d86a8; }
+  @keyframes tip { 0%,35%{transform:rotate(0)} 65%,100%{transform:rotate(-90deg)} }
+  @media (orientation:portrait) { html.touch #rotate { display:flex; } }
 </style>
 </head>
 <body>
@@ -47,10 +83,15 @@
   <div id="screen">
     <canvas id="c" width="320" height="180"></canvas>
     <div id="crt"></div>
-    <div id="touch"><div id="tjump">SPRUNG</div><div id="tduck">DUCKEN</div><div id="thit">SCHLAG</div></div>
+    <div id="touch">
+      <div id="tleft">&#9664;</div><div id="tright">&#9654;</div>
+      <div id="tduck">DUCKEN</div><div id="tjump">SPRUNG</div><div id="thit">SCHLAG</div>
+    </div>
   </div>
-  <div id="base"><span>INSERT COIN</span><span>CREDIT <b>01</b></span><span>M TON &nbsp; P PAUSE</span></div>
+  <button id="fs" title="Vollbild (F)">VOLLBILD</button>
+  <div id="base"><span>INSERT COIN</span><span>CREDIT <b>01</b></span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
+<div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
 <script>
 /* ============================================================================
@@ -88,40 +129,52 @@ const TUNE = {
   fxTunnelVision:   0.38,
   fxColorShift:     1.0,
 
-  /* (5) NAHKAMPF */
+  /* (5) LAUFEN - du klebst nicht mehr fest, du kannst vor und zurueck */
+  moveSpeed:      108,     // wie schnell du dich selbst bewegst
+  moveAirFactor:    0.85,  // in der Luft etwas traeger
+  playerMinX:      14,     // wie weit du zurueckweichen darfst
+  playerMaxX:     150,     // wie weit du vorpreschen darfst
+  playerHomeX:     42,     // wohin es dich sanft zurueckzieht
+  homePull:         0.7,   // 0 = gar nicht, 1 = sofort
+
+  /* (6) NAHKAMPF */
   hitWindupMs:     40,     // Vorlauf bevor die Faust trifft
   hitActiveMs:    110,     // wie lange die Faust gefaehrlich ist
-  hitCooldownMs:  330,
-  hitReach:        13,     // Reichweite in Pixeln
+  hitCooldownMs:  260,
+  hitReach:        14,     // Reichweite in Pixeln
   hitStopMs:       70,     // Bild friert kurz ein wenn es klatscht - "Wumms"
+  hitKnockback:    26,     // wie weit Getroffene wegfliegen
   pointsPerKO:     60,
+  comboWindowSec:   3.4,
 
-  /* (6) SCHWIERIGKEIT - steigt mit der Distanz */
+  /* (7) SCHWIERIGKEIT - steigt mit der Distanz */
   gapMinPx:        98,
   gapMaxPx:       220,
   gapShrinkPer1000m: 0.22,  // Abstaende schrumpfen um 22% pro 1000m
   gapFloor:         0.45,   // aber nie unter 45% vom Startabstand
-  chanceShot:       0.26,
-  chanceWater:      0.12,
-  chanceOverhead:   0.22,
-  chanceEnemy:      0.20,   // Anteil Gegner statt totem Hindernis
-  enemyRampPer1000m:0.12,   // und der steigt
+  chanceShot:       0.22,
+  chanceWater:      0.10,
+  chanceOverhead:   0.14,   // weniger totes Ausweich-Zeug
+  chanceEnemy:      0.62,   // dafuer deutlich mehr Leute zum Umhauen
+  enemyRampPer1000m:0.10,
+  chanceGruppe:     0.30,   // Gegner kommen oft zu zweit oder dritt
+  gruppeRampPer1000m:0.10,
 
-  /* (7) PUNKTE */
+  /* (8) PUNKTE */
   pointsPerMeter:   1,
   pointsPerShot:   25,
   pointsPerWater:   5,
   comboStep:       10,
   bossBonus:      750,
 
-  /* (8) BOSS */
+  /* (9) BOSS */
   bossHp:           5,
   bossIFramesMs:  620,
   bossTelegraphMs:420,     // Vorwarnung vor jedem Angriff - fair bleiben
   bossPhase2At:     0.66,  // ab 66% Restleben Phase 2
   bossPhase3At:     0.33,
 
-  /* (9) OPTIK */
+  /* (10) OPTIK */
   parallax:  true, neonSigns: true, particles: true, rain: true,
   musicOn:   true, musicBpm: 132, sprueche: true,
 };
@@ -129,10 +182,11 @@ const TUNE = {
 /* ---- ETAPPEN ------------------------------------------------------------- */
 const ETAPPEN = [
   { m:0,    name:'VORGLUEHEN', sky:['#1a1140','#0d0920'], hue:'#3b2f6e', neon:'#31e6ff', rain:0,   boss:null },
-  { m:250,  name:'TUERSTEHER', sky:['#240f2c','#100617'], hue:'#5a2350', neon:'#ff3d8b', rain:0,   boss:{name:'DER TUERSTEHER', sub:'ZU VOLL HEUTE'} },
-  { m:600,  name:'CLUB',       sky:['#2d0733','#14031a'], hue:'#7a1a6b', neon:'#ff2bd6', rain:0,   boss:{name:'DIE MEUTE',      sub:'ALLE WOLLEN WAS'} },
-  { m:1000, name:'AFTERHOUR',  sky:['#0e1638','#050a1c'], hue:'#1f4d6b', neon:'#48ffd0', rain:.6,  boss:{name:'DIE MUEDIGKEIT', sub:'NUR NOCH KURZ'} },
-  { m:1500, name:'HEIMWEG',    sky:['#4a2c10','#1a1020'], hue:'#8a5a1c', neon:'#ffb43d', rain:.25, boss:{name:'DIE SONNE',      sub:'ZU SPAET'} },
+  /* hp und telMul pro Boss: der erste ist die Lehrstunde, danach zieht es an */
+  { m:250,  name:'TUERSTEHER', sky:['#240f2c','#100617'], hue:'#5a2350', neon:'#ff3d8b', rain:0,   boss:{name:'DER TUERSTEHER', sub:'ZU VOLL HEUTE',    hp:4, telMul:1.35} },
+  { m:600,  name:'CLUB',       sky:['#2d0733','#14031a'], hue:'#7a1a6b', neon:'#ff2bd6', rain:0,   boss:{name:'DIE MEUTE',      sub:'ALLE WOLLEN WAS',  hp:5, telMul:1.10} },
+  { m:1000, name:'AFTERHOUR',  sky:['#0e1638','#050a1c'], hue:'#1f4d6b', neon:'#48ffd0', rain:.6,  boss:{name:'DIE MUEDIGKEIT', sub:'NUR NOCH KURZ',    hp:6, telMul:1.00} },
+  { m:1500, name:'HEIMWEG',    sky:['#4a2c10','#1a1020'], hue:'#8a5a1c', neon:'#ffb43d', rain:.25, boss:{name:'DIE SONNE',      sub:'ZU SPAET',         hp:7, telMul:0.85} },
 ];
 
 const P = {
@@ -249,6 +303,13 @@ const SPR = {
           '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
   gegnerHit:['.......','..hhh..','.hsssh.','.sssss.','..sss..','..vvv..','.vvvvv.','k.vvv.k',
              '..mmm..','..m.m..','.mm.mm.','.kk..kk','.......'],
+  /* Der Brocken haelt zwei Schlaege aus - breiter, dunkler, unuebersehbar */
+  brocken:['..ddddd..','.dkkkkkd.','.dsssssd.','..ksssk..','..sssss..','...ddd...',
+           '.ddddddd.','ddddddddd','dd.ddd.dd','dd.ddd.dd','...ddd...','..dd.dd..',
+           '..dd.dd..','..pp.pp..','.kkk.kkk.'],
+  brockenHit:['.........','..ddddd..','.dkkkkkd.','.dwwwwwd.','..kwwwk..','..wwwww..',
+              '...ddd...','.ddddddd.','ddddddddd','dd.ddd.dd','...ddd...','..dd.dd..',
+              '..dd.dd..','..pp.pp..','.kkk.kkk.'],
   taube:['..d....','.ddddw.','ddddddd','.dd.d..','..k.k..'],
 
   shot:['.www.','.gcg.','.gcg.','..g..','.www.'],
@@ -368,11 +429,42 @@ function musicTick(){
    ========================================================================== */
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 ctx.imageSmoothingEnabled=false;
-const W=320,H=180,GROUND=152,PX=42;         // PX = feste X-Position des Spielers
-function fit(){ const pad=46;
-  const s=Math.max(1,Math.floor(Math.min((innerWidth-pad)/W,(innerHeight-pad)/H)));
-  cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px'; }
-addEventListener('resize',fit); fit();
+const W=320,H=180,GROUND=152;
+const PX=42;                                 // Startposition, S.px ist die echte
+
+/* Touch-Geraet? maxTouchPoints ist verlaesslicher als pointer:coarse.
+   ?touch=1 erzwingt es, damit man es am Rechner testen kann. */
+const IS_TOUCH = navigator.maxTouchPoints>0 || 'ontouchstart' in window
+              || /[?&]touch=1/.test(location.search);
+if(IS_TOUCH) document.documentElement.classList.add('touch');
+
+function isFs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+function fit(){
+  const pad = (isFs()||IS_TOUCH) ? 0 : 46;
+  const raw = Math.min((innerWidth-pad)/W,(innerHeight-pad)/H);
+  /* Ganzzahlig skalieren haelt die Pixel scharf. Auf kleinen Schirmen waere
+     das aber verschenkter Platz - deshalb dort halbe Schritte erlauben. */
+  const s = raw<3 ? Math.max(.5,Math.floor(raw*4)/4) : Math.floor(raw);
+  cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
+}
+addEventListener('resize',fit);
+addEventListener('orientationchange',()=>setTimeout(fit,120));
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>setTimeout(fit,60)));
+fit();
+
+/* ---- Vollbild ---- */
+function toggleFullscreen(){
+  const root=document.getElementById('cab');
+  if(isFs()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
+  const req=root.requestFullscreen||root.webkitRequestFullscreen;
+  if(!req) return;
+  Promise.resolve(req.call(root)).then(()=>{
+    /* Am Handy zusaetzlich ins Querformat zwingen, wo der Browser es zulaesst */
+    if(screen.orientation&&screen.orientation.lock)
+      screen.orientation.lock('landscape').catch(()=>{});
+  }).catch(()=>{});
+}
+document.getElementById('fs').addEventListener('click',e=>{ e.preventDefault(); toggleFullscreen(); });
 
 const SKEY='nachtschicht.scores.v1';
 const loadScores=()=>{ try{ return JSON.parse(localStorage.getItem(SKEY))||[]; }catch(e){ return []; } };
@@ -415,6 +507,7 @@ function drawFx(){
    ========================================================================== */
 const keys={};
 let jumpQueue=[], hitQueue=[], duckHeld=false, jumpHeld=false;
+let leftHeld=false, rightHeld=false;
 function pressJump(){
   ensureAudio();
   if(S.mode==='attract') return startGame();
@@ -431,15 +524,22 @@ addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
   if(['Space','ArrowUp','KeyW'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); duckHeld=true; }
+  if(['ArrowLeft','KeyA'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); leftHeld=true; }
+  if(['ArrowRight','KeyD'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); rightHeld=true; }
   if(['KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
   if(e.code==='Enter'&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
+  if(e.code==='KeyF'){ e.preventDefault(); toggleFullscreen(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyP'&&(S.mode==='play'||S.mode==='pause')) S.mode=S.mode==='play'?'pause':'play';
   if(S.mode==='initials') initialsKey(e);
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['Space','ArrowUp','KeyW','Enter'].includes(e.code)) releaseJump();
-  if(['ArrowDown','KeyS'].includes(e.code)) duckHeld=false; });
+  if(['ArrowDown','KeyS'].includes(e.code)) duckHeld=false;
+  if(['ArrowLeft','KeyA'].includes(e.code)) leftHeld=false;
+  if(['ArrowRight','KeyD'].includes(e.code)) rightHeld=false; });
+/* Fenster verlassen -> alles loslassen, sonst laeuft man ewig weiter */
+addEventListener('blur',()=>{ leftHeld=rightHeld=duckHeld=jumpHeld=false; });
 
 const el=id=>document.getElementById(id);
 const on=(n,evs,fn)=>evs.forEach(ev=>el(n).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
@@ -448,6 +548,13 @@ on('tjump',['touchend','mouseup','touchcancel'],releaseJump);
 on('tduck',['touchstart','mousedown'],()=>duckHeld=true);
 on('tduck',['touchend','mouseup','touchcancel'],()=>duckHeld=false);
 on('thit', ['touchstart','mousedown'],pressHit);
+on('tleft',['touchstart','mousedown'],()=>leftHeld=true);
+on('tleft',['touchend','mouseup','touchcancel'],()=>leftHeld=false);
+on('tright',['touchstart','mousedown'],()=>rightHeld=true);
+on('tright',['touchend','mouseup','touchcancel'],()=>rightHeld=false);
+/* Erste Beruehrung am Handy geht direkt ins Vollbild */
+if(matchMedia('(pointer:coarse)').matches)
+  addEventListener('touchstart',function once(){ toggleFullscreen(); removeEventListener('touchstart',once); },{once:true});
 
 /* ==========================================================================
    STATE
@@ -455,7 +562,8 @@ on('thit', ['touchstart','mousedown'],pressHit);
 let S={};
 function reset(){
   S={ mode:'attract', t:0, overT:0, freeze:0,
-      dist:0, speed:TUNE.startSpeed, y:0, vy:0, onGround:true, lastGround:0, ducking:false,
+      dist:0, speed:TUNE.startSpeed, px:TUNE.playerHomeX,
+      y:0, vy:0, onGround:true, lastGround:0, ducking:false,
       hitT:-99, hitDone:false,
       pegel:0, score:0, combo:0, comboT:0, kos:0,
       things:[], shots:[], nextSpawn:280,
@@ -470,7 +578,8 @@ reset(); S.demo=true;
 function startGame(){ reset(); S.mode='play'; jumpQueue=[]; hitQueue=[]; beep(880,.05); setTimeout(()=>beep(1320,.07),60); }
 const etappeFor=m=>{ let i=0; for(let k=0;k<ETAPPEN.length;k++) if(m>=ETAPPEN[k].m) i=k; return i; };
 const diffScale=()=>Math.max(TUNE.gapFloor, 1-(S.dist/10/1000)*TUNE.gapShrinkPer1000m);
-const enemyChance=()=>Math.min(.55, TUNE.chanceEnemy+(S.dist/10/1000)*TUNE.enemyRampPer1000m);
+const enemyChance=()=>Math.min(.85, TUNE.chanceEnemy+(S.dist/10/1000)*TUNE.enemyRampPer1000m);
+const gruppeChance=()=>Math.min(.70, TUNE.chanceGruppe+(S.dist/10/1000)*TUNE.gruppeRampPer1000m);
 
 /* ==========================================================================
    SPAWNING
@@ -482,7 +591,8 @@ function mkThing(kind,x){
   if(kind==='tonne')  Object.assign(o,{y:GROUND-12,w:8, h:12});
   if(kind==='gitter') Object.assign(o,{y:GROUND-12,w:10,h:12});
   if(kind==='schild') Object.assign(o,{y:GROUND-46,w:16,h:32,hit:{ox:0,oy:0,w:16,h:16}});
-  if(kind==='gegner') Object.assign(o,{y:GROUND-13,w:7, h:13,foe:true,vx:22,hp:1,stun:0});
+  if(kind==='gegner') Object.assign(o,{y:GROUND-13,w:7, h:13,foe:true,vx:24,hp:1,stun:0});
+  if(kind==='brocken')Object.assign(o,{y:GROUND-15,w:9, h:15,foe:true,vx:15,hp:2,stun:0});
   if(kind==='taube')  Object.assign(o,{y:GROUND-26,w:7, h:5, foe:true,vx:46,hp:1,stun:0,fly:true});
   return o;
 }
@@ -492,8 +602,15 @@ function spawn(){
     S.things.push({kind:'shot',x:W+8,y:GROUND-34-Math.random()*24,w:5,h:5});
   else if(r<TUNE.chanceShot+TUNE.chanceWater)
     S.things.push({kind:'water',x:W+8,y:GROUND-30-Math.random()*18,w:5,h:5});
-  else if(Math.random()<enemyChance())
-    S.things.push(mkThing(Math.random()<.75?'gegner':'taube',W+10));
+  else if(Math.random()<enemyChance()){
+    /* Gegner kommen gern in Gruppen - dafuer gibt es Combos */
+    const n = Math.random()<gruppeChance() ? (Math.random()<.35?3:2) : 1;
+    for(let i=0;i<n;i++){
+      const roll=Math.random();
+      const kind = roll<.14 ? 'taube' : roll<.34 ? 'brocken' : 'gegner';
+      S.things.push(mkThing(kind, W+10+i*(22+Math.random()*14)));
+    }
+  }
   else if(Math.random()<TUNE.chanceOverhead)
     S.things.push(mkThing('schild',W+8));
   else
@@ -507,7 +624,8 @@ function spawn(){
    ========================================================================== */
 function startBoss(i){
   const b=ETAPPEN[i].boss; if(!b) return;
-  S.boss={ name:b.name, sub:b.sub, i, x:W+40, tx:214, hp:TUNE.bossHp, maxHp:TUNE.bossHp,
+  const hp=b.hp||TUNE.bossHp;
+  S.boss={ name:b.name, sub:b.sub, i, x:W+40, tx:214, hp, maxHp:hp, telMul:b.telMul||1,
            phase:1, state:'entry', t:0, tel:0, atk:null, iFrames:0, hurtT:0, dead:0, cd:1.2 };
   S.things=S.things.filter(o=>o.kind==='shot'||o.kind==='water');
   S.banner=2.2; S.bannerTxt=b.name; S.bannerSub=b.sub;
@@ -546,9 +664,9 @@ function updateBoss(dt){
       b.cd-=dt*(1+(b.phase-1)*.35);
       if(b.cd<=0){
         b.atk=bossPickAttack(b);
-        b.state='telegraph'; b.tel=TUNE.bossTelegraphMs/1000; SFX.warn();
+        b.state='telegraph'; b.tel=TUNE.bossTelegraphMs/1000*b.telMul; SFX.warn();
         /* Ansage, was zu tun ist - Bosse muessen fair telegrafieren */
-        say(b.atk==='sturm'?'DUCKEN':'SPRINGEN', PX+40, GROUND-66, P.danger);
+        say(b.atk==='sturm'?'DUCKEN':'SPRINGEN', S.px+40, GROUND-66, P.danger);
         if(Math.random()<.5) say(pick(SAY.bossTaunt[b.name]||['!']), b.x+16, GROUND-78, P.dim);
       }
       break;
@@ -557,8 +675,9 @@ function updateBoss(dt){
       break;
     case 'charge':                    /* stuermt heran - drunter wegducken */
       b.x-=b.vx*dt;
-      if(b.x<=PX+16){ b.x=PX+16; b.state='punish'; b.punish=1.2-(b.phase-1)*.22;
-                      puff(b.x+8,GROUND-4,14,'#6b6488',80,20); S.shake=3; }
+      /* bleibt in Schlagreichweite des Spielers stehen, wo der gerade steht */
+      if(b.x<=S.px+16){ b.x=S.px+16; b.state='punish'; b.punish=1.2-(b.phase-1)*.22;
+                        puff(b.x+8,GROUND-4,14,'#6b6488',80,20); S.shake=3; }
       break;
     case 'punish':                    /* steht offen - JETZT draufhauen */
       b.punish-=dt; if(b.punish<=0) b.state='retreat';
@@ -605,11 +724,12 @@ function bossTakeHit(){
    UPDATE
    ========================================================================== */
 function demoBrain(){
-  const foe=S.things.find(o=>o.foe&&o.x>PX&&o.x<PX+30);
-  const wall=S.things.find(o=>!o.foe&&o.kind!=='shot'&&o.kind!=='water'&&o.x>PX-4&&o.x<PX+64);
+  const foe=S.things.find(o=>o.foe&&o.x>S.px&&o.x<S.px+30);
+  const wall=S.things.find(o=>!o.foe&&o.kind!=='shot'&&o.kind!=='water'&&o.x>S.px-4&&o.x<S.px+64);
   if(foe&&S.t-S.hitT>TUNE.hitCooldownMs/1000+.04){ hitQueue.push(S.t); }
-  duckHeld=!!(wall&&wall.kind==='schild');
-  if(wall&&wall.kind!=='schild'&&S.onGround&&wall.x<PX+44){ jumpQueue.push(S.t); jumpHeld=true; }
+  duckHeld=!!(wall&&wall.kind==='schild')||!!(S.boss&&S.boss.state==='charge');
+  if(!duckHeld&&wall&&wall.kind!=='schild'&&S.onGround&&wall.x<S.px+44){ jumpQueue.push(S.t); jumpHeld=true; }
+  if(S.boss&&S.boss.state==='punish') hitQueue.push(S.t);
   else if(S.vy>-60) jumpHeld=false;
 }
 
@@ -662,14 +782,20 @@ function update(dt){
   while(jumpQueue.length&&now-jumpQueue[0]>=delayS){
     jumpQueue.shift();
     if(S.onGround||(now-S.lastGround)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.jumpVel; S.onGround=false; puff(PX+4,GROUND-1,5,'#6b6488',26,8); SFX.jump(); }
+      S.vy=TUNE.jumpVel; S.onGround=false; puff(S.px+4,GROUND-1,5,'#6b6488',26,8); SFX.jump(); }
   }
   if(!jumpHeld&&S.vy<0&&TUNE.shortHopCut>0) S.vy*=(1-TUNE.shortHopCut*dt*12);
   S.vy+=TUNE.gravity*dt; S.y+=S.vy*dt;
   if(S.y>=0){ S.y=0; S.vy=0;
-    if(!S.onGround){ puff(PX+4,GROUND-1,7,'#6b6488',40,14); SFX.land(); }
+    if(!S.onGround){ puff(S.px+4,GROUND-1,7,'#6b6488',40,14); SFX.land(); }
     S.onGround=true; S.lastGround=now;
   } else S.onGround=false;
+
+  /* --- Laufen: vorpreschen oder zurueckweichen --- */
+  const mv=(rightHeld?1:0)-(leftHeld?1:0);
+  if(mv&&!S.ducking) S.px += mv*TUNE.moveSpeed*(S.onGround?1:TUNE.moveAirFactor)*(1-p*.25)*dt;
+  else if(TUNE.homePull>0) S.px += (TUNE.playerHomeX-S.px)*Math.min(1,TUNE.homePull*dt);
+  S.px = Math.max(TUNE.playerMinX, Math.min(TUNE.playerMaxX, S.px));
 
   /* --- Welt bewegen --- */
   S.nextSpawn-=worldSpd*dt;
@@ -684,21 +810,29 @@ function update(dt){
 
   /* --- Spieler-Box --- */
   const pw=S.ducking?7:5, ph=S.ducking?5:13;
-  const px=PX+(S.ducking?0:1), py=GROUND-ph+S.y;
+  const px=S.px+(S.ducking?0:1), py=GROUND-ph+S.y;
 
   /* --- Faust trifft? --- */
   if(hitActive&&!S.hitDone){
-    const fx=PX+5, fy=GROUND-11+S.y, fw=TUNE.hitReach, fh=9;
+    const fx=S.px+5, fy=GROUND-11+S.y, fw=TUNE.hitReach, fh=9;
     for(const o of S.things){
       if(!o.foe||o.dead) continue;
       if(fx<o.x+o.w&&fx+fw>o.x&&fy<o.y+o.h&&fy+fh>o.y){
-        o.dead=true; o.gone=true; S.hitDone=true;
-        S.kos++; S.combo++; S.comboT=3.4;
-        S.score+=TUNE.pointsPerKO+S.combo*TUNE.comboStep;
+        S.hitDone=true; o.hp--;
         S.freeze=TUNE.hitStopMs; S.shake=4;
-        shards(o.x+3,o.y+5,'#c8324a',14,110);
-        say(pick(SAY.ko),o.x+3,o.y-6,P.gold);
-        SFX.klatsch(); SFX.ko();
+        o.x+=TUNE.hitKnockback*(o.hp>0?.6:1);      // Rueckstoss
+        SFX.klatsch();
+        if(o.hp>0){                                 // haelt noch aus
+          o.stun=.42; shards(o.x+3,o.y+5,'#ffffff',7,70);
+          say('AUA',o.x+3,o.y-6,P.white);
+        } else {
+          o.dead=true; o.gone=true;
+          S.kos++; S.combo++; S.comboT=TUNE.comboWindowSec;
+          S.score+=TUNE.pointsPerKO+S.combo*TUNE.comboStep;
+          shards(o.x+3,o.y+5,'#c8324a',14,110);
+          say(pick(SAY.ko),o.x+3,o.y-6,P.gold);
+          SFX.ko();
+        }
         break;
       }
     }
@@ -738,7 +872,8 @@ function update(dt){
   }
   S.things=S.things.filter(o=>!o.gone);
 
-  if(S.combo>0&&S.combo%5===0&&S.comboT>3.3) say(pick(SAY.combo),PX+20,GROUND-40,P.neon);
+  if(S.combo>0&&S.combo%5===0&&S.comboT>TUNE.comboWindowSec-.1)
+    say(pick(SAY.combo),S.px+20,GROUND-40,P.neon);
   if(TUNE.blackoutAtMax&&S.pegel>=TUNE.pegelMax) return crash(true);
 }
 
@@ -749,7 +884,7 @@ function crash(blackout=false,obj=null){
   S.overTxt=pick(blackout?SAY.blackout:SAY.over);
   S.flash=.5; S.flashCol=blackout?'255,61,139':'255,77,77';
   S.freeze=110;
-  puff(PX+6,GROUND-9,24,blackout?P.neon:P.danger,110,70);
+  puff(S.px+6,GROUND-9,24,blackout?P.neon:P.danger,110,70);
   if(obj) shards(obj.x+3,obj.y+4,P.dim,12,80);
   SFX.hurt();
 }
@@ -922,9 +1057,12 @@ function draw(dt){
       g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=g; ctx.fillRect(cx-11,cy-11,22,22);
       sprite(gold?SPR.shot:SPR.water,x,fy);
-    } else if(o.kind==='gegner'){
-      const rows=o.stun>0?SPR.gegnerHit:SPR.gegner;
+    } else if(o.kind==='gegner'||o.kind==='brocken'){
+      const big=o.kind==='brocken';
+      const rows=o.stun>0?(big?SPR.brockenHit:SPR.gegnerHit):(big?SPR.brocken:SPR.gegner);
       outline(rows,x,y); sprite(rows,x,y);
+      /* zweiter Lebenspunkt sichtbar machen */
+      if(big&&o.hp>1){ ctx.fillStyle=P.danger; ctx.fillRect(x+2,y-3,5,1); }
     } else if(o.kind==='taube'){
       const fy=y+Math.round(Math.sin(S.t*14+o.x*.1)*2);
       outline(SPR.taube,x,fy); sprite(SPR.taube,x,fy);
@@ -948,17 +1086,18 @@ function draw(dt){
     else if(S.ducking)  spr=SPR.duck;
     else if(!S.onGround)spr=S.vy<0?SPR.jump:SPR.fall;
     else                spr=SPR.run[Math.floor(S.dist/7)%4];
+    const dx=Math.round(S.px);
     ctx.globalAlpha=.3; ctx.fillStyle='#000';
     const sw=Math.max(3,8-Math.abs(S.y)/6);
-    ctx.fillRect(Math.round(PX+3-sw/2+2),GROUND,Math.round(sw),1);
+    ctx.fillRect(Math.round(dx+5-sw/2),GROUND,Math.round(sw),1);
     ctx.globalAlpha=1;
-    outline(spr,PX,py,1,.55);
-    sprite(spr,PX,py);
+    outline(spr,dx,py,1,.55);
+    sprite(spr,dx,py);
     /* Schlag-Wischer */
     if(hitAge>=TUNE.hitWindupMs/1000&&hitAge<=(TUNE.hitWindupMs+TUNE.hitActiveMs)/1000){
       ctx.globalAlpha=.55; ctx.fillStyle=P.white;
-      ctx.fillRect(PX+9,GROUND-11+S.y,TUNE.hitReach,1);
-      ctx.fillRect(PX+11,GROUND-13+S.y,TUNE.hitReach-4,1);
+      ctx.fillRect(dx+9,GROUND-11+S.y,TUNE.hitReach,1);
+      ctx.fillRect(dx+11,GROUND-13+S.y,TUNE.hitReach-4,1);
       ctx.globalAlpha=1;
     }
   }
@@ -1035,13 +1174,14 @@ function drawScreens(et){
     scores.slice(0,5).forEach((s,i)=>{ const y=76+i*9;
       text((i+1)+'.',18,y,P.dark); text(s.name.padEnd(3,' '),30,y,P.white);
       const sc=String(s.score).padStart(6,'0'); text(sc,102-textW(sc),y,P.neon2); });
-    text('SO GEHTS',170,64,P.gold);
-    text('LEER   SPRINGEN',170,76,P.dim);
-    text('RUNTER DUCKEN',  170,85,P.dim);
-    text('X      SCHLAGEN',170,94,P.white);
-    text('SHOT   PUNKTE UND PEGEL',170,108,P.gold);
-    text('WASSER MACHT NUECHTERN', 170,117,P.neon2);
-    text('PEGEL VOLL   BLACKOUT',  170,126,P.danger);
+    text('SO GEHTS',170,60,P.gold);
+    text('A D    VOR UND ZURUECK',170,72,P.dim);
+    text('LEER   SPRINGEN',       170,81,P.dim);
+    text('RUNTER DUCKEN',         170,90,P.dim);
+    text('X      SCHLAGEN',       170,99,P.white);
+    text('SHOT   PUNKTE UND PEGEL',170,112,P.gold);
+    text('WASSER MACHT NUECHTERN', 170,121,P.neon2);
+    text('PEGEL VOLL   BLACKOUT',  170,130,P.danger);
     if(Math.floor(S.t*1.6)%2===0) textC('DRUECK LEERTASTE',146,P.white,2);
     textC('V0.3  PROTOTYP',168,P.dark,1);
   }
