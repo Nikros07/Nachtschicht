@@ -1,0 +1,17 @@
+# Fotos der Jungs bleiben LOKAL.
+# Ein GitHub-Pages-Repo ist oeffentlich - da gehoeren keine Bilder von echten
+# Leuten rein. Aus den Fotos generierte Pixel-Koepfe kommen spaeter als
+# anonymisierte Sprites in den Code, die Originale nie.
+fotos/
+*.jpg
+*.jpeg
+*.png
+*.heic
+!docs/*.png
+
+# Kram
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
+.vscode/
