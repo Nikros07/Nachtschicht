@@ -137,7 +137,21 @@ const TUNE = {
   playerHomeX:     42,     // wohin es dich sanft zurueckzieht
   homePull:         0.7,   // 0 = gar nicht, 1 = sofort
 
-  /* (6) NAHKAMPF */
+  /* (6a) DEINE GESUNDHEIT - auf 1 stellen fuer die brutale Variante */
+  leben:            3,
+  invulnMs:      1150,     // Unverwundbarkeit nach einem Treffer
+  hurtKnockback:   22,
+
+  /* (6b) GEGNER-KAMPF */
+  foeWindSec:       0.46,  // wie lange ein Gegner ausholt (deine Reaktionszeit)
+  foeSwingSec:      0.16,  // wie lange sein Schlag gefaehrlich ist
+  foeRecSec:        0.70,  // danach steht er offen
+  foeReach:        16,     // ab dieser Naehe holt er aus
+  foeSwingReach:   15,
+  konterBonus:    120,     // Punkte fuers Kontern im Ausholen
+  konterFenster:    1,     // 1 = das ganze Ausholen, 0.5 = nur die zweite Haelfte
+
+  /* (6c) NAHKAMPF */
   hitWindupMs:     40,     // Vorlauf bevor die Faust trifft
   hitActiveMs:    110,     // wie lange die Faust gefaehrlich ist
   hitCooldownMs:  260,
@@ -201,6 +215,8 @@ const P = {
 const SAY = {
   ko: ['UMGEKLAPPT','GUTE NACHT','WEG','SITZT','DER LAG SCHON','AUSGEKNIPST',
        'NAECHSTER','ZU LANGSAM','SCHLAF GUT','ABGEMELDET'],
+  konter:['KONTER','ZU LANGSAM','ABGEFANGEN','ERWISCHT','SCHON GESEHEN','NICHT MIT MIR'],
+  aua: ['AUTSCH','DAS TAT WEH','PASS AUF','SCHLECHT GELAUFEN','NICHT SCHOEN'],
   shot: ['NOCH EINEN','RUNTER DAMIT','AUF EX','SITZT','LECKER','WARUM AUCH NICHT',
          'EINER GEHT NOCH','MORGEN IST FREI'],
   water:['VERNUNFT','GUTER MANN','DAS RETTET DICH','KOPF WIRD KLAR','WEISE'],
@@ -303,6 +319,19 @@ const SPR = {
           '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
   gegnerHit:['.......','..hhh..','.hsssh.','.sssss.','..sss..','..vvv..','.vvvvv.','k.vvv.k',
              '..mmm..','..m.m..','.mm.mm.','.kk..kk','.......'],
+  /* Ausholen: Arm hoch. Muss auf einen Blick vom Laufen zu unterscheiden sein. */
+  gegnerWind:['.hhh...','hsssh..','sssss..','.sss.s.','.vvv.s.','vvvvvs.','k.vvv..','..vvv..',
+              '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
+  gegnerSwing:['..hhh..','.hsssh.','.sssss.','..sss..','..vvvss','vvvvvss','k.vvv..','..vvv..',
+               '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
+  /* Flitzer: klein, schnell, schlaegt tief - drueberspringen */
+  flitzer:['..hh..','.hssh.','.ssss.','..ss..','.cccc.','ccccc.','k.cc.k','..cc..',
+           '..pp..','.pp.p.','.p..p.','kk..kk'],
+  flitzerWind:['..hh..','.hssh.','.ssss.','..ss..','.cccc.','cccccc','..cc..','..cc..',
+               '..pp..','.pp...','.p.ss.','kk.ss.'],
+  /* Werfer: bleibt auf Distanz und wirft */
+  werfer:['..hhh..','.hsssh.','.sssss.','..sss..','g.ttt..','gttttt.','k.ttt.k','..ttt..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
   /* Der Brocken haelt zwei Schlaege aus - breiter, dunkler, unuebersehbar */
   brocken:['..ddddd..','.dkkkkkd.','.dsssssd.','..ksssk..','..sssss..','...ddd...',
            '.ddddddd.','ddddddddd','dd.ddd.dd','dd.ddd.dd','...ddd...','..dd.dd..',
@@ -564,7 +593,7 @@ function reset(){
   S={ mode:'attract', t:0, overT:0, freeze:0,
       dist:0, speed:TUNE.startSpeed, px:TUNE.playerHomeX,
       y:0, vy:0, onGround:true, lastGround:0, ducking:false,
-      hitT:-99, hitDone:false,
+      hitT:-99, hitDone:false, hp:TUNE.leben, inv:0,
       pegel:0, score:0, combo:0, comboT:0, kos:0,
       things:[], shots:[], nextSpawn:280,
       shake:0, flash:0, flashCol:'255,255,255',
@@ -591,10 +620,46 @@ function mkThing(kind,x){
   if(kind==='tonne')  Object.assign(o,{y:GROUND-12,w:8, h:12});
   if(kind==='gitter') Object.assign(o,{y:GROUND-12,w:10,h:12});
   if(kind==='schild') Object.assign(o,{y:GROUND-46,w:16,h:32,hit:{ox:0,oy:0,w:16,h:16}});
-  if(kind==='gegner') Object.assign(o,{y:GROUND-13,w:7, h:13,foe:true,vx:24,hp:1,stun:0});
-  if(kind==='brocken')Object.assign(o,{y:GROUND-15,w:9, h:15,foe:true,vx:15,hp:2,stun:0});
-  if(kind==='taube')  Object.assign(o,{y:GROUND-26,w:7, h:5, foe:true,vx:46,hp:1,stun:0,fly:true});
+  /* Gegner haben eine Kampf-KI: laufen -> ausholen -> schlagen -> offen stehen.
+     hoch = Schlag auf Kopfhoehe (ducken), tief = Fegen (springen),
+     voll  = trifft alles (zurueckweichen ist die einzige Antwort). */
+  const foeBase={foe:true,hp:1,stun:0,st:'walk',t:0,
+                 windSec:TUNE.foeWindSec,recSec:TUNE.foeRecSec,reach:TUNE.foeReach,zone:'hoch'};
+  if(kind==='gegner') Object.assign(o,{y:GROUND-13,w:7, h:13,vx:24},foeBase);
+  if(kind==='brocken')Object.assign(o,{y:GROUND-15,w:9, h:15,vx:15},foeBase,
+                                    {hp:2,zone:'voll',windSec:TUNE.foeWindSec*1.5,
+                                     recSec:TUNE.foeRecSec*1.25,panzer:true});
+  if(kind==='flitzer')Object.assign(o,{y:GROUND-12,w:6, h:12,vx:52},foeBase,
+                                    {zone:'tief',windSec:TUNE.foeWindSec*.72,recSec:TUNE.foeRecSec*.8});
+  if(kind==='werfer') Object.assign(o,{y:GROUND-13,w:7, h:13,vx:18},foeBase,
+                                    {ranged:true,reach:78,windSec:TUNE.foeWindSec*1.2});
+  if(kind==='taube')  Object.assign(o,{y:GROUND-26,w:7, h:5, foe:true,vx:46,hp:1,stun:0,fly:true,st:'walk'});
   return o;
+}
+
+/* ---- Gegner-KI ---- */
+function foeSwing(o){
+  if(o.ranged){ S.shots.push({x:o.x-2,y:o.y+2,vx:-128,vy:-52,w:5,h:5,kind:'flasche'});
+                slide(600,300,.18,'triangle',.045); return; }
+  slide(280,150,.1,'sawtooth',.03);
+}
+function updateFoe(o,dt){
+  if(o.stun>0){ o.stun-=dt; return; }
+  if(o.fly){ o.x-=o.vx*dt; return; }
+  if(o.st==='wind'){ o.t-=dt; if(o.t<=0){ o.st='swing'; o.t=TUNE.foeSwingSec; foeSwing(o); } return; }
+  if(o.st==='swing'){ o.t-=dt; if(o.t<=0){ o.st='rec'; o.t=o.recSec; } return; }
+  if(o.st==='rec'){ o.t-=dt; if(o.t<=0) o.st='walk'; return; }
+  const d=o.x-S.px;
+  if(d>o.reach) o.x-=o.vx*dt;
+  else { o.st='wind'; o.t=o.windSec; if(!o.ranged) beep(220,.05,'square',.025); }
+}
+/* Trefferzone eines ausgefuehrten Schlags */
+function foeHitbox(o){
+  if(o.st!=='swing'||o.ranged) return null;
+  const r=TUNE.foeSwingReach;
+  if(o.zone==='hoch') return {x:o.x-r,y:o.y+1, w:r+3,h:7};
+  if(o.zone==='tief') return {x:o.x-r,y:GROUND-6,w:r+3,h:6};
+  return {x:o.x-r,y:o.y,   w:r+3,h:o.h};
 }
 function spawn(){
   const r=Math.random();
@@ -607,8 +672,9 @@ function spawn(){
     const n = Math.random()<gruppeChance() ? (Math.random()<.35?3:2) : 1;
     for(let i=0;i<n;i++){
       const roll=Math.random();
-      const kind = roll<.14 ? 'taube' : roll<.34 ? 'brocken' : 'gegner';
-      S.things.push(mkThing(kind, W+10+i*(22+Math.random()*14)));
+      const kind = roll<.12 ? 'taube'   : roll<.28 ? 'brocken'
+                 : roll<.44 ? 'flitzer' : roll<.56 ? 'werfer' : 'gegner';
+      S.things.push(mkThing(kind, W+10+i*(26+Math.random()*16)));
     }
   }
   else if(Math.random()<TUNE.chanceOverhead)
@@ -748,6 +814,7 @@ function update(dt){
 
   const p=S.pegel/TUNE.pegelMax, delay=p*TUNE.fxInputDelayMs;
   S.pegel=Math.max(0,S.pegel-TUNE.pegelDecayPerSec*dt);
+  if(S.inv>0) S.inv-=dt;
 
   /* Tempo - im Bosskampf steht die Welt */
   S.speed=Math.min(TUNE.maxSpeed,S.speed+TUNE.speedRampPerSec*dt);
@@ -802,7 +869,7 @@ function update(dt){
   if(!S.boss&&S.nextSpawn<=0) spawn();
   for(const o of S.things){
     o.x-=worldSpd*dt;
-    if(o.foe){ if(o.stun>0) o.stun-=dt; else o.x-=o.vx*dt; }
+    if(o.foe) updateFoe(o,dt);
   }
   S.things=S.things.filter(o=>o.x>-44&&!o.gone);
   for(const s of S.shots){ s.x+=s.vx*dt; s.vy+=520*dt; s.y+=s.vy*dt; }
@@ -818,20 +885,34 @@ function update(dt){
     for(const o of S.things){
       if(!o.foe||o.dead) continue;
       if(fx<o.x+o.w&&fx+fw>o.x&&fy<o.y+o.h&&fy+fh>o.y){
-        S.hitDone=true; o.hp--;
-        S.freeze=TUNE.hitStopMs; S.shake=4;
-        o.x+=TUNE.hitKnockback*(o.hp>0?.6:1);      // Rueckstoss
+        S.hitDone=true;
+        /* Konter: du triffst waehrend er ausholt. Brocken sind gepanzert. */
+        const konter = o.st==='wind' && !o.panzer
+                     && o.t <= o.windSec*TUNE.konterFenster;
+        if(konter) o.hp=0; else o.hp--;
+        if(!o.panzer){ o.st='rec'; o.t=o.recSec; }   // Schlag wird unterbrochen
+        S.freeze=TUNE.hitStopMs*(konter?1.6:1); S.shake=konter?6:4;
+        o.x+=TUNE.hitKnockback*(o.hp>0?.6:1);
         SFX.klatsch();
-        if(o.hp>0){                                 // haelt noch aus
+        if(o.hp>0){
           o.stun=.42; shards(o.x+3,o.y+5,'#ffffff',7,70);
           say('AUA',o.x+3,o.y-6,P.white);
         } else {
           o.dead=true; o.gone=true;
           S.kos++; S.combo++; S.comboT=TUNE.comboWindowSec;
-          S.score+=TUNE.pointsPerKO+S.combo*TUNE.comboStep;
-          shards(o.x+3,o.y+5,'#c8324a',14,110);
-          say(pick(SAY.ko),o.x+3,o.y-6,P.gold);
-          SFX.ko();
+          S.score+=TUNE.pointsPerKO+S.combo*TUNE.comboStep+(konter?TUNE.konterBonus:0);
+          shards(o.x+3,o.y+5,konter?P.gold:'#c8324a',konter?22:14,konter?150:110);
+          say(konter?pick(SAY.konter):pick(SAY.ko),o.x+3,o.y-6,konter?P.neon:P.gold);
+          if(konter){ S.flash=.28; S.flashCol='255,212,71'; SFX.win(); } else SFX.ko();
+          /* Umfallender reisst den naechsten mit */
+          for(const n of S.things){
+            if(n===o||!n.foe||n.gone||n.fly) continue;
+            if(n.x>o.x&&n.x<o.x+34){ n.hp--; n.stun=.5; n.st='rec'; n.t=n.recSec;
+              n.x+=14; shards(n.x+3,n.y+5,'#ffffff',6,60);
+              if(n.hp<=0){ n.gone=true; S.kos++; S.combo++; S.score+=TUNE.pointsPerKO;
+                           say('UND DER AUCH',n.x,n.y-6,P.gold); }
+              break; }
+          }
         }
         break;
       }
@@ -843,8 +924,19 @@ function update(dt){
   }
 
   /* --- Kollisionen --- */
+  const trifft=(bx,by,bw,bh)=> px<bx+bw&&px+pw>bx&&py<by+bh&&py+ph>by;
   for(const o of S.things){
     if(o.gone) continue;
+
+    if(o.foe&&o.kind!=='taube'){
+      /* Der Koerper blockt nur, verletzt nicht - sonst kaeme man nie in
+         Schlagreichweite. Wehtun tut ausschliesslich der ausgefuehrte Schlag. */
+      if(trifft(o.x,o.y,o.w,o.h)) S.px=Math.max(TUNE.playerMinX,o.x-pw-1);
+      const hb=foeHitbox(o);
+      if(hb&&trifft(hb.x,hb.y,hb.w,hb.h)&&hurt(o)) return;
+      continue;
+    }
+
     const h=o.hit||{ox:0,oy:0,w:o.w,h:o.h};
     const ox=o.x+h.ox, oy=o.y+h.oy;
     if(px<ox+h.w&&px+pw>ox&&py<oy+h.h&&py+ph>oy){
@@ -859,22 +951,36 @@ function update(dt){
         S.score+=TUNE.pointsPerWater; shards(o.x+2,o.y+2,P.neon2,8,70);
         if(Math.random()<.4) say(pick(SAY.water),o.x,o.y-8,P.neon2);
         SFX.water();
-      } else return crash(false,o);
+      } else if(hurt(o)) return;
     }
   }
   for(const s of S.shots){
-    if(px<s.x+s.w&&px+pw>s.x&&py<s.y+s.h&&py+ph>s.y) return crash(false,s);
+    if(px<s.x+s.w&&px+pw>s.x&&py<s.y+s.h&&py+ph>s.y){ s.gone=true; if(hurt(s)) return; }
   }
+  S.shots=S.shots.filter(s=>!s.gone);
   /* Sturmangriff des Bosses: trifft alles ausser einen geduckten Spieler */
   if(S.boss&&S.boss.state==='charge'){
     const bx=S.boss.x, by=GROUND-44, bw=32, bh=38;
-    if(px<bx+bw&&px+pw>bx&&py<by+bh&&py+ph>by) return crash(false,{x:bx+14,y:GROUND-30});
+    if(px<bx+bw&&px+pw>bx&&py<by+bh&&py+ph>by&&hurt({x:bx+14,y:GROUND-30})) return;
   }
   S.things=S.things.filter(o=>!o.gone);
 
   if(S.combo>0&&S.combo%5===0&&S.comboT>TUNE.comboWindowSec-.1)
     say(pick(SAY.combo),S.px+20,GROUND-40,P.neon);
   if(TUNE.blackoutAtMax&&S.pegel>=TUNE.pegelMax) return crash(true);
+}
+
+/* Treffer einstecken. Gibt true zurueck, wenn der Lauf damit vorbei ist. */
+function hurt(obj=null){
+  if(S.inv>0||S.mode!=='play') return false;
+  S.hp--; S.combo=0; S.inv=TUNE.invulnMs/1000;
+  S.px=Math.max(TUNE.playerMinX,S.px-TUNE.hurtKnockback);
+  S.shake=6; S.freeze=90; S.flash=.42; S.flashCol='255,77,77';
+  puff(S.px+4,GROUND-8,14,P.danger,80,50);
+  if(S.hp<=0){ crash(false,obj); return true; }
+  say(pick(SAY.aua),S.px+4,GROUND-30,P.danger);
+  SFX.hurt();
+  return false;
 }
 
 function crash(blackout=false,obj=null){
@@ -1057,12 +1163,27 @@ function draw(dt){
       g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=g; ctx.fillRect(cx-11,cy-11,22,22);
       sprite(gold?SPR.shot:SPR.water,x,fy);
-    } else if(o.kind==='gegner'||o.kind==='brocken'){
-      const big=o.kind==='brocken';
-      const rows=o.stun>0?(big?SPR.brockenHit:SPR.gegnerHit):(big?SPR.brocken:SPR.gegner);
-      outline(rows,x,y); sprite(rows,x,y);
-      /* zweiter Lebenspunkt sichtbar machen */
+    } else if(o.foe&&o.kind!=='taube'){
+      const big=o.kind==='brocken', flink=o.kind==='flitzer';
+      let rows;
+      if(o.stun>0)            rows = big?SPR.brockenHit:SPR.gegnerHit;
+      else if(o.st==='wind')  rows = flink?SPR.flitzerWind:big?SPR.brocken:SPR.gegnerWind;
+      else if(o.st==='swing') rows = flink?SPR.flitzerWind:big?SPR.brocken:SPR.gegnerSwing;
+      else rows = big?SPR.brocken:flink?SPR.flitzer:o.ranged?SPR.werfer:SPR.gegner;
+      outline(rows,x,y);
+      /* Ausholen blinkt weiss - das ist die Einladung zum Konter */
+      sprite(rows,x,y,1, o.st==='wind'&&Math.floor(S.t*16)%2===0 ? '#ffffff' : null);
       if(big&&o.hp>1){ ctx.fillStyle=P.danger; ctx.fillRect(x+2,y-3,5,1); }
+      /* Warnzeichen ueberm Kopf, mit Farbe fuer die richtige Abwehr */
+      if(o.st==='wind'){
+        const col=o.zone==='hoch'?P.neon2:o.zone==='tief'?P.gold:P.danger;
+        if(Math.floor(S.t*10)%2===0) textShadow('!',x+2,y-9,col);
+      }
+      /* Der ausgefuehrte Schlag wird sichtbar gezeichnet */
+      const hb=foeHitbox(o);
+      if(hb){ ctx.globalAlpha=.5; ctx.fillStyle=P.danger;
+              ctx.fillRect(Math.round(hb.x),Math.round(hb.y+hb.h/2),hb.w,1);
+              ctx.globalAlpha=1; }
     } else if(o.kind==='taube'){
       const fy=y+Math.round(Math.sin(S.t*14+o.x*.1)*2);
       outline(SPR.taube,x,fy); sprite(SPR.taube,x,fy);
@@ -1078,7 +1199,9 @@ function draw(dt){
   /* Spieler */
   const hitAge=S.t-S.hitT;
   const punching=hitAge>=0&&hitAge<=(TUNE.hitWindupMs+TUNE.hitActiveMs+60)/1000;
-  const blink=S.mode==='over'&&Math.floor(S.overT*12)%2===0;
+  /* Blinken: beim Sterben, und solange man nach einem Treffer unverwundbar ist */
+  const blink=(S.mode==='over'&&Math.floor(S.overT*12)%2===0)
+            ||(S.inv>0&&Math.floor(S.t*18)%2===0);
   if(!blink&&(S.mode!=='attract'||S.demo)){
     const py=GROUND-13+S.y;
     let spr;
@@ -1124,7 +1247,15 @@ function drawHUD(et,p){
   if(S.mode==='attract') return;
   text('SCORE',6,6,P.dim);
   text(String(Math.floor(S.score)).padStart(6,'0'),6,14,P.white);
-  if(S.kos>0) text('KO '+S.kos,6,22,P.dark);
+  /* Herzen - blinken wenn nur noch eins uebrig ist */
+  for(let i=0;i<TUNE.leben;i++){
+    const voll=i<S.hp, x=6+i*7, y=22;
+    if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
+    const kritisch=S.hp===1&&Math.floor(S.t*6)%2===0;
+    ctx.fillStyle=kritisch?P.white:P.danger;
+    ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
+  }
+  if(S.kos>0) text('KO '+S.kos,6+TUNE.leben*7+4,22,P.dark);
   const m=Math.floor(S.dist/10)+'M';
   text(m,W-6-textW(m),6,P.dim);
   text(et.name,W-6-textW(et.name),14,et.neon);
@@ -1179,9 +1310,11 @@ function drawScreens(et){
     text('LEER   SPRINGEN',       170,81,P.dim);
     text('RUNTER DUCKEN',         170,90,P.dim);
     text('X      SCHLAGEN',       170,99,P.white);
-    text('SHOT   PUNKTE UND PEGEL',170,112,P.gold);
-    text('WASSER MACHT NUECHTERN', 170,121,P.neon2);
-    text('PEGEL VOLL   BLACKOUT',  170,130,P.danger);
+    text('SCHLAG BEIM AUSHOLEN',  170,112,P.neon);
+    text('IST EIN KONTER',        170,121,P.neon);
+    text('BLAU DUCKEN',           170,134,P.neon2);
+    text('GELB SPRINGEN',         170,143,P.gold);
+    text('ROT  WEG DA',           170,152,P.danger);
     if(Math.floor(S.t*1.6)%2===0) textC('DRUECK LEERTASTE',146,P.white,2);
     textC('V0.3  PROTOTYP',168,P.dark,1);
   }

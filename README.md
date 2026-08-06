@@ -34,10 +34,36 @@ Ein hoher Pegel heißt: mehr Tempo, bis zu dreifache Punkte — aber das Bild wa
 die Steuerung wird träge, der Blick verengt sich. Bei 100 % ist Blackout.
 Nüchtern wirst Du praktisch nur durch Wasser; von allein passiert fast nichts.
 
-**Die Gegner** sind die Hauptsache, nicht die Hindernisse. Normale Typen gehen
-mit einem Schlag um, Brocken brauchen zwei und sind an der roten Markierung über
-dem Kopf zu erkennen. Tauben kommen auf Kopfhöhe. Gegner treten oft in Gruppen
-zu zweit oder dritt auf — jeder KO in Folge treibt die Combo hoch.
+**Die Gegner** sind die Hauptsache, nicht die Hindernisse. Und sie laufen nicht
+nur in Dich rein — sie **holen aus und schlagen zu**. Kurz bevor es passiert,
+blinken sie weiß und ein Ausrufezeichen erscheint über dem Kopf. Die Farbe sagt
+Dir, was zu tun ist:
+
+| Zeichen | Angriff | Antwort |
+|---|---|---|
+| Blau | Schlag auf Kopfhöhe | Ducken |
+| Gelb | Fegen am Boden | Springen |
+| Rot | Trifft alles | Zurückweichen |
+
+**Kontern** ist der Kern. Triffst Du einen Gegner, *während* er ausholt, geht er
+sofort um — egal wie viel Leben er hat — und es gibt 120 Extrapunkte. Das ist der
+Unterschied zwischen Draufhauen und gut Spielen. Nur Brocken sind gepanzert und
+lassen sich nicht unterbrechen, denen musst Du wirklich ausweichen.
+
+Die Typen:
+
+- **Gegner** — Standard, ein Schlag, holt auf Kopfhöhe aus
+- **Brocken** — zwei Schläge, gepanzert, roter Balken über dem Kopf, trifft alles
+- **Flitzer** — schnell, fegt am Boden, muss übersprungen werden
+- **Werfer** — bleibt auf Distanz und wirft Flaschen, muss gestellt werden
+- **Taube** — fliegt auf Kopfhöhe durch
+
+Sie kommen oft in Gruppen zu zweit oder dritt. Wer einen umhaut, reißt den
+nächsten dahinter gleich mit um. Jeder KO in Folge treibt die Combo hoch.
+
+**Du hast drei Herzen.** Ein Treffer kostet eines und macht Dich kurz
+unverwundbar. Bei null ist Schluss — genauso wie beim Blackout, der zählt sofort.
+Wer es brutal will, stellt `leben` im TUNE-Block auf 1.
 
 **Die Bosse** kämpfen nach festen Mustern und kündigen jeden Angriff an:
 
