@@ -267,17 +267,43 @@ const F = {
  ',':'000,000,000,010,100',
 };
 const GLYPH = {}; for (const k in F) GLYPH[k] = F[k].split(',');
-function text(str,x,y,col,s=1){
-  ctx.fillStyle=col; str=String(str).toUpperCase();
-  for(let i=0;i<str.length;i++){ const g=GLYPH[str[i]]||GLYPH['?'];
+/* Zeichnet auf eine beliebige Leinwand - noetig, um Schrift vorzubacken. */
+function textTo(g,str,x,y,col,s){
+  g.fillStyle=col; str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){ const gl=GLYPH[str[i]]||GLYPH['?'];
     for(let r=0;r<5;r++) for(let c=0;c<3;c++)
-      if(g[r][c]==='1') ctx.fillRect(x+(i*4+c)*s, y+r*s, s, s); }
+      if(gl[r][c]==='1') g.fillRect(x+(i*4+c)*s, y+r*s, s, s); }
+}
+/* Jedes Zeichen wird einmal gebacken. Es gibt nur 43 Glyphen, also bleibt
+   der Cache winzig - selbst bei einem Punktestand, der sich staendig aendert. */
+const _glyphCache=new Map();
+function text(str,x,y,col,s=1){
+  str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){
+    const ch=str[i]; if(ch===' ') continue;
+    const k=ch+col+s;
+    let c=_glyphCache.get(k);
+    if(!c){ const [cc,xx]=leinwand(3*s,5*s); textTo(xx,ch,0,0,col,s); c=cc; _glyphCache.set(k,c); }
+    ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y));
+  }
 }
 const textW=(s0,s=1)=>String(s0).length*4*s-s;
 const textC=(s0,y,col,s=1)=>text(s0,Math.round((320-textW(s0,s))/2),y,col,s);
+/* Leuchtschrift malte den Text fuenfmal. Jetzt einmal gebacken, dann kopiert. */
 function textGlow(str,x,y,col,s=1){
-  ctx.globalAlpha=.25; text(str,x-1,y,col,s); text(str,x+1,y,col,s);
-  text(str,x,y-1,col,s); text(str,x,y+1,col,s); ctx.globalAlpha=1; text(str,x,y,col,s);
+  str=String(str).toUpperCase();
+  const k=str+'|'+col+'|'+s;
+  let c=_texts.get(k);
+  if(!c){
+    const pad=s, [cc,xx]=leinwand(textW(str,s)+2*pad, 5*s+2*pad);
+    xx.globalAlpha=.25;
+    textTo(xx,str,pad-s,pad,col,s); textTo(xx,str,pad+s,pad,col,s);
+    textTo(xx,str,pad,pad-s,col,s); textTo(xx,str,pad,pad+s,col,s);
+    xx.globalAlpha=1; textTo(xx,str,pad,pad,col,s);
+    c=cc; if(_texts.size>400) _texts.clear();
+    _texts.set(k,c);
+  }
+  ctx.drawImage(c,Math.round(x)-s,Math.round(y)-s);
 }
 function textShadow(str,x,y,col,s=1){ text(str,x+1,y+1,'#000',s); text(str,x,y,col,s); }
 
@@ -290,18 +316,67 @@ const KEY = {
   g:'#ffd447', n:'#ff3d8b', c:'#31e6ff', r:'#ff4d4d', d:'#4a4363', b:'#6b4a2a',
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
 };
-function sprite(rows,x,y,sc=1,tint=null,alpha=1){
-  if(alpha!==1) ctx.globalAlpha=alpha;
+/* ==========================================================================
+   BILD-CACHE
+   Pixel einzeln zu malen kostet pro Sprite dutzende Aufrufe - und das
+   60 mal pro Sekunde fuer jedes Objekt. Stattdessen wird jedes Sprite
+   einmal auf eine eigene kleine Leinwand gebacken und danach nur noch
+   als fertiges Bild kopiert. Aus ~2800 Aufrufen pro Bild werden ~150.
+   ========================================================================== */
+const _ids=new WeakMap(); let _nextId=0;
+const _sprites=new Map(), _outlines=new Map(), _texts=new Map(), _grads=new Map();
+
+/* Farbverlaeufe sind teuer und aendern sich fast nie - einmal backen. */
+function verlauf(key,w,h,mal){
+  let c=_grads.get(key);
+  if(!c){ const [cc,xx]=leinwand(w,h); mal(xx); c=cc; _grads.set(key,c); }
+  return c;
+}
+function rowsId(rows){
+  let id=_ids.get(rows);
+  if(id===undefined){ id=++_nextId; _ids.set(rows,id); }
+  return id;
+}
+function leinwand(w,h){
+  const c=document.createElement('canvas');
+  c.width=Math.max(1,w); c.height=Math.max(1,h);
+  const x=c.getContext('2d'); x.imageSmoothingEnabled=false;
+  return [c,x];
+}
+function backeSprite(rows,sc,tint){
+  let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
+  const [c,x]=leinwand(bw*sc, rows.length*sc);
   for(let r=0;r<rows.length;r++){ const row=rows[r];
-    for(let c=0;c<row.length;c++){ const ch=row[c]; if(ch==='.') continue;
-      ctx.fillStyle=tint||KEY[ch]||'#fff';
-      ctx.fillRect(x+c*sc, y+r*sc, sc, sc); } }
+    for(let i=0;i<row.length;i++){ const ch=row[i]; if(ch==='.') continue;
+      x.fillStyle=tint||KEY[ch]||'#fff'; x.fillRect(i*sc,r*sc,sc,sc); } }
+  return c;
+}
+function holeSprite(rows,sc,tint){
+  const k=rowsId(rows)+'|'+sc+'|'+(tint||'-');
+  let c=_sprites.get(k);
+  if(!c){ c=backeSprite(rows,sc,tint); _sprites.set(k,c); }
+  return c;
+}
+function sprite(rows,x,y,sc=1,tint=null,alpha=1){
+  const c=holeSprite(rows,sc,tint);
+  if(alpha!==1) ctx.globalAlpha=alpha;
+  ctx.drawImage(c,Math.round(x),Math.round(y));
   if(alpha!==1) ctx.globalAlpha=1;
 }
+/* Kontur: einmal als schwarzer, um 1 Pixel aufgeblasener Umriss backen.
+   Vorher waren das vier volle Sprite-Durchlaeufe pro Objekt und Bild. */
 function outline(rows,x,y,sc=1,a=.8){
+  const k=rowsId(rows)+'|'+sc;
+  let c=_outlines.get(k);
+  if(!c){
+    const s=holeSprite(rows,sc,'#000');
+    const [cc,xx]=leinwand(s.width+2*sc, s.height+2*sc);
+    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc);
+    xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
+    c=cc; _outlines.set(k,c);
+  }
   ctx.globalAlpha=a;
-  sprite(rows,x-sc,y,sc,'#000'); sprite(rows,x+sc,y,sc,'#000');
-  sprite(rows,x,y-sc,sc,'#000'); sprite(rows,x,y+sc,sc,'#000');
+  ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc);
   ctx.globalAlpha=1;
 }
 const HEAD=['..hhh..','.hsssh.','.sssss.','..sss..'];
@@ -655,6 +730,9 @@ function foeSwing(o){
 function updateFoe(o,dt){
   if(o.stun>0){ o.stun-=dt; return; }
   if(o.fly){ o.x-=o.vx*dt; return; }
+  /* Bist du an ihm vorbei, ist er raus aus dem Kampf. Ohne das bleibt er
+     ewig stehen und schlaegt ins Leere - seine Trefferzone zeigt nach links. */
+  if(o.x < S.px-2){ o.st='walk'; o.t=0; o.x-=o.vx*dt; return; }
   if(o.st==='wind'){ o.t-=dt; if(o.t<=0){ o.st='swing'; o.t=TUNE.foeSwingSec; foeSwing(o); } return; }
   if(o.st==='swing'){ o.t-=dt; if(o.t<=0){ o.st='rec'; o.t=o.recSec; } return; }
   if(o.st==='rec'){ o.t-=dt; if(o.t<=0) o.st='walk'; return; }
@@ -1050,9 +1128,11 @@ function shade(hex,amt){
 }
 
 function drawSky(et){
-  const g=ctx.createLinearGradient(0,0,0,GROUND);
-  g.addColorStop(0,et.sky[0]); g.addColorStop(1,et.sky[1]);
-  ctx.fillStyle=g; ctx.fillRect(-8,-8,W+16,GROUND+8);
+  ctx.drawImage(verlauf('sky'+S.etappe,W+16,GROUND+16,x=>{
+    const g=x.createLinearGradient(0,8,0,GROUND+8);
+    g.addColorStop(0,et.sky[0]); g.addColorStop(1,et.sky[1]);
+    x.fillStyle=g; x.fillRect(0,0,W+16,GROUND+16);
+  }),-8,-8);
   const mx=262,my=24;
   ctx.fillStyle='#f0e6c0'; ctx.beginPath(); ctx.arc(mx,my,9,0,7); ctx.fill();
   ctx.fillStyle=et.sky[0]; ctx.beginPath(); ctx.arc(mx-4,my-3,8,0,7); ctx.fill();
@@ -1085,16 +1165,23 @@ function drawSkyline(et){
   }
 }
 function drawStreet(et){
-  const band=ctx.createLinearGradient(0,GROUND-52,0,GROUND);
-  band.addColorStop(0,'rgba(0,0,0,0)'); band.addColorStop(1,'rgba(0,0,0,.55)');
-  ctx.fillStyle=band; ctx.fillRect(-8,GROUND-52,W+16,52);
+  ctx.drawImage(verlauf('band',W+16,52,x=>{
+    const g=x.createLinearGradient(0,0,0,52);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.55)');
+    x.fillStyle=g; x.fillRect(0,0,W+16,52);
+  }),-8,GROUND-52);
 
-  if(TUNE.parallax) for(let i=0;i<5;i++){
-    const x=Math.floor(loopX(i*86,.62,W+90))-20;
-    sprite(SPR.lampe,x,GROUND-40,1);
-    const g=ctx.createRadialGradient(x+4,GROUND-38,1,x+4,GROUND-38,26);
-    g.addColorStop(0,'rgba(255,224,138,.20)'); g.addColorStop(1,'rgba(255,224,138,0)');
-    ctx.fillStyle=g; ctx.fillRect(x-22,GROUND-60,52,60);
+  if(TUNE.parallax){
+    const halo=verlauf('lampe',52,60,x=>{
+      const g=x.createRadialGradient(26,22,1,26,22,26);
+      g.addColorStop(0,'rgba(255,224,138,.20)'); g.addColorStop(1,'rgba(255,224,138,0)');
+      x.fillStyle=g; x.fillRect(0,0,52,60);
+    });
+    for(let i=0;i<5;i++){
+      const x=Math.floor(loopX(i*86,.62,W+90))-20;
+      sprite(SPR.lampe,x,GROUND-40,1);
+      ctx.drawImage(halo,x-22,GROUND-60);
+    }
   }
   ctx.fillStyle=P.road; ctx.fillRect(-8,GROUND,W+16,H-GROUND+8);
   ctx.fillStyle=shade(et.hue,.05); ctx.fillRect(-8,GROUND,W+16,1);
@@ -1128,9 +1215,11 @@ function drawSperrstunde(et){
 
   /* Schatten, den die Wand VOR sich her auf die Strasse wirft.
      Ohne den sieht man sie auf dunklem Hintergrund praktisch nicht. */
-  const sh=ctx.createLinearGradient(L,0,L+52,0);
-  sh.addColorStop(0,'rgba(0,0,0,.85)'); sh.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sh; ctx.fillRect(L,-8,52,H+16);
+  ctx.drawImage(verlauf('sperrSchatten',52,H+16,x=>{
+    const g=x.createLinearGradient(0,0,52,0);
+    g.addColorStop(0,'rgba(0,0,0,.85)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g; x.fillRect(0,0,52,H+16);
+  }),L,-8);
 
   /* Die Wand: komplett schwarz, verschluckt alles dahinter */
   ctx.fillStyle='#000'; ctx.fillRect(-20,-8,L+20,H+16);
@@ -1145,9 +1234,11 @@ function drawSperrstunde(et){
   ctx.globalAlpha=1;
 
   /* Leuchtende Kante mit Halo */
-  const hal=ctx.createLinearGradient(L-7,0,L+5,0);
-  hal.addColorStop(0,'rgba(255,61,139,0)'); hal.addColorStop(1,'rgba(255,61,139,.5)');
-  ctx.fillStyle=hal; ctx.fillRect(L-7,-8,12,H+16);
+  ctx.drawImage(verlauf('sperrHalo',12,H+16,x=>{
+    const g=x.createLinearGradient(0,0,12,0);
+    g.addColorStop(0,'rgba(255,61,139,0)'); g.addColorStop(1,'rgba(255,61,139,.5)');
+    x.fillStyle=g; x.fillRect(0,0,12,H+16);
+  }),L-7,-8);
   for(let y=-6;y<H+6;y+=3){
     const w=2+Math.round(Math.abs(Math.sin(y*.7+S.t*5))*2);
     ctx.fillStyle=P.white; ctx.globalAlpha=.9; ctx.fillRect(L-1,y,2,3);
@@ -1175,10 +1266,13 @@ function drawSperrstunde(et){
   if(abstand<TUNE.lineWarnAbstand){
     const t=1-Math.max(0,abstand)/TUNE.lineWarnAbstand;
     const puls=(.5+.5*Math.sin(S.t*10))*t;
-    const vg=ctx.createLinearGradient(0,0,W*.75,0);
-    vg.addColorStop(0,`rgba(255,61,139,${(.28*t).toFixed(3)})`);
-    vg.addColorStop(1,'rgba(255,61,139,0)');
-    ctx.fillStyle=vg; ctx.fillRect(-8,-8,W+16,H+16);
+    ctx.globalAlpha=t;
+    ctx.drawImage(verlauf('sperrWarn',W+16,H+16,x=>{
+      const g=x.createLinearGradient(0,0,W*.75,0);
+      g.addColorStop(0,'rgba(255,61,139,.28)'); g.addColorStop(1,'rgba(255,61,139,0)');
+      x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
+    }),-8,-8);
+    ctx.globalAlpha=1;
     ctx.globalAlpha=puls*.5; ctx.fillStyle=P.neon;
     ctx.fillRect(-8,-8,W+16,1); ctx.fillRect(-8,H-1,W+16,1); ctx.globalAlpha=1;
   }
@@ -1212,9 +1306,11 @@ function draw(dt){
   /* Boss-Arena: Hintergrund abdunkeln, Spotlight */
   if(S.boss){
     ctx.fillStyle='rgba(0,0,0,.42)'; ctx.fillRect(-8,-8,W+16,GROUND+10);
-    const g=ctx.createRadialGradient(S.boss.x+16,GROUND-30,4,S.boss.x+16,GROUND-30,72);
-    g.addColorStop(0,'rgba(255,80,120,.16)'); g.addColorStop(1,'rgba(255,80,120,0)');
-    ctx.fillStyle=g; ctx.fillRect(S.boss.x-60,GROUND-100,152,110);
+    ctx.drawImage(verlauf('bossLicht',152,110,x=>{
+      const g=x.createRadialGradient(76,70,4,76,70,72);
+      g.addColorStop(0,'rgba(255,80,120,.16)'); g.addColorStop(1,'rgba(255,80,120,0)');
+      x.fillStyle=g; x.fillRect(0,0,152,110);
+    }),Math.round(S.boss.x)-60,GROUND-100);
   }
   drawStreet(et);
 
@@ -1243,10 +1339,12 @@ function draw(dt){
     if(o.kind==='shot'||o.kind==='water'){
       const gold=o.kind==='shot';
       const fy=y+Math.round(Math.sin(S.t*6+o.x*.05)*1.5), cx=x+2, cy=fy+2;
-      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,11);
-      g.addColorStop(0,gold?'rgba(255,212,71,.55)':'rgba(49,230,255,.5)');
-      g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g; ctx.fillRect(cx-11,cy-11,22,22);
+      ctx.drawImage(verlauf(gold?'glowGold':'glowBlau',22,22,gx=>{
+        const g=gx.createRadialGradient(11,11,0,11,11,11);
+        g.addColorStop(0,gold?'rgba(255,212,71,.55)':'rgba(49,230,255,.5)');
+        g.addColorStop(1,'rgba(0,0,0,0)');
+        gx.fillStyle=g; gx.fillRect(0,0,22,22);
+      }),cx-11,cy-11);
       sprite(gold?SPR.shot:SPR.water,x,fy);
     } else if(o.foe&&o.kind!=='taube'){
       const big=o.kind==='brocken', flink=o.kind==='flitzer';
@@ -1314,10 +1412,15 @@ function draw(dt){
   drawSperrstunde(et);
   drawRain(et,dt);
 
+  /* Tunnelblick einmal in voller Staerke gebacken, Intensitaet ueber Alpha */
   if(p>.04&&TUNE.fxTunnelVision>0){
-    const g=ctx.createRadialGradient(160,90,36,160,90,196);
-    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(0,0,0,${(p*TUNE.fxTunnelVision).toFixed(3)})`);
-    ctx.fillStyle=g; ctx.fillRect(-8,-8,W+16,H+16);
+    ctx.globalAlpha=Math.min(1,p*TUNE.fxTunnelVision);
+    ctx.drawImage(verlauf('tunnel',W+16,H+16,x=>{
+      const g=x.createRadialGradient(168,98,36,168,98,196);
+      g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,1)');
+      x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
+    }),-8,-8);
+    ctx.globalAlpha=1;
   }
   if(p>.5&&TUNE.fxColorShift>0){
     ctx.globalAlpha=(p-.5)*.22*TUNE.fxColorShift;
