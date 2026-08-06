@@ -1,118 +1,112 @@
-# NACHTSCHICHT — To-do
+# Was noch fertig werden muss
 
-Stand: v0.8. Das Grundgerüst für das Level-Spiel steht, das erste Level ist
-durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
 
-Reihenfolge ist grob nach Priorität sortiert. Abgehakt heißt: gebaut **und**
-getestet.
+Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
 ---
 
-## Grundgerüst
+## Level 1 — Die Schule (spielbar, noch nicht fertig)
 
-- [x] Level als reine Daten, Logik kennt keine konkreten Orte
-- [x] Kamera folgt in X und Y, mit Vorlauf in Blickrichtung
-- [x] Mehrere Etagen, Treppen dazwischen
-- [x] Räume: man sieht nur die Tür, bis man reingeht
-- [x] Gegenstände durchsuchen mit Suchbalken
-- [x] Zielsystem: Schlüssel finden, Ausgang aufschließen
-- [x] Wachen mit Sichtkegel, Patrouille und Verfolgung
-- [x] Verstecken in Räumen
-- [x] Auflösung wächst mit dem Bildschirm mit, keine Balken im Querformat
-- [x] Touch-Steuerung mit Steuerkreuz und runden Knöpfen
-- [ ] Level-Übergänge: aus Level 1 direkt in Level 2, mit Zwischenbild
-- [ ] Spielstand speichern, damit man nicht jedes Mal von vorn muss
-- [ ] Level-Auswahl auf dem Titelbildschirm
+**Fehlt noch:**
 
-## Levels
+- [ ] **Story-Text am Anfang** — warum bist Du überhaupt eingesperrt?
+- [ ] **Verstecken in Spinden** — zweite Deckung neben den Räumen
+- [ ] **Schleichen** — langsam laufen, dafür kleinerer Sichtradius der Lehrer
+- [ ] **Türen hörbar machen** — Lehrer reagieren auf Geräusche
+- [ ] **Mehr Fundstücke** — nicht nur der Schlüssel, auch Notizen die Story erzählen
+- [ ] **Zweiter Ausgang** als Alternative (Fenster im Erdgeschoss)
+- [ ] **Direktor als Patrouille** vor der Cutscene, nicht nur am Ende
+- [ ] **Zeitbonus** — schneller raus gibt mehr Punkte
 
-- [x] **1 Die Schule** — Schlüssel suchen, Lehrern ausweichen
-- [ ] **2 Vorglühen** — WG, enge Küche, erste Shots, Pegel wird eingeführt
-- [ ] **3 Der Nachtbus** — fahrend, wackelnd, Kontrolleure
-- [ ] **4 Die Straße** — Weg zum Club, erste echte Kämpfe
-- [ ] **5 Die Schlange** — Türsteher, erster Boss
-- [ ] **6 Der Club** — Stroboskop, Meute, Mädels ansprechen
-- [ ] **7 Afterhour** — surreal, verzerrt, Schule taucht verdreht wieder auf
-- [ ] **8 Der Späti** — Ruhepause, Döner, Story
-- [ ] **9 Heimweg** — Sonnenaufgang, letzter Boss
+**Bekannte Schwächen:**
 
-## Schule ausbauen
+- [ ] Schlüsselsuche kann bis zu 2 Minuten reines Laufen bedeuten, wenn er im letzten Raum liegt. Braucht einen Hinweis, der die Suche eingrenzt
+- [ ] Lehrer laufen stumpf hin und her, keine Pausen, kein Umschauen
+- [ ] Nach dem Erwischtwerden setzt es Dich an der Treppe ab — das kann sich willkürlich anfühlen
 
-- [ ] Mehr Horror: Licht geht aus, Schritte ohne Quelle, Türen die zufallen
-- [ ] Der Hausmeister als langsamer, unausweichlicher Verfolger
-- [ ] Schließfächer öffnen, Zettel mit Hinweisen finden
-- [ ] Endgegner Direktor
-- [ ] Ist es die echte Schule? Räume und Lehrer nach Vorbild benennen
+---
 
-## Der Club
+## Die anderen Level
 
-- [ ] Minispiel: jemanden ansprechen
-  - [ ] Erfolg gibt Confidence Boost, kurz unverwundbar
-  - [ ] Misserfolg macht langsamer und gedrückt, bis man sich fängt
-  - [ ] Mechanik festlegen: Timing, Rhythmus oder Antwort wählen?
-- [ ] Stroboskop, das die Sicht wegnimmt
-- [ ] Tanzfläche als Hindernis statt als Deko
+Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
-## Kampf härter machen
+- [ ] **Level 2 — Vorglühen.** Enge Wohnung, erste Kämpfe, Pegel-System wird eingeführt
+- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+- [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
+- [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
+- [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
+- [ ] **Level 7 — Späti.** Ruhepause, Story, kein Kampf
+- [ ] **Level 8 — Heimweg.** Endgegner: die Sonne
 
-Aktuell kommt man durch, indem man dauerhaft die Schlagtaste drückt. Das muss weg.
+---
 
-- [ ] Gegner blocken, sind nicht dauerhaft angreifbar
-- [ ] Auf einen Blocker einschlagen prallt ab und betäubt einen selbst
-- [ ] Konterfenster nur im letzten Drittel des Ausholens
-- [ ] Fehlschlag kostet spürbar Zeit
-- [ ] Ausdauer, damit Kämpfe einen Rhythmus haben
-- [ ] Mehr Gegnertypen pro Ort statt überall dieselben
+## Das Club-Minispiel
 
-## Bosse deutlich schwerer
+- [ ] Ansprechen startet ein eigenes Minispiel
+- [ ] Erfolg → Confidence-Boost: kurz unverwundbar, schneller, mehr Schaden
+- [ ] Misserfolg → geknickt: langsamer, weniger Reichweite, bis man sich fängt
+- [ ] Mechanik muss noch festgelegt werden (Timing? Auswahl? Rhythmus?)
 
-- [ ] Fernangriffe: Silvesterraketen im Bogen, Flaschen, Wurfgeschosse
-- [ ] Unblockbare Angriffe, bei denen Angreifen der falsche Reflex ist
-- [ ] Kürzere Vorwarnung und kürzere Konterfenster in späteren Phasen
-- [ ] Arena verändert sich zwischen den Phasen
-- [ ] Mehr Leben, aber fair telegrafiert
+---
 
 ## Die Jungs
 
-Rund sieben Leute, aufgeteilt auf mehrere Freundesgruppen. Die drei Besten
-begleiten die ganze Nacht, die anderen tauchen in ihrer jeweiligen Etappe auf.
+Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
-- [ ] Pro Level einen aus der Crew finden
-- [ ] Jeder gibt eine Fähigkeit beim Anschließen
-- [ ] Die drei Besten kriegen die stärksten Fähigkeiten
-- [ ] Namen, Spitznamen und Eigenheiten festlegen
-- [ ] Gesichter als Pixel-Köpfe, austauschbar ohne den Rest anzufassen
-- [ ] Übersicht, wen man schon dabei hat
+- [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
+- [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
+- [ ] Die anderen tauchen in je einem Level auf
+- [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
+- [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
+- [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
+- [ ] Namen und Eigenheiten: kommt vom Nick
 
-## Story
+---
 
-- [ ] Kurze Einblender zwischen den Leveln statt langer Dialoge
-- [ ] Echte Geschichten aus der Crew einbauen
-- [ ] Roter Faden: warum ist es diese eine Nacht?
-- [ ] Ende mit Pointe
+## Kampfsystem (aus dem alten Modus übernehmen und härter machen)
 
-## Grafik
+Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
-- [x] Gebäude im Schnitt mit Etagen, Boden, Wand, Licht
-- [x] Deckenlampen mit Lichtkegel, manche flackern
-- [x] Sichtkegel der Wachen sichtbar
-- [ ] Fenster mit Außenlicht, Regen dagegen
-- [ ] Mehr Einrichtung pro Raumtyp, Räume klarer unterscheidbar
-- [ ] Übergangsanimation beim Betreten eines Raums statt hartem Schnitt
-- [ ] Spiegelungen auf dem Boden
-- [ ] Eigene Farbstimmung pro Level
+- [ ] Nahkampf, Konter, Combos übernehmen
+- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
+- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [ ] **Ausdauer** — nicht unbegrenzt schlagen können
+- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+
+---
 
 ## Technik
 
-- [x] Bild-Cache für Sprites, Konturen, Schrift und Farbverläufe
-- [x] Timing durchgängig in Spielzeit statt Wanduhrzeit
-- [ ] Level in eigene Datei auslagern, wenn es mehr als drei werden
-- [ ] Automatischer Testlauf, der jedes Level einmal durchspielt
-- [ ] Ladezeit prüfen, wenn Grafiken dazukommen
+- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
+- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
+- [ ] Übergänge zwischen den Leveln
+- [ ] Kampfsystem und Level-System zusammenführen
+- [ ] Musik pro Level statt einer Schleife
+- [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
-## Erledigt und wieder rausgeflogen
+---
 
-- Endlos-Runner mit nachrückender Sperrstunde. War gut gebaut, passt aber
-  nicht zum Story-Spiel. Liegt weiter unter `runner.html` und ist spielbar.
-- Challenge-Codes zum Vergleichen mit Freunden. Gestrichen, weil es allein
-  gespielt wird.
+## Optik
+
+- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [ ] Wetter und Tageszeit pro Level
+- [ ] Übergangsbilder zwischen den Leveln
+- [ ] Mehr Animationsbilder für den Spieler
+- [ ] Bildschirmerschütterung und Treffer-Effekte feiner abstimmen
+
+---
+
+## Erledigt
+
+- [x] Pixel-Art-Grundgerüst mit CRT-Optik und eigenem Bitmap-Font
+- [x] Bild-Cache: Zeichenzeit von 4,8 ms auf 1,2 ms pro Bild
+- [x] Vollbild auf Desktop und Handy, Querformat-Hinweis
+- [x] Touch-Steuerung mit runden Tasten
+- [x] Bildbreite wächst mit dem Bildschirm mit, keine schwarzen Balken
+- [x] Kampfsystem mit Kontern, fünf Gegnertypen, vier Bossen (in `runner.html`)
+- [x] **Level 1: Etagen, Treppen, Räume, Schlüsselsuche, Lehrer mit Sichtkegel**
+- [x] **Cutscene am Ende von Level 1: der Direktor wird gepackt**
+- [x] Bewegung mit Beschleunigung und Bremsung statt an/aus
+- [x] GitHub Pages läuft

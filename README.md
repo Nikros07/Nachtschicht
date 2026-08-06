@@ -2,35 +2,52 @@
 
 *Party Game drunk.*
 
-Ein Pixel-Art-Story-Spiel im Browser. Eine Nacht, in Levels erzählt — von der
-Schule über Vorglühen, Straße und Club bis zum Heimweg im Morgengrauen. Eine
-einzige HTML-Datei, kein Download, kein Konto.
+Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Jedes
+Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
 
-**Spielen: https://nikros07.github.io/Nachtschicht/**
+**Jetzt spielen: [nikros07.github.io/Nachtschicht](https://nikros07.github.io/Nachtschicht/)**
 
-> **Stand: v0.8 — Grundgerüst.** Level 1, die Schule, ist komplett durchspielbar.
-> Die übrigen acht Level, das Kampfsystem und die Story sind in Arbeit.
-> Was noch kommt, steht in [TODO.md](TODO.md).
+> Was noch fehlt, steht in [TODO.md](TODO.md).
 
 ---
 
 ## Level 1 — Die Schule
 
-Du bist nachts allein in der Schule und kommst nicht raus. Der Ausgang ist
-abgeschlossen, der Schlüssel liegt irgendwo in einem der zehn Räume, und über
-drei Etagen patrouillieren Lehrer.
+Es ist nach Schulschluss und Du kommst nicht raus. Irgendwo im Gebäude liegt ein
+Schlüssel. Die Lehrer sind noch da.
 
-**Wie es sich spielt:** Du läufst durch die Flure und siehst nur die Türen — was
-in einem Raum ist, erfährst Du erst, wenn Du reingehst. Drinnen durchsuchst Du
-Pulte, Schränke und Regale. Meistens findest Du Staub. Irgendwo den Schlüssel.
+**Das Ziel:** Schlüssel finden, Ausgang im Erdgeschoss aufschließen, raus.
 
-Die Lehrer haben einen sichtbaren Sichtkegel. Sie sehen nur nach vorn, nur auf
-ihrer eigenen Etage, und nicht in Räume hinein. **Ein Raum ist immer sicher** —
-reingehen und warten, bis er vorbeigelaufen ist, ist eine echte Strategie.
+**Der Haken:** Drei Etagen, zehn Räume, und auf jeder Etage patrouilliert jemand.
 
-Werden sie auf Dich aufmerksam, jagen sie Dich viereinhalb Sekunden lang und
-sind dabei doppelt so schnell wie Du. Erwischen sie Dich, kostet es ein Herz und
-Du landest an der nächsten Treppe. Drei Herzen, dann ist Schluss.
+### Wie es sich spielt
+
+Du siehst das Gebäude von der Seite — Korridore, Türen, Treppen. Was hinter einer
+Tür ist, siehst Du erst, wenn Du reingehst. Türen, in denen Du noch nie warst,
+zeigen nur `? ? ?`.
+
+In den Räumen durchsuchst Du Schränke, Tische und Regale. Die meisten sind leer.
+Einer hat den Schlüssel.
+
+**Räume sind sicher.** Solange Du drin bist, kann Dich niemand sehen oder
+schnappen. Das ist Dein Versteck, wenn ein Lehrer den Korridor entlangkommt.
+
+### Die Lehrer
+
+Jeder Lehrer hat einen Sichtkegel in Laufrichtung. Kommst Du hinein, füllt sich
+über seinem Kopf ein Balken — das ist Deine Reaktionszeit. Ist er voll, wird
+gejagt.
+
+Du bist schneller als sie. Weglaufen funktioniert, in einen Raum abbiegen auch.
+Wirst Du erwischt, kostet das ein Herz und Du landest wieder an der Treppe.
+Drei Herzen, dann ist die Nacht vorbei, bevor sie angefangen hat.
+
+Zum Verhältnis: die Türen sind zwischen **81 und 97 Prozent der Zeit** sicher
+erreichbar. Es gibt immer ein Fenster, man muss es nur abwarten.
+
+### Und am Ende
+
+Am Ausgang steht jemand, der Dich nicht rauslassen will. Das klärt sich.
 
 ---
 
@@ -39,71 +56,54 @@ Du landest an der nächsten Treppe. Drei Herzen, dann ist Schluss.
 | Taste | Aktion |
 |:--|:--|
 | `A` `D` oder `←` `→` | Laufen |
-| `W` `S` oder `↑` `↓` | Treppe hoch und runter |
 | `Leertaste` | Springen |
-| **`E`** | Tür öffnen, durchsuchen, Ausgang aufschließen |
+| `W` oder `↑` | Treppe hoch |
+| `S` oder `↓` | Treppe runter |
+| **`E`** | Tür öffnen, durchsuchen, reden |
 | `F` | Vollbild |
 | `P` | Pause |
 | `M` | Ton aus |
 
-**Am Handy** im Querformat: links Steuerkreuz, rechts Sprung und `E`. Die erste
+**Am Handy** im Querformat: Steuerkreuz links, Aktionstasten rechts. Die erste
 Berührung schaltet ins Vollbild. Im Hochformat kommt ein Hinweis zum Drehen.
-
-Das Bild passt sich der Bildschirmform an — auf einem langen Handy wird die
-Auflösung breiter statt schwarze Balken zu zeigen. Du siehst dort also **mehr**
-vom Level, nicht weniger.
 
 ---
 
-## Der Plan
+## Der alte Modus
 
-Neun Level, jedes eine Stufe des Abends, jedes mit eigener Mechanik:
+Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
+Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.html)**
+und ist weiter spielbar:
+[nikros07.github.io/Nachtschicht/runner.html](https://nikros07.github.io/Nachtschicht/runner.html)
 
-| # | Level | Was es besonders macht |
-|:--|:--|:--|
-| 1 | **Die Schule** | Stealth, Suchen, Horror-Anleihen |
-| 2 | Vorglühen | Enge Küche, erste Shots |
-| 3 | Der Nachtbus | Fahrend, wackelnd, Kontrolleure |
-| 4 | Die Straße | Erste echte Kämpfe |
-| 5 | Die Schlange | Türsteher, erster Boss |
-| 6 | Der Club | Stroboskop, jemanden ansprechen |
-| 7 | Afterhour | Surreal, die Schule kommt verzerrt zurück |
-| 8 | Der Späti | Ruhepause, Story |
-| 9 | Heimweg | Sonnenaufgang, letzter Boss |
-
-**Die Jungs** sind der Kern: In jedem Level findest Du einen aus der Crew. Er
-schließt sich an und gibt Dir eine Fähigkeit — Doppelsprung, mehr Ausdauer,
-härterer Konter. Deine Freunde sind damit kein Deko-Element, sondern der
-Spielfortschritt.
+Das Kampfsystem daraus wandert nach und nach in die Level.
 
 ---
 
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht `TUNE`: Lauftempo, Sprungkraft, Sichtweite der
-Lehrer, wie lange sie Dich jagen, wie viele Herzen Du hast. Die Logik enthält
-keine festen Zahlen, sie liest nur diesen Block.
+Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
+Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen, sie
+fragt nur diesen Block ab.
 
-Darunter steht `LEVELS`. Ein Level ist reine Beschreibung — Etagen, Türen,
-Treppen, Wachen, Farben. Die Spiellogik weiß nichts von einer Schule, sie liest
-nur diese Daten. Deshalb kommen Club, Straße und City später dazu, ohne dass an
-der Logik etwas geändert werden muss.
+| Regler | Bewirkt |
+|:--|:--|
+| `gehTempo` | Wie schnell Du läufst |
+| `beschleunigung` / `bremsung` | Wie träge sich die Bewegung anfühlt |
+| `sichtWeite` | Wie weit die Lehrer sehen |
+| `verdachtProSek` | Wie schnell sie Dich bemerken |
+| `jagdTempo` | Wie schnell sie hinter Dir her sind |
+| `leben` | Wie viele Fehler Du machen darfst |
+| `suchDauer` | Wie lange eine Durchsuchung dauert |
 
-```js
-{
-  id:'schule', name:'DIE SCHULE', breite:720,
-  etagen:[246,184,122],
-  treppen:[ {x:36,von:0,bis:2}, {x:664,von:0,bis:2} ],
-  tueren:[ {x:150,etage:1,name:'RAUM 101',typ:'klasse'}, ... ],
-  wachen:[ {x:400,etage:1,von:120,bis:640}, ... ],
-}
-```
+Das Level selbst steht direkt darunter als Daten: `RAEUME`, `LEHRER_START`,
+`BODEN`, `AUSGANG`. Räume dazuschreiben geht ohne eine Zeile Logik.
 
 ---
 
 ## Lokal starten
 
-Doppelklick auf `index.html` reicht. Oder:
+Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
 
 ```bash
 python -m http.server 5173
@@ -115,39 +115,26 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Technisch
 
-- 180 Pixel hohe interne Auflösung, Breite wächst mit dem Bildschirm mit
+- 320 × 180 interne Auflösung, Breite wächst auf breiten Schirmen mit, damit
+  keine schwarzen Balken bleiben
 - Eigener 3×5-Bitmap-Font statt Browser-Schrift
-- Sprites, Konturen, Schrift und Farbverläufe werden einmal auf eigene
-  Leinwände gebacken und danach nur noch kopiert
-- Chiptune-Puls, der schneller wird, je näher ein Lehrer ist
-- Sämtliches Timing in Spielzeit statt Wanduhrzeit
-- CRT-Overlay mit Scanlines und Vignette
-
----
-
-## Der alte Endlos-Modus
-
-Vor dem Umbau war das hier ein Endlos-Runner mit einer nachrückenden Wand, dem
-Pegel-System und vier Bossen. Der ist fertig und spielbar und liegt unter
-[`runner.html`](runner.html). Er passt nur nicht mehr zur Richtung — deshalb
-liegt er daneben statt im Weg.
-
----
-
-## Fotos
-
-Der Ordner `fotos/` ist absichtlich aus der Versionsverwaltung ausgeschlossen.
-Dieses Repo ist öffentlich, damit GitHub Pages funktioniert — Bilder von echten
-Personen haben darin nichts verloren. Aus den Fotos entstehen später
-Pixel-Sprites, und nur die landen im Code.
+- Sprites, Konturen, Schrift und Farbverläufe werden einmal gebacken und danach
+  nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
+- Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
+- Timing läuft in Spielzeit statt Wanduhrzeit, damit Pause nichts zerlegt
 
 ---
 
 ## Woran es sich orientiert
 
-- **Night in the Woods** — dass man nur den Eingang sieht, bis man reingeht.
-  Genau dieser Effekt trägt das Schul-Level.
-- **Oxenfree** — der Ton. Junge Leute, eine einzige Nacht, es kippt ins
-  Unheimliche. Den Ton, nicht den Umfang.
-- **HerrAnwalt: Lawyers Legacy** — Pixel-Art-Platformer, bei dem man springt
-  *und* schlägt.
+- **Night in the Woods** — Seitenansicht, Räume, in die man erst hineingehen
+  muss, um zu sehen was drin ist. Das ist die Vorlage für das Schul-Level
+- **Oxenfree** — Jugendliche, eine einzige Nacht, es kippt ins Unheimliche
+- **HerrAnwalt: Lawyers Legacy** — Pixel-Art, Schule, Springen und Schlagen
+
+---
+
+## Stand
+
+Level 1 ist spielbar und durchspielbar. Die Story, die anderen sieben Level und
+das Freischalten der Crew stehen in [TODO.md](TODO.md).
