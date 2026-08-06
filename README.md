@@ -2,9 +2,14 @@
 
 *Party Game drunk.*
 
-Ein Arcade-Brawler im Pixel-Art-Look. Du rennst durch eine Nacht, sammelst Shots,
+Ein Arcade-Brawler im Pixel-Art-Look. Du gehst durch eine Nacht, sammelst Shots,
 schlägst Leute um und musst an vier Bossen vorbei. Je mehr Du trinkst, desto mehr
 Punkte gibt es — und desto weniger kannst Du steuern.
+
+**Nichts bewegt sich von allein.** Kein Auto-Lauf: Du gehst selbst, in Deinem
+Tempo. Dafür kriecht von hinten die Sperrstunde heran, eine schwarze Wand, die
+alles verschluckt. Wie der Adler bei Crossy Road — sie zwingt Dich, weiterzugehen,
+und macht jede Entscheidung zwischen Kämpfen und Weiterziehen zu einer echten.
 
 Läuft im Browser. Eine Datei, keine Installation, kein Konto.
 
@@ -12,17 +17,17 @@ Läuft im Browser. Eine Datei, keine Installation, kein Konto.
 
 | Taste | Aktion |
 |---|---|
-| `A` / `D` bzw. `←` / `→` | Vor und zurück |
+| `A` / `D` bzw. `←` / `→` | Laufen |
 | `Leertaste` / `W` / `↑` | Springen (kurz antippen = kleiner Hüpfer) |
 | `S` / `↓` | Ducken |
-| `X` / `J` / `Shift` | Schlagen |
+| **`E`** (auch `X`, `J`, `Shift`) | Schlagen |
 | `F` | Vollbild |
 | `P` | Pause |
 | `M` | Ton aus |
 
-Du klebst nicht auf einer Position — Du kannst vorpreschen, um jemanden früher
-zu erwischen, oder zurückweichen, um einem Brocken auszuweichen. Lässt Du los,
-zieht es Dich sanft zurück auf die Ausgangsposition.
+Du kannst vorpreschen, um jemanden früher zu erwischen, oder zurückweichen, um
+einem Brocken auszuweichen. Über Gegner kann man auch **springen** — wenn die
+Sperrstunde im Nacken sitzt, ist das oft klüger als jeden Kampf anzunehmen.
 
 **Am Handy:** links unten die beiden Pfeile zum Laufen, rechts unten Schlag und
 Sprung, darüber Ducken. Das Spiel läuft im **Querformat** — im Hochformat kommt
@@ -31,7 +36,23 @@ und versucht, die Ausrichtung zu sperren.
 
 ## Die Mechanik
 
-**Der Pegel** ist der Kern. Jeder Shot bringt Punkte und treibt den Pegel hoch.
+**Die Sperrstunde** ist der Taktgeber. Eine schwarze Wand mit leuchtender Kante
+und greifenden Händen, die von links nachrückt. Berührt sie Dich, ist sofort
+Schluss — Herzen helfen da nicht. Sie wird schneller, wenn Du stehen bleibst,
+und mit jedem zurückgelegten Kilometer:
+
+| Strecke | Wie lange Du stehen bleiben darfst |
+|---|---|
+| Start | ~13 Sekunden |
+| 1000 m | ~9 Sekunden |
+| 3000 m | ~6 Sekunden |
+| 5000 m | ~4,5 Sekunden |
+
+Am Anfang reicht das locker, um eine Dreiergruppe zu verprügeln. Später musst Du
+auswählen, welche Kämpfe Du annimmst. Im Bosskampf steht sie still — der Kampf
+soll fair sein.
+
+**Der Pegel** ist der zweite Kern. Jeder Shot bringt Punkte und treibt den Pegel hoch.
 Ein hoher Pegel heißt: mehr Tempo, bis zu dreifache Punkte — aber das Bild wackelt,
 die Steuerung wird träge, der Blick verengt sich. Bei 100 % ist Blackout.
 Nüchtern wirst Du praktisch nur durch Wasser; von allein passiert fast nichts.
@@ -79,7 +100,8 @@ Jede Phase ist schneller und mischt die Muster anders.
 ## Etappen
 
 Vorglühen → Türsteher → Club → Afterhour → Heimweg. Jede Etappe hat eigene Farben,
-eigenen Boss und teilweise Regen. Danach läuft es endlos weiter und wird schneller.
+eigenen Boss und teilweise Regen. Danach geht es endlos weiter, und die
+Sperrstunde wird immer schneller.
 
 ## Selbst dran drehen
 
@@ -121,6 +143,6 @@ Pixel-Sprites, und nur die landen im Code.
 
 ## Stand
 
-Prototyp v0.5. Was noch fehlt: Plattformen zum Draufspringen, die echten
+Prototyp v0.6. Was noch fehlt: Plattformen zum Draufspringen, die echten
 Gesichter der Crew, Charakterwahl mit unterschiedlichen Fähigkeiten,
 ein richtiges Ende.

@@ -102,10 +102,18 @@
    Sag mir Nummer + Wunsch in normalen Worten, ich dreh dran.
    ========================================================================== */
 const TUNE = {
-  /* (1) TEMPO */
-  startSpeed:      74,
-  maxSpeed:       175,
-  speedRampPerSec:  1.15,
+  /* (1) TEMPO - die Welt scrollt NICHT von allein. Du bewegst dich selbst. */
+  walkSpeed:       96,     // wie schnell du laeufst
+  pushX:           96,     // ab dieser Bildposition schiebst du die Welt weiter
+
+  /* (1b) DIE SPERRSTUNDE - die Wand, die dich von hinten jagt.
+     Wie der Adler bei Crossy Road: sie zwingt dich, weiterzugehen. */
+  lineStart:     -130,     // wo sie beim Start lauert
+  lineSpeed:        7,     // Grundtempo - bewusst gemuetlich
+  lineRampPer1000m: 6,     // wird pro 1000m schneller
+  lineIdlePush:     9,     // Extratempo, wenn du stehen bleibst
+  lineMaxLag:     110,     // so weit faellt sie maximal zurueck
+  lineWarnAbstand: 52,     // ab hier wird gewarnt
 
   /* (2) SPRUNG */
   gravity:        920,
@@ -129,13 +137,11 @@ const TUNE = {
   fxTunnelVision:   0.38,
   fxColorShift:     1.0,
 
-  /* (5) LAUFEN - du klebst nicht mehr fest, du kannst vor und zurueck */
-  moveSpeed:      108,     // wie schnell du dich selbst bewegst
+  /* (5) BEWEGUNGSRAUM */
   moveAirFactor:    0.85,  // in der Luft etwas traeger
-  playerMinX:      14,     // wie weit du zurueckweichen darfst
-  playerMaxX:     150,     // wie weit du vorpreschen darfst
-  playerHomeX:     42,     // wohin es dich sanft zurueckzieht
-  homePull:         0.7,   // 0 = gar nicht, 1 = sofort
+  playerMinX:      14,     // so weit darfst du zurueckweichen
+  playerMaxX:     150,     // so weit vorpreschen (nur im Bosskampf relevant)
+  playerHomeX:     52,     // Startposition
 
   /* (6a) DEINE GESUNDHEIT - auf 1 stellen fuer die brutale Variante */
   leben:            3,
@@ -225,6 +231,8 @@ const SAY = {
          'DAS ERZAEHLEN WIR NIEMANDEM','LEGENDE STIRBT LEISE','WAR ABSEHBAR'],
   blackout:['LICHT AUS','FILMRISS','NICHTS MEHR DA','ZU VIEL DES GUTEN',
             'DER PEGEL HAT GEWONNEN','GUTE NACHT MARIE'],
+  sperrstunde:['EINGEHOLT','ZU LANGE GETRODELT','DIE NACHT WAR SCHNELLER',
+               'STEHENBLEIBEN WAR DER FEHLER','WEG WAR ER','VERSCHLUCKT'],
   bossWin:['REINGEKOMMEN','DURCH','DER LAG','RESPEKT','SO MACHT MAN DAS'],
   bossTaunt:{
     'DER TUERSTEHER':['NICHT HEUTE','GESCHLOSSENE GESELLSCHAFT','GEH NACH HAUSE'],
@@ -555,7 +563,7 @@ addEventListener('keydown',e=>{
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); duckHeld=true; }
   if(['ArrowLeft','KeyA'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); leftHeld=true; }
   if(['ArrowRight','KeyD'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); rightHeld=true; }
-  if(['KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
+  if(['KeyE','KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
   if(e.code==='Enter'&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
   if(e.code==='KeyF'){ e.preventDefault(); toggleFullscreen(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
@@ -591,7 +599,7 @@ if(matchMedia('(pointer:coarse)').matches)
 let S={};
 function reset(){
   S={ mode:'attract', t:0, overT:0, freeze:0,
-      dist:0, speed:TUNE.startSpeed, px:TUNE.playerHomeX,
+      dist:0, px:TUNE.playerHomeX, lineX:TUNE.lineStart,
       y:0, vy:0, onGround:true, lastGround:0, ducking:false,
       hitT:-99, hitDone:false, hp:TUNE.leben, inv:0,
       pegel:0, score:0, combo:0, comboT:0, kos:0,
@@ -790,13 +798,16 @@ function bossTakeHit(){
    UPDATE
    ========================================================================== */
 function demoBrain(){
-  const foe=S.things.find(o=>o.foe&&o.x>S.px&&o.x<S.px+30);
+  const foe=S.things.find(o=>o.foe&&o.x>S.px-4&&o.x<S.px+30);
   const wall=S.things.find(o=>!o.foe&&o.kind!=='shot'&&o.kind!=='water'&&o.x>S.px-4&&o.x<S.px+64);
   if(foe&&S.t-S.hitT>TUNE.hitCooldownMs/1000+.04){ hitQueue.push(S.t); }
   duckHeld=!!(wall&&wall.kind==='schild')||!!(S.boss&&S.boss.state==='charge');
   if(!duckHeld&&wall&&wall.kind!=='schild'&&S.onGround&&wall.x<S.px+44){ jumpQueue.push(S.t); jumpHeld=true; }
   if(S.boss&&S.boss.state==='punish') hitQueue.push(S.t);
-  else if(S.vy>-60) jumpHeld=false;
+  /* Die Vorfuehrung muss selbst laufen - sonst holt die Sperrstunde sie ein */
+  rightHeld = !foe || foe.x-S.px>19;
+  leftHeld  = false;
+  if(S.vy>-60) jumpHeld=false;
 }
 
 function update(dt){
@@ -815,13 +826,6 @@ function update(dt){
   const p=S.pegel/TUNE.pegelMax, delay=p*TUNE.fxInputDelayMs;
   S.pegel=Math.max(0,S.pegel-TUNE.pegelDecayPerSec*dt);
   if(S.inv>0) S.inv-=dt;
-
-  /* Tempo - im Bosskampf steht die Welt */
-  S.speed=Math.min(TUNE.maxSpeed,S.speed+TUNE.speedRampPerSec*dt);
-  const worldSpd = S.boss ? 0 : S.speed*(1+p*TUNE.fxSpeedBoost);
-  S.dist += (S.boss?0:worldSpd*dt);
-  if(S.mode==='play'&&!S.boss)
-    S.score += worldSpd*dt/10*TUNE.pointsPerMeter*(1+p*(TUNE.fxScoreMult-1));
 
   /* Etappe + Boss */
   const e=etappeFor(S.dist/10);
@@ -858,17 +862,36 @@ function update(dt){
     S.onGround=true; S.lastGround=now;
   } else S.onGround=false;
 
-  /* --- Laufen: vorpreschen oder zurueckweichen --- */
+  /* --- Laufen --- Nichts bewegt sich, wenn du dich nicht bewegst.
+     Laeufst du ueber pushX hinaus, schiebst du stattdessen die Welt. */
   const mv=(rightHeld?1:0)-(leftHeld?1:0);
-  if(mv&&!S.ducking) S.px += mv*TUNE.moveSpeed*(S.onGround?1:TUNE.moveAirFactor)*(1-p*.25)*dt;
-  else if(TUNE.homePull>0) S.px += (TUNE.playerHomeX-S.px)*Math.min(1,TUNE.homePull*dt);
-  S.px = Math.max(TUNE.playerMinX, Math.min(TUNE.playerMaxX, S.px));
+  if(mv&&!S.ducking)
+    S.px += mv*TUNE.walkSpeed*(S.onGround?1:TUNE.moveAirFactor)*(1-p*.25)*dt;
+  const grenze = S.boss ? TUNE.playerMaxX : TUNE.pushX;
+  let shift = 0;
+  if(S.px>grenze){ if(!S.boss) shift = S.px-grenze; S.px = grenze; }
+  S.px = Math.max(TUNE.playerMinX, S.px);
+
+  /* --- Die Sperrstunde rueckt nach --- */
+  if(!S.boss){
+    const ramp = (S.dist/10/1000)*TUNE.lineRampPer1000m;
+    const idle = mv>0 ? 0 : TUNE.lineIdlePush;
+    S.lineX += (TUNE.lineSpeed+ramp+idle)*dt - shift;
+    S.lineX = Math.max(-TUNE.lineMaxLag, Math.min(W, S.lineX));
+    if(S.px < S.lineX) return crash(false, null, true);
+  }
+
+  /* --- Fortschritt --- kommt jetzt allein aus deiner Bewegung */
+  S.dist += shift;
+  bgT += shift;
+  if(S.mode==='play')
+    S.score += shift/10*TUNE.pointsPerMeter*(1+p*(TUNE.fxScoreMult-1));
 
   /* --- Welt bewegen --- */
-  S.nextSpawn-=worldSpd*dt;
+  S.nextSpawn-=shift;
   if(!S.boss&&S.nextSpawn<=0) spawn();
   for(const o of S.things){
-    o.x-=worldSpd*dt;
+    o.x-=shift;
     if(o.foe) updateFoe(o,dt);
   }
   S.things=S.things.filter(o=>o.x>-44&&!o.gone);
@@ -983,12 +1006,12 @@ function hurt(obj=null){
   return false;
 }
 
-function crash(blackout=false,obj=null){
+function crash(blackout=false,obj=null,line=false){
   if(S.mode==='attract'){ reset(); S.demo=true; return; }
-  S.mode='over'; S.overT=0; S.shake=7; S.blackout=blackout;
+  S.mode='over'; S.overT=0; S.shake=7; S.blackout=blackout; S.geschnappt=line;
   S.pendingScore=Math.floor(S.score);
-  S.overTxt=pick(blackout?SAY.blackout:SAY.over);
-  S.flash=.5; S.flashCol=blackout?'255,61,139':'255,77,77';
+  S.overTxt=pick(line?SAY.sperrstunde:blackout?SAY.blackout:SAY.over);
+  S.flash=.5; S.flashCol=blackout?'255,61,139':line?'20,10,30':'255,77,77';
   S.freeze=110;
   puff(S.px+6,GROUND-9,24,blackout?P.neon:P.danger,110,70);
   if(obj) shards(obj.x+3,obj.y+4,P.dim,12,80);
@@ -1096,6 +1119,70 @@ function drawStreet(et){
     ctx.globalAlpha=1;
   }
 }
+/* ---- Die Sperrstunde: eine kriechende Wand mit greifenden Haenden ---- */
+function drawSperrstunde(et){
+  if(S.mode!=='play'&&!(S.mode==='attract'&&S.demo)&&S.mode!=='over') return;
+  const L=Math.round(S.lineX);
+  if(L<-8) return;
+
+  /* Schatten, den die Wand VOR sich her auf die Strasse wirft.
+     Ohne den sieht man sie auf dunklem Hintergrund praktisch nicht. */
+  const sh=ctx.createLinearGradient(L,0,L+52,0);
+  sh.addColorStop(0,'rgba(0,0,0,.85)'); sh.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=sh; ctx.fillRect(L,-8,52,H+16);
+
+  /* Die Wand: komplett schwarz, verschluckt alles dahinter */
+  ctx.fillStyle='#000'; ctx.fillRect(-20,-8,L+20,H+16);
+
+  /* Kriechendes Rauschen darin, damit es lebt */
+  ctx.fillStyle=et.neon; ctx.globalAlpha=.13;
+  for(let i=0;i<26;i++){
+    const y=((i*47+S.t*38)%(H+14))-7;
+    const w=2+((i*13)%9), x=L-4-((i*17)%Math.max(6,L+16));
+    ctx.fillRect(x,Math.floor(y),w,1);
+  }
+  ctx.globalAlpha=1;
+
+  /* Leuchtende Kante mit Halo */
+  const hal=ctx.createLinearGradient(L-7,0,L+5,0);
+  hal.addColorStop(0,'rgba(255,61,139,0)'); hal.addColorStop(1,'rgba(255,61,139,.5)');
+  ctx.fillStyle=hal; ctx.fillRect(L-7,-8,12,H+16);
+  for(let y=-6;y<H+6;y+=3){
+    const w=2+Math.round(Math.abs(Math.sin(y*.7+S.t*5))*2);
+    ctx.fillStyle=P.white; ctx.globalAlpha=.9; ctx.fillRect(L-1,y,2,3);
+    ctx.fillStyle=et.neon; ctx.globalAlpha=.85; ctx.fillRect(L-1-w,y,w,3);
+  }
+  ctx.globalAlpha=1;
+
+  /* Greifende Haende. Schwarz allein verschwindet im eigenen Schatten,
+     deshalb bekommen sie eine leuchtende Oberkante. */
+  for(let i=0;i<5;i++){
+    const hy=GROUND-5-i*9, reach=Math.round(4+Math.sin(S.t*3.4+i*1.7)*6);
+    if(reach<=0) continue;
+    ctx.fillStyle='#000';
+    ctx.fillRect(L,hy,reach+2,3); ctx.fillRect(L+reach,hy-3,2,7);
+    ctx.fillStyle=et.neon; ctx.globalAlpha=.75;
+    ctx.fillRect(L,hy-1,reach+2,1);          // Oberkante
+    ctx.fillRect(L+reach,hy-4,2,1);          // Fingerspitze
+    ctx.globalAlpha=.35;
+    ctx.fillRect(L+reach+2,hy,1,3);
+    ctx.globalAlpha=1;
+  }
+
+  /* Naeher dran = mehr Druck: Rand dunkelt ein und pulsiert */
+  const abstand=S.px-S.lineX;
+  if(abstand<TUNE.lineWarnAbstand){
+    const t=1-Math.max(0,abstand)/TUNE.lineWarnAbstand;
+    const puls=(.5+.5*Math.sin(S.t*10))*t;
+    const vg=ctx.createLinearGradient(0,0,W*.75,0);
+    vg.addColorStop(0,`rgba(255,61,139,${(.28*t).toFixed(3)})`);
+    vg.addColorStop(1,'rgba(255,61,139,0)');
+    ctx.fillStyle=vg; ctx.fillRect(-8,-8,W+16,H+16);
+    ctx.globalAlpha=puls*.5; ctx.fillStyle=P.neon;
+    ctx.fillRect(-8,-8,W+16,1); ctx.fillRect(-8,H-1,W+16,1); ctx.globalAlpha=1;
+  }
+}
+
 function drawRain(et,dt){
   if(!TUNE.rain||!et.rain) return;
   ctx.strokeStyle=`rgba(150,200,255,${(.16*et.rain).toFixed(2)})`; ctx.lineWidth=1;
@@ -1114,9 +1201,6 @@ function drawRain(et,dt){
    ========================================================================== */
 function draw(dt){
   const et=ETAPPEN[S.etappe], p=S.pegel/TUNE.pegelMax;
-  if((S.mode==='play'||(S.mode==='attract'&&S.demo))&&!S.boss&&S.freeze<=0)
-    bgT+=dt*S.speed*(1+p*TUNE.fxSpeedBoost);
-
   ctx.save();
   const wob=Math.sin(S.t*9)*TUNE.fxWobblePx*p+(Math.random()-.5)*S.shake;
   const wob2=Math.cos(S.t*6.3)*TUNE.fxWobblePx*.6*p+(Math.random()-.5)*S.shake;
@@ -1226,6 +1310,7 @@ function draw(dt){
   }
 
   drawFx();
+  drawSperrstunde(et);
   drawRain(et,dt);
 
   if(p>.04&&TUNE.fxTunnelVision>0){
@@ -1275,6 +1360,14 @@ function drawHUD(et,p){
     textGlow(c,(W-textW(c))/2,26,P.gold,1); ctx.globalAlpha=1;
   }
 
+  /* Warnung, wenn die Sperrstunde aufholt.
+     Bewusst oben: unten wuerde sie genau die Gegner verdecken. */
+  const abstand=S.px-S.lineX;
+  if(!S.boss&&abstand<TUNE.lineWarnAbstand&&Math.floor(S.t*5)%2===0){
+    const w='SPERRSTUNDE  -  LOS WEITER';
+    textGlow(w,(W-textW(w))/2,38,P.neon,1);
+  }
+
   /* Boss-Lebensbalken */
   if(S.boss&&S.boss.state!=='entry'){
     const b=S.boss, w=140, x=(W-w)/2, y=H-14;
@@ -1306,12 +1399,12 @@ function drawScreens(et){
       text((i+1)+'.',18,y,P.dark); text(s.name.padEnd(3,' '),30,y,P.white);
       const sc=String(s.score).padStart(6,'0'); text(sc,102-textW(sc),y,P.neon2); });
     text('SO GEHTS',170,60,P.gold);
-    text('A D    VOR UND ZURUECK',170,72,P.dim);
+    text('A D    LAUFEN',         170,72,P.white);
     text('LEER   SPRINGEN',       170,81,P.dim);
     text('RUNTER DUCKEN',         170,90,P.dim);
-    text('X      SCHLAGEN',       170,99,P.white);
-    text('SCHLAG BEIM AUSHOLEN',  170,112,P.neon);
-    text('IST EIN KONTER',        170,121,P.neon);
+    text('E      SCHLAGEN',       170,99,P.white);
+    text('DIE NACHT HOLT DICH EIN',170,112,P.neon);
+    text('BLEIB NICHT STEHEN',    170,121,P.neon);
     text('BLAU DUCKEN',           170,134,P.neon2);
     text('GELB SPRINGEN',         170,143,P.gold);
     text('ROT  WEG DA',           170,152,P.danger);
