@@ -563,6 +563,7 @@ addEventListener('keydown',e=>{
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); duckHeld=true; }
   if(['ArrowLeft','KeyA'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); leftHeld=true; }
   if(['ArrowRight','KeyD'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); rightHeld=true; }
+  /* E ist die Kampftaste. X, J und Shift laufen als Alternative mit. */
   if(['KeyE','KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
   if(e.code==='Enter'&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
   if(e.code==='KeyF'){ e.preventDefault(); toggleFullscreen(); }
