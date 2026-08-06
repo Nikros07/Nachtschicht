@@ -2,16 +2,16 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <title>NACHTSCHICHT</title>
-<meta name="description" content="Arcade-Runner. Ein Abend mit den Jungs.">
+<meta name="description" content="Eine Nacht in Leveln. Pixel-Art Story-Game.">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body {
     height:100%; background:#050409; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
-    font-family: monospace; touch-action:none; -webkit-tap-highlight-color:transparent;
-    background-image: radial-gradient(ellipse at 50% 40%, #1a1030 0%, #050409 70%);
+    font-family:monospace; touch-action:none; -webkit-tap-highlight-color:transparent;
+    background-image:radial-gradient(ellipse at 50% 40%, #1a1030 0%, #050409 70%);
   }
   #cab { position:relative; padding:10px 12px 14px; border-radius:10px;
          background:linear-gradient(#1b1730,#0e0b1a 60%,#17132a);
@@ -20,55 +20,52 @@
              text-shadow:0 0 8px #ff3d8b99,0 0 18px #ff3d8b55; padding:2px 0 8px; user-select:none; }
   #base { display:flex; justify-content:space-between; font:700 8px/1 monospace; letter-spacing:2px;
           color:#4a4363; padding-top:8px; user-select:none; }
-  #base b { color:#ffd447; }
   #screen { position:relative; line-height:0; border-radius:6px; overflow:hidden;
             box-shadow:inset 0 0 0 2px #000, 0 0 24px rgba(80,200,255,.10); }
   canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#000; }
   #crt { position:absolute; inset:0; pointer-events:none;
     background:
-      linear-gradient(105deg, rgba(255,255,255,.055) 0%, rgba(255,255,255,0) 38%),
-      radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(0,0,0,.62) 100%),
-      repeating-linear-gradient(to bottom, rgba(0,0,0,.30) 0 1px, rgba(0,0,0,0) 1px 3px); }
+      linear-gradient(105deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 38%),
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 54%, rgba(0,0,0,.6) 100%),
+      repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, rgba(0,0,0,0) 1px 3px); }
   #crt::after { content:''; position:absolute; inset:0;
     box-shadow:inset 0 0 40px rgba(0,0,0,.8), inset 0 0 90px rgba(0,0,0,.5); }
-  /* ---- Touch-Steuerung: links laufen, rechts kaempfen ---- */
+
+  /* ---- Touch: Steuerkreuz links, runde Knoepfe rechts ---- */
   #touch { position:absolute; inset:0; display:none; }
-  #touch div { position:absolute; border-radius:8px;
-    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09);
-    color:#ffffff40; font:700 10px/1 monospace; letter-spacing:1px;
+  #touch .btn { position:absolute; border-radius:50%;
+    background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.13);
+    color:#ffffff55; font:700 11px/1 monospace;
     display:flex; align-items:center; justify-content:center; user-select:none; }
-  #touch div:active { background:rgba(255,61,139,.22); border-color:rgba(255,61,139,.5); color:#fff; }
-  #tleft  { left:2%;  bottom:6%;  width:13%; height:34%; }
-  #tright { left:16%; bottom:6%;  width:13%; height:34%; }
-  #tduck  { right:2%; bottom:44%; width:27%; height:24%; }
-  #thit   { right:2%; bottom:6%;  width:13%; height:34%; }
-  #tjump  { right:16%;bottom:6%;  width:13%; height:34%; }
-  /* Nicht auf pointer:coarse verlassen - das melden nicht alle Geraete
-     zuverlaessig. Die Klasse setzt JS anhand echter Touch-Faehigkeit. */
+  #touch .btn:active { background:rgba(255,61,139,.3); border-color:#ff3d8b; color:#fff; transform:scale(.94); }
+  #touch .pad { position:absolute; border-radius:12px;
+    background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.13);
+    color:#ffffff55; font:700 15px/1 monospace;
+    display:flex; align-items:center; justify-content:center; user-select:none; }
+  #touch .pad:active { background:rgba(49,230,255,.28); border-color:#31e6ff; color:#fff; }
+  #tleft  { left:3%;  bottom:8%;  width:13%; height:30%; }
+  #tright { left:17%; bottom:8%;  width:13%; height:30%; }
+  #tup    { left:10%; bottom:42%; width:13%; height:24%; }
+  #tjump  { right:4%;  bottom:9%;  width:15%; aspect-ratio:1; }
+  #thit   { right:21%; bottom:9%;  width:15%; aspect-ratio:1; }
+  #tdown  { right:12%; bottom:44%; width:13%; aspect-ratio:1; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base { display:none; }
-  html.touch #cab { padding:0; border-radius:0; box-shadow:none; }
+  html.touch #cab { padding:0; border-radius:0; box-shadow:none; background:#000; }
 
-  /* ---- Vollbild-Knopf ---- */
   #fs { position:absolute; top:6px; right:8px; z-index:5;
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
-    border-radius:5px; font:700 9px monospace; letter-spacing:1px;
-    padding:4px 7px; cursor:pointer; }
+    border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
   #fs:hover { color:#ffd447; border-color:#ffd447; }
-
-  /* Im Vollbild verschwindet das Gehaeuse, das Bild fuellt alles.
-     ACHTUNG: #cab ist SELBST das Vollbild-Element - also #cab:fullscreen,
-     nicht :fullscreen #cab. Letzteres traefe nur Kindelemente. */
+  html.touch #fs { display:none; }
   #cab:fullscreen, #cab:-webkit-full-screen {
     padding:0; border-radius:0; box-shadow:none; background:#000;
     width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
   #cab:fullscreen #marquee, #cab:fullscreen #base { display:none; }
-  #cab:fullscreen #screen, #cab:-webkit-full-screen #screen { border-radius:0; }
+  #cab:fullscreen #screen { border-radius:0; }
 
-  /* ---- Handy im Hochformat: bitte drehen ---- */
-  #rotate { position:fixed; inset:0; z-index:99; display:none;
-    background:#07060c; color:#f4f0ff; flex-direction:column;
-    align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px; }
+  #rotate { position:fixed; inset:0; z-index:99; display:none; background:#07060c; color:#f4f0ff;
+    flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px; }
   #rotate .ph { width:52px; height:88px; border:3px solid #ff3d8b; border-radius:8px;
     animation:tip 1.8s ease-in-out infinite; }
   #rotate b { font:700 13px monospace; letter-spacing:3px; color:#ff3d8b; }
@@ -84,164 +81,63 @@
     <canvas id="c" width="320" height="180"></canvas>
     <div id="crt"></div>
     <div id="touch">
-      <div id="tleft">&#9664;</div><div id="tright">&#9654;</div>
-      <div id="tduck">DUCKEN</div><div id="tjump">SPRUNG</div><div id="thit">SCHLAG</div>
+      <div class="pad" id="tleft">&#9664;</div><div class="pad" id="tright">&#9654;</div>
+      <div class="pad" id="tup">&#9650;</div><div class="btn" id="tdown">DUCK</div>
+      <div class="btn" id="tjump">SPR</div><div class="btn" id="thit">E</div>
     </div>
   </div>
   <button id="fs" title="Vollbild (F)">VOLLBILD</button>
-  <div id="base"><span>INSERT COIN</span><span>CREDIT <b>01</b></span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
+  <div id="base"><span>INSERT COIN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
 <script>
 /* ============================================================================
-   NACHTSCHICHT  v0.3
-   Arcade-Runner mit Nahkampf und echten Bosskaempfen.
+   NACHTSCHICHT  v0.8  -  Grundgeruest fuer das Level-Spiel
 
-   >>> ALLE REGLER STEHEN HIER OBEN. <<<
-   Sag mir Nummer + Wunsch in normalen Worten, ich dreh dran.
+   Weg vom Endlos-Runner, hin zu gebauten Leveln. Erstes fertiges Level:
+   DIE SCHULE. Schluessel suchen, Lehrern ausweichen, rauskommen.
+   Raeume sieht man erst von innen, wenn man durch die Tuer geht.
+
+   Der alte Endlos-Modus liegt weiter unter runner.html.
    ========================================================================== */
 const TUNE = {
-  /* (1) TEMPO - die Welt scrollt NICHT von allein. Du bewegst dich selbst. */
-  walkSpeed:       96,     // wie schnell du laeufst
-  pushX:           96,     // ab dieser Bildposition schiebst du die Welt weiter
+  /* BEWEGUNG */
+  gehen:          82,
+  rennen:        128,     // mit Schlag-Taste gedrueckt? nein: dauerhaft beim Fliehen
+  gravitation:   940,
+  sprungKraft:  -252,
+  kurzerHopser:    0.45,
+  coyoteMs:       95,
 
-  /* (1b) DIE SPERRSTUNDE - die Wand, die dich von hinten jagt.
-     Wie der Adler bei Crossy Road: sie zwingt dich, weiterzugehen. */
-  lineStart:     -130,     // wo sie beim Start lauert
-  lineSpeed:        7,     // Grundtempo - bewusst gemuetlich
-  lineRampPer1000m: 6,     // wird pro 1000m schneller
-  lineIdlePush:     9,     // Extratempo, wenn du stehen bleibst
-  lineMaxLag:     110,     // so weit faellt sie maximal zurueck
-  lineWarnAbstand: 52,     // ab hier wird gewarnt
+  /* SICHT UND STEALTH */
+  lehrerTempo:    34,
+  lehrerSicht:   104,     // Reichweite des Sichtkegels
+  lehrerSichtHoch: 26,    // wie hoch der Kegel reicht
+  lehrerPause:     1.8,   // wie lange er am Wendepunkt stehen bleibt
+  jagdTempo:      74,
+  jagdDauer:       4.5,   // wie lange er dich nach Sichtkontakt verfolgt
+  erwischtAbstand: 11,
 
-  /* (2) SPRUNG */
-  gravity:        920,
-  jumpVel:       -268,
-  shortHopCut:      0.45,
-  coyoteMs:        95,
-  jumpBufferMs:   130,
+  /* FORTSCHRITT */
+  leben:           3,
+  invulnMs:     1200,
+  suchDauer:       0.75,  // wie lange eine Durchsuchung dauert
 
-  /* (3) PEGEL - jetzt gnadenlos: nuechtern wird man fast nur durch Wasser */
-  pegelMax:       100,
-  shotPegel:       14,
-  waterPegel:     -28,
-  pegelDecayPerSec: 0.25,   // war 1.4 - jetzt nur noch ein Hauch
-  blackoutAtMax: true,
+  /* KAMERA */
+  kameraFolgeX:    5.0,
+  kameraFolgeY:    3.4,
+  kameraVorlauf:  34,     // Blick in Laufrichtung
 
-  /* (4) WAS DER PEGEL ANRICHTET (Wert = Effekt bei 100%) */
-  fxSpeedBoost:     0.45,
-  fxScoreMult:      3.0,
-  fxWobblePx:       4.5,
-  fxInputDelayMs: 155,
-  fxTunnelVision:   0.38,
-  fxColorShift:     1.0,
-
-  /* (5) BEWEGUNGSRAUM */
-  moveAirFactor:    0.85,  // in der Luft etwas traeger
-  playerMinX:      14,     // so weit darfst du zurueckweichen
-  playerMaxX:     150,     // so weit vorpreschen (nur im Bosskampf relevant)
-  playerHomeX:     52,     // Startposition
-
-  /* (6a) DEINE GESUNDHEIT - auf 1 stellen fuer die brutale Variante */
-  leben:            3,
-  invulnMs:      1150,     // Unverwundbarkeit nach einem Treffer
-  hurtKnockback:   22,
-
-  /* (6b) GEGNER-KAMPF */
-  foeWindSec:       0.46,  // wie lange ein Gegner ausholt (deine Reaktionszeit)
-  foeSwingSec:      0.16,  // wie lange sein Schlag gefaehrlich ist
-  foeRecSec:        0.70,  // danach steht er offen
-  foeReach:        16,     // ab dieser Naehe holt er aus
-  foeSwingReach:   15,
-  konterBonus:    120,     // Punkte fuers Kontern im Ausholen
-  konterFenster:    1,     // 1 = das ganze Ausholen, 0.5 = nur die zweite Haelfte
-
-  /* (6c) NAHKAMPF */
-  hitWindupMs:     40,     // Vorlauf bevor die Faust trifft
-  hitActiveMs:    110,     // wie lange die Faust gefaehrlich ist
-  hitCooldownMs:  260,
-  hitReach:        14,     // Reichweite in Pixeln
-  hitStopMs:       70,     // Bild friert kurz ein wenn es klatscht - "Wumms"
-  hitKnockback:    26,     // wie weit Getroffene wegfliegen
-  pointsPerKO:     60,
-  comboWindowSec:   3.4,
-
-  /* (7) SCHWIERIGKEIT - steigt mit der Distanz */
-  gapMinPx:        98,
-  gapMaxPx:       220,
-  gapShrinkPer1000m: 0.22,  // Abstaende schrumpfen um 22% pro 1000m
-  gapFloor:         0.45,   // aber nie unter 45% vom Startabstand
-  chanceShot:       0.22,
-  chanceWater:      0.10,
-  chanceOverhead:   0.14,   // weniger totes Ausweich-Zeug
-  chanceEnemy:      0.62,   // dafuer deutlich mehr Leute zum Umhauen
-  enemyRampPer1000m:0.10,
-  chanceGruppe:     0.30,   // Gegner kommen oft zu zweit oder dritt
-  gruppeRampPer1000m:0.10,
-
-  /* (8) PUNKTE */
-  pointsPerMeter:   1,
-  pointsPerShot:   25,
-  pointsPerWater:   5,
-  comboStep:       10,
-  bossBonus:      750,
-
-  /* (9) BOSS */
-  bossHp:           5,
-  bossIFramesMs:  620,
-  bossTelegraphMs:420,     // Vorwarnung vor jedem Angriff - fair bleiben
-  bossPhase2At:     0.66,  // ab 66% Restleben Phase 2
-  bossPhase3At:     0.33,
-
-  /* (10) OPTIK */
-  parallax:  true, neonSigns: true, particles: true, rain: true,
-  musicOn:   true, musicBpm: 132, sprueche: true,
+  /* OPTIK */
+  partikel:  true, flackern: true, musik: true,
 };
-
-/* ---- ETAPPEN ------------------------------------------------------------- */
-const ETAPPEN = [
-  { m:0,    name:'VORGLUEHEN', sky:['#1a1140','#0d0920'], hue:'#3b2f6e', neon:'#31e6ff', rain:0,   boss:null },
-  /* hp und telMul pro Boss: der erste ist die Lehrstunde, danach zieht es an */
-  { m:250,  name:'TUERSTEHER', sky:['#240f2c','#100617'], hue:'#5a2350', neon:'#ff3d8b', rain:0,   boss:{name:'DER TUERSTEHER', sub:'ZU VOLL HEUTE',    hp:4, telMul:1.35} },
-  { m:600,  name:'CLUB',       sky:['#2d0733','#14031a'], hue:'#7a1a6b', neon:'#ff2bd6', rain:0,   boss:{name:'DIE MEUTE',      sub:'ALLE WOLLEN WAS',  hp:5, telMul:1.10} },
-  { m:1000, name:'AFTERHOUR',  sky:['#0e1638','#050a1c'], hue:'#1f4d6b', neon:'#48ffd0', rain:.6,  boss:{name:'DIE MUEDIGKEIT', sub:'NUR NOCH KURZ',    hp:6, telMul:1.00} },
-  { m:1500, name:'HEIMWEG',    sky:['#4a2c10','#1a1020'], hue:'#8a5a1c', neon:'#ffb43d', rain:.25, boss:{name:'DIE SONNE',      sub:'ZU SPAET',         hp:7, telMul:0.85} },
-];
 
 const P = {
-  ink:'#0a0810', white:'#f4f0ff', dim:'#8d86a8', dark:'#4a4363',
-  neon:'#ff3d8b', neon2:'#31e6ff', gold:'#ffd447', danger:'#ff4d4d',
-  skin:'#e8b088', road:'#141020', roadLine:'#2c2440',
+  ink:'#0a0810', weiss:'#f4f0ff', dim:'#8d86a8', dunkel:'#4a4363',
+  neon:'#ff3d8b', neon2:'#31e6ff', gold:'#ffd447', gefahr:'#ff4d4d',
+  haut:'#e8b088',
 };
-
-/* ==========================================================================
-   SPRUECHE  -  hier wird es euer Spiel. Einfach Zeilen dazuschreiben.
-   ========================================================================== */
-const SAY = {
-  ko: ['UMGEKLAPPT','GUTE NACHT','WEG','SITZT','DER LAG SCHON','AUSGEKNIPST',
-       'NAECHSTER','ZU LANGSAM','SCHLAF GUT','ABGEMELDET'],
-  konter:['KONTER','ZU LANGSAM','ABGEFANGEN','ERWISCHT','SCHON GESEHEN','NICHT MIT MIR'],
-  aua: ['AUTSCH','DAS TAT WEH','PASS AUF','SCHLECHT GELAUFEN','NICHT SCHOEN'],
-  shot: ['NOCH EINEN','RUNTER DAMIT','AUF EX','SITZT','LECKER','WARUM AUCH NICHT',
-         'EINER GEHT NOCH','MORGEN IST FREI'],
-  water:['VERNUNFT','GUTER MANN','DAS RETTET DICH','KOPF WIRD KLAR','WEISE'],
-  combo:['LAEUFT','DER MANN BRENNT','NICHT ZU STOPPEN','WER IST DER TYP','MASCHINE'],
-  over: ['DAS WARS','SCHON VORBEI','SCHWACH','TAXI KOMMT','MONTAG WARTET',
-         'DAS ERZAEHLEN WIR NIEMANDEM','LEGENDE STIRBT LEISE','WAR ABSEHBAR'],
-  blackout:['LICHT AUS','FILMRISS','NICHTS MEHR DA','ZU VIEL DES GUTEN',
-            'DER PEGEL HAT GEWONNEN','GUTE NACHT MARIE'],
-  sperrstunde:['EINGEHOLT','ZU LANGE GETRODELT','DIE NACHT WAR SCHNELLER',
-               'STEHENBLEIBEN WAR DER FEHLER','WEG WAR ER','VERSCHLUCKT'],
-  bossWin:['REINGEKOMMEN','DURCH','DER LAG','RESPEKT','SO MACHT MAN DAS'],
-  bossTaunt:{
-    'DER TUERSTEHER':['NICHT HEUTE','GESCHLOSSENE GESELLSCHAFT','GEH NACH HAUSE'],
-    'DIE MEUTE':['ALLE AUF EINMAL','WO WILLST DU HIN','BLEIB DOCH'],
-    'DIE MUEDIGKEIT':['LEG DICH HIN','NUR KURZ DIE AUGEN','ES IST VIER UHR'],
-    'DIE SONNE':['ES WIRD HELL','ZU SPAET','GEH SCHLAFEN'],
-  },
-};
-const pick = a => a[Math.floor(Math.random()*a.length)];
 
 /* ==========================================================================
    3x5 BITMAP-FONT
@@ -262,301 +158,211 @@ const F = {
  9:'111,101,111,001,111',
  ' ':'000,000,000,000,000', '.':'000,000,000,000,010', ':':'000,010,000,010,000',
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
- '/':'001,001,010,100,100', '%':'101,001,010,100,101', '+':'000,010,111,010,000',
+ '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
- ',':'000,000,000,010,100',
 };
-const GLYPH = {}; for (const k in F) GLYPH[k] = F[k].split(',');
-/* Zeichnet auf eine beliebige Leinwand - noetig, um Schrift vorzubacken. */
-function textTo(g,str,x,y,col,s){
-  g.fillStyle=col; str=String(str).toUpperCase();
-  for(let i=0;i<str.length;i++){ const gl=GLYPH[str[i]]||GLYPH['?'];
-    for(let r=0;r<5;r++) for(let c=0;c<3;c++)
-      if(gl[r][c]==='1') g.fillRect(x+(i*4+c)*s, y+r*s, s, s); }
-}
-/* Jedes Zeichen wird einmal gebacken. Es gibt nur 43 Glyphen, also bleibt
-   der Cache winzig - selbst bei einem Punktestand, der sich staendig aendert. */
-const _glyphCache=new Map();
-function text(str,x,y,col,s=1){
-  str=String(str).toUpperCase();
-  for(let i=0;i<str.length;i++){
-    const ch=str[i]; if(ch===' ') continue;
-    const k=ch+col+s;
-    let c=_glyphCache.get(k);
-    if(!c){ const [cc,xx]=leinwand(3*s,5*s); textTo(xx,ch,0,0,col,s); c=cc; _glyphCache.set(k,c); }
-    ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y));
-  }
-}
-const textW=(s0,s=1)=>String(s0).length*4*s-s;
-const textC=(s0,y,col,s=1)=>text(s0,Math.round((320-textW(s0,s))/2),y,col,s);
-/* Leuchtschrift malte den Text fuenfmal. Jetzt einmal gebacken, dann kopiert. */
-function textGlow(str,x,y,col,s=1){
-  str=String(str).toUpperCase();
-  const k=str+'|'+col+'|'+s;
-  let c=_texts.get(k);
-  if(!c){
-    const pad=s, [cc,xx]=leinwand(textW(str,s)+2*pad, 5*s+2*pad);
-    xx.globalAlpha=.25;
-    textTo(xx,str,pad-s,pad,col,s); textTo(xx,str,pad+s,pad,col,s);
-    textTo(xx,str,pad,pad-s,col,s); textTo(xx,str,pad,pad+s,col,s);
-    xx.globalAlpha=1; textTo(xx,str,pad,pad,col,s);
-    c=cc; if(_texts.size>400) _texts.clear();
-    _texts.set(k,c);
-  }
-  ctx.drawImage(c,Math.round(x)-s,Math.round(y)-s);
-}
-function textShadow(str,x,y,col,s=1){ text(str,x+1,y+1,'#000',s); text(str,x,y,col,s); }
+const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
 /* ==========================================================================
-   SPRITES   ('.' = transparent)
-   Der Kopf ist ueberall ein eigener Block -> da kommen eure Gesichter rein.
-   ========================================================================== */
-const KEY = {
-  k:'#0a0810', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'#f4f0ff',
-  g:'#ffd447', n:'#ff3d8b', c:'#31e6ff', r:'#ff4d4d', d:'#4a4363', b:'#6b4a2a',
-  o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
-};
-/* ==========================================================================
-   BILD-CACHE
-   Pixel einzeln zu malen kostet pro Sprite dutzende Aufrufe - und das
-   60 mal pro Sekunde fuer jedes Objekt. Stattdessen wird jedes Sprite
-   einmal auf eine eigene kleine Leinwand gebacken und danach nur noch
-   als fertiges Bild kopiert. Aus ~2800 Aufrufen pro Bild werden ~150.
+   BILD-CACHE  -  einmal backen, danach nur noch kopieren
    ========================================================================== */
 const _ids=new WeakMap(); let _nextId=0;
-const _sprites=new Map(), _outlines=new Map(), _texts=new Map(), _grads=new Map();
+const _sprites=new Map(), _outlines=new Map(), _texte=new Map(), _grads=new Map(), _glyphen=new Map();
+function rowsId(r){ let i=_ids.get(r); if(i===undefined){ i=++_nextId; _ids.set(r,i); } return i; }
+function leinwand(w,h){ const c=document.createElement('canvas');
+  c.width=Math.max(1,w|0); c.height=Math.max(1,h|0);
+  const x=c.getContext('2d'); x.imageSmoothingEnabled=false; return [c,x]; }
+function verlauf(key,w,h,mal){ let c=_grads.get(key);
+  if(!c){ const [cc,xx]=leinwand(w,h); mal(xx); c=cc; _grads.set(key,c); } return c; }
 
-/* Farbverlaeufe sind teuer und aendern sich fast nie - einmal backen. */
-function verlauf(key,w,h,mal){
-  let c=_grads.get(key);
-  if(!c){ const [cc,xx]=leinwand(w,h); mal(xx); c=cc; _grads.set(key,c); }
-  return c;
-}
-function rowsId(rows){
-  let id=_ids.get(rows);
-  if(id===undefined){ id=++_nextId; _ids.set(rows,id); }
-  return id;
-}
-function leinwand(w,h){
-  const c=document.createElement('canvas');
-  c.width=Math.max(1,w); c.height=Math.max(1,h);
-  const x=c.getContext('2d'); x.imageSmoothingEnabled=false;
-  return [c,x];
-}
+let KEY={};
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
-  const [c,x]=leinwand(bw*sc, rows.length*sc);
+  const [c,x]=leinwand(bw*sc,rows.length*sc);
   for(let r=0;r<rows.length;r++){ const row=rows[r];
     for(let i=0;i<row.length;i++){ const ch=row[i]; if(ch==='.') continue;
       x.fillStyle=tint||KEY[ch]||'#fff'; x.fillRect(i*sc,r*sc,sc,sc); } }
   return c;
 }
-function holeSprite(rows,sc,tint){
-  const k=rowsId(rows)+'|'+sc+'|'+(tint||'-');
-  let c=_sprites.get(k);
-  if(!c){ c=backeSprite(rows,sc,tint); _sprites.set(k,c); }
-  return c;
-}
+function holeSprite(rows,sc,tint){ const k=rowsId(rows)+'|'+sc+'|'+(tint||'-');
+  let c=_sprites.get(k); if(!c){ c=backeSprite(rows,sc,tint); _sprites.set(k,c); } return c; }
 function sprite(rows,x,y,sc=1,tint=null,alpha=1){
   const c=holeSprite(rows,sc,tint);
   if(alpha!==1) ctx.globalAlpha=alpha;
   ctx.drawImage(c,Math.round(x),Math.round(y));
   if(alpha!==1) ctx.globalAlpha=1;
 }
-/* Kontur: einmal als schwarzer, um 1 Pixel aufgeblasener Umriss backen.
-   Vorher waren das vier volle Sprite-Durchlaeufe pro Objekt und Bild. */
-function outline(rows,x,y,sc=1,a=.8){
-  const k=rowsId(rows)+'|'+sc;
-  let c=_outlines.get(k);
-  if(!c){
-    const s=holeSprite(rows,sc,'#000');
-    const [cc,xx]=leinwand(s.width+2*sc, s.height+2*sc);
-    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc);
-    xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
-    c=cc; _outlines.set(k,c);
-  }
-  ctx.globalAlpha=a;
-  ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc);
-  ctx.globalAlpha=1;
+function spriteFlip(rows,x,y,sc=1,tint=null){
+  const c=holeSprite(rows,sc,tint);
+  ctx.save(); ctx.translate(Math.round(x)+c.width,Math.round(y));
+  ctx.scale(-1,1); ctx.drawImage(c,0,0); ctx.restore();
 }
-const HEAD=['..hhh..','.hsssh.','.sssss.','..sss..'];
-const mkRun = legs => [...HEAD,'..ttt..',...legs];
+function outline(rows,x,y,sc=1,a=.75){
+  const k=rowsId(rows)+'|'+sc; let c=_outlines.get(k);
+  if(!c){ const s=holeSprite(rows,sc,'#000'); const [cc,xx]=leinwand(s.width+2*sc,s.height+2*sc);
+    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc); xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
+    c=cc; _outlines.set(k,c); }
+  ctx.globalAlpha=a; ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc); ctx.globalAlpha=1;
+}
+function textTo(g,str,x,y,col,s){
+  g.fillStyle=col; str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){ const gl=GLYPH[str[i]]||GLYPH['?'];
+    for(let r=0;r<5;r++) for(let c=0;c<3;c++)
+      if(gl[r][c]==='1') g.fillRect(x+(i*4+c)*s,y+r*s,s,s); }
+}
+function text(str,x,y,col,s=1){
+  str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){ const ch=str[i]; if(ch===' ') continue;
+    const k=ch+col+s; let c=_glyphen.get(k);
+    if(!c){ const [cc,xx]=leinwand(3*s,5*s); textTo(xx,ch,0,0,col,s); c=cc; _glyphen.set(k,c); }
+    ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y)); }
+}
+const textW=(s0,s=1)=>String(s0).length*4*s-s;
+const textC=(s0,y,col,s=1)=>text(s0,Math.round((W-textW(s0,s))/2),y,col,s);
+function textGlow(str,x,y,col,s=1){
+  str=String(str).toUpperCase(); const k=str+'|'+col+'|'+s;
+  let c=_texte.get(k);
+  if(!c){ const p=s,[cc,xx]=leinwand(textW(str,s)+2*p,5*s+2*p);
+    xx.globalAlpha=.25; textTo(xx,str,p-s,p,col,s); textTo(xx,str,p+s,p,col,s);
+    textTo(xx,str,p,p-s,col,s); textTo(xx,str,p,p+s,col,s);
+    xx.globalAlpha=1; textTo(xx,str,p,p,col,s);
+    c=cc; if(_texte.size>300) _texte.clear(); _texte.set(k,c); }
+  ctx.drawImage(c,Math.round(x)-s,Math.round(y)-s);
+}
+const textGC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,s);
+function textSchatten(str,x,y,col,s=1){ text(str,x+1,y+1,'#000',s); text(str,x,y,col,s); }
+
+/* ==========================================================================
+   SPRITES
+   ========================================================================== */
+KEY = {
+  k:'#0a0810', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'#f4f0ff',
+  g:'#ffd447', n:'#ff3d8b', c:'#31e6ff', r:'#ff4d4d', d:'#4a4363', b:'#6b4a2a',
+  o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
+  y:'#5b6b8c', u:'#8b95ad', f:'#3c3550',
+};
+const KOPF=['..hhh..','.hsssh.','.sssss.','..sss..'];
+const mkGeh = beine => [...KOPF,'..ttt..',...beine];
 
 const SPR = {
-  run:[
-    mkRun(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
-    mkRun(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
-    mkRun(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
-    mkRun(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
+  steh:  mkGeh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','..p.p..','.kk.kk.']),
+  geh:[
+    mkGeh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
+    mkGeh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
+    mkGeh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
+    mkGeh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
   ],
-  jump:[...HEAD,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
-  fall:[...HEAD,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
-  duck:['.......','.......','.......','.......','.......','.......','.......','.hhh...',
-        'hsssh..','.tttttt','ktttttk','.pppppp','.kk..kk'],
-  punch:['..hhh....','.hsssh...','.sssss...','..sss....','..ttt....','.ttttssss',
-         'k.ttt....','..ttt....','..ppp....','..p.p....','..p.p....','.pp.pp...','.kk..kk..'],
-  punchAir:['..hhh....','.hsssh...','.sssss...','..sss....','.tttt....','.ttttssss',
-            'k.ttt....','..ttt....','..ppp....','.pp.pp...','.p...p...','kk...kk..','.........'],
+  sprung:[...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
+  fall:  [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
+  duck:  ['.......','.......','.......','.......','.......','.......','.......','.hhh...',
+          'hsssh..','.tttttt','ktttttk','.pppppp','.kk..kk'],
 
-  gegner:['..hhh..','.hsssh.','.sssss.','..sss..','..vvv..','vvvvvv.','k.vvv.k','..vvv..',
-          '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
-  gegnerHit:['.......','..hhh..','.hsssh.','.sssss.','..sss..','..vvv..','.vvvvv.','k.vvv.k',
-             '..mmm..','..m.m..','.mm.mm.','.kk..kk','.......'],
-  /* Ausholen: Arm hoch. Muss auf einen Blick vom Laufen zu unterscheiden sein. */
-  gegnerWind:['.hhh...','hsssh..','sssss..','.sss.s.','.vvv.s.','vvvvvs.','k.vvv..','..vvv..',
-              '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
-  gegnerSwing:['..hhh..','.hsssh.','.sssss.','..sss..','..vvvss','vvvvvss','k.vvv..','..vvv..',
-               '..mmm..','..m.m..','..m.m..','.mm.mm.','.kk..kk'],
-  /* Flitzer: klein, schnell, schlaegt tief - drueberspringen */
-  flitzer:['..hh..','.hssh.','.ssss.','..ss..','.cccc.','ccccc.','k.cc.k','..cc..',
-           '..pp..','.pp.p.','.p..p.','kk..kk'],
-  flitzerWind:['..hh..','.hssh.','.ssss.','..ss..','.cccc.','cccccc','..cc..','..cc..',
-               '..pp..','.pp...','.p.ss.','kk.ss.'],
-  /* Werfer: bleibt auf Distanz und wirft */
-  werfer:['..hhh..','.hsssh.','.sssss.','..sss..','g.ttt..','gttttt.','k.ttt.k','..ttt..',
-          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  /* Der Brocken haelt zwei Schlaege aus - breiter, dunkler, unuebersehbar */
-  brocken:['..ddddd..','.dkkkkkd.','.dsssssd.','..ksssk..','..sssss..','...ddd...',
-           '.ddddddd.','ddddddddd','dd.ddd.dd','dd.ddd.dd','...ddd...','..dd.dd..',
-           '..dd.dd..','..pp.pp..','.kkk.kkk.'],
-  brockenHit:['.........','..ddddd..','.dkkkkkd.','.dwwwwwd.','..kwwwk..','..wwwww..',
-              '...ddd...','.ddddddd.','ddddddddd','dd.ddd.dd','...ddd...','..dd.dd..',
-              '..dd.dd..','..pp.pp..','.kkk.kkk.'],
-  taube:['..d....','.ddddw.','ddddddd','.dd.d..','..k.k..'],
+  /* Lehrer: groesser, Anzug, Brille - muss sich auf einen Blick unterscheiden */
+  lehrer:[
+    '..ddd..','.dsssd.','.swsws.','..sss..','..yyy..','.yyyyy.','yy.y.yy','.y.y.y.',
+    '..yyy..','..fff..','..f.f..','..f.f..','..f.f..','.kk.kk.',
+  ],
+  lehrerGeh:[
+    '..ddd..','.dsssd.','.swsws.','..sss..','..yyy..','.yyyyy.','yy.y.yy','.y.y.y.',
+    '..yyy..','..fff..','..f.f..','.ff.ff.','.f...f.','kk...kk',
+  ],
 
-  shot:['.www.','.gcg.','.gcg.','..g..','.www.'],
-  water:['..c..','.ccc.','.cwc.','.cwc.','.ccc.'],
-  flasche:['.ggg.','.gwg.','ggggg','ggggg','.ggg.'],
-
-  cone:['...r...','..rrr..','..rwr..','.rrrrr.','.rwwwr.','rrrrrrr','wwwwwww'],
-  kasten:['oobooboo','o.o..o.o','oobooboo','o.o..o.o','oobooboo','o.o..o.o','oobooboo','oooooooo',
-          'e......e','ebbbbbbe','e......e','eeeeeeee'],
-  tonne:['.dddddd.','dddddddd','.d....d.','.dwwwwd.','.d....d.','.dwwwwd.',
-         '.d....d.','.dwwwwd.','.d....d.','.dwwwwd.','.d....d.','.dddddd.'],
-  gitter:['rwrwrwrwrw','r........r','r.r.r.r..r','r.r.r.r..r','r........r','rwrwrwrwrw',
-          '.r......r.','.r......r.','.r......r.','.r......r.','.d......d.','.d......d.'],
-  schild:['nnnnnnnnnnnnnnnn','nllllllllllllln.','nl.l.l.l.l.l.ln.','nllllllllllllln.',
-          'nnnnnnnnnnnnnnnn','......dd........','......dd........','......dd........',
-          '......dd........','......dd........','......dd........','......dd........',
-          '......dd........','......dd........','......dd........','......dd........'],
-  lampe:['..llll..','.lwwwwl.','..llll..','...dd...','...dd...','...dd...','...dd...',
-         '...dd...','...dd...','...dd...','...dd...','...dd...','...dd...','...dd...',
-         '...dd...','...dd...','...dd...','..dddd..'],
-
-  /* --- BOSSE (werden doppelt gezeichnet) --- */
-  bossTuer:[
-    '.....dddddd.....','....dkkkkkkd....','....dssssssd....','...ksssssssk....',
-    '....ss.ss.ss....','.....ssssss.....','......dddd......','...dddddddddd...',
-    '..dddddddddddd..','..dd.dddddd.dd..','.ddd.dddddd.ddd.','.ddd.dddddd.ddd.',
-    '..dd.dddddd.dd..','.....dddddd.....','.....dddddd.....','.....dddddd.....',
-    '.....dd..dd.....','.....dd..dd.....','.....dd..dd.....','.....pp..pp.....',
-    '.....pp..pp.....','....kkk..kkk....',
-  ],
-  bossMeute:[
-    '..hh....hh..hh..','.hssh..hssh.hssh','.ssss..ssss.ssss','..ss....ss...ss.',
-    '.vvvv..vvvv.vvvv','vvvvvvvvvvvvvvvv','vvvvvvvvvvvvvvvv','.vvvv..vvvv.vvvv',
-    '.mmmm..mmmm.mmmm','.mm.m..mm.m.mm.m','.mm.m..mm.m.mm.m','.mm.m..mm.m.mm.m',
-    'kk..kk kk..kk kk'.replace(/ /g,'.'),
-  ],
-  bossMuede:[
-    '....dddddddd....','...dddddddddd...','..dd.dddddd.dd..','..d..dddddd..d..',
-    '..dddddddddddd..','..dd.d....d.dd..','..d..d....d..d..','..dddddddddddd..',
-    '...dddddddddd...','....dddddddd....','.....dd..dd.....','.....dd..dd.....',
-  ],
-  bossSonne:[
-    '....gggggg....','..gggggggggg..','.gggllllllggg.','ggglllllllggg.',
-    'ggllllllllllgg','ggllllwwllllgg','ggllllwwllllgg','ggllllllllllgg',
-    'ggglllllllggg.','.gggllllllggg.','..gggggggggg..','....gggggg....',
-  ],
+  /* Einrichtung */
+  spind:['uuuuuu','u....u','u.dd.u','u....u','uuuuuu','u....u','u.dd.u','u....u',
+         'uuuuuu','u....u','u.dd.u','u....u','uuuuuu'],
+  tuer: ['bbbbbbbb','b......b','b......b','b......b','b....g.b','b......b','b......b',
+         'b......b','b......b','b......b','b......b','b......b','bbbbbbbb'],
+  tuerAuf:['bbbbbbbb','baaaaaab','baaaaaab','baaaaaab','baaaaaab','baaaaaab','baaaaaab',
+           'baaaaaab','baaaaaab','baaaaaab','baaaaaab','baaaaaab','bbbbbbbb'],
+  ausgang:['ggggggggg','g.......g','g.......g','g.......g','g.......g','g.......g','g.......g',
+           'g.......g','g.......g','g.......g','g.......g','g.......g','ggggggggg'],
+  treppe:['.......ww','......ww.','.....ww..','....ww...','...ww....','..ww.....','.ww......','ww.......'],
+  pult:  ['bbbbbbbbbb','b........b','bbbbbbbbbb','.b......b.','.b......b.','.b......b.'],
+  stuhl: ['.bbbb.','.b..b.','bbbbbb','.b..b.','.b..b.'],
+  schrank:['oooooo','o....o','o.oo.o','o....o','oooooo','o....o','o.oo.o','o....o','oooooo'],
+  regal: ['oooooooo','ovvvvvvo','oooooooo','occccclo','oooooooo','ovvvlvvo','oooooooo'],
+  schluessel:['..gg.','.g..g','.g..g','..gg.','..g..','..gg.','..g..','..gg.'],
+  lampe: ['wwwwwwww','.llllll.'],
 };
-const BOSS_SPR = { 'DER TUERSTEHER':'bossTuer','DIE MEUTE':'bossMeute',
-                   'DIE MUEDIGKEIT':'bossMuede','DIE SONNE':'bossSonne' };
 
 /* ==========================================================================
    AUDIO
    ========================================================================== */
-let AC=null, muted=false;
-function ensureAudio(){ if(AC) return AC;
+let AC=null, stumm=false;
+function audioAn(){ if(AC) return AC;
   try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
   catch(e){ AC=null; } return AC; }
-function tone(f,when,dur,type='square',vol=.05){
-  if(!AC||muted) return;
+function ton(f,when,dur,typ='square',vol=.05){
+  if(!AC||stumm) return;
   const o=AC.createOscillator(), g=AC.createGain();
-  o.type=type; o.frequency.setValueAtTime(f,when);
+  o.type=typ; o.frequency.setValueAtTime(f,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
   o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02);
 }
-function slide(f1,f2,dur,type='square',vol=.05){
-  ensureAudio(); if(!AC||muted) return;
+const piep=(f,d=.07,t='square',v=.05)=>{ audioAn(); if(AC) ton(f,AC.currentTime,d,t,v); };
+function gleit(f1,f2,dur,typ='square',vol=.05){
+  audioAn(); if(!AC||stumm) return;
   const t0=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
-  o.type=type; o.frequency.setValueAtTime(f1,t0); o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t0+dur);
+  o.type=typ; o.frequency.setValueAtTime(f1,t0); o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t0+dur);
   g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
   o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0+dur+.02);
 }
-const beep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) tone(f,AC.currentTime,d,t,v); };
-function noise(dur=.25,vol=.08,when=null){
-  ensureAudio(); if(!AC||muted) return;
-  const n=Math.floor(AC.sampleRate*dur), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
+function rauschen(dur=.2,vol=.06,when=null){
+  audioAn(); if(!AC||stumm) return;
+  const n=Math.floor(AC.sampleRate*dur), b=AC.createBuffer(1,n,AC.sampleRate), d=b.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const src=AC.createBufferSource(), g=AC.createGain();
-  src.buffer=buf; g.gain.value=vol; src.connect(g); g.connect(AC.destination);
-  src.start(when||AC.currentTime);
+  src.buffer=b; g.gain.value=vol; src.connect(g); g.connect(AC.destination); src.start(when||AC.currentTime);
 }
-const SFX = {
-  jump:  ()=>beep(520,.06,'square',.04),
-  land:  ()=>beep(180,.04,'triangle',.03),
-  swing: ()=>slide(300,120,.09,'sawtooth',.035),
-  klatsch:()=>{ noise(.09,.14); slide(220,60,.14,'square',.07); },
-  ko:    ()=>{ slide(400,90,.22,'square',.06); noise(.18,.08); },
-  shot:  n=>{ beep(1000+n*80,.05); beep(1500+n*90,.05); },
-  water: ()=>beep(400,.1,'sine',.05),
-  hurt:  ()=>{ noise(.3,.1); beep(140,.3,'sawtooth',.06); },
-  warn:  ()=>{ beep(880,.06,'square',.05); },
-  bossIn:()=>{ slide(90,180,.5,'sawtooth',.06); noise(.4,.06); },
-  win:   ()=>{ beep(880,.08); setTimeout(()=>beep(1180,.08),80); setTimeout(()=>beep(1560,.18),160); },
-  etappe:()=>{ beep(660,.09); setTimeout(()=>beep(990,.13),90); },
+const SFX={
+  schritt:()=>piep(90+Math.random()*20,.03,'triangle',.018),
+  sprung: ()=>piep(430,.06,'square',.035),
+  land:   ()=>piep(150,.04,'triangle',.03),
+  tuer:   ()=>{ gleit(180,90,.16,'sawtooth',.04); rauschen(.1,.03); },
+  suchen: ()=>rauschen(.14,.03),
+  fund:   ()=>{ piep(900,.08); setTimeout(()=>piep(1200,.08),80); setTimeout(()=>piep(1700,.16),160); },
+  nichts: ()=>piep(220,.1,'sine',.03),
+  entdeckt:()=>{ gleit(300,900,.22,'square',.06); },
+  erwischt:()=>{ rauschen(.3,.09); gleit(200,70,.35,'sawtooth',.06); },
+  gewonnen:()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
+  treppe: ()=>piep(300,.05,'triangle',.03),
 };
-const BASS=[110,0,164.8,0, 130.8,0,164.8,0, 98,0,146.8,0, 110,0,164.8,196];
-const BASS_BOSS=[73.4,73.4,0,98, 73.4,0,87.3,0, 65.4,65.4,0,87.3, 65.4,0,98,110];
-const MUS={step:0,next:0};
-function musicTick(){
-  if(!AC||muted||!TUNE.musicOn||S.mode==='pause') return;
-  const boss=!!S.boss;
-  const bpm=TUNE.musicBpm*(S.mode==='play'?(boss?1.18:1+S.etappe*.05):.8);
-  const st=60/bpm/4, line=boss?BASS_BOSS:BASS;
-  while(MUS.next<AC.currentTime+.12){
-    const i=MUS.step%line.length, f=line[i];
-    if(f) tone(f,MUS.next,st*.85,'square',S.mode==='play'?.028:.018);
-    if(S.mode==='play'){
-      if(i%4===2) noise(.02,.012,MUS.next);
-      if(i%8===0) tone(70,MUS.next,.08,'sine',.06);
-      if((S.pegel>55||boss)&&i%4===0) tone(f?f*3:330,MUS.next,st*.5,'triangle',.013);
-    }
+/* Bedrohlicher Puls, der schneller wird, je naeher ein Lehrer ist */
+const MUS={next:0,step:0};
+function musikTakt(){
+  if(!AC||stumm||!TUNE.musik||S.modus!=='spiel') return;
+  const nah=S.naehe;                         // 0..1
+  const bpm=52+nah*70, st=60/bpm/2;
+  while(MUS.next<AC.currentTime+.15){
+    const i=MUS.step%4;
+    if(i===0) ton(nah>.5?58:49,MUS.next,st*1.4,'sine',.05+nah*.03);
+    if(i===2&&nah>.25) ton(nah>.6?87:73,MUS.next,st*.7,'triangle',.02+nah*.02);
     MUS.next+=st; MUS.step++;
   }
 }
 
 /* ==========================================================================
-   SETUP
+   LEINWAND, AUFLOESUNG, VOLLBILD
+   Die Breite waechst mit dem Bildschirm mit, damit im Querformat am Handy
+   keine schwarzen Balken bleiben - man sieht dann einfach mehr vom Level.
    ========================================================================== */
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 ctx.imageSmoothingEnabled=false;
-const W=320,H=180,GROUND=152;
-const PX=42;                                 // Startposition, S.px ist die echte
+const H=180, W_MIN=320, W_MAX=460;
+let W=320;
 
-/* Touch-Geraet? maxTouchPoints ist verlaesslicher als pointer:coarse.
-   ?touch=1 erzwingt es, damit man es am Rechner testen kann. */
-const IS_TOUCH = navigator.maxTouchPoints>0 || 'ontouchstart' in window
-              || /[?&]touch=1/.test(location.search);
+const IS_TOUCH = navigator.maxTouchPoints>0 || 'ontouchstart' in window || /[?&]touch=1/.test(location.search);
 if(IS_TOUCH) document.documentElement.classList.add('touch');
+const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 
-function isFs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
 function fit(){
-  const pad = (isFs()||IS_TOUCH) ? 0 : 46;
-  const raw = Math.min((innerWidth-pad)/W,(innerHeight-pad)/H);
-  /* Ganzzahlig skalieren haelt die Pixel scharf. Auf kleinen Schirmen waere
-     das aber verschenkter Platz - deshalb dort halbe Schritte erlauben. */
-  const s = raw<3 ? Math.max(.5,Math.floor(raw*4)/4) : Math.floor(raw);
+  const rand=(isFs()||IS_TOUCH)?0:46;
+  const vw=Math.max(1,innerWidth-rand), vh=Math.max(1,innerHeight-rand);
+  /* Breite so waehlen, dass das Seitenverhaeltnis des Schirms getroffen wird */
+  W=Math.round(Math.min(W_MAX,Math.max(W_MIN,H*(vw/vh))));
+  if(cv.width!==W){ cv.width=W; ctx.imageSmoothingEnabled=false; _grads.clear(); }
+  const roh=Math.min(vw/W,vh/H);
+  const s=roh<3?Math.max(.5,Math.floor(roh*4)/4):Math.floor(roh);
   cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
 }
 addEventListener('resize',fit);
@@ -564,993 +370,671 @@ addEventListener('orientationchange',()=>setTimeout(fit,120));
 ['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>setTimeout(fit,60)));
 fit();
 
-/* ---- Vollbild ---- */
-function toggleFullscreen(){
+function vollbild(){
   const root=document.getElementById('cab');
   if(isFs()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
-  const req=root.requestFullscreen||root.webkitRequestFullscreen;
-  if(!req) return;
+  const req=root.requestFullscreen||root.webkitRequestFullscreen; if(!req) return;
   Promise.resolve(req.call(root)).then(()=>{
-    /* Am Handy zusaetzlich ins Querformat zwingen, wo der Browser es zulaesst */
-    if(screen.orientation&&screen.orientation.lock)
-      screen.orientation.lock('landscape').catch(()=>{});
+    if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
   }).catch(()=>{});
 }
-document.getElementById('fs').addEventListener('click',e=>{ e.preventDefault(); toggleFullscreen(); });
+document.getElementById('fs').addEventListener('click',e=>{ e.preventDefault(); vollbild(); });
 
-const SKEY='nachtschicht.scores.v1';
-const loadScores=()=>{ try{ return JSON.parse(localStorage.getItem(SKEY))||[]; }catch(e){ return []; } };
-function saveScore(name,score){ const l=loadScores(); l.push({name,score});
-  l.sort((a,b)=>b.score-a.score); localStorage.setItem(SKEY,JSON.stringify(l.slice(0,5))); }
-let scores=loadScores();
-if(!scores.length) scores=[{name:'CPU',score:2500},{name:'CPU',score:1500},
-  {name:'CPU',score:900},{name:'CPU',score:450},{name:'CPU',score:200}];
+/* ==========================================================================
+   LEVEL-DATEN
+   Ein Level ist reine Beschreibung. Die Spiellogik kennt keine Schule -
+   sie liest nur Etagen, Tueren, Treppen und Wachen. So kommen Club,
+   Strasse und City spaeter dazu, ohne dass Logik angefasst wird.
+   ========================================================================== */
+const LEVELS = [
+{
+  id:'schule',
+  name:'DIE SCHULE',
+  unter:'RAUS HIER',
+  hinweis:'FINDE DEN SCHLUESSEL',
+  breite: 720,
+  etagen: [246,184,122],          // y-Werte von unten nach oben
+  himmel: ['#120b1e','#07050d'],
+  wand:   '#191430',
+  boden:  '#241c3e',
+  akzent: '#3a2f6e',
+  treppen: [ {x:36,von:0,bis:2}, {x:664,von:0,bis:2} ],
+  ausgang: {x:110,etage:0},
+  tueren: [
+    {x:230,etage:0,name:'HAUSMEISTER',typ:'lager'},
+    {x:360,etage:0,name:'TURNHALLE',  typ:'halle'},
+    {x:520,etage:0,name:'SEKRETARIAT',typ:'buero'},
+    {x:150,etage:1,name:'RAUM 101',   typ:'klasse'},
+    {x:300,etage:1,name:'RAUM 102',   typ:'klasse'},
+    {x:450,etage:1,name:'CHEMIE',     typ:'labor'},
+    {x:590,etage:1,name:'RAUM 103',   typ:'klasse'},
+    {x:170,etage:2,name:'BIBLIOTHEK', typ:'biblio'},
+    {x:340,etage:2,name:'LEHRERZIMMER',typ:'buero'},
+    {x:500,etage:2,name:'RAUM 201',   typ:'klasse'},
+  ],
+  wachen: [
+    {x:300,etage:0,von:180,bis:600},
+    {x:400,etage:1,von:120,bis:640},
+    {x:420,etage:2,von:200,bis:560},
+  ],
+}
+];
+
+/* Was in einem Raum steht - pro Typ, damit sich Raeume unterscheiden */
+const RAUM_INHALT = {
+  klasse: [{spr:'pult',x:26,y:0},{spr:'stuhl',x:52,y:0},{spr:'stuhl',x:66,y:0},{spr:'schrank',x:86,y:0}],
+  labor:  [{spr:'pult',x:22,y:0},{spr:'regal',x:52,y:0},{spr:'schrank',x:84,y:0}],
+  buero:  [{spr:'pult',x:24,y:0},{spr:'stuhl',x:48,y:0},{spr:'schrank',x:70,y:0},{spr:'regal',x:90,y:0}],
+  biblio: [{spr:'regal',x:20,y:0},{spr:'regal',x:44,y:0},{spr:'regal',x:68,y:0},{spr:'pult',x:92,y:0}],
+  lager:  [{spr:'schrank',x:24,y:0},{spr:'schrank',x:46,y:0},{spr:'regal',x:72,y:0}],
+  halle:  [{spr:'stuhl',x:30,y:0},{spr:'stuhl',x:70,y:0},{spr:'schrank',x:96,y:0}],
+};
+const LEER_SPRUECHE=['NICHTS','LEER','NUR STAUB','FEHLANZEIGE','NICHT HIER','ALTE HAUSAUFGABEN',
+                     'EIN KAUGUMMI','KREIDE','NICHTS BRAUCHBARES'];
+
+/* ==========================================================================
+   ZUSTAND
+   ========================================================================== */
+let S={}, LV=LEVELS[0];
+function neuesLevel(i){
+  LV=LEVELS[i];
+  const etage0=LV.etagen[0];
+  S={
+    modus:'spiel', levelIndex:i, t:0,
+    wx:LV.ausgang.x+40, wy:etage0, etage:0, vy:0, amBoden:true, letzterBoden:0,
+    blick:1, gehPhase:0, ducken:false,
+    camX:0, camY:0, camGesetzt:false,
+    hp:TUNE.leben, inv:0, naehe:0,
+    ansicht:'flur',                  // flur | raum
+    raum:null, raumX:0, suchT:0, suchZiel:null,
+    schluessel:false, gefunden:{},
+    tueren: LV.tueren.map(t=>({...t, offen:false, durchsucht:false})),
+    wachen: LV.wachen.map(w=>({...w, richtung:1, warte:0, alarm:0, gesehen:false})),
+    banner:2.6, bannerTxt:LV.name, bannerSub:LV.unter,
+    meldung:'', meldungT:0,
+    shake:0, blitz:0, blitzFarbe:'255,255,255',
+    endeT:0,
+  };
+  /* Schluessel in einen zufaelligen Raum legen, aber nie in den ersten */
+  const kandidaten=S.tueren.filter((t,idx)=>idx>0);
+  S.schluesselRaum=kandidaten[Math.floor(Math.random()*kandidaten.length)].name;
+  PART=[]; SCHWEBE=[];
+}
 
 /* ==========================================================================
    PARTIKEL + SCHWEBETEXT
    ========================================================================== */
-let PART=[], FLOAT=[];
-function puff(x,y,n,col,spread=30,up=20){ if(!TUNE.particles) return;
-  for(let i=0;i<n;i++) PART.push({x,y,vx:(Math.random()-.5)*spread,vy:-Math.random()*up,
-    life:.3+Math.random()*.4,max:.7,col,g:120}); }
-function shards(x,y,col,n=10,pow=90){ if(!TUNE.particles) return;
-  for(let i=0;i<n;i++) PART.push({x,y,vx:(Math.random()-.5)*pow,vy:-Math.random()*70-10,
-    life:.4+Math.random()*.5,max:.9,col,g:340}); }
-function say(txt,x,y,col){ if(!TUNE.sprueche||!txt) return;
-  FLOAT.push({txt,x,y,col,life:1.1,max:1.1}); }
-function updateFx(dt){
+let PART=[], SCHWEBE=[];
+function staub(x,y,n,col,streu=24,hoch=14){
+  if(!TUNE.partikel) return;
+  for(let i=0;i<n;i++) PART.push({x,y,vx:(Math.random()-.5)*streu,vy:-Math.random()*hoch,
+    life:.3+Math.random()*.4,max:.7,col,g:110});
+}
+function funken(x,y,col,n=10,kraft=80){
+  if(!TUNE.partikel) return;
+  for(let i=0;i<n;i++) PART.push({x,y,vx:(Math.random()-.5)*kraft,vy:-Math.random()*60-10,
+    life:.4+Math.random()*.5,max:.9,col,g:300});
+}
+function schwebe(txt,x,y,col){ if(txt) SCHWEBE.push({txt,x,y,col,life:1.3,max:1.3}); }
+function fxTakt(dt){
   for(const p of PART){ p.life-=dt; p.vy+=p.g*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
   PART=PART.filter(p=>p.life>0);
-  for(const f of FLOAT){ f.life-=dt; f.y-=22*dt; }
-  FLOAT=FLOAT.filter(f=>f.life>0);
+  for(const f of SCHWEBE){ f.life-=dt; f.y-=16*dt; }
+  SCHWEBE=SCHWEBE.filter(f=>f.life>0);
 }
-function drawFx(){
+function fxZeichnen(ox,oy){
   for(const p of PART){ ctx.globalAlpha=Math.max(0,Math.min(1,p.life/p.max));
-    ctx.fillStyle=p.col; ctx.fillRect(Math.round(p.x),Math.round(p.y),1,1); }
+    ctx.fillStyle=p.col; ctx.fillRect(Math.round(p.x-ox),Math.round(p.y-oy),1,1); }
   ctx.globalAlpha=1;
-  for(const f of FLOAT){ ctx.globalAlpha=Math.max(0,Math.min(1,f.life/f.max));
-    const x=Math.round(Math.max(3,Math.min(W-textW(f.txt)-3,f.x-textW(f.txt)/2)));
-    textShadow(f.txt,x,Math.round(f.y),f.col); }
+  for(const f of SCHWEBE){ ctx.globalAlpha=Math.max(0,Math.min(1,f.life/f.max));
+    textSchatten(f.txt,Math.round(f.x-ox-textW(f.txt)/2),Math.round(f.y-oy),f.col); }
   ctx.globalAlpha=1;
 }
 
 /* ==========================================================================
-   INPUT  -  3 Aktionen: Sprung, Ducken, Schlag
+   EINGABE
    ========================================================================== */
-const keys={};
-let jumpQueue=[], hitQueue=[], duckHeld=false, jumpHeld=false;
-let leftHeld=false, rightHeld=false;
-function pressJump(){
-  ensureAudio();
-  if(S.mode==='attract') return startGame();
-  if(S.mode==='over'&&S.overT>.5) return toInitials();
-  if(S.mode==='pause'){ S.mode='play'; return; }
-  jumpQueue.push(S.t); jumpHeld=true;      // Spielzeit, nicht Wanduhr
-}
-function pressHit(){ ensureAudio();
-  if(S.mode==='attract') return startGame();
-  if(S.mode==='play') hitQueue.push(S.t); }
-const releaseJump=()=>jumpHeld=false;
+const tasten={};
+let links=false, rechts=false, hoch=false, runter=false, sprungHalten=false;
+let sprungQueue=[], aktionQueue=[];
 
+function druckSprung(){
+  audioAn();
+  if(S.modus==='titel'){ neuesLevel(0); return; }
+  if(S.modus==='ende'&&S.endeT>.6){ S.modus='titel'; return; }
+  if(S.modus==='pause'){ S.modus='spiel'; return; }
+  sprungQueue.push(S.t); sprungHalten=true;
+}
+function druckAktion(){
+  audioAn();
+  if(S.modus==='titel'){ neuesLevel(0); return; }
+  if(S.modus==='ende'&&S.endeT>.6){ S.modus='titel'; return; }
+  if(S.modus==='spiel') aktionQueue.push(S.t);
+}
 addEventListener('keydown',e=>{
-  if(keys[e.code]) return; keys[e.code]=true;
-  if(['Space','ArrowUp','KeyW'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
-  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); duckHeld=true; }
-  if(['ArrowLeft','KeyA'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); leftHeld=true; }
-  if(['ArrowRight','KeyD'].includes(e.code)&&S.mode!=='initials'){ e.preventDefault(); rightHeld=true; }
-  /* E ist die Kampftaste. X, J und Shift laufen als Alternative mit. */
-  if(['KeyE','KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
-  if(e.code==='Enter'&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
-  if(e.code==='KeyF'){ e.preventDefault(); toggleFullscreen(); }
-  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
-  if(e.code==='KeyP'&&(S.mode==='play'||S.mode==='pause')) S.mode=S.mode==='play'?'pause':'play';
-  if(S.mode==='initials') initialsKey(e);
+  if(tasten[e.code]) return; tasten[e.code]=true;
+  if(['Space','KeyW','ArrowUp'].includes(e.code)){ e.preventDefault();
+    if(e.code==='Space') druckSprung(); else hoch=true; }
+  if(['KeyS','ArrowDown'].includes(e.code)){ e.preventDefault(); runter=true; }
+  if(['KeyA','ArrowLeft'].includes(e.code)){ e.preventDefault(); links=true; }
+  if(['KeyD','ArrowRight'].includes(e.code)){ e.preventDefault(); rechts=true; }
+  if(['KeyE','Enter','KeyX'].includes(e.code)){ e.preventDefault(); druckAktion(); }
+  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
+  if(e.code==='KeyM'){ stumm=!stumm; if(!stumm) audioAn(); }
+  if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
-addEventListener('keyup',e=>{ keys[e.code]=false;
-  if(['Space','ArrowUp','KeyW','Enter'].includes(e.code)) releaseJump();
-  if(['ArrowDown','KeyS'].includes(e.code)) duckHeld=false;
-  if(['ArrowLeft','KeyA'].includes(e.code)) leftHeld=false;
-  if(['ArrowRight','KeyD'].includes(e.code)) rightHeld=false; });
-/* Fenster verlassen -> alles loslassen, sonst laeuft man ewig weiter */
-addEventListener('blur',()=>{ leftHeld=rightHeld=duckHeld=jumpHeld=false; });
+addEventListener('keyup',e=>{ tasten[e.code]=false;
+  if(['Space'].includes(e.code)) sprungHalten=false;
+  if(['KeyW','ArrowUp'].includes(e.code)) hoch=false;
+  if(['KeyS','ArrowDown'].includes(e.code)) runter=false;
+  if(['KeyA','ArrowLeft'].includes(e.code)) links=false;
+  if(['KeyD','ArrowRight'].includes(e.code)) rechts=false;
+});
+addEventListener('blur',()=>{ links=rechts=hoch=runter=sprungHalten=false; });
 
 const el=id=>document.getElementById(id);
-const on=(n,evs,fn)=>evs.forEach(ev=>el(n).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
-on('tjump',['touchstart','mousedown'],pressJump);
-on('tjump',['touchend','mouseup','touchcancel'],releaseJump);
-on('tduck',['touchstart','mousedown'],()=>duckHeld=true);
-on('tduck',['touchend','mouseup','touchcancel'],()=>duckHeld=false);
-on('thit', ['touchstart','mousedown'],pressHit);
-on('tleft',['touchstart','mousedown'],()=>leftHeld=true);
-on('tleft',['touchend','mouseup','touchcancel'],()=>leftHeld=false);
-on('tright',['touchstart','mousedown'],()=>rightHeld=true);
-on('tright',['touchend','mouseup','touchcancel'],()=>rightHeld=false);
-/* Erste Beruehrung am Handy geht direkt ins Vollbild */
-if(matchMedia('(pointer:coarse)').matches)
-  addEventListener('touchstart',function once(){ toggleFullscreen(); removeEventListener('touchstart',once); },{once:true});
+const bind=(id,evsAn,fnAn,evsAus,fnAus)=>{
+  const n=el(id); if(!n) return;
+  evsAn.forEach(ev=>n.addEventListener(ev,e=>{e.preventDefault();fnAn();},{passive:false}));
+  if(fnAus) evsAus.forEach(ev=>n.addEventListener(ev,e=>{e.preventDefault();fnAus();},{passive:false}));
+};
+const AN=['touchstart','mousedown'], AUS=['touchend','mouseup','touchcancel'];
+bind('tleft', AN,()=>links=true,  AUS,()=>links=false);
+bind('tright',AN,()=>rechts=true, AUS,()=>rechts=false);
+bind('tup',   AN,()=>hoch=true,   AUS,()=>hoch=false);
+bind('tdown', AN,()=>runter=true, AUS,()=>runter=false);
+bind('tjump', AN,druckSprung,     AUS,()=>sprungHalten=false);
+bind('thit',  AN,druckAktion);
+if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild();
+  removeEventListener('touchstart',einmal); },{once:true});
 
 /* ==========================================================================
-   STATE
+   HILFEN
    ========================================================================== */
-let S={};
-function reset(){
-  S={ mode:'attract', t:0, overT:0, freeze:0,
-      dist:0, px:TUNE.playerHomeX, lineX:TUNE.lineStart,
-      y:0, vy:0, onGround:true, lastGround:0, ducking:false,
-      hitT:-99, hitDone:false, hp:TUNE.leben, inv:0,
-      pegel:0, score:0, combo:0, comboT:0, kos:0,
-      things:[], shots:[], nextSpawn:280,
-      shake:0, flash:0, flashCol:'255,255,255',
-      etappe:0, banner:0, bannerTxt:'', bannerSub:'',
-      boss:null, bossDone:-1,
-      initials:[0,0,0], iSlot:0, pendingScore:0, blackout:false,
-      demo:false, overTxt:'' };
-  PART=[]; FLOAT=[];
-}
-reset(); S.demo=true;
-function startGame(){ reset(); S.mode='play'; jumpQueue=[]; hitQueue=[]; beep(880,.05); setTimeout(()=>beep(1320,.07),60); }
-const etappeFor=m=>{ let i=0; for(let k=0;k<ETAPPEN.length;k++) if(m>=ETAPPEN[k].m) i=k; return i; };
-const diffScale=()=>Math.max(TUNE.gapFloor, 1-(S.dist/10/1000)*TUNE.gapShrinkPer1000m);
-const enemyChance=()=>Math.min(.85, TUNE.chanceEnemy+(S.dist/10/1000)*TUNE.enemyRampPer1000m);
-const gruppeChance=()=>Math.min(.70, TUNE.chanceGruppe+(S.dist/10/1000)*TUNE.gruppeRampPer1000m);
+const etageY = i => LV.etagen[Math.max(0,Math.min(LV.etagen.length-1,i))];
+const tuerAn = (wx,etage) => S.tueren.find(t=>t.etage===etage&&Math.abs(t.x+4-wx)<11);
+const treppeAn = wx => LV.treppen.find(t=>Math.abs(t.x-wx)<14);
+
+function meldung(txt,dauer=1.8){ S.meldung=txt; S.meldungT=dauer; }
 
 /* ==========================================================================
-   SPAWNING
+   LOGIK
    ========================================================================== */
-function mkThing(kind,x){
-  const o={kind,x};
-  if(kind==='cone')   Object.assign(o,{y:GROUND-7, w:7, h:7});
-  if(kind==='kasten') Object.assign(o,{y:GROUND-12,w:8, h:12});
-  if(kind==='tonne')  Object.assign(o,{y:GROUND-12,w:8, h:12});
-  if(kind==='gitter') Object.assign(o,{y:GROUND-12,w:10,h:12});
-  if(kind==='schild') Object.assign(o,{y:GROUND-46,w:16,h:32,hit:{ox:0,oy:0,w:16,h:16}});
-  /* Gegner haben eine Kampf-KI: laufen -> ausholen -> schlagen -> offen stehen.
-     hoch = Schlag auf Kopfhoehe (ducken), tief = Fegen (springen),
-     voll  = trifft alles (zurueckweichen ist die einzige Antwort). */
-  const foeBase={foe:true,hp:1,stun:0,st:'walk',t:0,
-                 windSec:TUNE.foeWindSec,recSec:TUNE.foeRecSec,reach:TUNE.foeReach,zone:'hoch'};
-  if(kind==='gegner') Object.assign(o,{y:GROUND-13,w:7, h:13,vx:24},foeBase);
-  if(kind==='brocken')Object.assign(o,{y:GROUND-15,w:9, h:15,vx:15},foeBase,
-                                    {hp:2,zone:'voll',windSec:TUNE.foeWindSec*1.5,
-                                     recSec:TUNE.foeRecSec*1.25,panzer:true});
-  if(kind==='flitzer')Object.assign(o,{y:GROUND-12,w:6, h:12,vx:52},foeBase,
-                                    {zone:'tief',windSec:TUNE.foeWindSec*.72,recSec:TUNE.foeRecSec*.8});
-  if(kind==='werfer') Object.assign(o,{y:GROUND-13,w:7, h:13,vx:18},foeBase,
-                                    {ranged:true,reach:78,windSec:TUNE.foeWindSec*1.2});
-  if(kind==='taube')  Object.assign(o,{y:GROUND-26,w:7, h:5, foe:true,vx:46,hp:1,stun:0,fly:true,st:'walk'});
-  return o;
+function betreteRaum(t){
+  t.offen=true; S.ansicht='raum'; S.raum=t; S.raumX=18; S.suchT=0; S.suchZiel=null;
+  SFX.tuer(); staub(S.wx,S.wy-2,8,'#6b6488',30,10);
+}
+function verlasseRaum(){
+  S.ansicht='flur'; S.wx=S.raum.x+4; S.wy=etageY(S.raum.etage);
+  S.raum=null; S.vy=0; S.amBoden=true; SFX.tuer();
+}
+function durchsuche(obj){
+  if(S.suchT>0) return;
+  S.suchT=TUNE.suchDauer; S.suchZiel=obj; SFX.suchen();
+}
+function sucheFertig(){
+  const t=S.raum;
+  const schluesselHier = t.name===S.schluesselRaum && !S.schluessel;
+  if(schluesselHier && !S.gefunden[t.name]){
+    S.gefunden[t.name]=true; S.schluessel=true;
+    schwebe('SCHLUESSEL',S.raumX+8,-14,P.gold);
+    funken(S.raumX+8,-6,P.gold,20,110);
+    meldung('SCHLUESSEL GEFUNDEN - RAUS HIER',2.8);
+    SFX.fund(); S.blitz=.4; S.blitzFarbe='255,212,71';
+  } else {
+    schwebe(LEER_SPRUECHE[Math.floor(Math.random()*LEER_SPRUECHE.length)],S.raumX+8,-14,P.dim);
+    SFX.nichts();
+  }
+  t.durchsucht=true;
 }
 
-/* ---- Gegner-KI ---- */
-function foeSwing(o){
-  if(o.ranged){ S.shots.push({x:o.x-2,y:o.y+2,vx:-128,vy:-52,w:5,h:5,kind:'flasche'});
-                slide(600,300,.18,'triangle',.045); return; }
-  slide(280,150,.1,'sawtooth',.03);
+function verletzt(){
+  if(S.inv>0) return;
+  S.hp--; S.inv=TUNE.invulnMs/1000;
+  S.shake=6; S.blitz=.45; S.blitzFarbe='255,77,77';
+  SFX.erwischt();
+  if(S.hp<=0){ S.modus='ende'; S.endeT=0; S.gewonnen=false; return; }
+  /* Zurueck zur naechsten Treppe - nicht an den Levelanfang */
+  const tr=LV.treppen.reduce((a,b)=>Math.abs(b.x-S.wx)<Math.abs(a.x-S.wx)?b:a);
+  S.wx=tr.x; S.wy=etageY(S.etage); S.vy=0;
+  for(const w of S.wachen){ w.alarm=0; w.gesehen=false; }
+  meldung('ERWISCHT',1.6);
 }
-function updateFoe(o,dt){
-  if(o.stun>0){ o.stun-=dt; return; }
-  if(o.fly){ o.x-=o.vx*dt; return; }
-  /* Bist du an ihm vorbei, ist er raus aus dem Kampf. Ohne das bleibt er
-     ewig stehen und schlaegt ins Leere - seine Trefferzone zeigt nach links. */
-  if(o.x < S.px-2){ o.st='walk'; o.t=0; o.x-=o.vx*dt; return; }
-  if(o.st==='wind'){ o.t-=dt; if(o.t<=0){ o.st='swing'; o.t=TUNE.foeSwingSec; foeSwing(o); } return; }
-  if(o.st==='swing'){ o.t-=dt; if(o.t<=0){ o.st='rec'; o.t=o.recSec; } return; }
-  if(o.st==='rec'){ o.t-=dt; if(o.t<=0) o.st='walk'; return; }
-  const d=o.x-S.px;
-  if(d>o.reach) o.x-=o.vx*dt;
-  else { o.st='wind'; o.t=o.windSec; if(!o.ranged) beep(220,.05,'square',.025); }
-}
-/* Trefferzone eines ausgefuehrten Schlags */
-function foeHitbox(o){
-  if(o.st!=='swing'||o.ranged) return null;
-  const r=TUNE.foeSwingReach;
-  if(o.zone==='hoch') return {x:o.x-r,y:o.y+1, w:r+3,h:7};
-  if(o.zone==='tief') return {x:o.x-r,y:GROUND-6,w:r+3,h:6};
-  return {x:o.x-r,y:o.y,   w:r+3,h:o.h};
-}
-function spawn(){
-  const r=Math.random();
-  if(r<TUNE.chanceShot)
-    S.things.push({kind:'shot',x:W+8,y:GROUND-34-Math.random()*24,w:5,h:5});
-  else if(r<TUNE.chanceShot+TUNE.chanceWater)
-    S.things.push({kind:'water',x:W+8,y:GROUND-30-Math.random()*18,w:5,h:5});
-  else if(Math.random()<enemyChance()){
-    /* Gegner kommen gern in Gruppen - dafuer gibt es Combos */
-    const n = Math.random()<gruppeChance() ? (Math.random()<.35?3:2) : 1;
-    for(let i=0;i<n;i++){
-      const roll=Math.random();
-      const kind = roll<.12 ? 'taube'   : roll<.28 ? 'brocken'
-                 : roll<.44 ? 'flitzer' : roll<.56 ? 'werfer' : 'gegner';
-      S.things.push(mkThing(kind, W+10+i*(26+Math.random()*16)));
+
+function wacheTakt(w,dt){
+  const y=etageY(w.etage);
+  /* Sieht sie dich? Nur auf derselben Etage, nur im Flur, nur nach vorn */
+  let sieht=false;
+  if(S.ansicht==='flur'&&S.etage===w.etage&&S.inv<=0){
+    const dx=(S.wx-w.x)*w.richtung;
+    if(dx>0&&dx<TUNE.lehrerSicht&&Math.abs(S.wy-y)<TUNE.lehrerSichtHoch) sieht=true;
+  }
+  if(sieht&&!w.gesehen){ SFX.entdeckt(); schwebe('!',w.x+3,y-22,P.gefahr); }
+  w.gesehen=sieht;
+  if(sieht) w.alarm=TUNE.jagdDauer;
+  if(w.alarm>0){
+    w.alarm-=dt;
+    const ziel=S.wx>w.x?1:-1; w.richtung=ziel;
+    w.x+=ziel*TUNE.jagdTempo*dt;
+    if(S.ansicht==='flur'&&S.etage===w.etage&&Math.abs(S.wx-w.x)<TUNE.erwischtAbstand) verletzt();
+  } else {
+    if(w.warte>0){ w.warte-=dt; }
+    else{
+      w.x+=w.richtung*TUNE.lehrerTempo*dt;
+      if(w.x<w.von){ w.x=w.von; w.richtung=1;  w.warte=TUNE.lehrerPause; }
+      if(w.x>w.bis){ w.x=w.bis; w.richtung=-1; w.warte=TUNE.lehrerPause; }
     }
   }
-  else if(Math.random()<TUNE.chanceOverhead)
-    S.things.push(mkThing('schild',W+8));
-  else
-    S.things.push(mkThing(['cone','kasten','tonne','gitter'][Math.floor(Math.random()*4)],W+8));
-  const d=diffScale();
-  S.nextSpawn=(TUNE.gapMinPx+Math.random()*(TUNE.gapMaxPx-TUNE.gapMinPx))*d;
+  w.x=Math.max(8,Math.min(LV.breite-16,w.x));
 }
 
-/* ==========================================================================
-   BOSS  -  echter Kampf: telegrafierte Angriffe, Phasen, Schwachstelle
-   ========================================================================== */
-function startBoss(i){
-  const b=ETAPPEN[i].boss; if(!b) return;
-  const hp=b.hp||TUNE.bossHp;
-  S.boss={ name:b.name, sub:b.sub, i, x:W+40, tx:214, hp, maxHp:hp, telMul:b.telMul||1,
-           phase:1, state:'entry', t:0, tel:0, atk:null, iFrames:0, hurtT:0, dead:0, cd:1.2 };
-  S.things=S.things.filter(o=>o.kind==='shot'||o.kind==='water');
-  S.banner=2.2; S.bannerTxt=b.name; S.bannerSub=b.sub;
-  SFX.bossIn();
-}
-function bossPhaseOf(b){
-  const f=b.hp/b.maxHp;
-  return f<=TUNE.bossPhase3At?3 : f<=TUNE.bossPhase2At?2 : 1;
-}
-function bossPickAttack(b){
-  const opts = b.phase===1 ? ['flasche','flasche','sturm']
-             : b.phase===2 ? ['flasche','sturm','doppel']
-             :               ['sturm','doppel','flasche','sturm'];
-  return pick(opts);
-}
-function updateBoss(dt){
-  const b=S.boss; b.t+=dt;
-  if(b.iFrames>0) b.iFrames-=dt*1000;
-  if(b.hurtT>0)   b.hurtT-=dt;
+function takt(dt){
+  S.t+=dt; musikTakt(); fxTakt(dt);
+  if(S.modus==='pause') return;
+  if(S.modus==='ende'){ S.endeT+=dt; return; }
+  if(S.modus!=='spiel') return;
 
-  if(b.state==='entry'){
-    b.x+=(b.tx-b.x)*Math.min(1,dt*2.2);
-    if(Math.abs(b.x-b.tx)<2){ b.state='idle'; b.cd=.9; }
-    return;
-  }
-  if(b.state==='dead'){ b.dead+=dt;
-    if(b.dead>1.4){ S.score+=TUNE.bossBonus; S.banner=2.0;
-      S.bannerTxt=pick(SAY.bossWin); S.bannerSub='+'+TUNE.bossBonus; S.boss=null; SFX.win(); }
-    return;
-  }
-
-  b.phase=bossPhaseOf(b);
-
-  switch(b.state){
-    case 'idle':
-      b.cd-=dt*(1+(b.phase-1)*.35);
-      if(b.cd<=0){
-        b.atk=bossPickAttack(b);
-        b.state='telegraph'; b.tel=TUNE.bossTelegraphMs/1000*b.telMul; SFX.warn();
-        /* Ansage, was zu tun ist - Bosse muessen fair telegrafieren */
-        say(b.atk==='sturm'?'DUCKEN':'SPRINGEN', S.px+40, GROUND-66, P.danger);
-        if(Math.random()<.5) say(pick(SAY.bossTaunt[b.name]||['!']), b.x+16, GROUND-78, P.dim);
-      }
-      break;
-    case 'telegraph':
-      b.tel-=dt; if(b.tel<=0) fireBossAttack(b);
-      break;
-    case 'charge':                    /* stuermt heran - drunter wegducken */
-      b.x-=b.vx*dt;
-      /* bleibt in Schlagreichweite des Spielers stehen, wo der gerade steht */
-      if(b.x<=S.px+16){ b.x=S.px+16; b.state='punish'; b.punish=1.2-(b.phase-1)*.22;
-                        puff(b.x+8,GROUND-4,14,'#6b6488',80,20); S.shake=3; }
-      break;
-    case 'punish':                    /* steht offen - JETZT draufhauen */
-      b.punish-=dt; if(b.punish<=0) b.state='retreat';
-      break;
-    case 'retreat':
-      b.x+=180*dt;
-      if(b.x>=b.tx){ b.x=b.tx; b.state='idle'; b.cd=1.2-(b.phase-1)*.3; }
-      break;
-    case 'recover':
-      b.cd-=dt; if(b.cd<=0){ b.state='idle'; b.cd=1.15-(b.phase-1)*.28; }
-      break;
-  }
-}
-function fireBossAttack(b){
-  if(b.atk==='sturm'){                        // Sturmangriff -> wegducken, dann kontern
-    b.state='charge'; b.vx=195+b.phase*30; slide(200,420,.25,'sawtooth',.05); return;
-  }
-  if(b.atk==='flasche'){                      // Flaschen im Bogen -> drueberspringen
-    const n=b.phase>=3?2:1;
-    for(let k=0;k<n;k++)
-      S.shots.push({x:b.x+6,y:GROUND-30-k*12,vx:-118-k*22,vy:-58,w:5,h:5,kind:'flasche'});
-    slide(600,300,.2,'triangle',.05);
-  }
-  if(b.atk==='doppel'){                       // Handlanger hoch und tief
-    S.things.push(Object.assign(mkThing('taube',b.x),{vx:120}));
-    S.things.push(Object.assign(mkThing('gegner',b.x+26),{vx:105}));
-    slide(300,140,.3,'square',.05);
-  }
-  b.state='recover'; b.cd=.55;
-}
-function bossTakeHit(){
-  const b=S.boss;                    // verwundbar ist er nur im Konterfenster
-  if(!b||b.iFrames>0||b.state!=='punish') return false;
-  b.hp--; b.iFrames=TUNE.bossIFramesMs; b.hurtT=.3;
-  S.shake=5; S.freeze=TUNE.hitStopMs;
-  shards(b.x+16,GROUND-40,P.danger,16,120);
-  SFX.klatsch();
-  if(b.hp<=0){ b.state='dead'; b.dead=0; SFX.ko();
-    puff(b.x+16,GROUND-30,40,P.gold,140,90); say('DER LAG',b.x+16,GROUND-70,P.gold); }
-  return true;
-}
-
-/* ==========================================================================
-   UPDATE
-   ========================================================================== */
-function demoBrain(){
-  const foe=S.things.find(o=>o.foe&&o.x>S.px-4&&o.x<S.px+30);
-  const wall=S.things.find(o=>!o.foe&&o.kind!=='shot'&&o.kind!=='water'&&o.x>S.px-4&&o.x<S.px+64);
-  if(foe&&S.t-S.hitT>TUNE.hitCooldownMs/1000+.04){ hitQueue.push(S.t); }
-  duckHeld=!!(wall&&wall.kind==='schild')||!!(S.boss&&S.boss.state==='charge');
-  if(!duckHeld&&wall&&wall.kind!=='schild'&&S.onGround&&wall.x<S.px+44){ jumpQueue.push(S.t); jumpHeld=true; }
-  if(S.boss&&S.boss.state==='punish') hitQueue.push(S.t);
-  /* Die Vorfuehrung muss selbst laufen - sonst holt die Sperrstunde sie ein */
-  rightHeld = !foe || foe.x-S.px>19;
-  leftHeld  = false;
-  if(S.vy>-60) jumpHeld=false;
-}
-
-function update(dt){
-  S.t+=dt; musicTick(); updateFx(dt);
-  if(S.freeze>0){ S.freeze-=dt*1000; return; }          // Hit-Stop
-  if(S.mode==='pause') return;
-  if(S.mode==='over') S.overT+=dt;
   S.shake=Math.max(0,S.shake-dt*18);
-  S.flash=Math.max(0,S.flash-dt*1.6);
+  S.blitz=Math.max(0,S.blitz-dt*1.8);
   S.banner=Math.max(0,S.banner-dt);
-
-  const running=S.mode==='play'||(S.mode==='attract'&&S.demo);
-  if(!running) return;
-  if(S.mode==='attract') demoBrain();
-
-  const p=S.pegel/TUNE.pegelMax, delay=p*TUNE.fxInputDelayMs;
-  S.pegel=Math.max(0,S.pegel-TUNE.pegelDecayPerSec*dt);
+  S.meldungT=Math.max(0,S.meldungT-dt);
   if(S.inv>0) S.inv-=dt;
 
-  /* Etappe + Boss */
-  const e=etappeFor(S.dist/10);
-  if(e!==S.etappe){
-    S.etappe=e; SFX.etappe();
-    if(S.mode==='play'&&ETAPPEN[e].boss&&S.bossDone<e){ S.bossDone=e; startBoss(e); }
-    else { S.banner=2.0; S.bannerTxt=ETAPPEN[e].name; S.bannerSub='ETAPPE '+(e+1); }
-  }
-  if(S.boss) updateBoss(dt);
+  const bewegung=(rechts?1:0)-(links?1:0);
+  if(bewegung) S.blick=bewegung;
 
-  if(S.combo>0){ S.comboT-=dt; if(S.comboT<=0) S.combo=0; }
-
-  /* --- Schlag --- (alle Zeiten in Spielsekunden) */
-  const now=S.t, delayS=delay/1000;
-  const WIND=TUNE.hitWindupMs/1000, ACT=TUNE.hitActiveMs/1000, CD=TUNE.hitCooldownMs/1000;
-  while(hitQueue.length&&now-hitQueue[0]>=delayS){
-    hitQueue.shift();
-    if(now-S.hitT>=CD){ S.hitT=now; S.hitDone=false; SFX.swing(); }
-  }
-  const hitAge=now-S.hitT;
-  const hitActive = hitAge>=WIND && hitAge<=WIND+ACT;
-
-  /* --- Sprung --- */
-  S.ducking=duckHeld&&S.onGround&&hitAge>WIND+ACT;
-  while(jumpQueue.length&&now-jumpQueue[0]>=delayS){
-    jumpQueue.shift();
-    if(S.onGround||(now-S.lastGround)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.jumpVel; S.onGround=false; puff(S.px+4,GROUND-1,5,'#6b6488',26,8); SFX.jump(); }
-  }
-  if(!jumpHeld&&S.vy<0&&TUNE.shortHopCut>0) S.vy*=(1-TUNE.shortHopCut*dt*12);
-  S.vy+=TUNE.gravity*dt; S.y+=S.vy*dt;
-  if(S.y>=0){ S.y=0; S.vy=0;
-    if(!S.onGround){ puff(S.px+4,GROUND-1,7,'#6b6488',40,14); SFX.land(); }
-    S.onGround=true; S.lastGround=now;
-  } else S.onGround=false;
-
-  /* --- Laufen --- Nichts bewegt sich, wenn du dich nicht bewegst.
-     Laeufst du ueber pushX hinaus, schiebst du stattdessen die Welt. */
-  const mv=(rightHeld?1:0)-(leftHeld?1:0);
-  if(mv&&!S.ducking)
-    S.px += mv*TUNE.walkSpeed*(S.onGround?1:TUNE.moveAirFactor)*(1-p*.25)*dt;
-  const grenze = S.boss ? TUNE.playerMaxX : TUNE.pushX;
-  let shift = 0;
-  if(S.px>grenze){ if(!S.boss) shift = S.px-grenze; S.px = grenze; }
-  S.px = Math.max(TUNE.playerMinX, S.px);
-
-  /* --- Die Sperrstunde rueckt nach --- */
-  if(!S.boss){
-    const ramp = (S.dist/10/1000)*TUNE.lineRampPer1000m;
-    const idle = mv>0 ? 0 : TUNE.lineIdlePush;
-    S.lineX += (TUNE.lineSpeed+ramp+idle)*dt - shift;
-    S.lineX = Math.max(-TUNE.lineMaxLag, Math.min(W, S.lineX));
-    if(S.px < S.lineX) return crash(false, null, true);
-  }
-
-  /* --- Fortschritt --- kommt jetzt allein aus deiner Bewegung */
-  S.dist += shift;
-  bgT += shift;
-  if(S.mode==='play')
-    S.score += shift/10*TUNE.pointsPerMeter*(1+p*(TUNE.fxScoreMult-1));
-
-  /* --- Welt bewegen --- */
-  S.nextSpawn-=shift;
-  if(!S.boss&&S.nextSpawn<=0) spawn();
-  for(const o of S.things){
-    o.x-=shift;
-    if(o.foe) updateFoe(o,dt);
-  }
-  S.things=S.things.filter(o=>o.x>-44&&!o.gone);
-  for(const s of S.shots){ s.x+=s.vx*dt; s.vy+=520*dt; s.y+=s.vy*dt; }
-  S.shots=S.shots.filter(s=>s.x>-20&&s.y<H+20);
-
-  /* --- Spieler-Box --- */
-  const pw=S.ducking?7:5, ph=S.ducking?5:13;
-  const px=S.px+(S.ducking?0:1), py=GROUND-ph+S.y;
-
-  /* --- Faust trifft? --- */
-  if(hitActive&&!S.hitDone){
-    const fx=S.px+5, fy=GROUND-11+S.y, fw=TUNE.hitReach, fh=9;
-    for(const o of S.things){
-      if(!o.foe||o.dead) continue;
-      if(fx<o.x+o.w&&fx+fw>o.x&&fy<o.y+o.h&&fy+fh>o.y){
-        S.hitDone=true;
-        /* Konter: du triffst waehrend er ausholt. Brocken sind gepanzert. */
-        const konter = o.st==='wind' && !o.panzer
-                     && o.t <= o.windSec*TUNE.konterFenster;
-        if(konter) o.hp=0; else o.hp--;
-        if(!o.panzer){ o.st='rec'; o.t=o.recSec; }   // Schlag wird unterbrochen
-        S.freeze=TUNE.hitStopMs*(konter?1.6:1); S.shake=konter?6:4;
-        o.x+=TUNE.hitKnockback*(o.hp>0?.6:1);
-        SFX.klatsch();
-        if(o.hp>0){
-          o.stun=.42; shards(o.x+3,o.y+5,'#ffffff',7,70);
-          say('AUA',o.x+3,o.y-6,P.white);
-        } else {
-          o.dead=true; o.gone=true;
-          S.kos++; S.combo++; S.comboT=TUNE.comboWindowSec;
-          S.score+=TUNE.pointsPerKO+S.combo*TUNE.comboStep+(konter?TUNE.konterBonus:0);
-          shards(o.x+3,o.y+5,konter?P.gold:'#c8324a',konter?22:14,konter?150:110);
-          say(konter?pick(SAY.konter):pick(SAY.ko),o.x+3,o.y-6,konter?P.neon:P.gold);
-          if(konter){ S.flash=.28; S.flashCol='255,212,71'; SFX.win(); } else SFX.ko();
-          /* Umfallender reisst den naechsten mit */
-          for(const n of S.things){
-            if(n===o||!n.foe||n.gone||n.fly) continue;
-            if(n.x>o.x&&n.x<o.x+34){ n.hp--; n.stun=.5; n.st='rec'; n.t=n.recSec;
-              n.x+=14; shards(n.x+3,n.y+5,'#ffffff',6,60);
-              if(n.hp<=0){ n.gone=true; S.kos++; S.combo++; S.score+=TUNE.pointsPerKO;
-                           say('UND DER AUCH',n.x,n.y-6,P.gold); }
-              break; }
-          }
-        }
-        break;
-      }
+  /* ---------- RAUM-ANSICHT ---------- */
+  if(S.ansicht==='raum'){
+    if(bewegung) S.raumX=Math.max(6,Math.min(112,S.raumX+bewegung*TUNE.gehen*dt));
+    S.gehPhase+=Math.abs(bewegung)*dt*9;
+    if(S.suchT>0){ S.suchT-=dt; if(S.suchT<=0) sucheFertig(); }
+    while(aktionQueue.length){
+      aktionQueue.shift();
+      if(S.raumX<16){ verlasseRaum(); break; }
+      const inh=RAUM_INHALT[S.raum.typ]||RAUM_INHALT.klasse;
+      const nah=inh.find(o=>Math.abs(o.x+6-S.raumX)<12);
+      if(nah) durchsuche(nah); else meldung('DA IST NICHTS',1.0);
     }
-    if(!S.hitDone&&S.boss&&S.boss.state==='punish'){
-      const b=S.boss, bw=32;
-      if(fx+fw>b.x&&fx<b.x+bw){ if(bossTakeHit()) S.hitDone=true; }
+    sprungQueue.length=0;
+    for(const w of S.wachen) wacheTakt(w,dt);
+    naeheBerechnen();
+    return;
+  }
+
+  /* ---------- FLUR ---------- */
+  const y=etageY(S.etage);
+  if(bewegung&&!S.ducking){
+    S.wx+=bewegung*TUNE.gehen*dt;
+    S.gehPhase+=dt*9;
+    if(S.amBoden&&Math.floor(S.gehPhase*2)%2===0&&Math.random()<.06) SFX.schritt();
+  }
+  S.wx=Math.max(10,Math.min(LV.breite-14,S.wx));
+  S.ducken=runter&&S.amBoden;
+
+  /* Springen */
+  while(sprungQueue.length){
+    sprungQueue.shift();
+    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
+      S.vy=TUNE.sprungKraft; S.amBoden=false; staub(S.wx+4,y,5,'#6b6488',22,8); SFX.sprung();
     }
   }
+  if(!sprungHalten&&S.vy<0) S.vy*=(1-TUNE.kurzerHopser*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.wy+=S.vy*dt;
+  if(S.wy>=y){ S.wy=y; if(!S.amBoden){ staub(S.wx+4,y,6,'#6b6488',34,12); SFX.land(); }
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; }
+  else S.amBoden=false;
 
-  /* --- Kollisionen --- */
-  const trifft=(bx,by,bw,bh)=> px<bx+bw&&px+pw>bx&&py<by+bh&&py+ph>by;
-  for(const o of S.things){
-    if(o.gone) continue;
+  /* Treppen: hoch und runter */
+  const tr=treppeAn(S.wx);
+  if(tr&&S.amBoden){
+    if(hoch&&S.etage<tr.bis){ S.etage++; S.wy=etageY(S.etage); hoch=false; SFX.treppe(); }
+    if(runter&&S.etage>tr.von){ S.etage--; S.wy=etageY(S.etage); runter=false; SFX.treppe(); }
+  }
 
-    if(o.foe&&o.kind!=='taube'){
-      /* Der Koerper blockt nur, verletzt nicht - sonst kaeme man nie in
-         Schlagreichweite. Wehtun tut ausschliesslich der ausgefuehrte Schlag. */
-      if(trifft(o.x,o.y,o.w,o.h)) S.px=Math.max(TUNE.playerMinX,o.x-pw-1);
-      const hb=foeHitbox(o);
-      if(hb&&trifft(hb.x,hb.y,hb.w,hb.h)&&hurt(o)) return;
-      continue;
+  /* Aktion: Tuer oder Ausgang */
+  while(aktionQueue.length){
+    aktionQueue.shift();
+    const t=tuerAn(S.wx,S.etage);
+    if(t){ betreteRaum(t); break; }
+    if(S.etage===LV.ausgang.etage&&Math.abs(LV.ausgang.x+4-S.wx)<12){
+      if(S.schluessel){ S.modus='ende'; S.endeT=0; S.gewonnen=true; SFX.gewonnen(); }
+      else meldung('ABGESCHLOSSEN - DU BRAUCHST DEN SCHLUESSEL',2.2);
+      break;
     }
-
-    const h=o.hit||{ox:0,oy:0,w:o.w,h:o.h};
-    const ox=o.x+h.ox, oy=o.y+h.oy;
-    if(px<ox+h.w&&px+pw>ox&&py<oy+h.h&&py+ph>oy){
-      if(o.kind==='shot'){
-        o.gone=true; S.pegel=Math.min(TUNE.pegelMax,S.pegel+TUNE.shotPegel);
-        S.combo++; S.comboT=3.4; S.score+=TUNE.pointsPerShot+S.combo*TUNE.comboStep;
-        S.flash=.16; S.flashCol='255,255,255'; shards(o.x+2,o.y+2,P.gold,8,70);
-        if(Math.random()<.35) say(pick(SAY.shot),o.x,o.y-8,P.gold);
-        SFX.shot(S.combo);
-      } else if(o.kind==='water'){
-        o.gone=true; S.pegel=Math.max(0,S.pegel+TUNE.waterPegel);
-        S.score+=TUNE.pointsPerWater; shards(o.x+2,o.y+2,P.neon2,8,70);
-        if(Math.random()<.4) say(pick(SAY.water),o.x,o.y-8,P.neon2);
-        SFX.water();
-      } else if(hurt(o)) return;
-    }
+    meldung('HIER GEHT NICHTS',.9);
   }
-  for(const s of S.shots){
-    if(px<s.x+s.w&&px+pw>s.x&&py<s.y+s.h&&py+ph>s.y){ s.gone=true; if(hurt(s)) return; }
+
+  for(const w of S.wachen) wacheTakt(w,dt);
+  naeheBerechnen();
+}
+
+/* Wie nah ist der naechste Lehrer? Steuert Musik und Bildrand. */
+function naeheBerechnen(){
+  let n=0;
+  for(const w of S.wachen){
+    if(w.etage!==S.etage) continue;
+    const d=Math.abs(w.x-S.wx);
+    const v=w.alarm>0?1:Math.max(0,1-d/150);
+    if(v>n) n=v;
   }
-  S.shots=S.shots.filter(s=>!s.gone);
-  /* Sturmangriff des Bosses: trifft alles ausser einen geduckten Spieler */
-  if(S.boss&&S.boss.state==='charge'){
-    const bx=S.boss.x, by=GROUND-44, bw=32, bh=38;
-    if(px<bx+bw&&px+pw>bx&&py<by+bh&&py+ph>by&&hurt({x:bx+14,y:GROUND-30})) return;
-  }
-  S.things=S.things.filter(o=>!o.gone);
-
-  if(S.combo>0&&S.combo%5===0&&S.comboT>TUNE.comboWindowSec-.1)
-    say(pick(SAY.combo),S.px+20,GROUND-40,P.neon);
-  if(TUNE.blackoutAtMax&&S.pegel>=TUNE.pegelMax) return crash(true);
-}
-
-/* Treffer einstecken. Gibt true zurueck, wenn der Lauf damit vorbei ist. */
-function hurt(obj=null){
-  if(S.inv>0||S.mode!=='play') return false;
-  S.hp--; S.combo=0; S.inv=TUNE.invulnMs/1000;
-  S.px=Math.max(TUNE.playerMinX,S.px-TUNE.hurtKnockback);
-  S.shake=6; S.freeze=90; S.flash=.42; S.flashCol='255,77,77';
-  puff(S.px+4,GROUND-8,14,P.danger,80,50);
-  if(S.hp<=0){ crash(false,obj); return true; }
-  say(pick(SAY.aua),S.px+4,GROUND-30,P.danger);
-  SFX.hurt();
-  return false;
-}
-
-function crash(blackout=false,obj=null,line=false){
-  if(S.mode==='attract'){ reset(); S.demo=true; return; }
-  S.mode='over'; S.overT=0; S.shake=7; S.blackout=blackout; S.geschnappt=line;
-  S.pendingScore=Math.floor(S.score);
-  S.overTxt=pick(line?SAY.sperrstunde:blackout?SAY.blackout:SAY.over);
-  S.flash=.5; S.flashCol=blackout?'255,61,139':line?'20,10,30':'255,77,77';
-  S.freeze=110;
-  puff(S.px+6,GROUND-9,24,blackout?P.neon:P.danger,110,70);
-  if(obj) shards(obj.x+3,obj.y+4,P.dim,12,80);
-  SFX.hurt();
-}
-
-/* ---- Initialen ---- */
-const AZ='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
-function toInitials(){
-  const worst=scores.length>=5?scores[4].score:-1;
-  if(S.pendingScore<=worst){ reset(); S.demo=true; return; }
-  S.mode='initials'; S.initials=[0,0,0]; S.iSlot=0; beep(1000,.09);
-}
-function initialsKey(e){
-  if(e.code==='ArrowUp'){ S.initials[S.iSlot]=(S.initials[S.iSlot]+1)%AZ.length; beep(700,.03); }
-  if(e.code==='ArrowDown'){ S.initials[S.iSlot]=(S.initials[S.iSlot]-1+AZ.length)%AZ.length; beep(600,.03); }
-  if(e.code==='ArrowRight'){ S.iSlot=Math.min(2,S.iSlot+1); beep(900,.03); }
-  if(e.code==='ArrowLeft'){ S.iSlot=Math.max(0,S.iSlot-1); beep(900,.03); }
-  if(e.code==='Enter'){ saveScore(S.initials.map(i=>AZ[i]).join('').trim()||'AAA',S.pendingScore);
-    scores=loadScores(); beep(1400,.14); reset(); S.demo=true; }
+  if(S.ansicht==='raum') n*=.35;
+  S.naehe=n;
 }
 
 /* ==========================================================================
-   HINTERGRUND
+   KAMERA
    ========================================================================== */
-const NEON_WORDS=['BAR','CLUB','SPAETI','DOENER','TAXI','24H','OPEN','KIOSK','LATE','ECK'];
-let bgT=0, RAIN=[];
-for(let i=0;i<70;i++) RAIN.push({x:Math.random()*W,y:Math.random()*H,v:180+Math.random()*160,l:3+Math.random()*4});
-
-const loopX=(base,sp,span)=>{ const x=(base-bgT*sp)%span; return x<0?x+span:x; };
-function shade(hex,amt){
-  const n=parseInt(hex.slice(1),16); const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
-  const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));
-  return `rgb(${f(r)},${f(g)},${f(b)})`;
+function kamera(dt){
+  const zielX=S.wx+S.blick*TUNE.kameraVorlauf-W/2;
+  const zielY=(S.ansicht==='raum'?etageY(S.raum.etage):S.wy)-H*0.58;
+  if(!S.camGesetzt){ S.camX=zielX; S.camY=zielY; S.camGesetzt=true; }
+  S.camX+=(zielX-S.camX)*Math.min(1,TUNE.kameraFolgeX*dt);
+  S.camY+=(zielY-S.camY)*Math.min(1,TUNE.kameraFolgeY*dt);
+  S.camX=Math.max(0,Math.min(LV.breite-W,S.camX));
+  const obenY=etageY(LV.etagen.length-1)-H*0.72, untenY=etageY(0)-H*0.46;
+  S.camY=Math.max(obenY,Math.min(untenY,S.camY));
 }
 
-function drawSky(et){
-  ctx.drawImage(verlauf('sky'+S.etappe,W+16,GROUND+16,x=>{
-    const g=x.createLinearGradient(0,8,0,GROUND+8);
-    g.addColorStop(0,et.sky[0]); g.addColorStop(1,et.sky[1]);
-    x.fillStyle=g; x.fillRect(0,0,W+16,GROUND+16);
+/* ==========================================================================
+   ZEICHNEN
+   ========================================================================== */
+function zeichneGebaeude(ox,oy){
+  /* Aussenhimmel hinter dem Gebaeude */
+  ctx.drawImage(verlauf('himmel'+LV.id,W+16,H+16,x=>{
+    const g=x.createLinearGradient(0,0,0,H+16);
+    g.addColorStop(0,LV.himmel[0]); g.addColorStop(1,LV.himmel[1]);
+    x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
   }),-8,-8);
-  const mx=262,my=24;
-  ctx.fillStyle='#f0e6c0'; ctx.beginPath(); ctx.arc(mx,my,9,0,7); ctx.fill();
-  ctx.fillStyle=et.sky[0]; ctx.beginPath(); ctx.arc(mx-4,my-3,8,0,7); ctx.fill();
-  for(let i=0;i<44;i++){
-    const x=loopX(i*97,.03,W+30);
-    ctx.fillStyle=i%9===0?et.neon:(i%3?'#ffffff26':'#ffffff44');
-    ctx.fillRect(Math.floor(x)-15,(i*37)%64+4,1,1);
-  }
-}
-function drawSkyline(et){
-  if(!TUNE.parallax) return;
-  ctx.fillStyle=shade(et.hue,-.72);
-  for(let i=0;i<20;i++){
-    const bw=26+(i*17)%30, bh=40+(i*31)%48;
-    ctx.fillRect(Math.floor(loopX(i*58,.10,W+120))-60,GROUND-26-bh,bw,bh);
-  }
-  for(let i=0;i<16;i++){
-    const bw=20+(i*13)%24, bh=24+(i*29)%44;
-    const x=Math.floor(loopX(i*62,.22,W+130))-70, top=GROUND-22-bh;
-    ctx.fillStyle=shade(et.hue,-.52); ctx.fillRect(x,top,bw,bh);
-    ctx.fillStyle=shade(et.hue,-.28); ctx.fillRect(x,top,bw,1);
-    ctx.fillStyle='#ffe08a3a';
-    for(let wy=3;wy<bh-4;wy+=6) for(let wx=2;wx<bw-3;wx+=5)
-      if(((i*7+wx*3+wy)*11)%5<2) ctx.fillRect(x+wx,top+wy,2,3);
-    if(TUNE.neonSigns&&i%3===0&&bw>26){
-      const word=NEON_WORDS[(i*3)%NEON_WORDS.length];
-      const flick=((S.t*7+i*2.7)%6)>.25?1:.25;
-      ctx.globalAlpha=flick; textGlow(word,x+3,top+5,i%2?et.neon:P.gold,1); ctx.globalAlpha=1;
-    }
-  }
-}
-function drawStreet(et){
-  ctx.drawImage(verlauf('band',W+16,52,x=>{
-    const g=x.createLinearGradient(0,0,0,52);
-    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.55)');
-    x.fillStyle=g; x.fillRect(0,0,W+16,52);
-  }),-8,GROUND-52);
 
-  if(TUNE.parallax){
-    const halo=verlauf('lampe',52,60,x=>{
-      const g=x.createRadialGradient(26,22,1,26,22,26);
-      g.addColorStop(0,'rgba(255,224,138,.20)'); g.addColorStop(1,'rgba(255,224,138,0)');
-      x.fillStyle=g; x.fillRect(0,0,52,60);
-    });
-    for(let i=0;i<5;i++){
-      const x=Math.floor(loopX(i*86,.62,W+90))-20;
-      sprite(SPR.lampe,x,GROUND-40,1);
-      ctx.drawImage(halo,x-22,GROUND-60);
-    }
-  }
-  ctx.fillStyle=P.road; ctx.fillRect(-8,GROUND,W+16,H-GROUND+8);
-  ctx.fillStyle=shade(et.hue,.05); ctx.fillRect(-8,GROUND,W+16,1);
-  ctx.fillStyle=shade(et.hue,-.55); ctx.fillRect(-8,GROUND+1,W+16,2);
-  ctx.fillStyle=shade(et.hue,-.30); ctx.fillRect(-8,GROUND+4,W+16,1);
-  ctx.fillStyle='#0d0a16';          ctx.fillRect(-8,GROUND+5,W+16,1);
-  ctx.globalAlpha=.10; ctx.fillStyle=et.neon;
-  for(let i=0;i<7;i++){ const x=Math.floor(loopX(i*61,.22,W+80))-40;
-    ctx.fillRect(x,GROUND+3,10,1); ctx.fillRect(x+2,GROUND+7,6,1); }
-  ctx.globalAlpha=1;
-  for(let i=0;i<22;i++){
-    ctx.fillStyle=P.roadLine;
-    ctx.fillRect(Math.floor(loopX(i*26,1,W+40))-14,GROUND+12,13,1);
-    ctx.fillStyle=shade(P.roadLine,.28);
-    ctx.fillRect(Math.floor(loopX(i*40,1.5,W+60))-20,GROUND+21,10,2);
-  }
-  for(let i=0;i<4;i++){
-    const x=Math.floor(loopX(i*103,1.15,W+120))-40;
-    ctx.fillStyle='#0b0813'; ctx.fillRect(x,GROUND+15,9,4);
-    ctx.fillStyle='#1c1730'; for(let k=0;k<3;k++) ctx.fillRect(x+1,GROUND+16+k,7,1);
-    ctx.globalAlpha=.22; ctx.fillStyle=et.neon;
-    ctx.fillRect(x+22,GROUND+8,16,1); ctx.fillRect(x+26,GROUND+9,9,1);
-    ctx.globalAlpha=1;
-  }
-}
-/* ---- Die Sperrstunde: eine kriechende Wand mit greifenden Haenden ---- */
-function drawSperrstunde(et){
-  if(S.mode!=='play'&&!(S.mode==='attract'&&S.demo)&&S.mode!=='over') return;
-  const L=Math.round(S.lineX);
-  if(L<-8) return;
-
-  /* Schatten, den die Wand VOR sich her auf die Strasse wirft.
-     Ohne den sieht man sie auf dunklem Hintergrund praktisch nicht. */
-  ctx.drawImage(verlauf('sperrSchatten',52,H+16,x=>{
-    const g=x.createLinearGradient(0,0,52,0);
-    g.addColorStop(0,'rgba(0,0,0,.85)'); g.addColorStop(1,'rgba(0,0,0,0)');
-    x.fillStyle=g; x.fillRect(0,0,52,H+16);
-  }),L,-8);
-
-  /* Die Wand: komplett schwarz, verschluckt alles dahinter */
-  ctx.fillStyle='#000'; ctx.fillRect(-20,-8,L+20,H+16);
-
-  /* Kriechendes Rauschen darin, damit es lebt */
-  ctx.fillStyle=et.neon; ctx.globalAlpha=.13;
-  for(let i=0;i<26;i++){
-    const y=((i*47+S.t*38)%(H+14))-7;
-    const w=2+((i*13)%9), x=L-4-((i*17)%Math.max(6,L+16));
-    ctx.fillRect(x,Math.floor(y),w,1);
-  }
-  ctx.globalAlpha=1;
-
-  /* Leuchtende Kante mit Halo */
-  ctx.drawImage(verlauf('sperrHalo',12,H+16,x=>{
-    const g=x.createLinearGradient(0,0,12,0);
-    g.addColorStop(0,'rgba(255,61,139,0)'); g.addColorStop(1,'rgba(255,61,139,.5)');
-    x.fillStyle=g; x.fillRect(0,0,12,H+16);
-  }),L-7,-8);
-  for(let y=-6;y<H+6;y+=3){
-    const w=2+Math.round(Math.abs(Math.sin(y*.7+S.t*5))*2);
-    ctx.fillStyle=P.white; ctx.globalAlpha=.9; ctx.fillRect(L-1,y,2,3);
-    ctx.fillStyle=et.neon; ctx.globalAlpha=.85; ctx.fillRect(L-1-w,y,w,3);
-  }
-  ctx.globalAlpha=1;
-
-  /* Greifende Haende. Schwarz allein verschwindet im eigenen Schatten,
-     deshalb bekommen sie eine leuchtende Oberkante. */
-  for(let i=0;i<5;i++){
-    const hy=GROUND-5-i*9, reach=Math.round(4+Math.sin(S.t*3.4+i*1.7)*6);
-    if(reach<=0) continue;
-    ctx.fillStyle='#000';
-    ctx.fillRect(L,hy,reach+2,3); ctx.fillRect(L+reach,hy-3,2,7);
-    ctx.fillStyle=et.neon; ctx.globalAlpha=.75;
-    ctx.fillRect(L,hy-1,reach+2,1);          // Oberkante
-    ctx.fillRect(L+reach,hy-4,2,1);          // Fingerspitze
+  const B=LV.breite;
+  /* Etagen von oben nach unten, damit Boeden ueber Waenden liegen */
+  for(let i=LV.etagen.length-1;i>=0;i--){
+    const y=etageY(i), top=y-56;
+    /* Wand */
+    ctx.fillStyle=LV.wand; ctx.fillRect(-ox,top-oy,B,56);
+    /* Wandmuster: Fliesenkante */
+    ctx.fillStyle=LV.akzent;
+    ctx.fillRect(-ox,top-oy+34,B,1);
     ctx.globalAlpha=.35;
-    ctx.fillRect(L+reach+2,hy,1,3);
+    for(let x=0;x<B;x+=16) ctx.fillRect(x-ox,top-oy+34,1,22);
     ctx.globalAlpha=1;
-  }
-
-  /* Naeher dran = mehr Druck: Rand dunkelt ein und pulsiert */
-  const abstand=S.px-S.lineX;
-  if(abstand<TUNE.lineWarnAbstand){
-    const t=1-Math.max(0,abstand)/TUNE.lineWarnAbstand;
-    const puls=(.5+.5*Math.sin(S.t*10))*t;
-    ctx.globalAlpha=t;
-    ctx.drawImage(verlauf('sperrWarn',W+16,H+16,x=>{
-      const g=x.createLinearGradient(0,0,W*.75,0);
-      g.addColorStop(0,'rgba(255,61,139,.28)'); g.addColorStop(1,'rgba(255,61,139,0)');
-      x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
-    }),-8,-8);
+    /* Boden */
+    ctx.fillStyle=LV.boden; ctx.fillRect(-ox,y-oy,B,6);
+    ctx.fillStyle=LV.akzent; ctx.fillRect(-ox,y-oy,B,1);
+    ctx.globalAlpha=.25; ctx.fillStyle='#000';
+    for(let x=0;x<B;x+=22) ctx.fillRect(x-ox,y-oy+2,11,1);
     ctx.globalAlpha=1;
-    ctx.globalAlpha=puls*.5; ctx.fillStyle=P.neon;
-    ctx.fillRect(-8,-8,W+16,1); ctx.fillRect(-8,H-1,W+16,1); ctx.globalAlpha=1;
-  }
-}
 
-function drawRain(et,dt){
-  if(!TUNE.rain||!et.rain) return;
-  ctx.strokeStyle=`rgba(150,200,255,${(.16*et.rain).toFixed(2)})`; ctx.lineWidth=1;
-  ctx.beginPath();
-  for(const r of RAIN){
-    r.y+=r.v*dt; r.x-=r.v*.22*dt;
-    if(r.y>H){ r.y=-4; r.x=Math.random()*(W+40); }
-    if(r.x<-6) r.x=W+6;
-    ctx.moveTo(r.x,r.y); ctx.lineTo(r.x-1,r.y+r.l);
-  }
-  ctx.stroke();
-}
-
-/* ==========================================================================
-   DRAW
-   ========================================================================== */
-function draw(dt){
-  const et=ETAPPEN[S.etappe], p=S.pegel/TUNE.pegelMax;
-  ctx.save();
-  const wob=Math.sin(S.t*9)*TUNE.fxWobblePx*p+(Math.random()-.5)*S.shake;
-  const wob2=Math.cos(S.t*6.3)*TUNE.fxWobblePx*.6*p+(Math.random()-.5)*S.shake;
-  ctx.translate(Math.round(wob),Math.round(wob2));
-
-  drawSky(et); drawSkyline(et);
-
-  /* Boss-Arena: Hintergrund abdunkeln, Spotlight */
-  if(S.boss){
-    ctx.fillStyle='rgba(0,0,0,.42)'; ctx.fillRect(-8,-8,W+16,GROUND+10);
-    ctx.drawImage(verlauf('bossLicht',152,110,x=>{
-      const g=x.createRadialGradient(76,70,4,76,70,72);
-      g.addColorStop(0,'rgba(255,80,120,.16)'); g.addColorStop(1,'rgba(255,80,120,0)');
-      x.fillStyle=g; x.fillRect(0,0,152,110);
-    }),Math.round(S.boss.x)-60,GROUND-100);
-  }
-  drawStreet(et);
-
-  /* Boss */
-  if(S.boss){
-    const b=S.boss, rows=SPR[BOSS_SPR[b.name]]||SPR.bossTuer;
-    const bob=Math.round(Math.sin(b.t*4)*2);
-    const by=GROUND-rows.length*2+bob;
-    let tint=null, alpha=1;
-    if(b.state==='telegraph'&&Math.floor(b.t*22)%2===0) tint='#ffffff';
-    if(b.hurtT>0&&Math.floor(b.t*30)%2===0) tint=P.danger;
-    if(b.state==='dead') alpha=Math.max(0,1-b.dead/1.4);
-    outline(rows,Math.round(b.x),by,2,.6);
-    sprite(rows,Math.round(b.x),by,2,tint,alpha);
-    /* Schwachstelle nur im Konterfenster - klare Ansage wann es zaehlt */
-    if(b.state==='punish'&&b.iFrames<=0){
-      const bl=Math.floor(S.t*9)%2===0;
-      ctx.fillStyle=bl?P.gold:P.white; ctx.fillRect(Math.round(b.x)+12,by-7,8,3);
-      if(bl) textShadow('SCHLAG',Math.round(b.x)-2,by-16,P.gold);
-    }
-  }
-
-  /* Objekte */
-  for(const o of S.things){
-    const x=Math.round(o.x), y=Math.round(o.y);
-    if(o.kind==='shot'||o.kind==='water'){
-      const gold=o.kind==='shot';
-      const fy=y+Math.round(Math.sin(S.t*6+o.x*.05)*1.5), cx=x+2, cy=fy+2;
-      ctx.drawImage(verlauf(gold?'glowGold':'glowBlau',22,22,gx=>{
-        const g=gx.createRadialGradient(11,11,0,11,11,11);
-        g.addColorStop(0,gold?'rgba(255,212,71,.55)':'rgba(49,230,255,.5)');
-        g.addColorStop(1,'rgba(0,0,0,0)');
-        gx.fillStyle=g; gx.fillRect(0,0,22,22);
-      }),cx-11,cy-11);
-      sprite(gold?SPR.shot:SPR.water,x,fy);
-    } else if(o.foe&&o.kind!=='taube'){
-      const big=o.kind==='brocken', flink=o.kind==='flitzer';
-      let rows;
-      if(o.stun>0)            rows = big?SPR.brockenHit:SPR.gegnerHit;
-      else if(o.st==='wind')  rows = flink?SPR.flitzerWind:big?SPR.brocken:SPR.gegnerWind;
-      else if(o.st==='swing') rows = flink?SPR.flitzerWind:big?SPR.brocken:SPR.gegnerSwing;
-      else rows = big?SPR.brocken:flink?SPR.flitzer:o.ranged?SPR.werfer:SPR.gegner;
-      outline(rows,x,y);
-      /* Ausholen blinkt weiss - das ist die Einladung zum Konter */
-      sprite(rows,x,y,1, o.st==='wind'&&Math.floor(S.t*16)%2===0 ? '#ffffff' : null);
-      if(big&&o.hp>1){ ctx.fillStyle=P.danger; ctx.fillRect(x+2,y-3,5,1); }
-      /* Warnzeichen ueberm Kopf, mit Farbe fuer die richtige Abwehr */
-      if(o.st==='wind'){
-        const col=o.zone==='hoch'?P.neon2:o.zone==='tief'?P.gold:P.danger;
-        if(Math.floor(S.t*10)%2===0) textShadow('!',x+2,y-9,col);
-      }
-      /* Der ausgefuehrte Schlag wird sichtbar gezeichnet */
-      const hb=foeHitbox(o);
-      if(hb){ ctx.globalAlpha=.5; ctx.fillStyle=P.danger;
-              ctx.fillRect(Math.round(hb.x),Math.round(hb.y+hb.h/2),hb.w,1);
-              ctx.globalAlpha=1; }
-    } else if(o.kind==='taube'){
-      const fy=y+Math.round(Math.sin(S.t*14+o.x*.1)*2);
-      outline(SPR.taube,x,fy); sprite(SPR.taube,x,fy);
-    } else { outline(SPR[o.kind],x,y); sprite(SPR[o.kind],x,y); }
-  }
-  /* Bossgeschosse */
-  for(const s of S.shots){
-    const x=Math.round(s.x),y=Math.round(s.y);
-    ctx.globalAlpha=.35; ctx.fillStyle=P.gold; ctx.fillRect(x-1,y-1,7,7); ctx.globalAlpha=1;
-    sprite(SPR.flasche,x,y);
-  }
-
-  /* Spieler */
-  const hitAge=S.t-S.hitT;
-  const punching=hitAge>=0&&hitAge<=(TUNE.hitWindupMs+TUNE.hitActiveMs+60)/1000;
-  /* Blinken: beim Sterben, und solange man nach einem Treffer unverwundbar ist */
-  const blink=(S.mode==='over'&&Math.floor(S.overT*12)%2===0)
-            ||(S.inv>0&&Math.floor(S.t*18)%2===0);
-  if(!blink&&(S.mode!=='attract'||S.demo)){
-    const py=GROUND-13+S.y;
-    let spr;
-    if(punching)        spr=S.onGround?SPR.punch:SPR.punchAir;
-    else if(S.ducking)  spr=SPR.duck;
-    else if(!S.onGround)spr=S.vy<0?SPR.jump:SPR.fall;
-    else                spr=SPR.run[Math.floor(S.dist/7)%4];
-    const dx=Math.round(S.px);
-    ctx.globalAlpha=.3; ctx.fillStyle='#000';
-    const sw=Math.max(3,8-Math.abs(S.y)/6);
-    ctx.fillRect(Math.round(dx+5-sw/2),GROUND,Math.round(sw),1);
-    ctx.globalAlpha=1;
-    outline(spr,dx,py,1,.55);
-    sprite(spr,dx,py);
-    /* Schlag-Wischer */
-    if(hitAge>=TUNE.hitWindupMs/1000&&hitAge<=(TUNE.hitWindupMs+TUNE.hitActiveMs)/1000){
-      ctx.globalAlpha=.55; ctx.fillStyle=P.white;
-      ctx.fillRect(dx+9,GROUND-11+S.y,TUNE.hitReach,1);
-      ctx.fillRect(dx+11,GROUND-13+S.y,TUNE.hitReach-4,1);
+    /* Deckenlampen, manche flackern */
+    for(let x=60;x<B;x+=120){
+      const flack=TUNE.flackern&&((x*7+i*13)%5===0)?(Math.sin(S.t*23+x)>-.6?1:.25):1;
+      ctx.globalAlpha=flack;
+      sprite(SPR.lampe,x-ox,top-oy+2);
+      ctx.globalAlpha=flack*.5;
+      ctx.drawImage(verlauf('lichtkegel',54,58,g=>{
+        const gr=g.createRadialGradient(27,4,1,27,4,52);
+        gr.addColorStop(0,'rgba(255,240,190,.30)'); gr.addColorStop(1,'rgba(255,240,190,0)');
+        g.fillStyle=gr; g.fillRect(0,0,54,58);
+      }),x-ox-23,top-oy+2);
       ctx.globalAlpha=1;
     }
+    /* Spinde als Fuellung */
+    for(let x=90;x<B;x+=150){
+      if(S.tueren.some(t=>t.etage===i&&Math.abs(t.x-x)<40)) continue;
+      sprite(SPR.spind,x-ox,y-oy-13);
+    }
   }
 
-  drawFx();
-  drawSperrstunde(et);
-  drawRain(et,dt);
+  /* Treppen */
+  for(const t of LV.treppen){
+    for(let i=t.von;i<t.bis;i++){
+      const yu=etageY(i), yo=etageY(i+1);
+      ctx.fillStyle=LV.akzent; ctx.globalAlpha=.5;
+      ctx.fillRect(t.x-10-ox,yo-oy,20,yu-yo);
+      ctx.globalAlpha=1;
+      for(let s=0;s<8;s++){
+        const sy=yo+((yu-yo)/8)*s;
+        ctx.fillStyle='#6b6488'; ctx.fillRect(t.x-9+s-ox,sy-oy,10-s,1);
+      }
+    }
+    /* Markierung, dass man hier hoch kann */
+    const y=etageY(S.etage);
+    if(Math.abs(t.x-S.wx)<14&&S.ansicht==='flur'&&Math.floor(S.t*3)%2===0)
+      textSchatten('HOCH RUNTER',t.x-22-ox,y-oy-30,P.neon2);
+  }
 
-  /* Tunnelblick einmal in voller Staerke gebacken, Intensitaet ueber Alpha */
-  if(p>.04&&TUNE.fxTunnelVision>0){
-    ctx.globalAlpha=Math.min(1,p*TUNE.fxTunnelVision);
-    ctx.drawImage(verlauf('tunnel',W+16,H+16,x=>{
-      const g=x.createRadialGradient(168,98,36,168,98,196);
-      g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,1)');
+  /* Tueren */
+  for(const t of S.tueren){
+    const y=etageY(t.etage);
+    sprite(t.offen?SPR.tuerAuf:SPR.tuer,t.x-ox,y-oy-13);
+    textSchatten(t.name,t.x+4-textW(t.name)/2-ox,y-oy-21,t.offen?P.dim:P.dunkel);
+  }
+
+  /* Ausgang */
+  const ax=LV.ausgang.x, ay=etageY(LV.ausgang.etage);
+  sprite(SPR.ausgang,ax-ox,ay-oy-13);
+  textSchatten('AUSGANG',ax+4-textW('AUSGANG')/2-ox,ay-oy-21,S.schluessel?P.gold:P.dunkel);
+  if(S.schluessel&&Math.floor(S.t*3)%2===0)
+    textSchatten('E',ax+3-ox,ay-oy-29,P.gold);
+}
+
+function zeichneWachen(ox,oy){
+  for(const w of S.wachen){
+    const y=etageY(w.etage);
+    /* Sichtkegel */
+    const jagt=w.alarm>0;
+    ctx.globalAlpha=jagt?.20:.11;
+    ctx.fillStyle=jagt?P.gefahr:P.gold;
+    const r=TUNE.lehrerSicht;
+    ctx.beginPath();
+    ctx.moveTo(w.x+3-ox,y-oy-16);
+    ctx.lineTo(w.x+3+r*w.richtung-ox,y-oy-16-TUNE.lehrerSichtHoch);
+    ctx.lineTo(w.x+3+r*w.richtung-ox,y-oy+2);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+    const geht=Math.floor(S.t*6)%2===0&&(w.warte<=0||jagt);
+    const spr=geht?SPR.lehrerGeh:SPR.lehrer;
+    outline(spr,w.x-ox,y-oy-14,1,.6);
+    if(w.richtung<0) spriteFlip(spr,w.x-ox,y-oy-14);
+    else sprite(spr,w.x-ox,y-oy-14);
+    if(jagt&&Math.floor(S.t*8)%2===0) textSchatten('!',w.x+3-ox,y-oy-24,P.gefahr);
+  }
+}
+
+function zeichneSpielerFlur(ox,oy){
+  if(S.inv>0&&Math.floor(S.t*18)%2===0) return;
+  const laeuft=(links||rechts)&&S.amBoden;
+  let spr = S.ducken?SPR.duck : !S.amBoden?(S.vy<0?SPR.sprung:SPR.fall)
+          : laeuft?SPR.geh[Math.floor(S.gehPhase)%4] : SPR.steh;
+  const x=S.wx-ox, y=S.wy-oy-13;
+  ctx.globalAlpha=.3; ctx.fillStyle='#000';
+  ctx.fillRect(Math.round(x+1),Math.round(S.wy-oy),7,1); ctx.globalAlpha=1;
+  outline(spr,x,y,1,.6);
+  if(S.blick<0) spriteFlip(spr,x,y); else sprite(spr,x,y);
+}
+
+function zeichneRaum(){
+  const t=S.raum;
+  const RW=132, RH=64;
+  const px=Math.round((W-RW)/2), py=Math.round((H-RH)/2)-4;
+  /* Alles ausserhalb abdunkeln - man sieht wirklich nur diesen Raum */
+  ctx.fillStyle='#04030a'; ctx.fillRect(0,0,W,H);
+  /* Raum */
+  ctx.fillStyle=LV.wand; ctx.fillRect(px,py,RW,RH);
+  ctx.fillStyle=LV.akzent; ctx.fillRect(px,py,RW,1); ctx.fillRect(px,py+RH-1,RW,1);
+  ctx.fillRect(px,py,1,RH); ctx.fillRect(px+RW-1,py,1,RH);
+  ctx.fillStyle=LV.boden; ctx.fillRect(px+1,py+RH-8,RW-2,7);
+  /* Deckenlicht */
+  sprite(SPR.lampe,px+RW/2-4,py+3);
+  ctx.globalAlpha=.5;
+  ctx.drawImage(verlauf('raumlicht',110,70,g=>{
+    const gr=g.createRadialGradient(55,4,2,55,4,64);
+    gr.addColorStop(0,'rgba(255,240,190,.34)'); gr.addColorStop(1,'rgba(255,240,190,0)');
+    g.fillStyle=gr; g.fillRect(0,0,110,70);
+  }),px+RW/2-55,py+3);
+  ctx.globalAlpha=1;
+  /* Tuer links */
+  sprite(SPR.tuerAuf,px+4,py+RH-8-13);
+  textSchatten('RAUS',px+2,py+RH-8-21,P.neon2);
+  /* Einrichtung */
+  const boden=py+RH-8;
+  const inh=RAUM_INHALT[t.typ]||RAUM_INHALT.klasse;
+  for(const o of inh){
+    const spr=SPR[o.spr]; if(!spr) continue;
+    const oy=boden-holeSprite(spr,1,null).height;
+    outline(spr,px+o.x,oy,1,.5); sprite(spr,px+o.x,oy);
+    /* Hinweis, wenn man davorsteht */
+    if(Math.abs(o.x+6-S.raumX)<12&&S.suchT<=0&&Math.floor(S.t*3)%2===0)
+      textSchatten('E',px+o.x+4,oy-8,P.gold);
+  }
+  /* Spieler im Raum */
+  const laeuft=(links||rechts);
+  const spr=laeuft?SPR.geh[Math.floor(S.gehPhase)%4]:SPR.steh;
+  const sx=px+S.raumX, sy=boden-13;
+  ctx.globalAlpha=.3; ctx.fillStyle='#000'; ctx.fillRect(sx+1,boden,7,1); ctx.globalAlpha=1;
+  outline(spr,sx,sy,1,.6);
+  if(S.blick<0) spriteFlip(spr,sx,sy); else sprite(spr,sx,sy);
+  /* Suchbalken */
+  if(S.suchT>0){
+    const f=1-S.suchT/TUNE.suchDauer, bw=30;
+    ctx.fillStyle='#000a'; ctx.fillRect(sx-11,sy-12,bw+2,5);
+    ctx.fillStyle=P.gold;  ctx.fillRect(sx-10,sy-11,Math.round(bw*f),3);
+  }
+  /* Raumname */
+  textGC(t.name,py-12,P.weiss,1);
+  fxZeichnen(-px,-py-RH+8+13+0);   // Partikel relativ zum Raum
+}
+
+function zeichneHud(){
+  /* Herzen */
+  for(let i=0;i<TUNE.leben;i++){
+    const voll=i<S.hp, x=6+i*7, y=6;
+    if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
+    const krit=S.hp===1&&Math.floor(S.t*6)%2===0;
+    ctx.fillStyle=krit?P.weiss:P.gefahr;
+    ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
+  }
+  /* Schluessel */
+  if(S.schluessel){ sprite(SPR.schluessel,6,15); text('SCHLUESSEL',14,17,P.gold); }
+  else text('SCHLUESSEL FEHLT',6,16,P.dunkel);
+  /* Etage */
+  const et='ETAGE '+(S.etage+1);
+  text(et,W-6-textW(et),6,P.dim);
+  text(LV.name,W-6-textW(LV.name),14,P.neon);
+
+  /* Gefahr am Bildrand */
+  if(S.naehe>.15){
+    ctx.globalAlpha=Math.min(.7,S.naehe*.7);
+    ctx.drawImage(verlauf('gefahrRand',W+16,H+16,x=>{
+      const g=x.createRadialGradient((W+16)/2,(H+16)/2,H*.36,(W+16)/2,(H+16)/2,W*.62);
+      g.addColorStop(0,'rgba(255,61,90,0)'); g.addColorStop(1,'rgba(255,61,90,.85)');
       x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
     }),-8,-8);
     ctx.globalAlpha=1;
   }
-  if(p>.5&&TUNE.fxColorShift>0){
-    ctx.globalAlpha=(p-.5)*.22*TUNE.fxColorShift;
-    ctx.fillStyle=et.neon; ctx.fillRect(-8,-8,W+16,H+16); ctx.globalAlpha=1;
+  if(S.meldungT>0){
+    ctx.globalAlpha=Math.min(1,S.meldungT*2);
+    const y=H-22;
+    ctx.fillStyle='#000000bb'; ctx.fillRect(0,y-3,W,12);
+    textC(S.meldung,y,P.weiss,1);
+    ctx.globalAlpha=1;
   }
-  if(S.flash>0){ ctx.fillStyle=`rgba(${S.flashCol},${(S.flash*.9).toFixed(3)})`; ctx.fillRect(-8,-8,W+16,H+16); }
-  ctx.restore();
-
-  drawHUD(et,p); drawScreens(et);
-}
-
-function drawHUD(et,p){
-  if(S.mode==='attract') return;
-  text('SCORE',6,6,P.dim);
-  text(String(Math.floor(S.score)).padStart(6,'0'),6,14,P.white);
-  /* Herzen - blinken wenn nur noch eins uebrig ist */
-  for(let i=0;i<TUNE.leben;i++){
-    const voll=i<S.hp, x=6+i*7, y=22;
-    if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
-    const kritisch=S.hp===1&&Math.floor(S.t*6)%2===0;
-    ctx.fillStyle=kritisch?P.white:P.danger;
-    ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
-  }
-  if(S.kos>0) text('KO '+S.kos,6+TUNE.leben*7+4,22,P.dark);
-  const m=Math.floor(S.dist/10)+'M';
-  text(m,W-6-textW(m),6,P.dim);
-  text(et.name,W-6-textW(et.name),14,et.neon);
-
-  const bw=88,bx=(W-bw)/2,by=8;
-  ctx.fillStyle='#000000aa'; ctx.fillRect(bx-2,by-2,bw+4,9);
-  ctx.fillStyle='#2a2440';   ctx.fillRect(bx,by,bw,5);
-  ctx.fillStyle=p<.5?P.neon2:p<.8?P.gold:P.danger; ctx.fillRect(bx,by,Math.round(bw*p),5);
-  for(let i=1;i<4;i++){ ctx.fillStyle='#00000066'; ctx.fillRect(bx+Math.round(bw*i/4),by,1,5); }
-  if(p>.8&&Math.floor(S.t*8)%2===0){ ctx.strokeStyle=P.danger; ctx.strokeRect(bx-1.5,by-1.5,bw+3,8); }
-  text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+8,p>.8?P.danger:P.dim);
-  if(p>0) text('X'+(1+p*(TUNE.fxScoreMult-1)).toFixed(1),bx+bw+6,by,P.gold);
-
-  if(S.combo>1){
-    const c='COMBO X'+S.combo;
-    ctx.globalAlpha=Math.min(1,S.comboT);
-    textGlow(c,(W-textW(c))/2,26,P.gold,1); ctx.globalAlpha=1;
-  }
-
-  /* Warnung, wenn die Sperrstunde aufholt.
-     Bewusst oben: unten wuerde sie genau die Gegner verdecken. */
-  const abstand=S.px-S.lineX;
-  if(!S.boss&&abstand<TUNE.lineWarnAbstand&&Math.floor(S.t*5)%2===0){
-    const w='SPERRSTUNDE  -  LOS WEITER';
-    textGlow(w,(W-textW(w))/2,38,P.neon,1);
-  }
-
-  /* Boss-Lebensbalken */
-  if(S.boss&&S.boss.state!=='entry'){
-    const b=S.boss, w=140, x=(W-w)/2, y=H-14;
-    ctx.fillStyle='#000000cc'; ctx.fillRect(x-2,y-2,w+4,9);
-    ctx.fillStyle='#2a1420';   ctx.fillRect(x,y,w,5);
-    ctx.fillStyle=P.danger;    ctx.fillRect(x,y,Math.round(w*Math.max(0,b.hp/b.maxHp)),5);
-    for(let i=1;i<b.maxHp;i++){ ctx.fillStyle='#000000aa'; ctx.fillRect(x+Math.round(w*i/b.maxHp),y,1,5); }
-    text(b.name,x+(w-textW(b.name))/2,y-8,P.white);
-    text('PHASE '+b.phase,x+w+5,y,P.dark);
-    if(b.state==='telegraph'&&Math.floor(S.t*14)%2===0) text('!',x-9,y-1,P.danger);
-  }
-
   if(S.banner>0){
-    ctx.globalAlpha=Math.min(1,S.banner*1.6);
-    ctx.fillStyle='#000000bb'; ctx.fillRect(0,62,W,34);
-    ctx.fillStyle=et.neon; ctx.fillRect(0,62,W,1); ctx.fillRect(0,95,W,1);
-    textC(S.bannerTxt,68,P.white,2); textC(S.bannerSub,86,P.gold,1);
+    ctx.globalAlpha=Math.min(1,S.banner*1.4);
+    ctx.fillStyle='#000000cc'; ctx.fillRect(0,60,W,40);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,60,W,1); ctx.fillRect(0,99,W,1);
+    textGC(S.bannerTxt,68,P.weiss,2);
+    textC(LV.hinweis,88,P.gold,1);
     ctx.globalAlpha=1;
   }
 }
 
-function drawScreens(et){
-  if(S.mode==='attract'){
-    ctx.fillStyle='#00000094'; ctx.fillRect(0,0,W,H);
-    textGlow('NACHTSCHICHT',(W-textW('NACHTSCHICHT',3))/2,20,P.neon,3);
-    textC('EIN ABEND MIT DEN JUNGS',42,P.dim,1);
-    text('HIGHSCORES',18,64,P.gold);
-    scores.slice(0,5).forEach((s,i)=>{ const y=76+i*9;
-      text((i+1)+'.',18,y,P.dark); text(s.name.padEnd(3,' '),30,y,P.white);
-      const sc=String(s.score).padStart(6,'0'); text(sc,102-textW(sc),y,P.neon2); });
-    text('SO GEHTS',170,60,P.gold);
-    text('A D    LAUFEN',         170,72,P.white);
-    text('LEER   SPRINGEN',       170,81,P.dim);
-    text('RUNTER DUCKEN',         170,90,P.dim);
-    text('E      SCHLAGEN',       170,99,P.white);
-    text('DIE NACHT HOLT DICH EIN',170,112,P.neon);
-    text('BLEIB NICHT STEHEN',    170,121,P.neon);
-    text('BLAU DUCKEN',           170,134,P.neon2);
-    text('GELB SPRINGEN',         170,143,P.gold);
-    text('ROT  WEG DA',           170,152,P.danger);
-    if(Math.floor(S.t*1.6)%2===0) textC('DRUECK LEERTASTE',146,P.white,2);
-    textC('V0.3  PROTOTYP',168,P.dark,1);
+function zeichnen(dt){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#04030a'; ctx.fillRect(0,0,W,H);
+
+  if(S.modus==='titel'){ zeichneTitel(); return; }
+
+  ctx.save();
+  const wob=(Math.random()-.5)*S.shake, wob2=(Math.random()-.5)*S.shake;
+  ctx.translate(Math.round(wob),Math.round(wob2));
+
+  if(S.ansicht==='raum'){ zeichneRaum(); }
+  else{
+    const ox=Math.round(S.camX), oy=Math.round(S.camY);
+    zeichneGebaeude(ox,oy);
+    zeichneWachen(ox,oy);
+    zeichneSpielerFlur(ox,oy);
+    fxZeichnen(ox,oy);
+    /* Hinweis an einer Tuer */
+    const t=tuerAn(S.wx,S.etage);
+    if(t&&S.amBoden&&Math.floor(S.t*3)%2===0)
+      textSchatten('E  REIN',t.x-6-ox,etageY(t.etage)-oy-30,P.gold);
   }
-  if(S.mode==='pause'){
+  if(S.blitz>0){ ctx.fillStyle=`rgba(${S.blitzFarbe},${(S.blitz*.85).toFixed(3)})`; ctx.fillRect(-8,-8,W+16,H+16); }
+  ctx.restore();
+
+  zeichneHud();
+
+  if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textC('PAUSE',76,P.white,3); textC('P ODER LEERTASTE',100,P.dim,1);
+    textGC('PAUSE',76,P.weiss,3); textC('P ODER LEERTASTE',100,P.dim,1);
   }
-  if(S.mode==='over'){
-    ctx.fillStyle=`rgba(0,0,0,${Math.min(.78,S.overT*1.5).toFixed(2)})`; ctx.fillRect(0,0,W,H);
-    const t=S.blackout?'BLACKOUT':'FEIERABEND';
-    textGlow(t,(W-textW(t,3))/2,38,S.blackout?P.neon:P.danger,3);
-    textC(S.overTxt,60,P.white,1);
-    textC('SCORE '+S.pendingScore,74,P.white,2);
-    textC(Math.floor(S.dist/10)+' METER   '+S.kos+' UMGEHAUEN',94,P.dim,1);
-    textC(ETAPPEN[S.etappe].name,104,ETAPPEN[S.etappe].neon,1);
-    if(S.overT>.5&&Math.floor(S.t*2)%2===0) textC('LEERTASTE',132,P.gold,1);
+  if(S.modus==='ende'){
+    ctx.fillStyle=`rgba(0,0,0,${Math.min(.8,S.endeT*1.4).toFixed(2)})`; ctx.fillRect(0,0,W,H);
+    if(S.gewonnen){
+      textGC('RAUSGEKOMMEN',44,P.gold,3);
+      textC('LEVEL 1 GESCHAFFT',70,P.weiss,1);
+      textC('DIE NACHT FAENGT GERADE ERST AN',84,P.dim,1);
+    }else{
+      textGC('ERWISCHT',44,P.gefahr,3);
+      textC('SIE HABEN DICH ZUM DIREKTOR GEBRACHT',70,P.dim,1);
+    }
+    if(S.endeT>.6&&Math.floor(S.t*2)%2===0) textC('LEERTASTE',120,P.gold,1);
   }
-  if(S.mode==='initials'){
-    ctx.fillStyle='#000000d0'; ctx.fillRect(0,0,W,H);
-    textGlow('NEUER HIGHSCORE',(W-textW('NEUER HIGHSCORE',2))/2,30,P.gold,2);
-    textC(String(S.pendingScore),50,P.neon2,2); textC('WER WARS',74,P.dim,1);
-    for(let i=0;i<3;i++){ const x=130+i*24, sel=i===S.iSlot;
-      text(AZ[S.initials[i]],x,90,sel?P.white:P.dark,3);
-      if(sel&&Math.floor(S.t*3)%2===0){ ctx.fillStyle=P.neon; ctx.fillRect(x,108,9,2); } }
-    textC('PFEILE WAEHLEN   ENTER FERTIG',138,P.dim,1);
+  if(stumm) text('MUTE',W-6-textW('MUTE'),H-10,P.dunkel);
+}
+
+function zeichneTitel(){
+  ctx.drawImage(verlauf('titelBg',W+16,H+16,x=>{
+    const g=x.createLinearGradient(0,0,0,H+16);
+    g.addColorStop(0,'#1a1140'); g.addColorStop(1,'#07050d');
+    x.fillStyle=g; x.fillRect(0,0,W+16,H+16);
+  }),-8,-8);
+  for(let i=0;i<40;i++){
+    ctx.fillStyle=i%7===0?P.neon2:'#ffffff22';
+    ctx.fillRect((i*83)%W,(i*37)%70+8,1,1);
   }
-  if(muted) text('MUTE',W-6-textW('MUTE'),H-10,P.dark);
+  textGC('NACHTSCHICHT',22,P.neon,3);
+  textC('EINE NACHT IN LEVELN',44,P.dim,1);
+  text('LEVEL 1',20,72,P.gold);
+  text('DIE SCHULE',20,82,P.weiss);
+  text('FINDE DEN SCHLUESSEL',20,92,P.dim);
+  text('UND KOMM RAUS',20,101,P.dim);
+  const rx=W-140;
+  text('SO GEHTS',rx,72,P.gold);
+  text('A D    LAUFEN',rx,82,P.dim);
+  text('W S    TREPPE',rx,91,P.dim);
+  text('LEER   SPRINGEN',rx,100,P.dim);
+  text('E      TUER UND SUCHEN',rx,109,P.weiss);
+  text('LEHRERN AUSWEICHEN',rx,122,P.gefahr);
+  if(Math.floor(S.t*1.6)%2===0) textGC('DRUECK LEERTASTE',144,P.weiss,2);
+  textC('V0.8  GRUNDGERUEST',168,P.dunkel,1);
 }
 
 /* ==========================================================================
-   LOOP
+   SCHLEIFE
    ========================================================================== */
-let last=performance.now();
-function frame(now){
-  const dt=Math.min(.05,(now-last)/1000); last=now;
-  update(dt); draw(dt);
-  requestAnimationFrame(frame);
+neuesLevel(0); S.modus='titel'; S.banner=0;
+let letzte=performance.now();
+function bild(jetzt){
+  const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
+  takt(dt);
+  if(S.modus!=='titel') kamera(dt);
+  zeichnen(dt);
+  requestAnimationFrame(bild);
 }
-requestAnimationFrame(frame);
+requestAnimationFrame(bild);
 </script>
 </body>
 </html>
