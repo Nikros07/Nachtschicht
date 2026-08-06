@@ -25,8 +25,13 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      # v5 laeuft auf Node 24. v4 ist auf Node 20 und wird abgekuendigt.
+      - uses: actions/checkout@v5
 
+      # enablement:true schaltet Pages selbst ein - klappt aber nur, wenn
+      # unter Settings > Actions > General die Workflow-Rechte auf
+      # "Read and write" stehen. Sonst einmalig unter Settings > Pages
+      # die Quelle auf "GitHub Actions" stellen, dann laeuft es hier durch.
       - uses: actions/configure-pages@v5
         with:
           enablement: true
