@@ -59,13 +59,21 @@ jeder Phase hast Du eine andere Möglichkeit:
 
 ```mermaid
 flowchart TD
-    A[Gegner laeuft auf Dich zu] --> B[Er holt aus - blinkt weiss]
-    B -->|Du schlaegst JETZT| K[KONTER - sofort K.o. plus 120 Punkte]
-    B -->|Du weichst richtig aus| C[Sein Schlag geht ins Leere]
-    B -->|Du stehst falsch| H[Ein Herz weg]
-    C --> D[Er steht offen und ist verwundbar]
-    D -->|Du schlaegst zu| E[Treffer]
-    K --> F[Combo steigt - mehr Punkte pro K.o.]
+    A[Gegner laeuft auf Dich zu]
+    B[Er holt aus und blinkt weiss]
+    K[KONTER sofort umgehauen plus 120 Punkte]
+    C[Sein Schlag geht ins Leere]
+    H[Ein Herz weg]
+    D[Er steht offen und ist verwundbar]
+    E[Treffer]
+    F[Combo steigt und bringt mehr Punkte]
+    A --> B
+    B -->|Du schlaegst JETZT| K
+    B -->|Du weichst richtig aus| C
+    B -->|Du stehst falsch| H
+    C --> D
+    D -->|Du schlaegst zu| E
+    K --> F
     E --> F
     F --> A
 ```
