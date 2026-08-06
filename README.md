@@ -1,6 +1,8 @@
 # NACHTSCHICHT
 
-Ein Arcade-Runner im Pixel-Art-Look. Du rennst durch eine Nacht, sammelst Shots,
+*Party Game drunk.*
+
+Ein Arcade-Brawler im Pixel-Art-Look. Du rennst durch eine Nacht, sammelst Shots,
 schlägst Leute um und musst an vier Bossen vorbei. Je mehr Du trinkst, desto mehr
 Punkte gibt es — und desto weniger kannst Du steuern.
 
@@ -119,5 +121,6 @@ Pixel-Sprites, und nur die landen im Code.
 
 ## Stand
 
-Prototyp v0.3. Was noch fehlt: die echten Gesichter, Charakterwahl mit
-unterschiedlichen Fähigkeiten, ein richtiges Ende.
+Prototyp v0.5. Was noch fehlt: Plattformen zum Draufspringen, die echten
+Gesichter der Crew, Charakterwahl mit unterschiedlichen Fähigkeiten,
+ein richtiges Ende.
