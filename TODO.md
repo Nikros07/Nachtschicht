@@ -10,20 +10,21 @@ Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
 **Fehlt noch:**
 
-- [ ] **Story-Text am Anfang** — warum bist Du überhaupt eingesperrt?
-- [ ] **Verstecken in Spinden** — zweite Deckung neben den Räumen
-- [ ] **Schleichen** — langsam laufen, dafür kleinerer Sichtradius der Lehrer
-- [ ] **Türen hörbar machen** — Lehrer reagieren auf Geräusche
-- [ ] **Mehr Fundstücke** — nicht nur der Schlüssel, auch Notizen die Story erzählen
 - [ ] **Zweiter Ausgang** als Alternative (Fenster im Erdgeschoss)
 - [ ] **Direktor als Patrouille** vor der Cutscene, nicht nur am Ende
 - [ ] **Zeitbonus** — schneller raus gibt mehr Punkte
 
 **Bekannte Schwächen:**
 
-- [ ] Schlüsselsuche kann bis zu 2 Minuten reines Laufen bedeuten, wenn er im letzten Raum liegt. Braucht einen Hinweis, der die Suche eingrenzt
-- [ ] Lehrer laufen stumpf hin und her, keine Pausen, kein Umschauen
-- [ ] Nach dem Erwischtwerden setzt es Dich an der Treppe ab — das kann sich willkürlich anfühlen
+- [ ] Schleichen ist noch zu selten nötig. Solange man nicht rennt, kommt man
+      fast überall durch — die Geräusche müssten mehr wehtun oder die
+      Sichtkegel enger stehen
+- [ ] Alle drei Lehrer verhalten sich gleich. Es fehlt einer, der schneller
+      ist, und einer, der stur an einer Stelle klebt
+- [ ] Die Spinde stehen alle 130 Pixel im gleichen Abstand. Das sieht nach
+      Raster aus, nicht nach Schule
+- [ ] Der Direktor am Ende ist reine Cutscene, kein Kampf. Sobald das
+      Kampfsystem drin ist, gehört das zusammen
 
 ---
 
@@ -110,3 +111,15 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] **Cutscene am Ende von Level 1: der Direktor wird gepackt**
 - [x] Bewegung mit Beschleunigung und Bremsung statt an/aus
 - [x] GitHub Pages läuft
+- [x] **Story-Text am Anfang** — sechs Karten Vorspann, einmal pro Sitzung
+- [x] **Verstecken in Spinden** — fünf Stück pro Etage, Deckung im Flur
+- [x] **Schleichen** — halbes Tempo, Lehrer sieht nur noch 62 % weit
+- [x] **Türen hörbar machen** — Geräusch-System: Türen, Rennen und Landen
+      sind laut, Schleichen ist lautlos. Lehrer gehen dem Krach nach
+- [x] **Mehr Fundstücke** — fünf Zettel, einer verrät die Etage
+- [x] Schlüsselsuche eingegrenzt: Hausmeisterzettel plus Notbremse nach
+      sieben leeren Fächern
+- [x] Lehrer mit Pausen, Umschauen und Nachhorchen statt stumpfem Hin und Her
+- [x] Blick durch den Türspalt: steht jemand im Flur, bevor man rausgeht?
+- [x] **Am Handy fehlte die Runter-Taste** — Level 1 war dort nicht
+      durchspielbar, sobald man einmal oben war
