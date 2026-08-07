@@ -43,6 +43,7 @@
   #thit   { right:3%; bottom:8%;  width:17%; aspect-ratio:1; }
   #tjump  { right:22%;bottom:8%;  width:17%; aspect-ratio:1; }
   #tup    { right:12%;bottom:34%; width:15%; aspect-ratio:1; }
+  #tsneak { left:12%; bottom:34%; width:15%; aspect-ratio:1; font-size:8px; }
   #fs { position:absolute; top:6px; right:8px; z-index:5;
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
     border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
@@ -74,6 +75,7 @@
       <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
       <div class="btn" id="tup">&#9650;</div>
       <div class="btn" id="tjump">SPR</div><div class="btn" id="thit">E</div>
+      <div class="btn" id="tsneak">LEISE</div>
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
@@ -104,6 +106,20 @@ const TUNE = {
   /* (2) KAMERA */
   kameraTraegheit: 6.5,  // hoeher = folgt schneller
   blickVoraus:    26,    // Kamera schaut in Laufrichtung voraus
+
+  /* (2b) SCHLEICHEN - langsam, dafuer sehen sie dich spaeter */
+  schleichTempo:    0.42,  // Anteil vom normalen Gehtempo
+  schleichSicht:    0.5,   // Anteil der Sichtweite eines Lehrers
+
+  /* (2c) HINWEISE - Zettel, die die Suche eingrenzen */
+  zettelAnzahl:     2,     // erster nennt die Etage, zweiter den Raum
+
+  /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
+  chefTempo:       19,
+  chefJagdTempo:   54,
+  chefSicht:      116,
+  chefJagdDauer:    6.5,
+  chefEtagenWechsel:16,    // Sekunden, bis er die Etage wechselt
 
   /* (3) LEHRER */
   lehrerTempo:     26,
@@ -441,7 +457,8 @@ function neuesSpiel(){
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
-    imSpind:-1, spindAbkuehlung:0,
+    imSpind:-1, spindAbkuehlung:0, schleicht:false,
+    zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
     lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
     lehrerJagt:false,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
@@ -464,6 +481,20 @@ function neuesSpiel(){
   const r=inEtage[Math.floor(Math.random()*inEtage.length)];
   S.schluesselRaum=r;
   S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
+
+  /* Zettel verstecken. Sie liegen bewusst NICHT im Schluesselraum -
+     sonst findet man beides auf einmal und der Hinweis ist wertlos. */
+  const frei=[];
+  RAEUME.forEach((raum,ri)=>{ if(ri===r) return;
+    raum.moebel.forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
+  for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
+    [frei[i],frei[j]]=[frei[j],frei[i]]; }
+  S.zettel=frei.slice(0,TUNE.zettelAnzahl).map((f,i)=>({...f,stufe:i+1,gefunden:false}));
+
+  /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
+     weit und gibt nicht so schnell auf wie die Lehrer. */
+  S.lehrer.push({ chef:true, e:0, von:40, bis:LEVEL_B-40, x:LEVEL_B-120, v:-1,
+                  verdacht:0, jagd:0, gesehenPiep:false, wechselT:TUNE.chefEtagenWechsel });
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
 }
 neuesSpiel();
@@ -472,7 +503,7 @@ neuesSpiel();
    EINGABE
    ========================================================================== */
 const keys={};
-let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false;
+let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false, schleichAn=false;
 let sprungPuffer=[], aktionPuffer=[];
 
 function druckSprung(){
@@ -567,6 +598,7 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); druckAktion(); }
+  if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); schleichAn=true; }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
@@ -575,9 +607,10 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
   if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ShiftLeft','ShiftRight'].includes(e.code)) schleichAn=false;
   if(e.code==='Space') sprungAn=false;
 });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=false; });
 
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
@@ -590,6 +623,8 @@ bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
 bind('tjump',['touchstart','mousedown'],druckSprung);
 bind('tjump',['touchend','mouseup','touchcancel'],()=>sprungAn=false);
 bind('thit',['touchstart','mousedown'],druckAktion);
+bind('tsneak',['touchstart','mousedown'],()=>schleichAn=true);
+bind('tsneak',['touchend','mouseup','touchcancel'],()=>schleichAn=false);
 if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); removeEventListener('touchstart',einmal); },{once:true});
 
 /* ==========================================================================
@@ -635,6 +670,11 @@ function update(dt){
 
   if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
 
+  /* Ab und zu faellt der Strom im Gang kurz aus. Rein atmosphaerisch,
+     aber es macht aus dem Schulflur einen Ort, an dem man nicht sein will. */
+  if(S.dunkelT>0) S.dunkelT-=dt;
+  else if(Math.random()<0.055*dt){ S.dunkelT=0.4+Math.random()*1.1; rauschen(.12,.03); }
+
   /* ---------- Im Spind: nur rauskommen geht ---------- */
   if(S.imSpind>=0){
     while(aktionPuffer.length){ aktionPuffer.shift(); raus(); }
@@ -644,10 +684,12 @@ function update(dt){
   /* ---------- Korridor ---------- */
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
+  S.schleicht = schleichAn && S.amBoden;
+  const hoechst = TUNE.gehTempo*(S.schleicht?TUNE.schleichTempo:1);
   const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
   if(richtung){
     S.vx += richtung*TUNE.beschleunigung*kontrolle*dt;
-    if(Math.abs(S.vx)>TUNE.gehTempo) S.vx=TUNE.gehTempo*Math.sign(S.vx);
+    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
   } else {
     const brems=TUNE.bremsung*kontrolle*dt;
     S.vx = Math.abs(S.vx)<=brems ? 0 : S.vx-Math.sign(S.vx)*brems;
@@ -655,11 +697,11 @@ function update(dt){
   S.x += S.vx*dt;
   S.x = Math.max(14, Math.min(LEVEL_B-14, S.x));
 
-  /* Schrittgeraeusch */
+  /* Schrittgeraeusch - beim Schleichen bleibt es still */
   if(S.amBoden&&Math.abs(S.vx)>12){
     S.gehPhase += Math.abs(S.vx)*dt*.09;
     const n=Math.floor(S.gehPhase);
-    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+    if(n!==S.schritte){ S.schritte=n; if(n%2===0&&!S.schleicht) SFX.schritt(); }
   }
 
   /* Sprung */
@@ -737,9 +779,19 @@ function imRaum(dt){
     S.suchT-=dt;
     if(S.suchT<=0){
       S.durchsucht.add(S.raum+':'+S.suchZiel);
+      const zettel=S.zettel.find(z=>z.raum===S.raum&&z.moebel===S.suchZiel&&!z.gefunden);
       if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+      } else if(zettel){
+        zettel.gefunden=true;
+        S.hinweisStufe=Math.max(S.hinweisStufe,zettel.stufe);
+        SFX.fund(); S.blitz=.5;
+        const kr=RAEUME[S.schluesselRaum];
+        if(zettel.stufe===1){ meldung('ZETTEL GEFUNDEN',1.6);
+          zeigeHinweis('DER SCHLUESSEL IST IN ETAGE '+(kr.e+1),4); }
+        else { meldung('NOTIZ GEFUNDEN',1.6);
+          zeigeHinweis('SCHLUESSEL IM RAUM '+kr.name,4); }
       } else { SFX.nichts(); meldung('NICHTS DRIN',1); }
     }
     return;
@@ -839,29 +891,45 @@ function moebelPlaetze(r){
 function lehrerLogik(dt){
   let jagt=false;
   for(const L of S.lehrer){
+    const tempo   = L.chef?TUNE.chefTempo:TUNE.lehrerTempo;
+    const jagdT   = L.chef?TUNE.chefJagdTempo:TUNE.jagdTempo;
+    const weite   = L.chef?TUNE.chefSicht:TUNE.sichtWeite;
+    const dauer   = L.chef?TUNE.chefJagdDauer:TUNE.jagdDauer;
     if(L.jagd>0){
       jagt=true; L.jagd-=dt;
-      const ziel=S.x, dir=Math.sign(ziel-L.x)||1;
-      L.v=dir; L.x+=dir*TUNE.jagdTempo*dt;
+      const dir=Math.sign(S.x-L.x)||1;
+      L.v=dir; L.x+=dir*jagdT*dt;
       L.x=Math.max(20,Math.min(LEVEL_B-20,L.x));
+      /* Der Direktor folgt dir auch die Treppe hoch */
+      if(L.chef && L.e!==S.etage && anTreppe(L.x)){ L.e+=Math.sign(S.etage-L.e); }
       if(L.e===S.etage && S.modus==='spiel' && S.imSpind<0
-         && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen();
+         && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen(L);
     } else {
-      L.x+=L.v*TUNE.lehrerTempo*dt;
+      L.x+=L.v*tempo*dt;
       if(L.x<L.von){ L.x=L.von; L.v=1; }
       if(L.x>L.bis){ L.x=L.bis; L.v=-1; }
+      /* Der Direktor wechselt regelmaessig die Etage */
+      if(L.chef){
+        L.wechselT-=dt;
+        if(L.wechselT<=0 && anTreppe(L.x)){
+          const richtung = L.e===0?1 : L.e===BODEN.length-1?-1 : (Math.random()<.5?1:-1);
+          L.e+=richtung; L.wechselT=TUNE.chefEtagenWechsel;
+          if(L.e===S.etage){ SFX.gesehen(); meldung('SCHRITTE IM TREPPENHAUS',1.6); }
+        }
+      }
     }
-    /* Sicht - nur im Korridor, Raeume sind sicher */
-    /* Im Spind bist du weg - genau dafuer sind sie da. */
+    /* Sicht - nur im Korridor, Raeume und Spinde sind sicher.
+       Schleichen halbiert die Reichweite. */
+    const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1);
     const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
       && Math.sign(S.x-L.x)===Math.sign(L.v)
-      && Math.abs(S.x-L.x)<TUNE.sichtWeite
+      && Math.abs(S.x-L.x)<reichweite
       && Math.abs(S.y-BODEN[L.e])<TUNE.sichtHoehe;
     if(sichtbar){
       L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*dt);
       if(!L.gesehenPiep&&L.verdacht>.25){ L.gesehenPiep=true; SFX.gesehen(); }
-      if(L.verdacht>=1&&L.jagd<=0){ L.jagd=TUNE.jagdDauer; SFX.alarm(); S.ruettel=4;
-        meldung('ER HAT DICH',1.4); }
+      if(L.verdacht>=1&&L.jagd<=0){ L.jagd=dauer; SFX.alarm(); S.ruettel=L.chef?6:4;
+        meldung(L.chef?'DER DIREKTOR HAT DICH':'ER HAT DICH',1.6); }
     } else {
       L.verdacht=Math.max(0,L.verdacht-TUNE.verdachtAbbau*dt);
       if(L.verdacht<=0) L.gesehenPiep=false;
@@ -869,10 +937,11 @@ function lehrerLogik(dt){
   }
   S.lehrerJagt=jagt;
 }
-function gefangen(){
+function gefangen(L){
   if(S.unverwundbar>0) return;
   S.hp--; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
-  S.lehrer.forEach(L=>{ L.jagd=0; L.verdacht=0; L.gesehenPiep=false; });
+  S.faenger = L&&L.chef ? 'DER DIREKTOR HAT DICH' : 'EIN LEHRER HAT DICH';
+  S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; });
 }
 function weiterNachFang(){
   if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; return; }
@@ -1022,9 +1091,18 @@ function zeichneKorridor(){
       ctx.globalAlpha=fern?.4:1;
       sprite(SPR.tuer,r.x,ty);
       if(!fern){
+        /* Ab Hinweisstufe 2 ist der Zielraum markiert */
+        const markiert = S.hinweisStufe>=2 && i===S.schluesselRaum && !S.hatSchluessel;
         const beschriftung=S.entdeckt.has(i)?r.name:'? ? ?';
-        const col=S.entdeckt.has(i)?P.dim:P.dunkel;
+        const col = markiert?P.gold : (S.entdeckt.has(i)?P.dim:P.dunkel);
         text(beschriftung, r.x+4-textW(beschriftung)/2, ty-8, col);
+        if(markiert){
+          const blink=Math.floor(S.t*3)%2===0;
+          ctx.globalAlpha=blink?.85:.4; ctx.fillStyle=P.gold;
+          ctx.fillRect(r.x-1,ty-1,10,1); ctx.fillRect(r.x-1,ty+12,10,1);
+          ctx.globalAlpha=1;
+          if(blink) sprite(SPR.schluessel,r.x+2,ty-17);
+        }
       }
       ctx.globalAlpha=1;
     });
@@ -1059,6 +1137,13 @@ function zeichneKorridor(){
         const nah=S.etage===e&&anTreppe(S.x)&&S.modus==='spiel';
         const blink=Math.floor(S.t*3)%2===0;
         text('TREPPE',tx-textW('TREPPE')/2,by-54,nah?P.gold:P.dunkel);
+        /* Ab Hinweisstufe 1 steht hier, in welche Etage du musst */
+        if(S.hinweisStufe>=1&&!S.hatSchluessel){
+          const zE=RAEUME[S.schluesselRaum].e;
+          if(zE!==e){ const pfeil=zE>e?'W':'S';
+            if(Math.floor(S.t*2)%2===0) text(pfeil+' ETAGE '+(zE+1),tx-textW('W ETAGE 1')/2,by-62,P.gold); }
+          else text('HIER',tx-textW('HIER')/2,by-62,P.gruen);
+        }
         if(oben&&(!nah||blink)) text('W',tx-14,by-46,nah?P.gold:P.dim);
         if(unten&&(!nah||blink)) text('S',tx+11,by-46,nah?P.gold:P.dim);
         if(nah){ ctx.globalAlpha=.5; ctx.fillStyle=P.gold;
@@ -1072,18 +1157,21 @@ function zeichneKorridor(){
   for(const L of S.lehrer){
     const by=BODEN[L.e], fern=L.e!==S.etage;
     ctx.globalAlpha=fern?.35:1;
-    /* Sichtkegel */
+    /* Sichtkegel - schrumpft sichtbar mit, wenn du schleichst */
     if(!fern){
       ctx.globalAlpha=.10+L.verdacht*.22;
-      ctx.fillStyle=L.jagd>0?P.rot:P.gold;
-      const w=TUNE.sichtWeite;
-      if(L.v>0) ctx.fillRect(L.x+6,by-16,w,16); else ctx.fillRect(L.x-w+2,by-16,w,16);
+      ctx.fillStyle=L.jagd>0?P.rot:(L.chef?'#e0708f':P.gold);
+      const w=(L.chef?TUNE.chefSicht:TUNE.sichtWeite)*(S.schleicht?TUNE.schleichSicht:1);
+      const h=L.chef?20:16;
+      if(L.v>0) ctx.fillRect(L.x+6,by-h,w,h); else ctx.fillRect(L.x-w+2,by-h,w,h);
       ctx.globalAlpha=1;
     }
     const bewegt=Math.abs(L.v)>0;
-    const rows = (L.jagd>0||bewegt) && Math.floor(S.t*6)%2 ? SPR.lehrerGeh : SPR.lehrer;
-    if(!fern) outline(rows,L.x,by-13,1,.6);
-    if(L.v>0) spriteFlip(rows,L.x,by-13); else sprite(rows,L.x,by-13);
+    const rows = L.chef ? SPR.direktor
+               : ((L.jagd>0||bewegt) && Math.floor(S.t*6)%2 ? SPR.lehrerGeh : SPR.lehrer);
+    const hoehe = L.chef?17:13;
+    if(!fern) outline(rows,L.x,by-hoehe,1,.6);
+    if(L.v>0) spriteFlip(rows,L.x,by-hoehe); else sprite(rows,L.x,by-hoehe);
     /* Verdachtsbalken */
     if(!fern&&L.verdacht>.02){
       const bw=14;
@@ -1124,6 +1212,18 @@ function zeichneKorridor(){
     const gr=g.createRadialGradient(W/2,H*.6,40,W/2,H*.6,W*.62);
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.72)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+
+  /* Stromausfall: alles bis auf einen engen Kreis um dich wird schwarz */
+  if(S.dunkelT>0){
+    const staerke=Math.min(1,S.dunkelT*2.2)*(Math.random()<.12?.4:1);
+    const px=Math.round(S.x-S.kamX)+3, py=Math.round(S.y-S.kamY)-6;
+    ctx.globalAlpha=staerke*.92;
+    ctx.drawImage(verlauf('blackout',W*2,H*2,g=>{
+      const gr=g.createRadialGradient(W,H,18,W,H,86);
+      gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
+      g.fillStyle=gr; g.fillRect(0,0,W*2,H*2); }), px-W, py-H);
+    ctx.globalAlpha=1;
+  }
 }
 
 function zeichneSpieler(x,y){
@@ -1235,6 +1335,19 @@ function hud(){
     const t='ETAGE '+(S.etage+1);
     text(t,(W-textW(t))/2,6,P.dunkel);
   }
+  /* Was du bisher weisst */
+  if(!S.hatSchluessel&&S.hinweisStufe>0){
+    const kr=RAEUME[S.schluesselRaum];
+    const t = S.hinweisStufe>=2 ? 'ZIEL: '+kr.name : 'ZIEL: ETAGE '+(kr.e+1);
+    text(t,(W-textW(t))/2,14,P.gold);
+  }
+  /* Schleichen */
+  if(S.schleicht) text('LEISE',6,H-12,P.neon2);
+  /* Spind-Abkuehlung */
+  if(S.spindAbkuehlung>0){
+    const t='SPIND '+Math.ceil(S.spindAbkuehlung);
+    text(t,W-textW(t)-6,H-12,P.dunkel);
+  }
   /* Jagdanzeige */
   if(S.lehrerJagt&&Math.floor(S.t*6)%2===0) textGlowC('LAUF',18,P.rot,2);
   /* Meldung */
@@ -1267,9 +1380,10 @@ function titelbild(){
     'DIE LEHRER SIND NOCH DA',
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
-  const st=[['A D','LAUFEN'],['LEER','SPRINGEN'],['W','TREPPE HOCH'],['S','TREPPE RUNTER'],['E','TUER UND SUCHEN']];
-  st.forEach((z,i)=>{ text(z[0],62,116+i*9,P.gold); text(z[1],108,116+i*9,P.dim); });
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-14,P.weiss,1);
+  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN - LEISER UND UNAUFFAELLIGER'],
+            ['W S','TREPPE HOCH UND RUNTER'],['E','TUER, SPIND UND DURCHSUCHEN']];
+  st.forEach((z,i)=>{ text(z[0],40,112+i*9,P.gold); text(z[1],86,112+i*9,P.dim); });
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-12,P.weiss,1);
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1278,8 +1392,9 @@ function bildschirme(){
   }
   if(S.modus==='gefangen'){
     ctx.fillStyle=`rgba(0,0,0,${Math.min(.8,S.szeneT*2).toFixed(2)})`; ctx.fillRect(0,0,W,H);
-    textGlowC('ERWISCHT',56,P.rot,3);
-    textC(S.hp>0?'ZURUECK ZUR TREPPE':'KEINE VERSUCHE MEHR',80,P.weiss);
+    textGlowC('ERWISCHT',48,P.rot,3);
+    textC(S.faenger||'ERWISCHT',72,P.dim);
+    textC(S.hp>0?'ZURUECK ZUR TREPPE':'KEINE VERSUCHE MEHR',86,P.weiss);
     if(S.szeneT>.6&&Math.floor(S.t*2)%2===0) textC('LEERTASTE',104,P.gold);
   }
   if(S.modus==='cutscene'){
