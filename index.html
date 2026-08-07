@@ -155,6 +155,8 @@ const TUNE = {
 
   /* (5) SUCHEN */
   suchDauer:       0.75, // wie lange eine Durchsuchung braucht
+  notizAnzahl:        4, // wie viele Zettel ausser dem Hinweis rumliegen
+  tippNachSuchen:     7, // so viele leere Faecher, dann sagt das Spiel die Etage
 
   /* (6) OPTIK */
   flackern:      true,
@@ -349,6 +351,7 @@ const SFX={
   suchen: ()=>rauschen(.14,.03),
   fund:   ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.16),170); },
   nichts: ()=>piep(220,.09,'sine',.03),
+  zettel: ()=>{ rauschen(.1,.03); setTimeout(()=>piep(740,.07,'triangle',.04),60); },
   gesehen:()=>{ piep(1200,.07); setTimeout(()=>piep(1200,.07),110); },
   alarm:  ()=>{ glissando(200,900,.3,'sawtooth',.06); },
   gefangt:()=>{ glissando(400,80,.4,'sawtooth',.07); rauschen(.3,.08); },
@@ -430,6 +433,33 @@ const RAEUME = [
 ];
 const AUSGANG = { e:0, x:648 };
 
+const ETAGE_NAME = ['ERDGESCHOSS','ERSTEN STOCK','ZWEITEN STOCK'];
+const ETAGE_KURZ = ['EG','1. OG','2. OG'];
+
+/* ---- Fundstuecke ----
+   Der Hausmeisterzettel sagt, in welcher Etage der Schluessel haengt. Ohne ihn
+   war die Suche im schlechtesten Fall zwei Minuten reines Ablaufen. Der Rest
+   liegt nur so rum und erzaehlt, wo man hier eigentlich ist. */
+const NOTIZEN = [
+  { t:'ZETTEL AM SCHWARZEN BRETT',
+    z:['KLASSENFAHRT FAELLT AUS.','GRUND: DER VORFALL AUF DER LETZTEN.'] },
+  { t:'ZETTEL IM SPIND',
+    z:['MARC: AB ACHT BEI MIR, VORGLUEHEN.','BRING WAS MIT. NICHT WIE LETZTES MAL.'] },
+  { t:'ELTERNBRIEF, NIE ABGEGEBEN',
+    z:['IHR SOHN SCHLAEFT IM UNTERRICHT.','WIR BITTEN UM EIN GESPRAECH.'] },
+  { t:'NOTIZ DES DIREKTORS',
+    z:['NACHSITZEN. SCHON WIEDER.','DIESMAL BIS ER ES BEGRIFFEN HAT.'] },
+  { t:'ZETTEL AUS DEM PAPIERKORB',
+    z:['WER HEUTE ABEND MIT IST:','SIEBEN NAMEN. EINER FEHLT NOCH.'] },
+  { t:'GEKRITZEL AUF DER TISCHPLATTE',
+    z:['DIE NACHT GEHOERT UNS.','- IRGENDWER, IRGENDWANN'] },
+  { t:'STUNDENPLAN',
+    z:['MONTAG BIS FREITAG. IMMER GLEICH.','UND DANN KOMMT DER ABEND.'] },
+];
+const hinweisNotiz=()=>({ t:'ZETTEL DES HAUSMEISTERS',
+  z:['ZWEITSCHLUESSEL HAENGT WIEDER IM',
+     ETAGE_NAME[RAEUME[S.schluesselRaum].e]+'. IMMER DASSELBE.'] });
+
 const LEHRER_START = [
   { e:0, von:180, bis:600, x:400, v:1 },
   { e:1, von: 90, bis:660, x:200, v:1 },
@@ -456,6 +486,8 @@ function neuesSpiel(){
     lehrerJagt:false,
     geraeusche:[],
     schleicht:false, versteckt:false, spindX:0,
+    notizPlatz:{}, notizen:new Set(), notizOffen:-1,
+    tippEtage:-1, suchZaehler:0,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
     durchsucht:new Set(),      // "raumIndex:moebelIndex"
     ruettel:0, blitz:0, blende:0,
@@ -467,7 +499,27 @@ function neuesSpiel(){
   const r=Math.floor(Math.random()*RAEUME.length);
   S.schluesselRaum=r;
   S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
+  verteileNotizen();
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
+}
+function mische(a){
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+/* Der Hinweiszettel liegt nie im selben Raum wie der Schluessel. Er soll die
+   Suche eingrenzen, nicht sie abkuerzen. */
+function verteileNotizen(){
+  const frei=[];
+  RAEUME.forEach((r,ri)=>r.moebel.forEach((m,mi)=>{
+    if(ri===S.schluesselRaum&&mi===S.schluesselMoebel) return;
+    frei.push(ri+':'+mi);
+  }));
+  mische(frei);
+  const hinweisPlatz = frei.find(s=>+s.split(':')[0]!==S.schluesselRaum) || frei[0];
+  S.notizPlatz[hinweisPlatz]='hinweis';
+  const welche=mische(NOTIZEN.map((_,i)=>i));
+  frei.filter(s=>s!==hinweisPlatz).slice(0,TUNE.notizAnzahl)
+      .forEach((s,i)=>S.notizPlatz[s]=welche[i%welche.length]);
 }
 neuesSpiel();
 
@@ -656,10 +708,10 @@ function update(dt){
   const treppe = S.amBoden && anTreppe(S.x);
   if(treppe && hochAn && S.etage < BODEN.length-1){
     S.etage++; S.y=BODEN[S.etage]; S.vy=0; hochAn=false;
-    SFX.landen(); meldung('ETAGE '+(S.etage+1),1);
+    SFX.landen(); meldung(ETAGE_KURZ[S.etage],1);
   } else if(treppe && runterAn && S.etage > 0){
     S.etage--; S.y=BODEN[S.etage]; S.vy=0; runterAn=false;
-    SFX.landen(); meldung('ETAGE '+(S.etage+1),1);
+    SFX.landen(); meldung(ETAGE_KURZ[S.etage],1);
   }
 
   aktionKorridor();
@@ -720,12 +772,23 @@ function imRaum(dt){
   if(S.suchT>0){
     S.suchT-=dt;
     if(S.suchT<=0){
-      S.durchsucht.add(S.raum+':'+S.suchZiel);
+      const platz=S.raum+':'+S.suchZiel;
+      S.durchsucht.add(platz);
       if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
-      } else { SFX.nichts(); meldung('NICHTS DRIN',1); }
+      } else if(S.notizPlatz[platz]!==undefined){
+        oeffneNotiz(S.notizPlatz[platz]);
+      } else {
+        SFX.nichts(); meldung('NICHTS DRIN',1);
+      }
+      if(!S.hatSchluessel){ S.suchZaehler++; pruefeTipp(); }
     }
+    return;
+  }
+  /* Zettel liegt offen - alles andere wartet */
+  if(S.notizOffen!==-1){
+    if(aktionPuffer.length){ aktionPuffer.length=0; S.notizOffen=-1; piep(320,.05,'sine',.03); }
     return;
   }
   while(aktionPuffer.length){
@@ -737,6 +800,25 @@ function imRaum(dt){
     }
   }
   S.nahesMoebel=nah; S.anTuerRaus=anTuerRaus;
+}
+function oeffneNotiz(n){
+  S.notizOffen=n; S.notizen.add(n);
+  aktionPuffer.length=0;          // sonst schliesst der Druck von eben sofort wieder
+  SFX.zettel();
+  if(n==='hinweis') setzeTipp(RAEUME[S.schluesselRaum].e,false);
+}
+/* Nach genug leeren Faechern verraet das Spiel die Etage von selbst. Wer den
+   Hausmeisterzettel nie findet, soll trotzdem nicht das ganze Haus ablaufen. */
+function pruefeTipp(){
+  if(S.tippEtage<0 && !S.hatSchluessel && S.suchZaehler>=TUNE.tippNachSuchen)
+    setzeTipp(RAEUME[S.schluesselRaum].e,true);
+}
+function setzeTipp(e,vonSelbst){
+  if(S.tippEtage>=0) return;
+  S.tippEtage=e;
+  zeigeHinweis(vonSelbst ? 'IRGENDWO KLIMPERT WAS - '+ETAGE_NAME[e]
+                         : 'SCHLUESSEL: '+ETAGE_NAME[e], 3.4);
+  piep(880,.09); setTimeout(()=>piep(660,.12),100);
 }
 function moebelPlaetze(r){
   const start=78, abstand=(W-160)/Math.max(1,r.moebel.length-1);
@@ -1150,6 +1232,16 @@ function zeichneRaum(){
   /* Tuer zurueck */
   sprite(SPR.tuer,30,bodenY-12);
   text('RAUS',30+4-textW('RAUS')/2,bodenY-20,S.anTuerRaus?P.gold:P.dunkel);
+  /* Blick durch den Tuerspalt. Rausgehen macht Krach - man soll vorher
+     wissen, ob gerade jemand davorsteht. */
+  if(S.anTuerRaus){
+    let dmin=1e9;
+    for(const L of S.lehrer) if(L.e===r.e) dmin=Math.min(dmin,Math.abs(L.x-r.x));
+    const [ft,fc] = dmin<46 ? ['DIREKT DAVOR',P.rot]
+                  : dmin<125 ? ['SCHRITTE',P.gold]
+                             : ['FLUR FREI',P.gruen];
+    text(ft,Math.max(2,34-Math.round(textW(ft)/2)),bodenY-28,fc);
+  }
 
   /* Moebel */
   const plaetze=moebelPlaetze(r);
@@ -1181,6 +1273,8 @@ function zeichneRaum(){
     text('DURCHSUCHEN',(W-textW('DURCHSUCHEN'))/2,bodenY-34,P.dim);
   }
 
+  if(S.notizOffen!==-1) zeichneNotiz();
+
   /* Eintrittsblende */
   if(S.blende>0){ ctx.fillStyle=`rgba(0,0,0,${S.blende.toFixed(2)})`; ctx.fillRect(0,0,W,H); }
   /* Vignette */
@@ -1188,6 +1282,21 @@ function zeichneRaum(){
     const gr=g.createRadialGradient(W/2,H*.55,50,W/2,H*.55,W*.6);
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.6)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+}
+
+/* ---- Zettel im Vordergrund ---- */
+function zeichneNotiz(){
+  const n = S.notizOffen==='hinweis' ? hinweisNotiz() : NOTIZEN[S.notizOffen];
+  ctx.fillStyle='#000000cc'; ctx.fillRect(0,0,W,H);
+  const bw=Math.min(W-20,236), bh=52;
+  const bx=Math.round((W-bw)/2), by=Math.round((H-bh)/2)-8;
+  const mitte=(s,y,col)=>text(s,Math.round(bx+(bw-textW(s))/2),y,col);
+  ctx.fillStyle='#0d0a16'; ctx.fillRect(bx-2,by-2,bw+4,bh+4);
+  ctx.fillStyle='#e8e2cf'; ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle='#d3ccb6'; ctx.fillRect(bx,by+26,bw,1);      // Knickfalte
+  mitte(n.t,by+6,'#8a7f63');
+  n.z.forEach((z,i)=>mitte(z,by+18+i*11,'#2a2438'));
+  if(Math.floor(S.t*2)%2===0) textC('E  EINSTECKEN',by+bh+9,P.gold);
 }
 
 /* ---- HUD ---- */
@@ -1200,13 +1309,19 @@ function hud(){
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
     ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
   }
-  /* Schluessel */
+  /* Schluessel - und wo er liegt, sobald man es weiss */
   if(S.hatSchluessel){ sprite(SPR.schluessel,W-14,5); text('OK',W-24,6,P.gold); }
-  else { ctx.globalAlpha=.3; sprite(SPR.schluessel,W-14,5); ctx.globalAlpha=1; }
-  /* Etage */
+  else {
+    ctx.globalAlpha=.3; sprite(SPR.schluessel,W-14,5); ctx.globalAlpha=1;
+    if(S.tippEtage>=0){
+      const t=ETAGE_KURZ[S.tippEtage];
+      text(t,W-4-textW(t),15,S.etage===S.tippEtage?P.gruen:P.gold);
+    }
+  }
+  /* Etage - dieselbe Zaehlung wie der Hinweiszettel: EG, 1. OG, 2. OG */
   if(S.modus!=='raum'){
-    const t='ETAGE '+(S.etage+1);
-    text(t,(W-textW(t))/2,6,P.dunkel);
+    const t=ETAGE_KURZ[S.etage];
+    text(t,(W-textW(t))/2,6,S.tippEtage===S.etage&&!S.hatSchluessel?P.gold:P.dunkel);
   }
   /* Jagdanzeige */
   if(S.lehrerJagt&&Math.floor(S.t*6)%2===0) textGlowC('LAUF',18,P.rot,2);
@@ -1275,9 +1390,11 @@ function bildschirme(){
       textGlowC('LEVEL 1 GESCHAFFT',40,P.gold,2);
       textC('DIE NACHT FAENGT JETZT ERST AN',62,P.weiss);
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
-      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),84,P.dim);
-      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,96,P.dim);
-      textC('NAECHSTES LEVEL FOLGT',118,P.dunkel);
+      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),82,P.dim);
+      textC('DURCHSUCHT  '+S.durchsucht.size,92,P.dim);
+      textC('ZETTEL  '+S.notizen.size+'/'+(TUNE.notizAnzahl+1),102,
+            S.notizen.size>=TUNE.notizAnzahl+1?P.gold:P.dim);
+      textC('NAECHSTES LEVEL FOLGT',120,P.dunkel);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
