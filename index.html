@@ -119,8 +119,10 @@ const TUNE = {
   leben:            3,
   unverwundbarMs:1400,
 
-  /* (5) SUCHEN */
+  /* (5) SUCHEN UND VERSTECKEN */
   suchDauer:       0.75, // wie lange eine Durchsuchung braucht
+  spindAbkuehlung: 10,   // Sekunden, bis du dich wieder verstecken darfst
+  spindReichweite: 11,   // wie nah du am Spind stehen musst
 
   /* (6) OPTIK */
   flackern:      true,
@@ -380,19 +382,44 @@ const BODEN   = [ 250, 184, 118 ];       // Boden-Y je Etage (0 = Erdgeschoss)
 const LEVEL_B = 760;                     // Korridorlaenge
 const TREPPE_L = 30, TREPPE_R = 706;
 
+/* Jeder Raum hat einen eigenen Stil - sonst sehen alle zehn gleich aus. */
+const STIL = {
+  hausmeister:{ wand:'#2b2519', kante:'#40381f', boden:'#1d1a11', fenster:0,
+                licht:'rgba(255,200,110,.13)', deko:'rohre',   schild:'#c9a24a' },
+  turnhalle:  { wand:'#1d2b35', kante:'#2f4453', boden:'#4a3720', fenster:3,
+                licht:'rgba(200,225,255,.12)', deko:'sprossen',schild:'#7fb3d5' },
+  buero:      { wand:'#2d2537', kante:'#443756', boden:'#2c2024', fenster:1,
+                licht:'rgba(255,205,150,.13)', deko:'akten',   schild:'#d9a066' },
+  klasse:     { wand:'#20243a', kante:'#323a58', boden:'#141726', fenster:2,
+                licht:'rgba(180,210,255,.12)', deko:'tafel',   schild:'#8fa5c9' },
+  chemie:     { wand:'#1b2c26', kante:'#2c463c', boden:'#16201c', fenster:2,
+                licht:'rgba(150,255,205,.12)', deko:'labor',   schild:'#6fe0b0' },
+  biblio:     { wand:'#2b2130', kante:'#413049', boden:'#251a13', fenster:1,
+                licht:'rgba(255,200,120,.12)', deko:'buecher', schild:'#d7a86e' },
+  lehrer:     { wand:'#292233', kante:'#3d3350', boden:'#201a26', fenster:2,
+                licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
+};
+
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  moebel:['spind','eimer','regal'] },
-  { e:0, x:300, name:'TURNHALLE',    moebel:['kiste','kiste','spind'] },
-  { e:0, x:470, name:'SEKRETARIAT',  moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     moebel:['tisch','tisch','regal'] },
-  { e:1, x:430, name:'CHEMIE',       moebel:['regal','tisch','kiste'] },
-  { e:1, x:590, name:'RAUM 103',     moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   moebel:['regal','regal','tisch'] },
-  { e:2, x:330, name:'LEHRERZIMMER', moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     moebel:['tisch','tafel','kiste'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste','spind'] },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch','regal'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste'] },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch'] },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel','kiste'] },
 ];
 const AUSGANG = { e:0, x:648 };
+
+/* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
+const SPINDE = [
+  { e:0, x:200 }, { e:0, x:400 }, { e:0, x:560 },
+  { e:1, x:180 }, { e:1, x:350 }, { e:1, x:510 }, { e:1, x:660 },
+  { e:2, x:220 }, { e:2, x:420 }, { e:2, x:600 },
+];
 
 const LEHRER_START = [
   { e:0, von:180, bis:600, x:400, v:1 },
@@ -414,6 +441,7 @@ function neuesSpiel(){
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
+    imSpind:-1, spindAbkuehlung:0,
     lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
     lehrerJagt:false,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
@@ -424,7 +452,16 @@ function neuesSpiel(){
     schritte:0, gewonnen:false,
     nahesMoebel:-1, anTuerRaus:false,
   };
-  const r=Math.floor(Math.random()*RAEUME.length);
+  /* Der Schluessel darf nicht im Raum direkt neben dem Start liegen -
+     sonst ist die Runde nach zwanzig Sekunden vorbei und fuehlt sich
+     jedes Mal gleich an. Etagen werden gleich gewichtet, damit nicht
+     immer die Etage mit den meisten Raeumen gewinnt. */
+  const startX=60;
+  const erlaubt=RAEUME.map((r,i)=>i).filter(i=>!(RAEUME[i].e===0 && Math.abs(RAEUME[i].x-startX)<120));
+  const etagen=[...new Set(erlaubt.map(i=>RAEUME[i].e))];
+  const etage=etagen[Math.floor(Math.random()*etagen.length)];
+  const inEtage=erlaubt.filter(i=>RAEUME[i].e===etage);
+  const r=inEtage[Math.floor(Math.random()*inEtage.length)];
   S.schluesselRaum=r;
   S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
@@ -441,6 +478,7 @@ let sprungPuffer=[], aktionPuffer=[];
 function druckSprung(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
@@ -453,10 +491,73 @@ function druckAktion(){
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
+  if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
   aktionPuffer.push(S.t);
 }
-function starte(){ neuesSpiel(); S.modus='spiel';
+/* ---- Intro ---- */
+const INTRO=[
+  { d:2.6, txt:'FREITAG. LETZTER SCHULTAG.' },
+  { d:2.4, txt:'16:40 - NACHSITZEN VORBEI.' },
+  { d:2.4, txt:'DU HAST GEPENNT. ALLE SIND WEG.' },
+  { d:2.4, txt:'UND DIE TUEREN SIND ZU.' },
+  { d:2.6, txt:'HEUTE ABEND GEHT WAS. DA WILLST DU HIN.' },
+  { d:2.6, txt:'ALSO: SCHLUESSEL SUCHEN.' },
+];
+function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+function starteLevel(){ S.modus='spiel';
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+function intro(dt){
+  S.szeneT+=dt;
+  if(S.szeneT>=INTRO[S.szene].d){
+    S.szene++; S.szeneT=0;
+    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03);
+  }
+}
+function zeichneIntro(){
+  const t=S.t;
+  ctx.fillStyle='#0a0912'; ctx.fillRect(0,0,W,H);
+  const m=Math.round(W/2), bodenY=132;
+  /* Klassenzimmer im Abendlicht */
+  ctx.fillStyle='#171b2c'; ctx.fillRect(0,40,W,bodenY-40);
+  ctx.fillStyle='#0f1322'; ctx.fillRect(0,bodenY,W,H-bodenY);
+  ctx.fillStyle='#252b44'; ctx.fillRect(0,bodenY,W,1);
+  /* Fenster mit tief stehender Sonne */
+  const fx=m+44;
+  ctx.fillStyle='#3d2a18'; ctx.fillRect(fx,56,44,40);
+  ctx.fillStyle='#8a5a28'; ctx.fillRect(fx+2,58,40,36);
+  ctx.fillStyle='#d98a3a'; ctx.fillRect(fx+2,58,40,14);
+  ctx.fillStyle='#f0b45a'; ctx.beginPath(); ctx.arc(fx+30,76,7,0,7); ctx.fill();
+  ctx.fillStyle='#3d2a18'; ctx.fillRect(fx+20,56,2,40); ctx.fillRect(fx,74,44,2);
+  ctx.drawImage(verlauf('abendlicht',90,80,g=>{
+    const gr=g.createLinearGradient(90,0,0,60);
+    gr.addColorStop(0,'rgba(240,170,80,.20)'); gr.addColorStop(1,'rgba(240,170,80,0)');
+    g.fillStyle=gr; g.fillRect(0,0,90,80); }), fx-46, 56);
+  /* Tafel */
+  ctx.fillStyle='#1a2a20'; ctx.fillRect(m-86,54,70,30);
+  ctx.fillStyle='#6e7f74'; ctx.fillRect(m-78,62,44,1); ctx.fillRect(m-78,70,30,1);
+  /* Uhr - Zeiger laufen */
+  ctx.fillStyle='#2a3048'; ctx.beginPath(); ctx.arc(m-6,50,8,0,7); ctx.fill();
+  ctx.fillStyle='#cfd6ea'; ctx.beginPath(); ctx.arc(m-6,50,6,0,7); ctx.fill();
+  ctx.strokeStyle='#1a2030'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(m-6,50); ctx.lineTo(m-6+Math.cos(t*1.6)*4,50+Math.sin(t*1.6)*4); ctx.stroke();
+  /* Bankreihen */
+  for(let i=0;i<4;i++){ const bx=26+i*62;
+    ctx.fillStyle='#4a3a24'; ctx.fillRect(bx,bodenY-14,34,4);
+    ctx.fillStyle='#2a2233'; ctx.fillRect(bx+3,bodenY-10,3,10); ctx.fillRect(bx+28,bodenY-10,3,10); }
+  /* Du sitzt hinten - Kopf sinkt langsam */
+  const sink=Math.min(3,Math.max(0,(S.szene<2? Math.sin(t*.8)*2+2 : 0)));
+  sprite(SPR.steh, 44, bodenY-13+sink);
+  /* Vignette und Textkasten */
+  ctx.drawImage(verlauf('introvig',W,H,g=>{
+    const gr=g.createRadialGradient(m,80,40,m,80,W*.6);
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.8)');
+    g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-38,W,38);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
+  const s=INTRO[S.szene];
+  if(s) textC(s.txt,H-24,P.weiss);
+  if(Math.floor(t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+}
 function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 addEventListener('keydown',e=>{
@@ -495,7 +596,18 @@ if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); remove
    HILFEN
    ========================================================================== */
 const raumBei=(e,x)=>RAEUME.findIndex(r=>r.e===e && Math.abs(r.x-x)<12);
-const anTreppe=x=>Math.abs(x-TREPPE_L)<14 || Math.abs(x-TREPPE_R)<14;
+const spindBei=(e,x)=>SPINDE.findIndex(s=>s.e===e && Math.abs(s.x-x)<TUNE.spindReichweite);
+function rein(i){
+  S.imSpind=i; S.vx=0; S.x=SPINDE[i].x+1; SFX.tuer();
+  meldung('VERSTECKT',1.2);
+  /* Wer schon jagt, verliert die Spur - aber er sucht weiter in der Naehe. */
+  S.lehrer.forEach(L=>{ if(L.e===S.etage) L.verdacht=0; });
+}
+function raus(){
+  S.imSpind=-1; S.spindAbkuehlung=TUNE.spindAbkuehlung; SFX.tuer();
+  meldung('RAUS AUS DEM SPIND',1);
+}
+const anTreppe=x=>Math.abs(x-TREPPE_L)<22 || Math.abs(x-TREPPE_R)<22;
 const amAusgang=x=>S.etage===AUSGANG.e && Math.abs(x-AUSGANG.x)<13;
 
 function meldung(t,d=1.4){ S.meldung=t; S.meldungT=d; }
@@ -511,6 +623,7 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
 
+  if(S.modus==='intro'){ intro(dt); return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt,true); return; }
   if(S.modus==='ende'){ S.zeit+=dt; return; }
   if(S.modus==='gefangen'){ S.szeneT+=dt; return; }
@@ -519,6 +632,14 @@ function update(dt){
   if(S.unverwundbar>0) S.unverwundbar-=dt;
 
   if(S.modus==='raum'){ imRaum(dt); kamera(dt,true); return; }
+
+  if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
+
+  /* ---------- Im Spind: nur rauskommen geht ---------- */
+  if(S.imSpind>=0){
+    while(aktionPuffer.length){ aktionPuffer.shift(); raus(); }
+    lehrerLogik(dt); kamera(dt,false); return;
+  }
 
   /* ---------- Korridor ---------- */
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
@@ -570,14 +691,18 @@ function update(dt){
     SFX.landen(); meldung('ETAGE '+(S.etage+1),1);
   }
 
-  /* Aktion: Tuer oder Ausgang */
+  /* Aktion: Ausgang, Tuer oder Spind */
   while(aktionPuffer.length){
     aktionPuffer.shift();
-    const ri=raumBei(S.etage,S.x);
+    const ri=raumBei(S.etage,S.x), si=spindBei(S.etage,S.x);
     if(amAusgang(S.x)){
       if(S.hatSchluessel){ starteCutscene(); }
       else { meldung('ABGESCHLOSSEN'); SFX.nichts(); }
     } else if(ri>=0){ betreteRaum(ri); }
+    else if(si>=0){
+      if(S.spindAbkuehlung>0){ meldung('NOCH '+Math.ceil(S.spindAbkuehlung)+' SEKUNDEN'); SFX.nichts(); }
+      else rein(si);
+    }
   }
 
   lehrerLogik(dt);
@@ -629,6 +754,82 @@ function imRaum(dt){
   }
   S.nahesMoebel=nah; S.anTuerRaus=anTuerRaus;
 }
+/* Wanddeko je Raumstil - macht den Unterschied zwischen zehn gleichen
+   Kisten und zehn Raeumen, die man auseinanderhaelt. */
+function raumDeko(st,deckeY,bodenY){
+  const m=Math.round(W/2);
+  switch(st.deko){
+    case 'rohre':                                   // Hausmeister
+      ctx.fillStyle='#4a4130';
+      ctx.fillRect(34,deckeY+8,W-68,3); ctx.fillRect(34,deckeY+18,W-68,2);
+      ctx.fillStyle='#2a2418';
+      for(let x=50;x<W-50;x+=44){ ctx.fillRect(x,deckeY+6,3,7); ctx.fillRect(x,deckeY+16,3,6); }
+      ctx.fillStyle='#6b5a33';
+      for(let x=70;x<W-60;x+=90) ctx.fillRect(x,deckeY+22,10,14);   // Werkzeugbrett
+      break;
+    case 'sprossen':                                // Turnhalle
+      ctx.fillStyle='#6b5330';
+      for(let i=0;i<9;i++) ctx.fillRect(44,deckeY+10+i*8,46,3);
+      ctx.fillRect(44,deckeY+8,3,76); ctx.fillRect(87,deckeY+8,3,76);
+      ctx.fillStyle='#c9552f';                                       // Korb
+      ctx.fillRect(W-72,deckeY+16,22,3);
+      ctx.fillStyle='#e8e2d0'; ctx.fillRect(W-76,deckeY+8,30,9);
+      ctx.fillStyle='#3d5a3d';                                       // Linien am Boden
+      ctx.fillRect(30,bodenY+6,W-60,1);
+      break;
+    case 'akten':                                   // Sekretariat
+      ctx.fillStyle='#3a2f26';
+      for(let x=40;x<W-70;x+=26){ ctx.fillRect(x,deckeY+14,22,40);
+        ctx.fillStyle='#584636'; ctx.fillRect(x+2,deckeY+18,18,2); ctx.fillRect(x+2,deckeY+28,18,2);
+        ctx.fillRect(x+2,deckeY+38,18,2); ctx.fillStyle='#3a2f26'; }
+      ctx.fillStyle='#d9a066'; ctx.fillRect(W-58,deckeY+20,18,12);   // Uhr
+      ctx.fillStyle='#2a1f14'; ctx.fillRect(W-50,deckeY+22,2,6);
+      break;
+    case 'tafel':                                   // Klassenzimmer
+      ctx.fillStyle='#1a2a20'; ctx.fillRect(m-46,deckeY+10,92,34);
+      ctx.fillStyle='#33473a'; ctx.fillRect(m-46,deckeY+10,92,2); ctx.fillRect(m-46,deckeY+42,92,2);
+      ctx.fillStyle='#6e7f74';
+      ctx.fillRect(m-36,deckeY+18,26,1); ctx.fillRect(m-36,deckeY+24,40,1);
+      ctx.fillRect(m-36,deckeY+30,18,1); ctx.fillRect(m+6,deckeY+30,22,1);
+      ctx.fillStyle='#8c94ad'; ctx.fillRect(m-48,deckeY+46,96,2);    // Kreideablage
+      break;
+    case 'labor':                                   // Chemie
+      ctx.fillStyle='#24463c';
+      for(let x=40;x<W-40;x+=18) ctx.fillRect(x,deckeY+12,14,26);    // Periodensystem
+      ctx.fillStyle='#6fe0b0';
+      for(let x=44;x<W-40;x+=18) ctx.fillRect(x,deckeY+16,6,2);
+      ctx.fillStyle='#2a4038'; ctx.fillRect(30,deckeY+44,W-60,3);
+      [60,96,W-96,W-64].forEach((x,i)=>{                             // Kolben
+        ctx.fillStyle=['#6fe0b0','#e0e06f','#e06f9a','#6fb0e0'][i];
+        ctx.fillRect(x,deckeY+38,6,6); ctx.fillStyle='#cfe3ff'; ctx.fillRect(x+2,deckeY+35,2,3); });
+      break;
+    case 'buecher':                                 // Bibliothek
+      for(let reihe=0;reihe<3;reihe++){
+        const y=deckeY+10+reihe*15;
+        ctx.fillStyle='#3a2a1c'; ctx.fillRect(34,y+11,W-68,3);
+        for(let x=38;x<W-40;x+=4){
+          const h=6+((x*7+reihe*13)%5);
+          ctx.fillStyle=['#8a3d3d','#3d5a8a','#7a6a2a','#4a7a4a','#6a3d7a'][(x+reihe)%5];
+          ctx.fillRect(x,y+11-h,3,h);
+        }
+      }
+      break;
+    case 'pinnwand':                                // Lehrerzimmer
+      ctx.fillStyle='#5a4632'; ctx.fillRect(40,deckeY+10,70,40);
+      ctx.fillStyle='#7a6244'; ctx.fillRect(42,deckeY+12,66,36);
+      [[46,4],[64,10],[84,6],[50,22],[76,26]].forEach(([x,y],i)=>{
+        ctx.fillStyle=['#e8e2d0','#d9c07a','#c9a2a2','#a2c9c0','#e8e2d0'][i];
+        ctx.fillRect(42+x-42+4,deckeY+16+y,14,10); });
+      ctx.fillStyle='#2a2233'; ctx.fillRect(W-84,deckeY+18,26,30);   // Kaffeemaschine
+      ctx.fillStyle='#e0708f'; ctx.fillRect(W-80,deckeY+22,18,4);
+      ctx.fillStyle='#8c94ad'; ctx.fillRect(W-78,deckeY+34,14,10);
+      break;
+  }
+  /* Raumschild ueber der Tuer */
+  ctx.fillStyle='#00000066'; ctx.fillRect(24,deckeY+50,44,9);
+  text(RAEUME[S.raum].name.slice(0,9),26,deckeY+52,st.schild);
+}
+
 function moebelPlaetze(r){
   const start=78, abstand=(W-160)/Math.max(1,r.moebel.length-1);
   return r.moebel.map((m,i)=>({ typ:m, x:start+i*abstand }));
@@ -643,14 +844,16 @@ function lehrerLogik(dt){
       const ziel=S.x, dir=Math.sign(ziel-L.x)||1;
       L.v=dir; L.x+=dir*TUNE.jagdTempo*dt;
       L.x=Math.max(20,Math.min(LEVEL_B-20,L.x));
-      if(L.e===S.etage && S.modus==='spiel' && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen();
+      if(L.e===S.etage && S.modus==='spiel' && S.imSpind<0
+         && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen();
     } else {
       L.x+=L.v*TUNE.lehrerTempo*dt;
       if(L.x<L.von){ L.x=L.von; L.v=1; }
       if(L.x>L.bis){ L.x=L.bis; L.v=-1; }
     }
     /* Sicht - nur im Korridor, Raeume sind sicher */
-    const sichtbar = S.modus==='spiel' && L.e===S.etage
+    /* Im Spind bist du weg - genau dafuer sind sie da. */
+    const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
       && Math.sign(S.x-L.x)===Math.sign(L.v)
       && Math.abs(S.x-L.x)<TUNE.sichtWeite
       && Math.abs(S.y-BODEN[L.e])<TUNE.sichtHoehe;
@@ -738,6 +941,7 @@ function draw(dt){
   staubUpdate(dt);
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
+  if(S.modus==='intro'){ zeichneIntro(); return; }
 
   ctx.save();
   const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel;
@@ -786,10 +990,31 @@ function zeichneKorridor(){
       }
       ctx.globalAlpha=1;
     }
-    /* Spinde als Deko */
-    if(!fern){ for(let x=40;x<LEVEL_B;x+=190){
-      if(RAEUME.some(r=>r.e===e&&Math.abs(r.x-x)<40)) continue;
-      sprite(SPR.spind,x,by-10); } }
+    /* Spinde - hier kann man sich verstecken */
+    SPINDE.forEach((sp,si)=>{ if(sp.e!==e) return;
+      const sy=by-10;
+      ctx.globalAlpha=fern?.4:1;
+      const drin = S.imSpind===si;
+      sprite(SPR.spind,sp.x,sy,1, drin?'#3a4155':null);
+      if(!fern){
+        const nah = S.etage===e && Math.abs(S.x-sp.x)<TUNE.spindReichweite && S.modus==='spiel';
+        if(drin){
+          /* Sehschlitz - du steckst drin und lugst raus */
+          ctx.fillStyle='#000'; ctx.fillRect(sp.x+1,sy+3,4,1);
+          ctx.fillStyle=P.neon2; ctx.fillRect(sp.x+2,sy+3,2,1);
+          if(Math.floor(S.t*3)%2===0) text('E RAUS',sp.x+3-textW('E RAUS')/2,sy-9,P.gold);
+        } else if(nah){
+          const frei=S.spindAbkuehlung<=0;
+          ctx.globalAlpha=.55; ctx.fillStyle=frei?P.gold:P.dunkel;
+          ctx.fillRect(sp.x-1,sy-2,8,1); ctx.globalAlpha=1;
+          if(Math.floor(S.t*4)%2===0){
+            const t=frei?'E':Math.ceil(S.spindAbkuehlung)+'';
+            text(t,sp.x+3-textW(t)/2,sy-9,frei?P.gold:P.rot);
+          }
+        }
+      }
+      ctx.globalAlpha=1;
+    });
 
     /* Tueren */
     RAEUME.forEach((r,i)=>{ if(r.e!==e) return;
@@ -814,11 +1039,31 @@ function zeichneKorridor(){
       if(!S.hatSchluessel) text('X',AUSGANG.x+4,ay+4,P.rot);
     }
 
-    /* Treppen */
-    [TREPPE_L,TREPPE_R].forEach(tx=>{
-      ctx.globalAlpha=fern?.35:1;
-      for(let k=0;k<7;k++){ ctx.fillStyle=P.wandHell; ctx.fillRect(tx-8+k*2,by-2-k*3,4,3); }
-      if(!fern&&e<BODEN.length-1) text('^',tx-1,by-30,P.dim);
+    /* Treppenhaus - muss auf einen Blick auffallen, sonst findet man es nicht */
+    [[TREPPE_L,1],[TREPPE_R,-1]].forEach(([tx,dir])=>{
+      ctx.globalAlpha=fern?.3:1;
+      /* Nische in der Wand */
+      ctx.fillStyle='#0d0f18'; ctx.fillRect(tx-20,by-46,40,46);
+      ctx.fillStyle=P.wandHell; ctx.fillRect(tx-20,by-46,40,1);
+      ctx.fillStyle='#0a0c14'; ctx.fillRect(tx-20,by-46,1,46); ctx.fillRect(tx+19,by-46,1,46);
+      /* Stufen */
+      for(let k=0;k<8;k++){
+        ctx.fillStyle = k%2 ? '#39405c' : '#2b3149';
+        ctx.fillRect(tx-16*dir+k*4*dir, by-3-k*4, 5, 4);
+      }
+      /* Gelaender */
+      ctx.fillStyle='#525a7d';
+      for(let k=0;k<8;k++) ctx.fillRect(tx-16*dir+k*4*dir+2, by-11-k*4, 1, 5);
+      if(!fern){
+        const oben=e<BODEN.length-1, unten=e>0;
+        const nah=S.etage===e&&anTreppe(S.x)&&S.modus==='spiel';
+        const blink=Math.floor(S.t*3)%2===0;
+        text('TREPPE',tx-textW('TREPPE')/2,by-54,nah?P.gold:P.dunkel);
+        if(oben&&(!nah||blink)) text('W',tx-14,by-46,nah?P.gold:P.dim);
+        if(unten&&(!nah||blink)) text('S',tx+11,by-46,nah?P.gold:P.dim);
+        if(nah){ ctx.globalAlpha=.5; ctx.fillStyle=P.gold;
+          ctx.fillRect(tx-20,by-1,40,1); ctx.globalAlpha=1; }
+      }
       ctx.globalAlpha=1;
     });
   }
@@ -852,7 +1097,7 @@ function zeichneKorridor(){
 
   /* Spieler */
   const blinkt = S.unverwundbar>0 && Math.floor(S.t*16)%2===0;
-  if(!blinkt&&S.modus!=='cutscene') zeichneSpieler(S.x,S.y);
+  if(!blinkt&&S.modus!=='cutscene'&&S.imSpind<0) zeichneSpieler(S.x,S.y);
 
   /* Cutscene: Direktor und Spieler */
   if(S.modus==='cutscene'){
@@ -896,27 +1141,39 @@ function zeichneSpieler(x,y){
 /* ---- Rauminneres ---- */
 function zeichneRaum(){
   const r=RAEUME[S.raum];
+  const st=STIL[r.stil]||STIL.klasse;
   const bodenY=136, deckeY=44;
-  /* Wand */
-  ctx.fillStyle='#20243a'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#272c46'; ctx.fillRect(26,deckeY,W-52,bodenY-deckeY);
-  ctx.fillStyle='#171b2c'; ctx.fillRect(26,deckeY,W-52,2);
-  /* Fenster mit Nachtlicht */
-  for(let i=0;i<2;i++){
-    const fx=W/2-40+i*60;
+  /* Wand in der Farbe des Raumstils */
+  ctx.fillStyle=st.wand; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=st.kante; ctx.fillRect(26,deckeY,W-52,bodenY-deckeY);
+  ctx.fillStyle=st.wand;  ctx.fillRect(28,deckeY+2,W-56,bodenY-deckeY-2);
+  ctx.fillStyle='#00000055'; ctx.fillRect(26,deckeY,W-52,2);
+
+  /* Fenster - Anzahl je Raum */
+  const nF=st.fenster;
+  for(let i=0;i<nF;i++){
+    const fx=Math.round(W/2-(nF-1)*30-8+i*60);
     ctx.fillStyle='#0d1730'; ctx.fillRect(fx,deckeY+12,30,24);
     ctx.fillStyle='#1d3a63'; ctx.fillRect(fx+1,deckeY+13,28,22);
     ctx.fillStyle='#2b5488'; ctx.fillRect(fx+1,deckeY+13,28,4);
-    ctx.fillStyle='#171b2c'; ctx.fillRect(fx+14,deckeY+12,2,24); ctx.fillRect(fx,deckeY+23,30,2);
+    ctx.fillStyle='#0f1322'; ctx.fillRect(fx+14,deckeY+12,2,24); ctx.fillRect(fx,deckeY+23,30,2);
     ctx.drawImage(verlauf('fenster',44,60,g=>{
       const gr=g.createLinearGradient(0,0,0,60);
       gr.addColorStop(0,'rgba(120,170,255,.13)'); gr.addColorStop(1,'rgba(120,170,255,0)');
       g.fillStyle=gr; g.fillRect(0,0,44,60); }), fx-7, deckeY+30);
   }
-  /* Boden */
-  ctx.fillStyle=P.boden; ctx.fillRect(0,bodenY,W,H-bodenY);
+  /* Raumspezifische Ausstattung an der Wand */
+  raumDeko(st,deckeY,bodenY);
+
+  /* Boden in Raumfarbe */
+  ctx.fillStyle=st.boden; ctx.fillRect(0,bodenY,W,H-bodenY);
   ctx.fillStyle=P.bodenKante; ctx.fillRect(0,bodenY,W,1);
-  ctx.fillStyle='#191d2e'; for(let x=0;x<W;x+=18) ctx.fillRect(x,bodenY+4,9,1);
+  ctx.fillStyle='#00000033'; for(let x=0;x<W;x+=18) ctx.fillRect(x,bodenY+4,9,1);
+  /* Raumlicht von oben */
+  ctx.drawImage(verlauf('raumlicht'+r.stil,W,90,g=>{
+    const gr=g.createLinearGradient(0,0,0,90);
+    gr.addColorStop(0,st.licht); gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gr; g.fillRect(0,0,W,90); }),0,deckeY);
   /* Tuer zurueck */
   sprite(SPR.tuer,30,bodenY-12);
   text('RAUS',30+4-textW('RAUS')/2,bodenY-20,S.anTuerRaus?P.gold:P.dunkel);
