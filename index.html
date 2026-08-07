@@ -537,6 +537,7 @@ let sprungPuffer=[], aktionPuffer=[];
 function druckSprung(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='vorspann'){ naechsteKarte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
@@ -546,13 +547,21 @@ function druckSprung(){
 function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='vorspann'){ naechsteKarte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   aktionPuffer.push(S.t);
 }
-function starte(){ neuesSpiel(); S.modus='spiel';
-  zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+function starte(){
+  neuesSpiel();
+  if(vorspannGesehen){ S.modus='spiel'; levelStart(); }
+  else { S.modus='vorspann'; S.szene=0; S.szeneT=0; }
+}
+function levelStart(){
+  zeigeHinweis('FIND DEN SCHLUESSEL',2.6);
+  piep(660,.08); setTimeout(()=>piep(990,.12),90);
+}
 function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 addEventListener('keydown',e=>{
@@ -645,6 +654,7 @@ function update(dt){
   if(S.modus==='pause'||S.modus==='titel') return;
   geraeuscheUpdate(dt);
 
+  if(S.modus==='vorspann'){ vorspann(dt); return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt,true); return; }
   if(S.modus==='ende'){ S.zeit+=dt; return; }
   if(S.modus==='gefangen'){ S.szeneT+=dt; return; }
@@ -990,6 +1000,48 @@ function staubUpdate(dt){ for(const p of STAUB){ p.leben-=dt; p.vy+=110*dt; p.x+
   STAUB=STAUB.filter(p=>p.leben>0); }
 
 /* ==========================================================================
+   VORSPANN - warum Du ueberhaupt eingesperrt bist
+   Laeuft einmal pro Sitzung. Nach einem Fehlversuch will das keiner nochmal
+   sehen, also merkt sich das Spiel das ueber neuesSpiel() hinweg.
+   ========================================================================== */
+const VORSPANN = [
+  { d:3.0, z:['FREITAG. SIEBZEHN UHR VIERZIG.','NACHSITZEN, WEIL DU GEPENNT HAST.'] },
+  { d:2.8, z:['BEIM NACHSITZEN HAST DU','WIEDER GEPENNT.'] },
+  { d:3.2, z:['ALS DU AUFWACHST IST ES DUNKEL.','KEIN MENSCH DA. ALLES ABGESCHLOSSEN.'] },
+  { d:3.4, z:['HANDY: ZWOELF NACHRICHTEN.','DIE JUNGS SIND SCHON AM VORGLUEHEN.'] },
+  { d:3.4, z:['IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.','UND DIE LEHRER SIND NOCH IM HAUS.'] },
+  { d:2.6, z:['DIE NACHT FAENGT HIER AN.'] },
+];
+let vorspannGesehen=false;
+
+function vorspann(dt){
+  S.szeneT+=dt;
+  if(S.szeneT>=VORSPANN[S.szene].d) naechsteKarte();
+}
+function naechsteKarte(){
+  S.szene++; S.szeneT=0;
+  if(S.szene>=VORSPANN.length){ vorspannGesehen=true; S.modus='spiel'; levelStart(); }
+  else piep(430,.05,'sine',.03);
+}
+function vorspannBild(){
+  ctx.fillStyle='#04030a'; ctx.fillRect(0,0,W,H);
+  const k=VORSPANN[S.szene]; if(!k) return;
+  /* Ein- und Ausblenden, sonst springen die Karten hart */
+  const ein=Math.min(1,S.szeneT/.45), aus=Math.min(1,(k.d-S.szeneT)/.35);
+  ctx.globalAlpha=Math.max(0,Math.min(ein,aus));
+  const y0=Math.round(H/2-k.z.length*5.5)-6;
+  k.z.forEach((z,i)=>textGlowC(z,y0+i*11,P.weiss,1));
+  ctx.globalAlpha=1;
+  /* Wie weit der Vorspann ist */
+  const bx=Math.round((W-VORSPANN.length*5)/2);
+  for(let i=0;i<VORSPANN.length;i++){
+    ctx.fillStyle=i<=S.szene?P.neon:'#2a2440';
+    ctx.fillRect(bx+i*5,H-24,3,1);
+  }
+  if(Math.floor(S.t*2)%2===0) textC('E  WEITER',H-14,P.dunkel);
+}
+
+/* ==========================================================================
    CUTSCENE - der Direktor stellt sich in den Weg
    ========================================================================== */
 const SZENEN=[
@@ -1032,6 +1084,7 @@ function draw(dt){
   staubUpdate(dt);
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
+  if(S.modus==='vorspann'){ vorspannBild(); return; }
 
   ctx.save();
   const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel;
