@@ -1,29 +1,43 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) ist fertig. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
 ---
 
-## Level 1 — Die Schule (spielbar, noch nicht fertig)
+## Als Naechstes: Level-Daten aus dem Code loesen
 
-**Fehlt noch:**
+Das ist jetzt der Flaschenhals. Level 1 steht komplett, aber es steht in
+`index.html` verstreut: `RAEUME`, `SPINDE`, `LEHRER_START`, `BODEN`,
+`AUSGANG`, `FENSTER`, `STIL`, dazu `INTRO` und `SZENEN`. Solange das so
+liegt, heisst jedes neue Level: Code kopieren und anpassen. Sieben Mal.
 
-- [ ] **Story-Text am Anfang** — warum bist Du überhaupt eingesperrt?
-- [ ] **Verstecken in Spinden** — zweite Deckung neben den Räumen
-- [ ] **Schleichen** — langsam laufen, dafür kleinerer Sichtradius der Lehrer
-- [ ] **Türen hörbar machen** — Lehrer reagieren auf Geräusche
-- [ ] **Mehr Fundstücke** — nicht nur der Schlüssel, auch Notizen die Story erzählen
-- [ ] **Zweiter Ausgang** als Alternative (Fenster im Erdgeschoss)
-- [ ] **Direktor als Patrouille** vor der Cutscene, nicht nur am Ende
-- [ ] **Zeitbonus** — schneller raus gibt mehr Punkte
+- [ ] **Ein Level ist ein Objekt**, kein Satz globaler Konstanten
+- [ ] **Was allgemein ist, vom Schul-Level trennen** — Schluesselsuche,
+      Zettel und Brecheisen sind Level-1-Regeln, nicht Spielregeln
+- [ ] **Ziele als Daten** — "finde X, bring es nach Y" statt fest
+      verdrahtetem `hatSchluessel`
+- [ ] **Uebergang zwischen zwei Leveln** — ein Level endet, das naechste
+      faengt an, ohne Neuladen
+- [ ] **Spielstand speichern** — welches Level ist frei, welche Jungs sind
+      dabei, welcher Bestwert. Der Bestwert von Level 1 liegt schon im
+      `localStorage`, das Muster steht also
 
-**Bekannte Schwächen:**
+Erst danach lohnt sich Level 2. Vorher baut man den Umbau doppelt.
 
-- [ ] Schlüsselsuche kann bis zu 2 Minuten reines Laufen bedeuten, wenn er im letzten Raum liegt. Braucht einen Hinweis, der die Suche eingrenzt
-- [ ] Lehrer laufen stumpf hin und her, keine Pausen, kein Umschauen
-- [ ] Nach dem Erwischtwerden setzt es Dich an der Treppe ab — das kann sich willkürlich anfühlen
+---
+
+## Level 1 — Die Schule (fertig)
+
+Spielbar, durchspielbar, zwei Wege raus. Was noch auffaellt, ist Feinschliff
+und nicht mehr blockierend:
+
+- [ ] Die zehn Raeume haben sieben Stile, ein paar Moebel wiederholen sich
+      trotzdem
+- [ ] Der Direktor hat keinen eigenen Abschluss, wenn man durchs Fenster
+      geht — er merkt es nie
+- [ ] Kein Grund, ein zweites Mal zu spielen, ausser dem Bestwert
 
 ---
 
@@ -62,6 +76,9 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
 
+**Offen:** Das haengt am Spielstand — ohne gespeicherten Fortschritt gibt es
+nichts freizuschalten. Steht deshalb hinter dem Level-Daten-Umbau.
+
 ---
 
 ## Kampfsystem (aus dem alten Modus übernehmen und härter machen)
@@ -75,22 +92,25 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
+**Offen:** Level 1 kommt ganz ohne Kampf aus und ist dadurch als
+Schleich-Level rund. Ob das Kampfsystem ueberhaupt in die Schule gehoert
+oder erst ab Level 2 dazukommt, ist noch nicht entschieden.
+
 ---
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
-- [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
+- [ ] Es gibt keinen automatischen Test. Geprueft wird bisher mit einem
+      Wegwerf-Skript, das den `<script>`-Block aus `index.html` in Node
+      laedt und einen Bot das Level spielen laesst. Das gehoert
+      irgendwann ins Repo, sonst faengt jede Aenderung wieder bei null an
 
 ---
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
@@ -100,13 +120,41 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Erledigt
 
+**Grundgeruest**
+
 - [x] Pixel-Art-Grundgerüst mit CRT-Optik und eigenem Bitmap-Font
 - [x] Bild-Cache: Zeichenzeit von 4,8 ms auf 1,2 ms pro Bild
 - [x] Vollbild auf Desktop und Handy, Querformat-Hinweis
 - [x] Touch-Steuerung mit runden Tasten
 - [x] Bildbreite wächst mit dem Bildschirm mit, keine schwarzen Balken
-- [x] Kampfsystem mit Kontern, fünf Gegnertypen, vier Bossen (in `runner.html`)
-- [x] **Level 1: Etagen, Treppen, Räume, Schlüsselsuche, Lehrer mit Sichtkegel**
-- [x] **Cutscene am Ende von Level 1: der Direktor wird gepackt**
 - [x] Bewegung mit Beschleunigung und Bremsung statt an/aus
 - [x] GitHub Pages läuft
+- [x] Kampfsystem mit Kontern, fünf Gegnertypen, vier Bossen (in `runner.html`)
+
+**Level 1**
+
+- [x] Etagen, Treppen, Räume, Schlüsselsuche, Lehrer mit Sichtkegel
+- [x] Cutscene am Ende: der Direktor wird gepackt
+- [x] Story-Text am Anfang — warum Du überhaupt eingesperrt bist
+- [x] Eigene Raumstile, damit die zehn Räume nicht gleich aussehen
+- [x] Verstecken in Spinden
+- [x] Schleichen — langsamer, dafür halbe Sichtweite
+- [x] Direktor patrouilliert über alle Etagen, nicht nur die Cutscene
+- [x] Stromausfälle im Gang
+- [x] Zettel als Hinweise: erster nennt die Etage, zweiter den Raum.
+      Damit ist die Schlüsselsuche eine Spur statt einer Abklapperliste
+- [x] **Türen hörbar machen** — jedes Geräusch hat eine Reichweite, wer es
+      hört, geht nachsehen. Schleichen macht Türen zusätzlich leiser
+- [x] **Blick durch den Türspalt** — an der Tür und im Spind steht, was im
+      Gang los ist. Wenn Türen zu hören sind, darf das Rausgehen kein
+      Blindflug sein
+- [x] **Der Gang läuft weiter, während Du im Raum suchst** — vorher war
+      jeder Raum eine Pausetaste
+- [x] **Lehrer mit Pausen und Umschauen** statt stumpfem Hin und Her
+- [x] **Fairer Neustart nach dem Erwischen** — der Fänger rückt ab und
+      schaut weg, solange Du unverwundbar bist
+- [x] **Zweiter Ausgang** — Fenster im Erdgeschoss, Brecheisen beim
+      Hausmeister, zwölf Sekunden Aufhebeln in Etappen
+- [x] **Mehr Fundstücke** — Zettel und Brecheisen neben dem Schlüssel
+- [x] **Zeitbonus** — Punkte aus Zeit, Herzen, Weg, ungesehen und Zetteln,
+      Bestwert im `localStorage`
