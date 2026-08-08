@@ -114,6 +114,29 @@ const TUNE = {
   /* (2c) HINWEISE - Zettel, die die Suche eingrenzen */
   zettelAnzahl:     2,     // erster nennt die Etage, zweiter den Raum
 
+  /* (2e) DEIN HANDY - Licht, Story und Risiko in einem Geraet */
+  akkuStart:      100,
+  akkuProSek:       3.4,   // wie schnell die Taschenlampe den Akku frisst
+  lampeRadius:     58,     // wie weit du im Dunkeln siehst
+  lampeSichtBonus:  1.7,   // so viel weiter sehen Lehrer dich mit Licht
+  vibrationVerdacht:0.6,   // wie viel Verdacht eine Vibration ausloest
+  vibrationWeite:  74,
+
+  /* (2f) ABLENKEN - was werfen, damit sie woanders hinschauen */
+  wurfWeite:       96,
+  wurfAbkuehlung:   6,
+  laermWeite:     130,     // so weit hoeren Lehrer ein Geraeusch
+  suchTempo:       40,     // Tempo, wenn sie einem Geraeusch nachgehen
+
+  /* (2g) DIE DUNKLE ETAGE */
+  dunkleEtage:      2,     // im zweiten Stock sind die Roehren kaputt
+  dunkelRadius:    34,     // was du dort ohne Licht siehst
+
+  /* (2h) DIE UHR - um halb sechs schliesst der Hausmeister endgueltig ab */
+  startMinute:  16*60+40,
+  endMinute:    17*60+30,
+  levelSekunden:  240,     // Echtzeit bis dahin
+
   /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
   chefTempo:       19,
   chefJagdTempo:   54,
@@ -430,6 +453,28 @@ const RAEUME = [
 ];
 const AUSGANG = { e:0, x:648 };
 
+/* Was die Jungs dir waehrend des Levels schreiben. Jede Nachricht laesst
+   das Handy vibrieren - und das hoert man. */
+const NACHRICHTEN = [
+  { t:  9, von:'MAX FERDI', txt:'alter wo bleibst du' },
+  { t: 26, von:'DIE JUNGS', txt:'wir sind schon am spaeti' },
+  { t: 44, von:'MAX FERDI', txt:'ich sitz auch noch fest lol' },
+  { t: 62, von:'DIE JUNGS', txt:'ohne euch faengt nix an' },
+  { t: 80, von:'MAX FERDI', txt:'ich hau ab durchs fenster' },
+  { t: 99, von:'DIE JUNGS', txt:'letzter macht das licht aus' },
+  { t:118, von:'MAX FERDI', txt:'beeil dich mann' },
+];
+
+/* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
+const CREW_KEY='nachtschicht.crew';
+const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
+const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
+  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
+const BEST_KEY='nachtschicht.bestzeit1';
+const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+/* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
+const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+
 /* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
 const SPINDE = [
   { e:0, x:200 }, { e:0, x:400 }, { e:0, x:560 },
@@ -459,6 +504,10 @@ function neuesSpiel(){
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
+    lampe:false, akku:TUNE.akkuStart, stumm:false,
+    chat:[], naechsteNachricht:0, vibriert:0,
+    wurf:null, wurfAbkuehlung:0,
+    minute:TUNE.startMinute, zeitWarnung:false,
     lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
     lehrerJagt:false,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
@@ -599,6 +648,10 @@ addEventListener('keydown',e=>{
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); druckAktion(); }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); schleichAn=true; }
+  if(e.code==='KeyQ'){ e.preventDefault(); lampeSchalten(); }
+  if(e.code==='KeyH'){ e.preventDefault(); S.stumm=!S.stumm;
+                       meldung(S.stumm?'HANDY STUMM':'HANDY LAUT',1.2); piep(S.stumm?300:600,.06); }
+  if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
@@ -632,6 +685,28 @@ if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); remove
    ========================================================================== */
 const raumBei=(e,x)=>RAEUME.findIndex(r=>r.e===e && Math.abs(r.x-x)<12);
 const spindBei=(e,x)=>SPINDE.findIndex(s=>s.e===e && Math.abs(s.x-x)<TUNE.spindReichweite);
+/* ---- Handy ---- */
+function lampeSchalten(){
+  if(S.modus!=='spiel'&&S.modus!=='raum') return;
+  if(!S.lampe && S.akku<=0){ meldung('AKKU LEER',1.2); SFX.nichts(); return; }
+  S.lampe=!S.lampe; piep(S.lampe?880:440,.05,'sine',.04);
+  meldung(S.lampe?'TASCHENLAMPE AN':'TASCHENLAMPE AUS',1);
+}
+/* ---- Laerm: Lehrer gehen dem Geraeusch nach ---- */
+function laerm(x,etage,weite){
+  for(const L of S.lehrer){
+    if(L.e!==etage||L.jagd>0) continue;
+    if(Math.abs(L.x-x)<weite){ L.suchtX=x; L.verdacht=Math.min(1,L.verdacht+.15); }
+  }
+}
+/* ---- Werfen: macht Laerm woanders, damit du hier durchkommst ---- */
+function wirf(){
+  if(S.modus!=='spiel'||S.wurfAbkuehlung>0||S.wurf) return;
+  S.wurf={ x:S.x+4, y:S.y-10, vx:S.blick*160, vy:-70, e:S.etage };
+  S.wurfAbkuehlung=TUNE.wurfAbkuehlung;
+  piep(300,.05,'triangle',.03);
+}
+
 function rein(i){
   S.imSpind=i; S.vx=0; S.x=SPINDE[i].x+1; SFX.tuer();
   meldung('VERSTECKT',1.2);
@@ -669,6 +744,47 @@ function update(dt){
   if(S.modus==='raum'){ imRaum(dt); kamera(dt,true); return; }
 
   if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
+  if(S.wurfAbkuehlung>0)  S.wurfAbkuehlung=Math.max(0,S.wurfAbkuehlung-dt);
+  if(S.vibriert>0)        S.vibriert-=dt;
+
+  /* Die Uhr laeuft. Um 17:30 schliesst der Hausmeister endgueltig ab. */
+  const spanne=TUNE.endMinute-TUNE.startMinute;
+  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
+  if(!S.zeitWarnung && S.minute>=TUNE.endMinute-15){
+    S.zeitWarnung=true; zeigeHinweis('17:15 - GLEICH SCHLIESST ER AB',3.4); SFX.alarm();
+  }
+  if(S.minute>=TUNE.endMinute && S.modus!=='cutscene'){
+    S.modus='ende'; S.gewonnen=false; S.faenger='DER HAUSMEISTER HAT ABGESCHLOSSEN';
+    SFX.gefangt(); return;
+  }
+
+  /* Akku und Taschenlampe */
+  if(S.lampe){ S.akku=Math.max(0,S.akku-TUNE.akkuProSek*dt);
+    if(S.akku<=0){ S.lampe=false; meldung('AKKU LEER',1.6); SFX.nichts(); } }
+
+  /* Nachrichten von den Jungs - und die Vibration, die dich verraet */
+  while(S.naechsteNachricht<NACHRICHTEN.length && S.zeit>=NACHRICHTEN[S.naechsteNachricht].t){
+    const n=NACHRICHTEN[S.naechsteNachricht++];
+    S.chat.push({...n,alter:0});
+    if(S.chat.length>3) S.chat.shift();
+    if(S.stumm){ piep(200,.02,'sine',.01); }
+    else {
+      S.vibriert=.9; rauschen(.16,.05);
+      if(S.modus==='spiel'&&S.imSpind<0) laerm(S.x,S.etage,TUNE.vibrationWeite);
+    }
+  }
+  for(const c of S.chat) c.alter+=dt;
+
+  /* Geworfener Gegenstand fliegt und macht beim Aufschlag Laerm */
+  if(S.wurf){
+    const w=S.wurf; w.vy+=760*dt; w.x+=w.vx*dt; w.y+=w.vy*dt;
+    if(w.y>=BODEN[w.e]){
+      laerm(w.x,w.e,TUNE.laermWeite);
+      rauschen(.12,.06); piep(180,.06,'square',.04);
+      staub(w.x,BODEN[w.e],6);
+      S.wurf=null;
+    } else if(w.x<0||w.x>LEVEL_B) S.wurf=null;
+  }
 
   /* Ab und zu faellt der Strom im Gang kurz aus. Rein atmosphaerisch,
      aber es macht aus dem Schulflur einen Ort, an dem man nicht sein will. */
@@ -685,7 +801,7 @@ function update(dt){
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
   S.schleicht = schleichAn && S.amBoden;
-  const hoechst = TUNE.gehTempo*(S.schleicht?TUNE.schleichTempo:1);
+  const hoechst = TUNE.gehTempo*(S.schleicht?TUNE.schleichTempo:1)*tempoBonus();
   const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
   if(richtung){
     S.vx += richtung*TUNE.beschleunigung*kontrolle*dt;
@@ -904,6 +1020,12 @@ function lehrerLogik(dt){
       if(L.chef && L.e!==S.etage && anTreppe(L.x)){ L.e+=Math.sign(S.etage-L.e); }
       if(L.e===S.etage && S.modus==='spiel' && S.imSpind<0
          && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen(L);
+    } else if(L.suchtX!=null){
+      /* Geht einem Geraeusch nach - der eigentliche Nutzen vom Werfen */
+      const d=L.suchtX-L.x;
+      L.v=Math.sign(d)||1;
+      L.x+=L.v*TUNE.suchTempo*dt;
+      if(Math.abs(d)<6){ L.suchtX=null; L.v=Math.random()<.5?1:-1; }
     } else {
       L.x+=L.v*tempo*dt;
       if(L.x<L.von){ L.x=L.von; L.v=1; }
@@ -920,7 +1042,8 @@ function lehrerLogik(dt){
     }
     /* Sicht - nur im Korridor, Raeume und Spinde sind sicher.
        Schleichen halbiert die Reichweite. */
-    const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1);
+    /* Licht macht dich weithin sichtbar - das ist der Preis der Lampe. */
+    const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1)*(S.lampe?TUNE.lampeSichtBonus:1);
     const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
       && Math.sign(S.x-L.x)===Math.sign(L.v)
       && Math.abs(S.x-L.x)<reichweite
@@ -980,26 +1103,97 @@ const SZENEN=[
   { d:1.4,  txt:'DIREKTOR: ...' },
   { d:1.6,  txt:'DU: GUTE NACHT, HERR DIREKTOR' },
   { d:1.2,  txt:'' },
+  /* Ab hier: draussen. Max Ferdi kommt aus dem Fenster. */
+  { d:2.0,  txt:'*DU STEHST DRAUSSEN*' },
+  { d:2.2,  txt:'???: EY! HIER DRUEBEN!' },
+  { d:2.2,  txt:'MAX FERDI: ICH DACHTE SCHON ICH PENN HIER' },
+  { d:2.2,  txt:'DU: DU WARST AUCH NOCH DRIN?' },
+  { d:2.4,  txt:'MAX FERDI: FENSTER. ERDGESCHOSS. ZWEI SEKUNDEN.' },
+  { d:2.2,  txt:'DU: ANGEBER' },
+  { d:2.4,  txt:'MAX FERDI: KOMM, ICH GEB DAS TEMPO VOR' },
+  { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  +15% TEMPO' },
   { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
 ];
+const SZENE_DRAUSSEN=9;                 // ab hier spielt es vor der Schule
 function starteCutscene(){
   S.modus='cutscene'; S.szene=0; S.szeneT=0; S.vx=0;
   S.dirX=S.x+58; S.dirY=BODEN[0]; S.packT=0;
+  S.maxX=W+40; S.maxDa=false;
   SFX.tuer(); zeigeHinweis('',0);
 }
 function cutscene(dt){
   S.szeneT+=dt;
   const s=SZENEN[S.szene];
-  /* Direktor tritt ins Bild */
   if(S.szene<=1) S.dirX += (S.x+30 - S.dirX)*Math.min(1,3*dt);
-  /* Packen */
   if(S.szene===5){ S.packT=Math.min(1,S.packT+dt*2.6);
     if(S.packT>=1&&!S.packSound){ S.packSound=true; SFX.packen(); S.ruettel=6; S.blitz=.8; } }
-  /* Wegwerfen */
   if(S.szene===7){ S.dirX += 220*dt; S.dirY -= 40*dt; }
+  /* Max Ferdi laeuft von rechts ins Bild */
+  if(S.szene>=SZENE_DRAUSSEN+1){
+    if(!S.maxDa){ S.maxDa=true; S.maxX=S.x+150; SFX.gesehen(); }
+    const ziel=S.x+34;
+    if(S.maxX>ziel) S.maxX=Math.max(ziel,S.maxX-130*dt);
+  }
+  /* Freischaltung */
+  if(S.szene===SZENE_DRAUSSEN+7 && !S.crewGespeichert){
+    S.crewGespeichert=true; speichereCrew('MAX FERDI'); S.blitz=.9; SFX.fund();
+  }
   if(S.szeneT>=s.d){
     S.szene++; S.szeneT=0;
-    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; SFX.gewonnen(); }
+    if(S.szene===SZENE_DRAUSSEN) S.blende=1;          // Schnitt nach draussen
+    if(S.szene>=SZENEN.length){
+      S.modus='ende'; S.gewonnen=true; SFX.gewonnen();
+      const best=ladeBest();
+      if(best===null||S.zeit<best){ S.neueBestzeit=true;
+        try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+    }
+  }
+}
+/* Die Szene vor der Schule - eigener Hintergrund, kein Korridor mehr */
+function zeichneDraussen(){
+  const bodenY=140;
+  ctx.fillStyle='#0d1024'; ctx.fillRect(0,0,W,H);
+  /* Abendhimmel */
+  ctx.drawImage(verlauf('abendhimmel',W,bodenY,g=>{
+    const gr=g.createLinearGradient(0,0,0,bodenY);
+    gr.addColorStop(0,'#1a1740'); gr.addColorStop(.6,'#4a2a48'); gr.addColorStop(1,'#8a4a30');
+    g.fillStyle=gr; g.fillRect(0,0,W,bodenY); }),0,0);
+  for(let i=0;i<30;i++){ const x=(i*97)%W, y=(i*41)%60;
+    ctx.fillStyle=i%5===0?'#ffffff55':'#ffffff22'; ctx.fillRect(x,y,1,1); }
+  /* Schulgebaeude links */
+  ctx.fillStyle='#161a2c'; ctx.fillRect(0,36,120,bodenY-36);
+  ctx.fillStyle='#20263e'; ctx.fillRect(0,36,120,2);
+  for(let y=48;y<bodenY-14;y+=18) for(let x=10;x<108;x+=22){
+    ctx.fillStyle=((x+y)%3===0)?'#3a4468':'#10131f'; ctx.fillRect(x,y,14,10); }
+  sprite(SPR.tuer,96,bodenY-12);
+  /* offenes Fenster, aus dem Max kam */
+  ctx.fillStyle='#3a4468'; ctx.fillRect(28,bodenY-30,20,16);
+  ctx.fillStyle='#0a0c14'; ctx.fillRect(30,bodenY-28,16,12);
+  /* Boden und Zaun */
+  ctx.fillStyle='#12141f'; ctx.fillRect(0,bodenY,W,H-bodenY);
+  ctx.fillStyle='#2a3048'; ctx.fillRect(0,bodenY,W,1);
+  ctx.fillStyle='#1d2233';
+  for(let x=130;x<W;x+=10) ctx.fillRect(x,bodenY-22,2,22);
+  ctx.fillRect(130,bodenY-22,W-130,2);
+  /* Strassenlaterne */
+  sprite(SPR.lampe,W-46,44);
+  ctx.drawImage(verlauf('laternendraussen',80,90,g=>{
+    const gr=g.createRadialGradient(40,6,2,40,6,70);
+    gr.addColorStop(0,'rgba(255,220,150,.18)'); gr.addColorStop(1,'rgba(255,220,150,0)');
+    g.fillStyle=gr; g.fillRect(0,0,80,90); }),W-86,44);
+  /* Du */
+  const spielerX=Math.round(W*0.34);
+  outline(SPR.steh,spielerX,bodenY-13,1,.6);
+  sprite(SPR.steh,spielerX,bodenY-13);
+  /* Max Ferdi - Sportler, andere Farben */
+  if(S.maxDa){
+    const mx=Math.round(spielerX+(S.maxX-S.x));
+    const laeuft=Math.abs(mx-(spielerX+34))>2;
+    const rows=laeuft?SPR.geh[Math.floor(S.t*10)%4]:SPR.steh;
+    outline(rows,mx,bodenY-13,1,.6);
+    sprite(rows,mx,bodenY-13,1,null,1);
+    ctx.fillStyle=P.neon2; ctx.fillRect(mx+2,bodenY-9,3,4);   // Sporttrikot
+    if(!laeuft&&Math.floor(S.t*2)%2===0) text('MAX FERDI',mx+4-textW('MAX FERDI')/2,bodenY-24,P.neon2);
   }
 }
 
@@ -1016,7 +1210,8 @@ function draw(dt){
   const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel;
   ctx.translate(Math.round(rx),Math.round(ry));
 
-  if(S.modus==='raum') zeichneRaum();
+  if(S.modus==='cutscene'&&S.szene>=SZENE_DRAUSSEN) zeichneDraussen();
+  else if(S.modus==='raum') zeichneRaum();
   else zeichneKorridor();
 
   ctx.restore();
@@ -1200,6 +1395,23 @@ function zeichneKorridor(){
     if(S.blick<0) spriteFlip(rows,S.x,S.y-13); else sprite(rows,S.x,S.y-13);
   }
 
+  /* Geworfener Gegenstand */
+  if(S.wurf&&S.wurf.e===S.etage){
+    ctx.fillStyle='#8c94ad';
+    ctx.fillRect(Math.round(S.wurf.x),Math.round(S.wurf.y),3,3);
+    ctx.fillStyle='#4a4363';
+    ctx.fillRect(Math.round(S.wurf.x)-2,Math.round(S.wurf.y)+1,2,1);
+  }
+  /* Suchmarkierung, wenn ein Lehrer einem Geraeusch nachgeht */
+  for(const L of S.lehrer){
+    if(L.suchtX==null||L.e!==S.etage) continue;
+    if(Math.floor(S.t*5)%2===0){
+      ctx.fillStyle=P.gold;
+      ctx.fillRect(Math.round(L.suchtX)-2,BODEN[L.e]-2,5,1);
+      text('?',Math.round(L.suchtX),BODEN[L.e]-10,P.gold);
+    }
+  }
+
   /* Staub */
   for(const p of STAUB){ ctx.globalAlpha=Math.max(0,p.leben/p.max);
     ctx.fillStyle='#6b6488'; ctx.fillRect(Math.round(p.x),Math.round(p.y),1,1); }
@@ -1213,16 +1425,39 @@ function zeichneKorridor(){
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.72)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
 
-  /* Stromausfall: alles bis auf einen engen Kreis um dich wird schwarz */
-  if(S.dunkelT>0){
-    const staerke=Math.min(1,S.dunkelT*2.2)*(Math.random()<.12?.4:1);
+  /* Dunkelheit: Stromausfall oder die kaputte Etage.
+     Die Taschenlampe vergroessert den Kreis - deshalb lohnt sie sich. */
+  const kaputteEtage = S.etage===TUNE.dunkleEtage;
+  if(S.dunkelT>0 || kaputteEtage){
+    const flackern = S.dunkelT>0 ? Math.min(1,S.dunkelT*2.2)*(Math.random()<.12?.4:1) : 1;
+    const staerke = (S.dunkelT>0?.92:.86)*flackern;
+    const radius = S.lampe ? TUNE.lampeRadius : (kaputteEtage?TUNE.dunkelRadius:24);
     const px=Math.round(S.x-S.kamX)+3, py=Math.round(S.y-S.kamY)-6;
-    ctx.globalAlpha=staerke*.92;
-    ctx.drawImage(verlauf('blackout',W*2,H*2,g=>{
-      const gr=g.createRadialGradient(W,H,18,W,H,86);
+    ctx.globalAlpha=staerke;
+    ctx.drawImage(verlauf('dunkel'+radius,W*2,H*2,g=>{
+      const gr=g.createRadialGradient(W,H,radius*.35,W,H,radius*2.2);
       gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
       g.fillStyle=gr; g.fillRect(0,0,W*2,H*2); }), px-W, py-H);
     ctx.globalAlpha=1;
+    /* Warmer Lichtschein der Lampe */
+    if(S.lampe){
+      ctx.globalAlpha=.16;
+      ctx.drawImage(verlauf('lampenschein',160,160,g=>{
+        const gr=g.createRadialGradient(80,80,4,80,80,78);
+        gr.addColorStop(0,'rgba(255,240,190,1)'); gr.addColorStop(1,'rgba(255,240,190,0)');
+        g.fillStyle=gr; g.fillRect(0,0,160,160); }), px-80, py-80);
+      ctx.globalAlpha=1;
+    }
+  }
+
+  /* Blick aus dem Spind - du siehst nur durch den Schlitz */
+  if(S.imSpind>=0){
+    const py=Math.round(S.y-S.kamY)-7;
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,W,Math.max(0,py-3));
+    ctx.fillRect(0,py+3,W,H-(py+3));
+    ctx.globalAlpha=.55; ctx.fillStyle='#000'; ctx.fillRect(0,py-3,W,6); ctx.globalAlpha=1;
+    ctx.fillStyle='#1a1d2c'; ctx.fillRect(0,py-4,W,1); ctx.fillRect(0,py+3,W,1);
   }
 }
 
@@ -1341,13 +1576,38 @@ function hud(){
     const t = S.hinweisStufe>=2 ? 'ZIEL: '+kr.name : 'ZIEL: ETAGE '+(kr.e+1);
     text(t,(W-textW(t))/2,14,P.gold);
   }
+  /* Uhr - der Druck im Hintergrund */
+  const std=Math.floor(S.minute/60), min=Math.floor(S.minute%60);
+  const uhr=std+':'+String(min).padStart(2,'0');
+  const knapp=S.minute>=TUNE.endMinute-15;
+  text(uhr,W-textW(uhr)-6,14,knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.dim));
+
+  /* Handy: Akku und Zustand */
+  const ax=6, ay=H-20;
+  ctx.fillStyle='#000a'; ctx.fillRect(ax-1,ay-1,16,7);
+  ctx.fillStyle=S.lampe?P.gold:'#2a2440'; ctx.fillRect(ax,ay,14,5);
+  ctx.fillStyle=S.akku>30?P.gruen:P.rot; ctx.fillRect(ax+1,ay+1,Math.round(12*S.akku/100),3);
+  if(S.lampe&&Math.floor(S.t*3)%2===0) text('Q',ax+18,ay,P.gold);
+  if(S.stumm) text('STUMM',ax+18,ay,P.dunkel);
+  if(S.vibriert>0&&Math.floor(S.t*20)%2===0) text('BZZZ',ax+18,ay-8,P.neon);
+
   /* Schleichen */
   if(S.schleicht) text('LEISE',6,H-12,P.neon2);
-  /* Spind-Abkuehlung */
-  if(S.spindAbkuehlung>0){
-    const t='SPIND '+Math.ceil(S.spindAbkuehlung);
-    text(t,W-textW(t)-6,H-12,P.dunkel);
-  }
+  /* Abkuehlungen */
+  let rechts=[];
+  if(S.spindAbkuehlung>0) rechts.push('SPIND '+Math.ceil(S.spindAbkuehlung));
+  if(S.wurfAbkuehlung>0)  rechts.push('WURF '+Math.ceil(S.wurfAbkuehlung));
+  rechts.forEach((t,i)=>text(t,W-textW(t)-6,H-12-i*8,P.dunkel));
+
+  /* Chat der Jungs */
+  S.chat.forEach((c,i)=>{
+    const y=H-46+i*9, a=Math.max(0,Math.min(1,(9-c.alter)));
+    if(a<=0) return;
+    ctx.globalAlpha=a*.9;
+    text(c.von+':',8,y,c.von==='MAX FERDI'?P.neon2:P.dunkel);
+    text(c.txt,8+textW(c.von+':')+4,y,P.weiss);
+    ctx.globalAlpha=1;
+  });
   /* Jagdanzeige */
   if(S.lehrerJagt&&Math.floor(S.t*6)%2===0) textGlowC('LAUF',18,P.rot,2);
   /* Meldung */
@@ -1380,10 +1640,14 @@ function titelbild(){
     'DIE LEHRER SIND NOCH DA',
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
-  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN - LEISER UND UNAUFFAELLIGER'],
-            ['W S','TREPPE HOCH UND RUNTER'],['E','TUER, SPIND UND DURCHSUCHEN']];
-  st.forEach((z,i)=>{ text(z[0],40,112+i*9,P.gold); text(z[1],86,112+i*9,P.dim); });
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-12,P.weiss,1);
+  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
+            ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
+            ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
+  st.forEach((z,i)=>{ const y=100+i*8;
+    text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
+  const crew=ladeCrew();
+  if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-9,P.weiss,1);
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1410,9 +1674,15 @@ function bildschirme(){
       textGlowC('LEVEL 1 GESCHAFFT',40,P.gold,2);
       textC('DIE NACHT FAENGT JETZT ERST AN',62,P.weiss);
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
-      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),84,P.dim);
-      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,96,P.dim);
-      textC('NAECHSTES LEVEL FOLGT',118,P.dunkel);
+      const zt=min+':'+String(sek).padStart(2,'0');
+      textC('ZEIT  '+zt,84,S.neueBestzeit?P.gold:P.dim);
+      if(S.neueBestzeit) textC('NEUE BESTZEIT',94,P.gold);
+      else { const b=ladeBest();
+        if(b!==null) textC('BESTZEIT  '+Math.floor(b/60)+':'+String(Math.floor(b%60)).padStart(2,'0'),94,P.dunkel); }
+      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,106,P.dim);
+      const crew=ladeCrew();
+      if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
+      textC('NAECHSTES LEVEL FOLGT',134,P.dunkel);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
