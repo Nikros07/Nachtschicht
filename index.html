@@ -215,6 +215,7 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ '=':'000,111,000,111,000', '%':'101,001,010,100,101',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -478,7 +479,7 @@ const AUSGANG = { e:0, x:648 };
 /* Der zweite Weg raus. Er liegt bewusst am anderen Ende des Erdgeschosses
    als der Ausgang: wer ihn nimmt, laeuft nie durch das halbe Gebaeude - und
    trifft dafuer nie den Direktor. */
-const FENSTER = { e:0, x:88 };
+const FENSTER = { e:0, x:76 };
 /* Womit man es aufbekommt. Der Raum steht fest, nur die Schublade nicht -
    ein Brecheisen liegt beim Hausmeister, das muss man nicht erst suchen. */
 const WERKZEUG_RAUM = 'HAUSMEISTER';
@@ -1504,13 +1505,6 @@ function zeichneKorridor(){
     } else zeichneSpieler(S.x,S.y);
   }
 
-  /* Balken beim Aufhebeln - man muss sehen, wie weit man ist */
-  if(S.hebelT>0&&S.modus==='spiel'){
-    const f=S.hebelT/TUNE.hebelDauer, bw=30, bx=S.x-bw/2+3, by=BODEN[S.etage]-30;
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,5);
-    ctx.fillStyle=S.hebelt?P.gold:P.dunkel; ctx.fillRect(bx,by,Math.round(bw*f),3);
-  }
-
   /* Cutscene: Direktor und Spieler */
   if(S.modus==='cutscene'&&S.szenenArt==='direktor'){
     const dy=S.dirY;
@@ -1601,10 +1595,11 @@ function zeichneRaum(){
   /* Tuer zurueck - und was hinter ihr los ist */
   sprite(SPR.tuer,30,bodenY-12);
   text('RAUS',30+4-textW('RAUS')/2,bodenY-20,S.anTuerRaus?P.gold:P.dunkel);
+  /* Oben, nicht neben der Tuer: dort haengt schon das Raumschild. */
   if(S.anTuerRaus){
     const lage=gangLage(r.e,r.x);
-    text(lage.txt,34,bodenY-30,lage.col);
-    text('SHIFT = LEISE RAUS',34,bodenY-38,P.dunkel);
+    textC(lage.txt,28,lage.col);
+    textC('SHIFT = LEISE RAUS',36,P.dunkel);
   }
 
   /* Moebel */
@@ -1675,10 +1670,11 @@ function hud(){
   }
   /* Schleichen */
   if(S.schleicht) text('LEISE',6,H-12,P.neon2);
-  /* Im Spind: durch den Schlitz sieht man, ob der Gang frei ist */
+  /* Im Spind: durch den Schlitz sieht man, ob der Gang frei ist. Oben,
+     wie hinter der Tuer - unten laeuft schon die Meldung. */
   if(S.imSpind>=0){
     const lage=gangLage(S.etage,S.x);
-    textC(lage.txt,H-32,lage.col);
+    textC(lage.txt,32,lage.col);
   }
   /* Spind-Abkuehlung */
   if(S.spindAbkuehlung>0){
@@ -1704,6 +1700,16 @@ function hud(){
     else if(ri>=0) t = schleichAn?'E  LEISE REIN':'E  REIN';
     else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? 'W  HOCH' : 'S  RUNTER';
     if(t&&(S.hebelt||Math.floor(S.t*3)%2===0)) textC(t,H-42,S.hebelt?P.rot:P.gold);
+  }
+  /* Wie weit das Fenster schon offen ist. Gehoert ins HUD und nicht an die
+     Wand - am Fenster selbst laege der Balken ueber den Brettern. Links
+     unter den Herzen, weil die Mitte unten schon Meldung und Hinweis
+     traegt. */
+  if(S.hebelT>0&&S.modus!=='ende'){
+    const f=S.hebelT/TUNE.hebelDauer, bw=44, col=S.hebelt?P.gold:P.dunkel;
+    text('FENSTER '+Math.round(f*100)+'%',6,15,col);
+    ctx.fillStyle='#000a'; ctx.fillRect(5,22,bw+2,5);
+    ctx.fillStyle=col;     ctx.fillRect(6,23,Math.round(bw*f),3);
   }
 }
 
