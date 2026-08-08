@@ -114,6 +114,19 @@ const TUNE = {
   /* (2c) HINWEISE - Zettel, die die Suche eingrenzen */
   zettelAnzahl:     2,     // erster nennt die Etage, zweiter den Raum
 
+  /* (2e) GERAEUSCHE - was du hoerbar machst, kommt zurueck.
+     Gehoert wird nur auf der eigenen Etage. Ein Geraeusch loest keine Jagd
+     aus, es schickt nur jemanden zum Nachsehen - der dich dann sehen kann. */
+  hoerTuer:       152,   // wie weit eine Tuer im Gang zu hoeren ist
+  hoerSchritt:     58,   // laute Schritte - beim Schleichen bleibt es still
+  hoerLandung:     96,   // ein Sprung auf Fliesen
+  hoerSpind:       62,   // Spindtuer auf und zu
+  leiseTuer:      0.40,  // Anteil, wenn du beim Oeffnen Shift haeltst
+  pruefDauer:     2.8,   // wie lange sie am Geraeusch nachsehen
+  pruefTempo:      46,   // Tempo auf dem Weg zum Geraeusch
+  pruefSicht:     1.25,  // Sichtweite, solange sie aufmerksam sind
+  pruefUmschauen: 1.1,   // letzte Sekunden am Ziel wird sich umgesehen
+
   /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
   chefTempo:       19,
   chefJagdTempo:   54,
@@ -130,6 +143,15 @@ const TUNE = {
   verdachtAbbau:    0.9,
   jagdDauer:        3.2, // wie lange er nach Sichtverlust weitersucht
   fangDistanz:       8,
+
+  /* (3b) PATROUILLE - Pausen und Umschauen statt stumpfem Hin und Her.
+     Ein Lehrer, der stehen bleibt und sich umdreht, ist gefaehrlicher als
+     einer, der ewig dieselbe Bahn laeuft - und man kann ihn lesen. */
+  gehtBis:        [3.5,8.5], // Sekunden Laufen, dann eine Pause
+  pauseDauer:     [1.0,2.2], // wie lange die Pause dauert
+  umschauChance:   0.5,      // wie oft in der Pause ueber die Schulter geschaut wird
+  drehAbstand:    [0.5,0.9], // Sekunden zwischen zwei Kehrtwenden beim Suchen
+  wendePause:      0.6,      // am Ende der Bahn wird kurz innegehalten
 
   /* (4) SPIELER */
   leben:            3,
@@ -332,6 +354,7 @@ const SFX={
   fund:   ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.16),170); },
   nichts: ()=>piep(220,.09,'sine',.03),
   gesehen:()=>{ piep(1200,.07); setTimeout(()=>piep(1200,.07),110); },
+  hoeren: ()=>{ piep(520,.06,'sine',.035); setTimeout(()=>piep(700,.09,'sine',.035),110); },
   alarm:  ()=>{ glissando(200,900,.3,'sawtooth',.06); },
   gefangt:()=>{ glissando(400,80,.4,'sawtooth',.07); rauschen(.3,.08); },
   packen: ()=>{ rauschen(.12,.14); glissando(240,70,.2,'square',.08); },
@@ -447,6 +470,21 @@ const LEHRER_START = [
    ZUSTAND
    ========================================================================== */
 let S={};
+
+/* Zufall aus einem [von,bis]-Paar. Alle Patrouillen-Zeiten kommen hierher,
+   damit die drei Lehrer nicht im Gleichschritt stehen bleiben. */
+const zw=([a,b])=>a+Math.random()*(b-a);
+
+/* Ein Lehrer besteht aus seiner Bahn plus dem, was er gerade denkt:
+   jagd > 0 heisst er ist hinter dir her, pruefT > 0 heisst er geht einem
+   Geraeusch nach, stehT > 0 heisst er macht Pause und schaut sich um. */
+function neuerLehrer(l){
+  return { ...l, verdacht:0, jagd:0, gesehenPiep:false,
+           pruefT:0, pruefX:0, drehT:zw(TUNE.drehAbstand),
+           stehT:0, stehMax:1, umschau:0, heimV:l.v, wendeNach:0,
+           gehT:zw(TUNE.gehtBis), blind:0, geht:true };
+}
+
 function neuesSpiel(){
   S={
     modus:'titel',            // titel | spiel | raum | gefangen | cutscene | ende | pause
@@ -459,14 +497,15 @@ function neuesSpiel(){
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
-    lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
-    lehrerJagt:false,
+    lehrer:LEHRER_START.map(neuerLehrer),
+    lehrerJagt:false, lehrerPrueft:false,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
     durchsucht:new Set(),      // "raumIndex:moebelIndex"
     ruettel:0, blitz:0, blende:0,
     szene:0, szeneT:0, packT:0, packSound:false, dirX:0, dirY:0,
     hinweis:'', hinweisT:0,
     schritte:0, gewonnen:false,
+    gesehenWorden:false, gefangenZahl:0,
     nahesMoebel:-1, anTuerRaus:false,
   };
   /* Der Schluessel darf nicht im Raum direkt neben dem Start liegen -
@@ -493,8 +532,8 @@ function neuesSpiel(){
 
   /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
      weit und gibt nicht so schnell auf wie die Lehrer. */
-  S.lehrer.push({ chef:true, e:0, von:40, bis:LEVEL_B-40, x:LEVEL_B-120, v:-1,
-                  verdacht:0, jagd:0, gesehenPiep:false, wechselT:TUNE.chefEtagenWechsel });
+  S.lehrer.push(neuerLehrer({ chef:true, e:0, von:40, bis:LEVEL_B-40, x:LEVEL_B-120, v:-1,
+                              wechselT:TUNE.chefEtagenWechsel }));
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
 }
 neuesSpiel();
@@ -637,10 +676,15 @@ function rein(i){
   meldung('VERSTECKT',1.2);
   /* Wer schon jagt, verliert die Spur - aber er sucht weiter in der Naehe. */
   S.lehrer.forEach(L=>{ if(L.e===S.etage) L.verdacht=0; });
+  /* Die Spindtuer scheppert. Drinnen bist du sicher, aber es kann jemand
+     davor stehen, wenn du wieder rauswillst - darum der Blick durch den
+     Schlitz. */
+  laerm(S.etage,S.x,TUNE.hoerSpind);
 }
 function raus(){
   S.imSpind=-1; S.spindAbkuehlung=TUNE.spindAbkuehlung; SFX.tuer();
   meldung('RAUS AUS DEM SPIND',1);
+  laerm(S.etage,S.x,TUNE.hoerSpind);
 }
 const anTreppe=x=>Math.abs(x-TREPPE_L)<22 || Math.abs(x-TREPPE_R)<22;
 const amAusgang=x=>S.etage===AUSGANG.e && Math.abs(x-AUSGANG.x)<13;
@@ -666,7 +710,11 @@ function update(dt){
   S.zeit+=dt;
   if(S.unverwundbar>0) S.unverwundbar-=dt;
 
-  if(S.modus==='raum'){ imRaum(dt); kamera(dt,true); return; }
+  /* Der Gang laeuft weiter, waehrend du im Raum suchst. Sonst waere jeder
+     Raum eine Pausetaste: man dueckt sich rein, der Verfolger friert vor
+     der Tuer ein und wartet dort bis in alle Ewigkeit. So kostet Suchen
+     Zeit, und wer draussen stand, ist irgendwann weitergegangen. */
+  if(S.modus==='raum'){ imRaum(dt); lehrerLogik(dt); kamera(dt,true); return; }
 
   if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
 
@@ -701,7 +749,8 @@ function update(dt){
   if(S.amBoden&&Math.abs(S.vx)>12){
     S.gehPhase += Math.abs(S.vx)*dt*.09;
     const n=Math.floor(S.gehPhase);
-    if(n!==S.schritte){ S.schritte=n; if(n%2===0&&!S.schleicht) SFX.schritt(); }
+    if(n!==S.schritte){ S.schritte=n;
+      if(n%2===0&&!S.schleicht){ SFX.schritt(); laerm(S.etage,S.x,TUNE.hoerSchritt); } }
   }
 
   /* Sprung */
@@ -715,7 +764,8 @@ function update(dt){
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
   S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
   const boden=BODEN[S.etage];
-  if(S.y>=boden){ S.y=boden; if(!S.amBoden){ SFX.landen(); staub(S.x,S.y,7); }
+  if(S.y>=boden){ S.y=boden;
+    if(!S.amBoden){ SFX.landen(); staub(S.x,S.y,7); laerm(S.etage,S.x,TUNE.hoerLandung); }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; }
   else S.amBoden=false;
 
@@ -739,7 +789,9 @@ function update(dt){
     const ri=raumBei(S.etage,S.x), si=spindBei(S.etage,S.x);
     if(amAusgang(S.x)){
       if(S.hatSchluessel){ starteCutscene(); }
-      else { meldung('ABGESCHLOSSEN'); SFX.nichts(); }
+      /* An einer verschlossenen Tuer zu ruetteln ist das Lauteste, was du
+         im Gang machen kannst - und es bringt nichts. */
+      else { meldung('ABGESCHLOSSEN'); SFX.nichts(); laerm(S.etage,S.x,TUNE.hoerTuer); }
     } else if(ri>=0){ betreteRaum(ri); }
     else if(si>=0){
       if(S.spindAbkuehlung>0){ meldung('NOCH '+Math.ceil(S.spindAbkuehlung)+' SEKUNDEN'); SFX.nichts(); }
@@ -753,11 +805,13 @@ function update(dt){
 
 /* ---- Raum betreten und verlassen ---- */
 function betreteRaum(i){
+  laerm(RAEUME[i].e,RAEUME[i].x,tuerLaerm());
   S.raum=i; S.modus='raum'; S.raumX=W/2; S.suchT=0; S.suchZiel=-1;
   S.entdeckt.add(i); SFX.tuer(); S.blende=1;
   meldung(RAEUME[i].name,1.4);
 }
 function verlasseRaum(){
+  laerm(RAEUME[S.raum].e,RAEUME[S.raum].x,tuerLaerm());
   S.modus='spiel'; S.raum=null; SFX.tuer(); S.blende=1; S.vx=0;
 }
 function imRaum(dt){
@@ -887,41 +941,122 @@ function moebelPlaetze(r){
   return r.moebel.map((m,i)=>({ typ:m, x:start+i*abstand }));
 }
 
+/* ---- Geraeusche ----
+   Du machst Laerm, und der Laerm hat eine Reichweite. Wer ihn hoert und
+   gerade nicht ohnehin schon jagt, geht nachsehen. Ein Geraeusch allein
+   verraet dich nie - es holt nur jemanden dorthin, wo du warst. Gesehen
+   werden musst du immer noch selbst. */
+function laerm(e,x,weite){
+  if(weite<=0) return;
+  for(const L of S.lehrer){
+    if(L.e!==e || L.jagd>0) continue;
+    if(Math.abs(L.x-x)>weite) continue;
+    if(L.pruefT<=0 && L.e===S.etage) SFX.hoeren();
+    L.pruefT=TUNE.pruefDauer; L.pruefX=x; L.stehT=0;
+    L.v=Math.sign(x-L.x)||L.v;
+  }
+}
+/* Wie laut eine Tuer ist. Shift beim Oeffnen macht sie deutlich leiser -
+   das ist der zweite Grund zu schleichen, neben der halben Sichtweite. */
+const tuerLaerm=()=>TUNE.hoerTuer*(schleichAn?TUNE.leiseTuer:1);
+
+/* Der Blick durch den Tuerspalt. Wenn eine Tuer zu hoeren ist, muss man sie
+   auch von innen benutzen koennen, ohne blind in jemanden zu laufen: hinter
+   der Tuer und im Spind steht deshalb, was im Gang gerade los ist. */
+function gangLage(e,x){
+  let d=1e9, N=null;
+  for(const L of S.lehrer){ if(L.e!==e) continue;
+    const ab=Math.abs(L.x-x); if(ab<d){ d=ab; N=L; } }
+  if(!N)        return { txt:'DRAUSSEN NIEMAND',   col:P.gruen };
+  if(N.jagd>0)  return { txt:'ER SUCHT DICH',      col:P.rot   };
+  if(d<26)      return { txt:'JEMAND STEHT DAVOR', col:P.rot   };
+  if(d<72)      return { txt:'SCHRITTE GANZ NAH',  col:P.rot   };
+  if(d<150)     return { txt:'SCHRITTE',           col:P.gold  };
+  return { txt:'DRAUSSEN RUHIG', col:P.gruen };
+}
+
+/* Stehenbleiben: dauer Sekunden, umschau = einmal ueber die Schulter,
+   danachV = Richtung, in die er weiterlaeuft (0 = dieselbe wie vorher). */
+function stehenBleiben(L,dauer,umschau,danachV){
+  L.stehT=dauer; L.stehMax=dauer; L.umschau=umschau;
+  L.heimV=L.v; L.wendeNach=danachV;
+}
+
 /* ---- Lehrer ---- */
 function lehrerLogik(dt){
-  let jagt=false;
+  let jagt=false, prueft=false;
   for(const L of S.lehrer){
     const tempo   = L.chef?TUNE.chefTempo:TUNE.lehrerTempo;
     const jagdT   = L.chef?TUNE.chefJagdTempo:TUNE.jagdTempo;
     const weite   = L.chef?TUNE.chefSicht:TUNE.sichtWeite;
     const dauer   = L.chef?TUNE.chefJagdDauer:TUNE.jagdDauer;
+    if(L.blind>0) L.blind-=dt;
+    L.geht=true;
+
     if(L.jagd>0){
-      jagt=true; L.jagd-=dt;
+      /* (1) Jagd - er weiss, wo du bist */
+      jagt=true; L.jagd-=dt; L.pruefT=0;
       const dir=Math.sign(S.x-L.x)||1;
       L.v=dir; L.x+=dir*jagdT*dt;
-      L.x=Math.max(20,Math.min(LEVEL_B-20,L.x));
       /* Der Direktor folgt dir auch die Treppe hoch */
       if(L.chef && L.e!==S.etage && anTreppe(L.x)){ L.e+=Math.sign(S.etage-L.e); }
       if(L.e===S.etage && S.modus==='spiel' && S.imSpind<0
          && Math.abs(L.x-S.x)<TUNE.fangDistanz) gefangen(L);
+      /* Verliert er dich, sucht er dort weiter, wo er dich zuletzt hatte */
+      if(L.jagd<=0){ L.pruefT=TUNE.pruefDauer; L.pruefX=L.x; }
+
+    } else if(L.pruefT>0){
+      /* (2) Nachsehen - er hat etwas gehoert und geht hin */
+      prueft=true; L.pruefT-=dt;
+      const d=L.pruefX-L.x;
+      if(Math.abs(d)>4 && L.pruefT>TUNE.pruefUmschauen){
+        L.v=Math.sign(d); L.x+=L.v*TUNE.pruefTempo*dt;
+      } else {
+        /* am Ziel angekommen: stehen bleiben und sich umsehen */
+        L.geht=false; L.drehT-=dt;
+        if(L.drehT<=0){ L.v=-L.v; L.drehT=zw(TUNE.drehAbstand); }
+      }
+      if(L.pruefT<=0){ L.gehT=zw(TUNE.gehtBis); L.stehT=0; }
+
     } else {
-      L.x+=L.v*tempo*dt;
-      if(L.x<L.von){ L.x=L.von; L.v=1; }
-      if(L.x>L.bis){ L.x=L.bis; L.v=-1; }
+      /* (3) Patrouille - mit Pausen und Umschauen statt stumpfem Hin und Her */
+      if(L.stehT>0){
+        L.stehT-=dt; L.geht=false;
+        /* Genau einmal ueber die Schulter schauen, dann wieder nach vorn.
+           Kein Dauerkreisel: ein stehender Lehrer, der sich staendig dreht,
+           deckt seinen ganzen Umkreis ab und macht die Tueren neben ihm
+           dauerhaft unerreichbar. */
+        const f = L.stehT/L.stehMax;
+        L.v = (L.umschau && f<.7 && f>.3) ? -L.heimV : L.heimV;
+        if(L.stehT<=0){ L.v = L.wendeNach || L.heimV; L.wendeNach=0;
+                        L.gehT=zw(TUNE.gehtBis); }
+      } else {
+        L.x+=L.v*tempo*dt; L.gehT-=dt;
+        if(L.gehT<=0) stehenBleiben(L, zw(TUNE.pauseDauer), Math.random()<TUNE.umschauChance?1:0, 0);
+        /* Am Ende der Bahn: erst stehen bleiben - noch nach aussen blickend,
+           also von dir weg - und dann umdrehen. Kein hartes Setzen der
+           Position, sonst springt zurueck, wer gerade ein Geraeusch
+           ausserhalb seiner Bahn geprueft hat. */
+        if(L.v<0 && L.x<=L.von) stehenBleiben(L, TUNE.wendePause, 0,  1);
+        if(L.v>0 && L.x>=L.bis) stehenBleiben(L, TUNE.wendePause, 0, -1);
+      }
       /* Der Direktor wechselt regelmaessig die Etage */
       if(L.chef){
         L.wechselT-=dt;
         if(L.wechselT<=0 && anTreppe(L.x)){
           const richtung = L.e===0?1 : L.e===BODEN.length-1?-1 : (Math.random()<.5?1:-1);
-          L.e+=richtung; L.wechselT=TUNE.chefEtagenWechsel;
+          L.e+=richtung; L.wechselT=TUNE.chefEtagenWechsel; L.pruefT=0;
           if(L.e===S.etage){ SFX.gesehen(); meldung('SCHRITTE IM TREPPENHAUS',1.6); }
         }
       }
     }
+    L.x=Math.max(20,Math.min(LEVEL_B-20,L.x));
+
     /* Sicht - nur im Korridor, Raeume und Spinde sind sicher.
-       Schleichen halbiert die Reichweite. */
-    const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1);
-    const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
+       Schleichen halbiert die Reichweite, Nachsehen vergroessert sie:
+       wer aufmerksam ist, findet dich schneller. */
+    const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1)*(L.pruefT>0?TUNE.pruefSicht:1);
+    const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage && L.blind<=0
       && Math.sign(S.x-L.x)===Math.sign(L.v)
       && Math.abs(S.x-L.x)<reichweite
       && Math.abs(S.y-BODEN[L.e])<TUNE.sichtHoehe;
@@ -929,25 +1064,40 @@ function lehrerLogik(dt){
       L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*dt);
       if(!L.gesehenPiep&&L.verdacht>.25){ L.gesehenPiep=true; SFX.gesehen(); }
       if(L.verdacht>=1&&L.jagd<=0){ L.jagd=dauer; SFX.alarm(); S.ruettel=L.chef?6:4;
+        S.gesehenWorden=true;
         meldung(L.chef?'DER DIREKTOR HAT DICH':'ER HAT DICH',1.6); }
     } else {
       L.verdacht=Math.max(0,L.verdacht-TUNE.verdachtAbbau*dt);
       if(L.verdacht<=0) L.gesehenPiep=false;
     }
   }
-  S.lehrerJagt=jagt;
+  S.lehrerJagt=jagt; S.lehrerPrueft=prueft;
 }
 function gefangen(L){
   if(S.unverwundbar>0) return;
-  S.hp--; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
+  S.hp--; S.gefangenZahl++; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
   S.faenger = L&&L.chef ? 'DER DIREKTOR HAT DICH' : 'EIN LEHRER HAT DICH';
-  S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; });
+  S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; x.pruefT=0; });
 }
 function weiterNachFang(){
   if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; return; }
   S.modus='spiel'; S.unverwundbar=TUNE.unverwundbarMs/1000;
   S.x = S.x < LEVEL_B/2 ? TREPPE_L+20 : TREPPE_R-20;
   S.vx=0; S.vy=0; S.y=BODEN[S.etage];
+  /* Er setzt dich im Treppenhaus ab und geht wieder auf Runde. Ohne das
+     hier stehst du nach dem Absetzen sofort wieder in seinem Sichtkegel
+     und verlierst das naechste Herz, ohne etwas falsch gemacht zu haben. */
+  const abstand=TUNE.sichtWeite*1.1;
+  for(const L of S.lehrer){
+    L.jagd=0; L.verdacht=0; L.gesehenPiep=false; L.pruefT=0; L.stehT=0;
+    L.gehT=zw(TUNE.gehtBis);
+    if(L.e!==S.etage) continue;
+    const weg=S.x<LEVEL_B/2?1:-1;                    // von der Treppe weg
+    if(Math.abs(L.x-S.x)<abstand) L.x=S.x+weg*abstand;
+    L.x=Math.max(20,Math.min(LEVEL_B-20,L.x));
+    L.v=weg;                                         // und schaut auch dorthin
+    L.blind=TUNE.unverwundbarMs/1000;
+  }
 }
 
 /* ---- Kamera ---- */
@@ -1159,16 +1309,18 @@ function zeichneKorridor(){
     ctx.globalAlpha=fern?.35:1;
     /* Sichtkegel - schrumpft sichtbar mit, wenn du schleichst */
     if(!fern){
-      ctx.globalAlpha=.10+L.verdacht*.22;
-      ctx.fillStyle=L.jagd>0?P.rot:(L.chef?'#e0708f':P.gold);
-      const w=(L.chef?TUNE.chefSicht:TUNE.sichtWeite)*(S.schleicht?TUNE.schleichSicht:1);
+      ctx.globalAlpha=.10+L.verdacht*.22+(L.pruefT>0?.05:0);
+      ctx.fillStyle=L.jagd>0?P.rot:(L.pruefT>0?P.neon2:(L.chef?'#e0708f':P.gold));
+      /* Der Kegel zeigt die echte Reichweite - auch die groessere, wenn er
+         gerade aufmerksam ist. Sonst raet man, statt zu lesen. */
+      const w=(L.chef?TUNE.chefSicht:TUNE.sichtWeite)
+              *(S.schleicht?TUNE.schleichSicht:1)*(L.pruefT>0?TUNE.pruefSicht:1);
       const h=L.chef?20:16;
       if(L.v>0) ctx.fillRect(L.x+6,by-h,w,h); else ctx.fillRect(L.x-w+2,by-h,w,h);
       ctx.globalAlpha=1;
     }
-    const bewegt=Math.abs(L.v)>0;
     const rows = L.chef ? SPR.direktor
-               : ((L.jagd>0||bewegt) && Math.floor(S.t*6)%2 ? SPR.lehrerGeh : SPR.lehrer);
+               : ((L.jagd>0||L.geht) && Math.floor(S.t*6)%2 ? SPR.lehrerGeh : SPR.lehrer);
     const hoehe = L.chef?17:13;
     if(!fern) outline(rows,L.x,by-hoehe,1,.6);
     if(L.v>0) spriteFlip(rows,L.x,by-hoehe); else sprite(rows,L.x,by-hoehe);
@@ -1180,6 +1332,10 @@ function zeichneKorridor(){
       ctx.fillRect(L.x-3,by-21,Math.round(bw*L.verdacht),2);
       if(L.jagd>0&&Math.floor(S.t*8)%2===0) text('!',L.x+2,by-28,P.rot);
     }
+    /* Fragezeichen, solange er einem Geraeusch nachgeht - damit man sieht,
+       dass er nicht nach Plan laeuft, sondern wegen dir unterwegs ist. */
+    if(!fern&&L.jagd<=0&&L.pruefT>0&&Math.floor(S.t*4)%2===0)
+      text('?',L.x+2,by-(L.chef?32:28),P.neon2);
     ctx.globalAlpha=1;
   }
 
@@ -1274,9 +1430,14 @@ function zeichneRaum(){
     const gr=g.createLinearGradient(0,0,0,90);
     gr.addColorStop(0,st.licht); gr.addColorStop(1,'rgba(0,0,0,0)');
     g.fillStyle=gr; g.fillRect(0,0,W,90); }),0,deckeY);
-  /* Tuer zurueck */
+  /* Tuer zurueck - und was hinter ihr los ist */
   sprite(SPR.tuer,30,bodenY-12);
   text('RAUS',30+4-textW('RAUS')/2,bodenY-20,S.anTuerRaus?P.gold:P.dunkel);
+  if(S.anTuerRaus){
+    const lage=gangLage(r.e,r.x);
+    text(lage.txt,34,bodenY-30,lage.col);
+    text('SHIFT = LEISE RAUS',34,bodenY-38,P.dunkel);
+  }
 
   /* Moebel */
   const plaetze=moebelPlaetze(r);
@@ -1343,13 +1504,19 @@ function hud(){
   }
   /* Schleichen */
   if(S.schleicht) text('LEISE',6,H-12,P.neon2);
+  /* Im Spind: durch den Schlitz sieht man, ob der Gang frei ist */
+  if(S.imSpind>=0){
+    const lage=gangLage(S.etage,S.x);
+    textC(lage.txt,H-32,lage.col);
+  }
   /* Spind-Abkuehlung */
   if(S.spindAbkuehlung>0){
     const t='SPIND '+Math.ceil(S.spindAbkuehlung);
     text(t,W-textW(t)-6,H-12,P.dunkel);
   }
-  /* Jagdanzeige */
-  if(S.lehrerJagt&&Math.floor(S.t*6)%2===0) textGlowC('LAUF',18,P.rot,2);
+  /* Jagdanzeige - und die Stufe davor: jemand hat etwas gehoert */
+  if(S.lehrerJagt){ if(Math.floor(S.t*6)%2===0) textGlowC('LAUF',18,P.rot,2); }
+  else if(S.lehrerPrueft&&Math.floor(S.t*3)%2===0) textC('JEMAND HAT WAS GEHOERT',22,P.neon2);
   /* Meldung */
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
@@ -1361,7 +1528,7 @@ function hud(){
     const ri=raumBei(S.etage,S.x);
     let t=null;
     if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
-    else if(ri>=0) t='E  REIN';
+    else if(ri>=0) t = schleichAn?'E  LEISE REIN':'E  REIN';
     else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? 'W  HOCH' : 'S  RUNTER';
     if(t&&Math.floor(S.t*3)%2===0) textC(t,H-42,P.gold);
   }
@@ -1394,7 +1561,8 @@ function bildschirme(){
     ctx.fillStyle=`rgba(0,0,0,${Math.min(.8,S.szeneT*2).toFixed(2)})`; ctx.fillRect(0,0,W,H);
     textGlowC('ERWISCHT',48,P.rot,3);
     textC(S.faenger||'ERWISCHT',72,P.dim);
-    textC(S.hp>0?'ZURUECK ZUR TREPPE':'KEINE VERSUCHE MEHR',86,P.weiss);
+    textC(S.hp>0?'ER SCHIEBT DICH INS TREPPENHAUS':'KEINE VERSUCHE MEHR',86,P.weiss);
+    if(S.hp>0) textC('UND GEHT WIEDER AUF RUNDE',96,P.dunkel);
     if(S.szeneT>.6&&Math.floor(S.t*2)%2===0) textC('LEERTASTE',104,P.gold);
   }
   if(S.modus==='cutscene'){
