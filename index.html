@@ -121,6 +121,7 @@ const TUNE = {
   hoerSchritt:     58,   // laute Schritte - beim Schleichen bleibt es still
   hoerLandung:     96,   // ein Sprung auf Fliesen
   hoerSpind:       62,   // Spindtuer auf und zu
+  hoerStreuung:    22,   // ein Geraeusch verraet eine Stelle, nicht dich
   leiseTuer:      0.40,  // Anteil, wenn du beim Oeffnen Shift haeltst
   pruefDauer:     2.8,   // wie lange sie am Geraeusch nachsehen
   pruefTempo:      46,   // Tempo auf dem Weg zum Geraeusch
@@ -156,6 +157,24 @@ const TUNE = {
   /* (4) SPIELER */
   leben:            3,
   unverwundbarMs:1400,
+
+  /* (4b) DER ZWEITE WEG RAUS - Fenster im Erdgeschoss.
+     Kein Schluessel noetig, dafuer brauchst du das Brecheisen aus dem
+     Hausmeisterraum, es dauert, es ist sehr laut, und du stehst die ganze
+     Zeit offen im Gang. */
+  hebelDauer:     12.0,  // Sekunden am Fenster, zusammengerechnet
+  hebelTakt:       1.2,  // Abstand zwischen zwei Schlaegen
+  hoerHebel:       420,  // wie weit ein Schlag zu hoeren ist - fast das
+                         // halbe Erdgeschoss, und der Takt zieht sie naeher
+
+  /* (4c) PUNKTE - schneller raus ist mehr wert */
+  zielZeit:        120,  // ab hier gibt es keinen Zeitbonus mehr
+  punkteProSek:     20,
+  punkteProHerz:   500,
+  punkteAusgang:  1200,  // durch die Vordertuer, am Direktor vorbei
+  punkteFenster:   300,  // durchs Fenster: der Notausgang, nicht der Bestweg
+  punkteUngesehen: 750,  // nie eine Jagd ausgeloest
+  punkteZettel:    150,  // je gefundenem Zettel
 
   /* (5) SUCHEN UND VERSTECKEN */
   suchDauer:       0.75, // wie lange eine Durchsuchung braucht
@@ -316,6 +335,7 @@ const SPR = {
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
   schluessel:['..gg.','.g..g','.g..g','..gg.','..g..','..gg.','..g..','..gg.'],
+  brecheisen:['...uu','..uu.','..u..','..u..','..u..','..u..','.uu..','uu...'],
   treppe: ['.......u','......uu','.....uu.','....uu..','...uu...','..uu....','.uu.....','uu......'],
   lampe:  ['wwwwwwww','wllllllw','wwwwwwww'],
 };
@@ -358,6 +378,8 @@ const SFX={
   alarm:  ()=>{ glissando(200,900,.3,'sawtooth',.06); },
   gefangt:()=>{ glissando(400,80,.4,'sawtooth',.07); rauschen(.3,.08); },
   packen: ()=>{ rauschen(.12,.14); glissando(240,70,.2,'square',.08); },
+  hebeln: ()=>{ rauschen(.09,.11); piep(150,.07,'square',.06);
+                setTimeout(()=>piep(110,.09,'square',.05),70); },
   gewonnen:()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
 const BASS=[98,0,0,0, 87,0,0,0, 73,0,0,0, 82,0,0,98];
@@ -453,6 +475,14 @@ const RAEUME = [
 ];
 const AUSGANG = { e:0, x:648 };
 
+/* Der zweite Weg raus. Er liegt bewusst am anderen Ende des Erdgeschosses
+   als der Ausgang: wer ihn nimmt, laeuft nie durch das halbe Gebaeude - und
+   trifft dafuer nie den Direktor. */
+const FENSTER = { e:0, x:88 };
+/* Womit man es aufbekommt. Der Raum steht fest, nur die Schublade nicht -
+   ein Brecheisen liegt beim Hausmeister, das muss man nicht erst suchen. */
+const WERKZEUG_RAUM = 'HAUSMEISTER';
+
 /* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
 const SPINDE = [
   { e:0, x:200 }, { e:0, x:400 }, { e:0, x:560 },
@@ -494,6 +524,9 @@ function neuesSpiel(){
     hp:TUNE.leben, unverwundbar:0,
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
+    hatBrecheisen:false, werkzeugRaum:-1, werkzeugMoebel:-1,
+    hebelt:false, hebelT:0, hebelTakt:0, wegFenster:false,
+    szenen:null, szenenArt:'direktor',
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
@@ -521,11 +554,26 @@ function neuesSpiel(){
   S.schluesselRaum=r;
   S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
 
+  /* Das Brecheisen liegt immer beim Hausmeister - nur in welchem Moebel,
+     wechselt. Der Raum ist fest, damit der zweite Weg raus planbar ist und
+     nicht selbst zur Suche wird. Liegt der Schluessel zufaellig im selben
+     Raum, bekommt das Brecheisen ein anderes Moebel. */
+  const wr=RAEUME.findIndex(raum=>raum.name===WERKZEUG_RAUM);
+  if(wr>=0){
+    const plaetze=RAEUME[wr].moebel.map((m,mi)=>mi)
+      .filter(mi=>!(wr===r && mi===S.schluesselMoebel));
+    S.werkzeugRaum=wr;
+    S.werkzeugMoebel=plaetze[Math.floor(Math.random()*plaetze.length)];
+  }
+
   /* Zettel verstecken. Sie liegen bewusst NICHT im Schluesselraum -
-     sonst findet man beides auf einmal und der Hinweis ist wertlos. */
+     sonst findet man beides auf einmal und der Hinweis ist wertlos - und
+     nicht dort, wo schon das Brecheisen liegt. */
   const frei=[];
   RAEUME.forEach((raum,ri)=>{ if(ri===r) return;
-    raum.moebel.forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
+    raum.moebel.forEach((m,mi)=>{
+      if(ri===S.werkzeugRaum && mi===S.werkzeugMoebel) return;
+      frei.push({raum:ri,moebel:mi}); }); });
   for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
     [frei[i],frei[j]]=[frei[j],frei[i]]; }
   S.zettel=frei.slice(0,TUNE.zettelAnzahl).map((f,i)=>({...f,stufe:i+1,gefunden:false}));
@@ -688,6 +736,7 @@ function raus(){
 }
 const anTreppe=x=>Math.abs(x-TREPPE_L)<22 || Math.abs(x-TREPPE_R)<22;
 const amAusgang=x=>S.etage===AUSGANG.e && Math.abs(x-AUSGANG.x)<13;
+const amFenster=x=>S.etage===FENSTER.e && Math.abs(x-FENSTER.x)<13;
 
 function meldung(t,d=1.4){ S.meldung=t; S.meldungT=d; }
 
@@ -727,6 +776,30 @@ function update(dt){
   if(S.imSpind>=0){
     while(aktionPuffer.length){ aktionPuffer.shift(); raus(); }
     lehrerLogik(dt); kamera(dt,false); return;
+  }
+
+  /* ---------- Am Fenster: aufhebeln ----------
+     Neun Sekunden, in denen du dich nicht bewegst und alle zwei Schlaege
+     das halbe Erdgeschoss hoerst, wo du stehst. Das ist der Preis dafuer,
+     ohne Schluessel rauszukommen. Losgehen bricht ab, aber schon geloeste
+     Bretter bleiben geloest: man hebelt in Etappen, verzieht sich, wenn es
+     eng wird, und macht danach weiter. Ein Fortschritt, der wieder
+     zurueckfaellt, macht das Aufteilen rechnerisch unmoeglich - dann waere
+     der Weg nur noch am Stueck zu schaffen, und am Stueck ist er neben
+     zwei Patrouillen nicht zu ueberleben. */
+  if(S.hebelt){
+    let abbruch = linksAn||rechtsAn||!amFenster(S.x);
+    while(aktionPuffer.length){ aktionPuffer.shift(); abbruch=true; }
+    if(abbruch){ S.hebelt=false; meldung('ABGEBROCHEN',1); }
+    else {
+      S.vx=0; S.vy=0; S.y=BODEN[S.etage]; S.amBoden=true;
+      S.hebelT=Math.min(TUNE.hebelDauer,S.hebelT+dt);
+      S.hebelTakt-=dt;
+      if(S.hebelTakt<=0){ S.hebelTakt=TUNE.hebelTakt; SFX.hebeln(); S.ruettel=2.5;
+        staub(S.x,S.y-16,4); laerm(FENSTER.e,FENSTER.x,TUNE.hoerHebel); }
+      if(S.hebelT>=TUNE.hebelDauer){ S.hebelt=false; starteFensterEnde(); }
+      lehrerLogik(dt); kamera(dt,false); return;
+    }
   }
 
   /* ---------- Korridor ---------- */
@@ -792,6 +865,9 @@ function update(dt){
       /* An einer verschlossenen Tuer zu ruetteln ist das Lauteste, was du
          im Gang machen kannst - und es bringt nichts. */
       else { meldung('ABGESCHLOSSEN'); SFX.nichts(); laerm(S.etage,S.x,TUNE.hoerTuer); }
+    } else if(amFenster(S.x)){
+      if(S.hatBrecheisen){ S.hebelt=true; S.hebelTakt=0; meldung('AUFHEBELN',1.2); }
+      else { meldung('VERRIEGELT - BRAUCHT WERKZEUG',1.6); SFX.nichts(); }
     } else if(ri>=0){ betreteRaum(ri); }
     else if(si>=0){
       if(S.spindAbkuehlung>0){ meldung('NOCH '+Math.ceil(S.spindAbkuehlung)+' SEKUNDEN'); SFX.nichts(); }
@@ -837,6 +913,10 @@ function imRaum(dt){
       if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+      } else if(S.raum===S.werkzeugRaum && S.suchZiel===S.werkzeugMoebel && !S.hatBrecheisen){
+        S.hatBrecheisen=true; SFX.fund(); S.blitz=.7;
+        meldung('BRECHEISEN GEFUNDEN',2.2);
+        zeigeHinweis('DAMIT KRIEGST DU EIN FENSTER AUF',3.4);
       } else if(zettel){
         zettel.gefunden=true;
         S.hinweisStufe=Math.max(S.hinweisStufe,zettel.stufe);
@@ -952,8 +1032,13 @@ function laerm(e,x,weite){
     if(L.e!==e || L.jagd>0) continue;
     if(Math.abs(L.x-x)>weite) continue;
     if(L.pruefT<=0 && L.e===S.etage) SFX.hoeren();
-    L.pruefT=TUNE.pruefDauer; L.pruefX=x; L.stehT=0;
-    L.v=Math.sign(x-L.x)||L.v;
+    /* Gestreut: gehoert wird eine Stelle, kein Mensch. Ohne die Streuung
+       waere jedes Geraeusch ein Peilsender, der sie Bild fuer Bild genau
+       auf dich zieht - beim Aufhebeln ist das der Unterschied zwischen
+       riskant und unmoeglich. */
+    L.pruefT=TUNE.pruefDauer; L.stehT=0;
+    L.pruefX=x+(Math.random()*2-1)*TUNE.hoerStreuung;
+    L.v=Math.sign(L.pruefX-L.x)||L.v;
   }
 }
 /* Wie laut eine Tuer ist. Shift beim Oeffnen macht sie deutlich leiser -
@@ -1076,6 +1161,7 @@ function lehrerLogik(dt){
 function gefangen(L){
   if(S.unverwundbar>0) return;
   S.hp--; S.gefangenZahl++; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
+  S.hebelt=false;                      // die Bretter bleiben, wo sie sind
   S.faenger = L&&L.chef ? 'DER DIREKTOR HAT DICH' : 'EIN LEHRER HAT DICH';
   S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; x.pruefT=0; });
 }
@@ -1132,25 +1218,67 @@ const SZENEN=[
   { d:1.2,  txt:'' },
   { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
 ];
+/* Der andere Abspann: durchs Fenster. Kuerzer, und den Direktor bekommt man
+   nie zu Gesicht - das ist der eigentliche Preis dieses Weges. */
+const SZENEN_FENSTER=[
+  { d:1.4, txt:'' },
+  { d:2.2, txt:'*DAS FENSTER GIBT NACH*' },
+  { d:2.0, txt:'DU: TSCHUESS, SCHULE' },
+  { d:1.2, txt:'' },
+  { d:2.4, txt:'HINTER DIR RUFT JEMAND DEINEN NAMEN' },
+  { d:2.2, txt:'DU DREHST DICH NICHT UM' },
+  { d:2.4, txt:'LEVEL 1 GESCHAFFT' },
+];
 function starteCutscene(){
-  S.modus='cutscene'; S.szene=0; S.szeneT=0; S.vx=0;
+  S.modus='cutscene'; S.szenen=SZENEN; S.szenenArt='direktor'; S.szene=0; S.szeneT=0; S.vx=0;
   S.dirX=S.x+58; S.dirY=BODEN[0]; S.packT=0;
   SFX.tuer(); zeigeHinweis('',0);
 }
+function starteFensterEnde(){
+  S.modus='cutscene'; S.szenen=SZENEN_FENSTER; S.szenenArt='fenster'; S.szene=0; S.szeneT=0;
+  S.vx=0; S.wegFenster=true; S.blitz=1; S.ruettel=5;
+  SFX.packen(); zeigeHinweis('',0);
+}
 function cutscene(dt){
   S.szeneT+=dt;
-  const s=SZENEN[S.szene];
-  /* Direktor tritt ins Bild */
-  if(S.szene<=1) S.dirX += (S.x+30 - S.dirX)*Math.min(1,3*dt);
-  /* Packen */
-  if(S.szene===5){ S.packT=Math.min(1,S.packT+dt*2.6);
-    if(S.packT>=1&&!S.packSound){ S.packSound=true; SFX.packen(); S.ruettel=6; S.blitz=.8; } }
-  /* Wegwerfen */
-  if(S.szene===7){ S.dirX += 220*dt; S.dirY -= 40*dt; }
+  const liste=S.szenen||SZENEN;
+  const s=liste[S.szene];
+  if(S.szenenArt==='direktor'){
+    /* Direktor tritt ins Bild */
+    if(S.szene<=1) S.dirX += (S.x+30 - S.dirX)*Math.min(1,3*dt);
+    /* Packen */
+    if(S.szene===5){ S.packT=Math.min(1,S.packT+dt*2.6);
+      if(S.packT>=1&&!S.packSound){ S.packSound=true; SFX.packen(); S.ruettel=6; S.blitz=.8; } }
+    /* Wegwerfen */
+    if(S.szene===7){ S.dirX += 220*dt; S.dirY -= 40*dt; }
+  }
   if(S.szeneT>=s.d){
     S.szene++; S.szeneT=0;
-    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; SFX.gewonnen(); }
+    if(S.szene>=liste.length){ S.modus='ende'; S.gewonnen=true; merkeBestwert(); SFX.gewonnen(); }
   }
+}
+
+/* ---- Punkte ----
+   Schneller raus ist mehr wert, ungesehen ist mehr wert, und die
+   Vordertuer ist mehr wert als das Fenster: das Fenster spart Zeit, also
+   muss es woanders kosten, sonst gaebe es nur noch einen Weg. */
+function punkte(){
+  const zeit   = Math.max(0,Math.round((TUNE.zielZeit-S.zeit)*TUNE.punkteProSek));
+  const herzen = S.hp*TUNE.punkteProHerz;
+  const weg    = S.wegFenster?TUNE.punkteFenster:TUNE.punkteAusgang;
+  const leise  = S.gesehenWorden?0:TUNE.punkteUngesehen;
+  const zettel = S.zettel.filter(z=>z.gefunden).length*TUNE.punkteZettel;
+  return { zeit, herzen, weg, leise, zettel, summe:zeit+herzen+weg+leise+zettel };
+}
+const BEST_SCHLUESSEL='nachtschicht.level1.bestwert';
+function holeBestwert(){
+  try{ return Number(localStorage.getItem(BEST_SCHLUESSEL))||0; }catch(e){ return 0; }
+}
+function merkeBestwert(){
+  S.bestAlt=holeBestwert();
+  S.summe=punkte().summe;
+  S.neuerBest=S.summe>S.bestAlt;
+  if(S.neuerBest){ try{ localStorage.setItem(BEST_SCHLUESSEL,String(S.summe)); }catch(e){} }
 }
 
 /* ==========================================================================
@@ -1267,6 +1395,30 @@ function zeichneKorridor(){
       if(!S.hatSchluessel) text('X',AUSGANG.x+4,ay+4,P.rot);
     }
 
+    /* Das Fenster - der zweite Weg raus */
+    if(e===FENSTER.e){
+      const fy=by-30, offen=S.hatBrecheisen;
+      ctx.fillStyle='#0d0f18';  ctx.fillRect(FENSTER.x-3,fy-2,20,24);
+      ctx.fillStyle='#1d3a63';  ctx.fillRect(FENSTER.x-1,fy,16,20);
+      ctx.fillStyle='#2b5488';  ctx.fillRect(FENSTER.x-1,fy,16,4);
+      /* Sprossen */
+      ctx.fillStyle='#0f1322';  ctx.fillRect(FENSTER.x+6,fy,2,20); ctx.fillRect(FENSTER.x-1,fy+9,16,2);
+      /* Bretter davor - die muessen weg */
+      const rest=1-(S.hebelT/TUNE.hebelDauer);
+      ctx.fillStyle=P.tuer;
+      if(rest>.33) ctx.fillRect(FENSTER.x-4,fy+2,22,4);
+      if(rest>.66) ctx.fillRect(FENSTER.x-4,fy+13,22,4);
+      if(rest>0)   ctx.fillRect(FENSTER.x-4,fy+7,22,4);
+      if(!fern){
+        const t=offen?'FENSTER':'VERRIEGELT';
+        text(t,FENSTER.x+7-textW(t)/2,fy-10,offen?P.gruen:P.rot);
+        if(offen&&Math.floor(S.t*3)%2===0){
+          ctx.globalAlpha=.5; ctx.fillStyle=P.gruen;
+          ctx.fillRect(FENSTER.x-4,by-1,22,1); ctx.globalAlpha=1;
+        }
+      }
+    }
+
     /* Treppenhaus - muss auf einen Blick auffallen, sonst findet man es nicht */
     [[TREPPE_L,1],[TREPPE_R,-1]].forEach(([tx,dir])=>{
       ctx.globalAlpha=fern?.3:1;
@@ -1341,10 +1493,26 @@ function zeichneKorridor(){
 
   /* Spieler */
   const blinkt = S.unverwundbar>0 && Math.floor(S.t*16)%2===0;
-  if(!blinkt&&S.modus!=='cutscene'&&S.imSpind<0) zeichneSpieler(S.x,S.y);
+  const imFensterAbspann = S.modus==='cutscene' && S.szenenArt==='fenster';
+  if(!blinkt&&(S.modus!=='cutscene'||imFensterAbspann)&&S.imSpind<0){
+    if(imFensterAbspann){
+      /* Er klettert raus und ist ab der dritten Szene weg */
+      const weg=Math.max(0,Math.min(1,(S.szene-1)/2));
+      ctx.globalAlpha=1-weg;
+      zeichneSpieler(S.x,S.y-weg*14);
+      ctx.globalAlpha=1;
+    } else zeichneSpieler(S.x,S.y);
+  }
+
+  /* Balken beim Aufhebeln - man muss sehen, wie weit man ist */
+  if(S.hebelT>0&&S.modus==='spiel'){
+    const f=S.hebelT/TUNE.hebelDauer, bw=30, bx=S.x-bw/2+3, by=BODEN[S.etage]-30;
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,5);
+    ctx.fillStyle=S.hebelt?P.gold:P.dunkel; ctx.fillRect(bx,by,Math.round(bw*f),3);
+  }
 
   /* Cutscene: Direktor und Spieler */
-  if(S.modus==='cutscene'){
+  if(S.modus==='cutscene'&&S.szenenArt==='direktor'){
     const dy=S.dirY;
     outline(SPR.direktor,S.dirX,dy-17,1,.6);
     ctx.save();
@@ -1488,9 +1656,12 @@ function hud(){
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
     ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
   }
-  /* Schluessel */
+  /* Schluessel und Brecheisen - die beiden Wege raus */
   if(S.hatSchluessel){ sprite(SPR.schluessel,W-14,5); text('OK',W-24,6,P.gold); }
   else { ctx.globalAlpha=.3; sprite(SPR.schluessel,W-14,5); ctx.globalAlpha=1; }
+  ctx.globalAlpha=S.hatBrecheisen?1:.25;
+  sprite(SPR.brecheisen,W-32,5,1,S.hatBrecheisen?null:P.dunkel);
+  ctx.globalAlpha=1;
   /* Etage */
   if(S.modus!=='raum'){
     const t='ETAGE '+(S.etage+1);
@@ -1527,10 +1698,12 @@ function hud(){
   if(S.modus==='spiel'){
     const ri=raumBei(S.etage,S.x);
     let t=null;
-    if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
+    if(S.hebelt) t='LAUT - E ODER LAUFEN BRICHT AB';
+    else if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
+    else if(amFenster(S.x)) t = S.hatBrecheisen?'E  AUFHEBELN':'E  VERRIEGELT';
     else if(ri>=0) t = schleichAn?'E  LEISE REIN':'E  REIN';
     else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? 'W  HOCH' : 'S  RUNTER';
-    if(t&&Math.floor(S.t*3)%2===0) textC(t,H-42,P.gold);
+    if(t&&(S.hebelt||Math.floor(S.t*3)%2===0)) textC(t,H-42,S.hebelt?P.rot:P.gold);
   }
 }
 
@@ -1568,19 +1741,37 @@ function bildschirme(){
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
-    const s=SZENEN[S.szene];
+    const s=(S.szenen||SZENEN)[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
     if(Math.floor(S.t*2)%2===0) text('E',W-12,H-10,P.dunkel);
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
     if(S.gewonnen){
-      textGlowC('LEVEL 1 GESCHAFFT',40,P.gold,2);
-      textC('DIE NACHT FAENGT JETZT ERST AN',62,P.weiss);
+      const p=punkte();
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
-      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),84,P.dim);
-      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,96,P.dim);
-      textC('NAECHSTES LEVEL FOLGT',118,P.dunkel);
+      const zeitStr=min+':'+String(sek).padStart(2,'0');
+      textGlowC('LEVEL 1 GESCHAFFT',22,P.gold,2);
+      textC(S.wegFenster?'DURCHS FENSTER - OHNE EIN WORT'
+                        :'DIE NACHT FAENGT JETZT ERST AN',42,P.weiss);
+      /* Abrechnung: links wofuer, rechts wieviel */
+      const zeilen=[
+        ['ZEIT  '+zeitStr,        p.zeit,   P.dim],
+        ['HERZEN UEBRIG  '+S.hp,  p.herzen, P.dim],
+        [S.wegFenster?'FENSTER':'VORDERTUER', p.weg, P.dim],
+        ['NIE GESEHEN',           p.leise,  p.leise?P.gruen:P.dunkel],
+        ['ZETTEL  '+S.zettel.filter(z=>z.gefunden).length, p.zettel, P.dim],
+      ];
+      const lx=76, rx=W-76;
+      zeilen.forEach((z,i)=>{ const y=58+i*10;
+        text(z[0],lx,y,z[2]);
+        const v='+'+z[1]; text(v,rx-textW(v),y,z[1]?P.gold:P.dunkel); });
+      ctx.fillStyle=P.dunkel; ctx.fillRect(lx,110,rx-lx,1);
+      text('PUNKTE',lx,116,P.weiss);
+      const su=String(p.summe); textGlow(su,rx-textW(su,1),116,P.gold,1);
+      const best=S.neuerBest?'NEUER BESTWERT':'BESTWERT  '+(S.bestAlt||0);
+      textC(best,132,S.neuerBest?P.neon:P.dunkel);
+      textC('NAECHSTES LEVEL FOLGT',146,P.dunkel);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
