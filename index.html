@@ -128,6 +128,11 @@ const TUNE = {
   laermWeite:     130,     // so weit hoeren Lehrer ein Geraeusch
   suchTempo:       40,     // Tempo, wenn sie einem Geraeusch nachgehen
 
+  /* (2i) TUEREN - eine Tuer knallt. Wer schleicht, oeffnet sie leise. */
+  tuerWeite:       88,     // so weit ist eine Tuer zu hoeren
+  tuerNahe:        34,     // ab hier steht jemand direkt davor
+  tuerGang:       100,     // ab hier ist er im selben Gang zu hoeren
+
   /* (2g) DIE DUNKLE ETAGE */
   dunkleEtage:      2,     // im zweiten Stock sind die Roehren kaputt
   dunkelRadius:    34,     // was du dort ohne Licht siehst
@@ -502,6 +507,7 @@ function neuesSpiel(){
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
+    tuerAbstand:1e9,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
     lampe:false, akku:TUNE.akkuStart, stumm:false,
@@ -711,11 +717,31 @@ function lampeSchalten(){
   S.lampe=!S.lampe; piep(S.lampe?880:440,.05,'sine',.04);
   meldung(S.lampe?'TASCHENLAMPE AN':'TASCHENLAMPE AUS',1);
 }
-/* ---- Laerm: Lehrer gehen dem Geraeusch nach ---- */
-function laerm(x,etage,weite){
+/* ---- Laerm: Lehrer gehen dem Geraeusch nach ----
+   lenktAb sagt, ob das Geraeusch stark genug ist, dass der Hausmeister
+   am Zielort den Blick auch wirklich vom Guertel nimmt. Ein Wurf im
+   leeren Gang schon - eine zufallende Tuer in einer Schule nicht. Sonst
+   waere das Werfen ueberfluessig, sobald Tueren Laerm machen. */
+function laerm(x,etage,weite,lenktAb=true){
   for(const L of S.lehrer){
     if(L.e!==etage||L.jagd>0) continue;
-    if(Math.abs(L.x-x)<weite){ L.suchtX=x; L.verdacht=Math.min(1,L.verdacht+.15); }
+    if(Math.abs(L.x-x)<weite){ L.suchtX=x; L.lenktAb=lenktAb;
+      L.verdacht=Math.min(1,L.verdacht+.15); }
+  }
+}
+/* ---- Tueren: wer sie normal aufmacht, wird gehoert ---- */
+function tuerGeraeusch(x,etage){
+  SFX.tuer();
+  if(schleichAn) return;                 // gedrueckt gehaltenes Schleichen bleibt leise
+  laerm(x,etage,TUNE.tuerWeite,false);
+}
+/* Wer hinter einer Tuer verschwindet, nimmt den Verfolgern die Spur.
+   Sie geben nicht auf, sie suchen ab jetzt an der Stelle weiter. */
+function verliereSpur(){
+  for(const L of S.lehrer){
+    if(L.e!==S.etage) continue;
+    if(L.jagd>0){ L.jagd=0; L.suchtX=S.x; L.lenktAb=false; }
+    L.verdacht=0; L.gesehenPiep=false;
   }
 }
 /* ---- Werfen: macht Laerm woanders, damit du hier durchkommst ---- */
@@ -730,7 +756,7 @@ function rein(i){
   S.imSpind=i; S.vx=0; S.x=SPINDE[i].x+1; SFX.tuer();
   meldung('VERSTECKT',1.2);
   /* Wer schon jagt, verliert die Spur - aber er sucht weiter in der Naehe. */
-  S.lehrer.forEach(L=>{ if(L.e===S.etage) L.verdacht=0; });
+  verliereSpur();
 }
 function raus(){
   S.imSpind=-1; S.spindAbkuehlung=TUNE.spindAbkuehlung; SFX.tuer();
@@ -778,13 +804,9 @@ function update(dt){
   S.zeit+=dt;
   if(S.unverwundbar>0) S.unverwundbar-=dt;
 
-  if(S.modus==='raum'){ imRaum(dt); kamera(dt,true); return; }
-
-  if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
-  if(S.wurfAbkuehlung>0)  S.wurfAbkuehlung=Math.max(0,S.wurfAbkuehlung-dt);
-  if(S.vibriert>0)        S.vibriert-=dt;
-
-  /* Die Uhr laeuft. Um 17:30 schliesst der Hausmeister endgueltig ab. */
+  /* Die Uhr laeuft. Um 17:30 schliesst der Hausmeister endgueltig ab.
+     Sie steht bewusst vor dem Raum-Zweig: drinnen zu suchen kostet
+     genauso viel Abend wie draussen zu laufen. */
   const spanne=TUNE.endMinute-TUNE.startMinute;
   S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
   if(!S.zeitWarnung && S.minute>=TUNE.endMinute-15){
@@ -794,6 +816,15 @@ function update(dt){
     S.modus='ende'; S.gewonnen=false; S.faenger='DER HAUSMEISTER HAT ABGESCHLOSSEN';
     SFX.gefangt(); return;
   }
+
+  /* Im Raum laeuft der Gang weiter. Ohne das waere eine hoerbare Tuer
+     wirkungslos: wer sie gehoert hat, stuende eingefroren daneben,
+     statt nachzuschauen, sich umzusehen und wieder abzuziehen. */
+  if(S.modus==='raum'){ imRaum(dt); lehrerLogik(dt); kamera(dt,true); return; }
+
+  if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
+  if(S.wurfAbkuehlung>0)  S.wurfAbkuehlung=Math.max(0,S.wurfAbkuehlung-dt);
+  if(S.vibriert>0)        S.vibriert-=dt;
 
   /* Akku und Taschenlampe */
   if(S.lampe){ S.akku=Math.max(0,S.akku-TUNE.akkuProSek*dt);
@@ -915,12 +946,18 @@ function update(dt){
 
 /* ---- Raum betreten und verlassen ---- */
 function betreteRaum(i){
+  /* Erst die Spur nehmen, dann die Tuer knallen lassen - sonst loescht
+     das Zuruecksetzen des Verdachts gleich wieder das Tuergeraeusch. */
+  verliereSpur();
+  tuerGeraeusch(RAEUME[i].x,RAEUME[i].e);
   S.raum=i; S.modus='raum'; S.raumX=W/2; S.suchT=0; S.suchZiel=-1;
-  S.entdeckt.add(i); SFX.tuer(); S.blende=1;
+  S.entdeckt.add(i); S.blende=1;
   meldung(RAEUME[i].name,1.4);
 }
 function verlasseRaum(){
-  S.modus='spiel'; S.raum=null; SFX.tuer(); S.blende=1; S.vx=0;
+  const r=RAEUME[S.raum];
+  S.modus='spiel'; S.raum=null; S.blende=1; S.vx=0;
+  tuerGeraeusch(r.x,r.e);
 }
 function imRaum(dt){
   if(S.blende>0) S.blende=Math.max(0,S.blende-dt*3);
@@ -932,6 +969,13 @@ function imRaum(dt){
   if(richtung&&Math.random()<.06) SFX.schritt();
 
   const r=RAEUME[S.raum];
+  /* Die andere Haelfte von "Tueren sind laut": durch dieselbe Tuer
+     hoerst auch du, wer da draussen steht. Sonst waere das Rausgehen
+     ein Muenzwurf statt einer Entscheidung. */
+  let nd=1e9;
+  for(const L of S.lehrer) if(L.e===r.e) nd=Math.min(nd,Math.abs(L.x-r.x));
+  S.tuerAbstand=nd;
+
   const plaetze=moebelPlaetze(r);
   let nah=-1;
   plaetze.forEach((p,i)=>{ if(Math.abs(p.x+8-S.raumX)<14) nah=i; });
@@ -1069,8 +1113,10 @@ function lehrerLogik(dt){
       L.v=Math.sign(d)||1;
       L.x+=L.v*TUNE.suchTempo*dt;
       if(Math.abs(d)<6){ L.suchtX=null; L.v=Math.random()<.5?1:-1;
-        /* Am Zielort schaut er sich noch kurz um - dein Zeitfenster */
-        if(L.hausmeister) L.abgelenkt=2.6; }
+        /* Am Zielort schaut er sich noch kurz um - dein Zeitfenster.
+           Nur bei einem Geraeusch, das ihn wirklich wegholt. */
+        if(L.hausmeister && L.lenktAb) L.abgelenkt=2.6;
+        L.lenktAb=false; }
     } else {
       if(L.abgelenkt>0) L.abgelenkt-=dt;
       L.x+=L.v*tempo*dt;
@@ -1622,6 +1668,10 @@ function zeichneRaum(){
   /* Tuer zurueck */
   sprite(SPR.tuer,30,bodenY-12);
   text('RAUS',30+4-textW('RAUS')/2,bodenY-20,S.anTuerRaus?P.gold:P.dunkel);
+  /* Was durch die Tuer zu hoeren ist */
+  if(S.tuerAbstand<TUNE.tuerNahe){
+    if(Math.floor(S.t*3)%2===0) textC('SCHRITTE DIREKT VOR DER TUER',30,P.rot);
+  } else if(S.tuerAbstand<TUNE.tuerGang) textC('SCHRITTE IM GANG',30,P.gold);
 
   /* Moebel */
   const plaetze=moebelPlaetze(r);
