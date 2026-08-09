@@ -113,6 +113,7 @@ const TUNE = {
 
   /* (2c) HINWEISE - Zettel, die die Suche eingrenzen */
   zettelAnzahl:     2,     // erster nennt die Etage, zweiter den Raum
+  fundAnzahl:       4,     // Fundstuecke pro Runde, aus sechs gezogen
 
   /* (2e) DEIN HANDY - Licht, Story und Risiko in einem Geraet */
   akkuStart:      100,
@@ -470,6 +471,43 @@ const NACHRICHTEN = [
   { t:118, von:'MAX FERDI', txt:'beeil dich mann' },
 ];
 
+/* Fundstuecke - was in den Schubladen liegt. Sie bringen dich keinen
+   Schritt weiter, sie beantworten die Frage, die das Intro offen laesst:
+   warum bist du ueberhaupt eingesperrt. Der Font kennt nur Grossbuchstaben
+   und kein Umlaut-Zeichen, deshalb steht hier UE statt Ü. */
+const FUNDSTUECKE = [
+  { titel:'NACHSITZ-LISTE', zeilen:[
+      'RAUM 103   16:00 BIS 16:40',
+      'ANWESEND: 1',
+      'BEMERKUNG: HAT GESCHLAFEN.',
+      'NICHT GEWECKT.   DER DIREKTOR' ] },
+  { titel:'AUSHANG IM LEHRERZIMMER', zeilen:[
+      'AB HEUTE WIRD UM 17:30 ABGE-',
+      'SCHLOSSEN. OHNE AUSNAHME.',
+      'WER DANN NOCH DRIN IST,',
+      'IST DANN EBEN NOCH DRIN.' ] },
+  { titel:'ZETTEL AM SPIND', zeilen:[
+      'WENN DU DAS LIEST:',
+      'ICH BIN DURCHS FENSTER.',
+      'ERDGESCHOSS, GANZ HINTEN.',
+      'MACH HIN.   MAX F.' ] },
+  { titel:'VERWARNUNG NR. 3', zeilen:[
+      'BETREFF: DEIN VERHALTEN.',
+      'BEIM NAECHSTEN MAL',
+      'REDEN WIR ANDERS.',
+      'DER DIREKTOR' ] },
+  { titel:'SCHLUESSELBUCH', zeilen:[
+      'HAUPTEINGANG: 1 SCHLUESSEL.',
+      'ZWEITSCHLUESSEL: VERLEGT.',
+      'SUCHE LAEUFT SEIT MAERZ.',
+      'DER HAUSMEISTER' ] },
+  { titel:'GEFALTETER ZETTEL', zeilen:[
+      'HEUTE 20 UHR AM SPAETI.',
+      'DANN WEITER ZU MARVIN.',
+      'BUS UM HALB ZWOELF.',
+      'LETZTER MACHT DAS LICHT AUS.' ] },
+];
+
 /* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
 const CREW_KEY='nachtschicht.crew';
 const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
@@ -510,6 +548,7 @@ function neuesSpiel(){
     tuerAbstand:1e9,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
+    funde:[], notiz:null, gelesen:0,
     lampe:false, akku:TUNE.akkuStart, stumm:false,
     chat:[], naechsteNachricht:0, vibriert:0,
     wurf:null, wurfAbkuehlung:0,
@@ -545,6 +584,15 @@ function neuesSpiel(){
   for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
     [frei[i],frei[j]]=[frei[j],frei[i]]; }
   S.zettel=frei.slice(0,TUNE.zettelAnzahl).map((f,i)=>({...f,stufe:i+1,gefunden:false}));
+
+  /* Fundstuecke kommen aus demselben Topf, aber hinter den Zetteln -
+     so liegen nie zwei Dinge im selben Moebel. Vier von sechs pro
+     Runde, damit zwei Durchgaenge nicht dasselbe erzaehlen. */
+  const wahl=FUNDSTUECKE.map((f,i)=>i);
+  for(let i=wahl.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
+    [wahl[i],wahl[j]]=[wahl[j],wahl[i]]; }
+  S.funde=frei.slice(TUNE.zettelAnzahl,TUNE.zettelAnzahl+TUNE.fundAnzahl)
+    .map((f,i)=>({...f, nr:wahl[i], gefunden:false}));
 
   /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
      weit und gibt nicht so schnell auf wie die Lehrer. */
@@ -961,6 +1009,16 @@ function verlasseRaum(){
 }
 function imRaum(dt){
   if(S.blende>0) S.blende=Math.max(0,S.blende-dt*3);
+  /* Ein Fundstueck wird gelesen. Alles andere wartet - der Gang aber
+     nicht, der laeuft weiter. Lesen kostet Abend. */
+  if(S.notiz){
+    S.notiz.t+=dt;
+    while(aktionPuffer.length){ aktionPuffer.shift();
+      /* Kurze Sperre, sonst schliesst dieselbe Taste das Blatt sofort */
+      if(S.notiz.t>.35){ S.notiz=null; piep(520,.05,'sine',.03); break; }
+    }
+    return;
+  }
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
   S.raumX += richtung*TUNE.gehTempo*.8*dt;
@@ -986,9 +1044,14 @@ function imRaum(dt){
     if(S.suchT<=0){
       S.durchsucht.add(S.raum+':'+S.suchZiel);
       const zettel=S.zettel.find(z=>z.raum===S.raum&&z.moebel===S.suchZiel&&!z.gefunden);
+      const fund=S.funde.find(f=>f.raum===S.raum&&f.moebel===S.suchZiel&&!f.gefunden);
       if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+      } else if(fund){
+        fund.gefunden=true; S.gelesen++;
+        SFX.fund(); S.blitz=.4;
+        S.notiz={ ...FUNDSTUECKE[fund.nr], t:0 };
       } else if(zettel){
         zettel.gefunden=true;
         S.hinweisStufe=Math.max(S.hinweisStufe,zettel.stufe);
@@ -1710,6 +1773,26 @@ function zeichneRaum(){
     const gr=g.createRadialGradient(W/2,H*.55,50,W/2,H*.55,W*.6);
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.6)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  /* Das gefundene Blatt liegt ueber allem - auch ueber der Vignette,
+     sonst laege ausgerechnet der Text im Dunkeln. */
+  if(S.notiz) zeichneNotiz();
+}
+/* Ein Fundstueck als Blatt Papier, mittig auf dem Bildschirm. */
+function zeichneNotiz(){
+  const n=S.notiz;
+  const breit=n.zeilen.reduce((m,z)=>Math.max(m,textW(z)),textW(n.titel));
+  const bw=Math.min(W-16,breit+14), bh=16+n.zeilen.length*8+8;
+  const bx=Math.round((W-bw)/2), by=Math.round((H-bh)/2)-6;
+  const ink='#241f18', rand='#a89a72';
+  ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#00000099'; ctx.fillRect(bx+2,by+3,bw,bh);   // Schatten
+  ctx.fillStyle=rand;        ctx.fillRect(bx-1,by-1,bw+2,bh+2);
+  ctx.fillStyle='#d9d0b0';   ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle='#00000014'; ctx.fillRect(bx,by+Math.round(bh/2),bw,1); // Knick
+  text(n.titel,bx+Math.round((bw-textW(n.titel))/2),by+5,ink);
+  ctx.fillStyle=rand; ctx.fillRect(bx+5,by+12,bw-10,1);
+  n.zeilen.forEach((z,i)=>text(z,bx+7,by+16+i*8,ink));
+  if(Math.floor(S.t*2)%2===0) textC('E  WEITER',by+bh+8,P.gold);
 }
 
 /* ---- HUD ---- */
@@ -1838,7 +1921,7 @@ function bildschirme(){
       if(S.neueBestzeit) textC('NEUE BESTZEIT',94,P.gold);
       else { const b=ladeBest();
         if(b!==null) textC('BESTZEIT  '+Math.floor(b/60)+':'+String(Math.floor(b%60)).padStart(2,'0'),94,P.dunkel); }
-      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,106,P.dim);
+      textC('DURCHSUCHT '+S.durchsucht.size+'   FUNDSTUECKE '+S.gelesen+'/'+TUNE.fundAnzahl,106,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
       textC('NAECHSTES LEVEL FOLGT',134,P.dunkel);
