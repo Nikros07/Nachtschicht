@@ -6,24 +6,17 @@ Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
 ---
 
-## Level 1 — Die Schule (spielbar, noch nicht fertig)
+## Level 1 — Die Schule ✅ fertig
 
-**Fehlt noch:**
+Alles aus der ursprünglichen Liste ist umgesetzt: Intro, Spinde, Schleichen,
+Geräusche, Fundstücke, Direktor als Patrouille, Zeitdruck, Zettel-Hinweise,
+Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
-- [ ] **Story-Text am Anfang** — warum bist Du überhaupt eingesperrt?
-- [ ] **Verstecken in Spinden** — zweite Deckung neben den Räumen
-- [ ] **Schleichen** — langsam laufen, dafür kleinerer Sichtradius der Lehrer
-- [ ] **Türen hörbar machen** — Lehrer reagieren auf Geräusche
-- [ ] **Mehr Fundstücke** — nicht nur der Schlüssel, auch Notizen die Story erzählen
-- [ ] **Zweiter Ausgang** als Alternative (Fenster im Erdgeschoss)
-- [ ] **Direktor als Patrouille** vor der Cutscene, nicht nur am Ende
-- [ ] **Zeitbonus** — schneller raus gibt mehr Punkte
+**Offen geblieben (bewusst):**
 
-**Bekannte Schwächen:**
-
-- [ ] Schlüsselsuche kann bis zu 2 Minuten reines Laufen bedeuten, wenn er im letzten Raum liegt. Braucht einen Hinweis, der die Suche eingrenzt
-- [ ] Lehrer laufen stumpf hin und her, keine Pausen, kein Umschauen
-- [ ] Nach dem Erwischtwerden setzt es Dich an der Treppe ab — das kann sich willkürlich anfühlen
+- [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
+- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
+- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
 
 ---
 
@@ -110,3 +103,17 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] **Cutscene am Ende von Level 1: der Direktor wird gepackt**
 - [x] Bewegung mit Beschleunigung und Bremsung statt an/aus
 - [x] GitHub Pages läuft
+- [x] Intro: letzter Schultag, Nachsitzen verpennt
+- [x] Sieben eigene Raumstile mit Wandfarbe, Fenstern, Einrichtung
+- [x] Spinde zum Verstecken, mit Sehschlitz und Nahaufnahme
+- [x] Schleichen auf Shift, halbiert die Sichtweite
+- [x] Werfen auf R, lenkt ab und bricht Verfolgungen ab
+- [x] Handy: Taschenlampe, Akku, Nachrichten der Jungs, verräterische Vibration
+- [x] Zettel als Hinweise — erster Fund nennt die Etage, zweiter den Raum
+- [x] Der Direktor wandert über alle Etagen
+- [x] Zwei Spielarten pro Runde: Schlüssel im Raum oder beim Hausmeister
+- [x] Uhr mit Zeitdruck und Zeitstrafe beim Erwischtwerden
+- [x] Funde: Akku, Energydrink, Notizen
+- [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
+- [x] Bestzeit, Cutscene überspringbar
+- [x] Vollständige Spielanleitung im README
