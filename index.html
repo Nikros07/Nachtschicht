@@ -711,19 +711,37 @@ function lampeSchalten(){
   S.lampe=!S.lampe; piep(S.lampe?880:440,.05,'sine',.04);
   meldung(S.lampe?'TASCHENLAMPE AN':'TASCHENLAMPE AUS',1);
 }
-/* ---- Laerm: Lehrer gehen dem Geraeusch nach ---- */
-function laerm(x,etage,weite){
+/* ---- Laerm: Lehrer gehen dem Geraeusch nach ----
+   brichtJagd=true nur beim Wurf: ein Geraeusch weit weg von dir kann
+   eine laufende Verfolgung abbrechen. Genau dafuer wirft man. */
+function laerm(x,etage,weite,brichtJagd=false){
   for(const L of S.lehrer){
-    if(L.e!==etage||L.jagd>0) continue;
-    if(Math.abs(L.x-x)<weite){ L.suchtX=x; L.verdacht=Math.min(1,L.verdacht+.15); }
+    if(L.e!==etage) continue;
+    if(Math.abs(L.x-x)>=weite) continue;
+    if(L.jagd>0){
+      if(!brichtJagd) continue;
+      if(Math.abs(x-S.x)<50) continue;      // direkt vor die Fuesse geworfen bringt nichts
+      L.jagd=0; L.gesehenPiep=false; L.verdacht=.4;
+      meldung('ER GEHT DEM NACH',1.2);
+    } else {
+      L.verdacht=Math.min(1,L.verdacht+.15);
+    }
+    L.suchtX=x;
   }
 }
 /* ---- Werfen: macht Laerm woanders, damit du hier durchkommst ---- */
 function wirf(){
   if(S.modus!=='spiel'||S.wurfAbkuehlung>0||S.wurf) return;
-  S.wurf={ x:S.x+4, y:S.y-10, vx:S.blick*160, vy:-70, e:S.etage };
+  /* Flugbahn aus TUNE.wurfWeite berechnen, statt feste Werte zu raten.
+     Vorher flog der Gegenstand nur 43 statt der eingestellten 96 Pixel -
+     er landete zwischen dir und dem Lehrer und zog ihn zu dir hin. */
+  const T=0.6, hoehe=10, g=760;
+  S.wurf={ x:S.x+4, y:S.y-hoehe, e:S.etage,
+           vx:S.blick*(TUNE.wurfWeite/T),
+           vy:(hoehe-(g/2)*T*T)/T };
   S.wurfAbkuehlung=TUNE.wurfAbkuehlung;
   piep(300,.05,'triangle',.03);
+  meldung('GEWORFEN',.8);
 }
 
 function rein(i){
@@ -816,7 +834,7 @@ function update(dt){
   if(S.wurf){
     const w=S.wurf; w.vy+=760*dt; w.x+=w.vx*dt; w.y+=w.vy*dt;
     if(w.y>=BODEN[w.e]){
-      laerm(w.x,w.e,TUNE.laermWeite);
+      laerm(w.x,w.e,TUNE.laermWeite,true);
       rauschen(.12,.06); piep(180,.06,'square',.04);
       staub(w.x,BODEN[w.e],6);
       S.wurf=null;
@@ -868,8 +886,20 @@ function update(dt){
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
   S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
   const boden=BODEN[S.etage];
-  if(S.y>=boden){ S.y=boden; if(!S.amBoden){ SFX.landen(); staub(S.x,S.y,7); }
-    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; }
+  if(S.y>=boden){
+    S.y=boden;
+    if(!S.amBoden){
+      SFX.landen(); staub(S.x,S.y,7);
+      /* Landen ist laut. Damit wird Sprungspammen zum Risiko statt zum
+         Trick - vorher war es die sicherste Fortbewegung im Spiel. */
+      /* Hoerweite muss ueber der Sichtweite liegen, sonst merkt man das
+         Risiko nie - man wird eh vorher gesehen. */
+      /* schleichAn statt S.schleicht: S.schleicht ist in der Luft immer
+         falsch, sonst waere leises Landen gar nicht moeglich. */
+      if(!schleichAn) laerm(S.x,S.etage,TUNE.laermWeite*0.8);
+    }
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t;
+  }
   else S.amBoden=false;
 
   /* Treppe: hoch und runter.
@@ -1069,8 +1099,9 @@ function lehrerLogik(dt){
       L.v=Math.sign(d)||1;
       L.x+=L.v*TUNE.suchTempo*dt;
       if(Math.abs(d)<6){ L.suchtX=null; L.v=Math.random()<.5?1:-1;
-        /* Am Zielort schaut er sich noch kurz um - dein Zeitfenster */
-        if(L.hausmeister) L.abgelenkt=2.6; }
+        /* Am Zielort schaut sich JEDER noch kurz um - das ist dein
+           Zeitfenster, nicht nur beim Hausmeister. */
+        L.abgelenkt=2.6; }
     } else {
       if(L.abgelenkt>0) L.abgelenkt-=dt;
       L.x+=L.v*tempo*dt;
@@ -1093,10 +1124,13 @@ function lehrerLogik(dt){
     const abgelenkt = L.abgelenkt>0 || L.suchtX!=null;
     const reichweite = weite*(S.schleicht?TUNE.schleichSicht:1)
                      *(S.lampe?TUNE.lampeSichtBonus:1)*(abgelenkt?0.35:1);
+    /* KEINE Hoehenpruefung mehr. Die Etage trennt bereits sauber, und die
+       alte Pruefung auf 22 Pixel machte einen Sprung von 34 Pixeln
+       faktisch unsichtbar - dadurch kam man durch reines Sprungspammen
+       an jedem Lehrer vorbei. */
     const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
       && Math.sign(S.x-L.x)===Math.sign(L.v)
-      && Math.abs(S.x-L.x)<reichweite
-      && Math.abs(S.y-BODEN[L.e])<TUNE.sichtHoehe;
+      && Math.abs(S.x-L.x)<reichweite;
     if(sichtbar){
       L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*dt);
       if(!L.gesehenPiep&&L.verdacht>.25){ L.gesehenPiep=true; SFX.gesehen(); }
