@@ -20,6 +20,9 @@ Schlüssel. Die Lehrer sind noch da.
 
 **Der Haken:** Drei Etagen, zehn Räume, und auf jeder Etage patrouilliert jemand.
 
+**Oder anders:** im Erdgeschoss hängt ein Fenster. Kein Schlüssel nötig — aber
+der Riegel ist zu, und ihn aufzuhebeln dauert und macht Krach.
+
 ### Wie es sich spielt
 
 Du siehst das Gebäude von der Seite — Korridore, Türen, Treppen. Was hinter einer
@@ -38,16 +41,39 @@ Jeder Lehrer hat einen Sichtkegel in Laufrichtung. Kommst Du hinein, füllt sich
 über seinem Kopf ein Balken — das ist Deine Reaktionszeit. Ist er voll, wird
 gejagt.
 
-Du bist schneller als sie. Weglaufen funktioniert, in einen Raum abbiegen auch.
-Wirst Du erwischt, kostet das ein Herz und Du landest wieder an der Treppe.
-Drei Herzen, dann ist die Nacht vorbei, bevor sie angefangen hat.
+Sie laufen nicht stur hin und her. Ungefähr ein Viertel der Zeit bleiben sie
+stehen und schauen sich um — dann kippt der Sichtkegel im Sekundentakt hin und
+her. Ein leuchtender Streifen unter den Füßen zeigt, wie nah Du einem
+Stehenden nicht kommen darfst: **wer steht, sieht auch nach hinten.** Wer
+marschiert, hat Scheuklappen.
 
-Zum Verhältnis: die Türen sind zwischen **81 und 97 Prozent der Zeit** sicher
-erreichbar. Es gibt immer ein Fenster, man muss es nur abwarten.
+Du bist schneller als sie. Weglaufen funktioniert, in einen Raum abbiegen auch.
+Wirst Du erwischt, kostet das ein Herz, und er schiebt Dich in das Treppenhaus,
+das von ihm wegführt. Drei Herzen, dann ist die Nacht vorbei, bevor sie
+angefangen hat.
+
+Zum Verhältnis: die Türen sind je nach Raum zwischen **70 und 91 Prozent der
+Zeit** sicher erreichbar. Es gibt immer ein Fenster, man muss es nur abwarten.
+
+### Das Fenster
+
+Im Flur des Erdgeschosses steht ein Fenster offen im Abendlicht. Es ist der
+zweite Weg raus und braucht keinen Schlüssel — nur das **Brecheisen aus dem
+Hausmeisterraum** und sieben Sekunden am Riegel.
+
+Jeder Handgriff knackt, und jedes Knacken zieht alles an, was in Hörweite ist.
+Losgehen bricht die Arbeit ab, aber der Fortschritt verfällt nur langsam: sich
+wegducken lohnt sich, wegbleiben nicht. Der Spind ein Stück weiter ist genau
+dafür da.
+
+Der schnelle Weg kostet Punkte — und die Szene am Ausgang siehst Du dann nie.
 
 ### Und am Ende
 
 Am Ausgang steht jemand, der Dich nicht rauslassen will. Das klärt sich.
+
+Danach wird abgerechnet: Zeit, übrige Herzen, Fundstücke und der Weg, den Du
+genommen hast. Der Rekord bleibt im Browser gespeichert.
 
 ---
 
@@ -59,7 +85,11 @@ Am Ausgang steht jemand, der Dich nicht rauslassen will. Das klärt sich.
 | `Leertaste` | Springen |
 | `W` oder `↑` | Treppe hoch |
 | `S` oder `↓` | Treppe runter |
-| **`E`** | Tür öffnen, durchsuchen, reden |
+| **`E`** | Tür öffnen, durchsuchen, hebeln, reden |
+| `Shift` | Schleichen — halb so schnell, halb so sichtbar |
+| `Q` | Taschenlampe — Du siehst mehr, sie sehen Dich weiter |
+| `R` | Etwas werfen — der Krach lockt sie woanders hin |
+| `H` | Handy stumm — dann verrät Dich keine Vibration |
 | `F` | Vollbild |
 | `P` | Pause |
 | `M` | Ton aus |
@@ -95,9 +125,15 @@ fragt nur diesen Block ab.
 | `jagdTempo` | Wie schnell sie hinter Dir her sind |
 | `leben` | Wie viele Fehler Du machen darfst |
 | `suchDauer` | Wie lange eine Durchsuchung dauert |
+| `pausenChance` / `pauseLang` | Wie oft und wie lange die Lehrer stehenbleiben |
+| `nahSicht` | Wie nah man einem Stehenden kommen darf |
+| `fensterDauer` | Wie lange der Riegel am Fenster braucht |
+| `laermWeite` | Wie weit ein Geräusch getragen wird |
+| `punkteProSek` | Was jede gesparte Sekunde am Ende wert ist |
 
-Das Level selbst steht direkt darunter als Daten: `RAEUME`, `LEHRER_START`,
-`BODEN`, `AUSGANG`. Räume dazuschreiben geht ohne eine Zeile Logik.
+Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
+`LEHRER_START`, `BODEN`, `AUSGANG`, `FENSTER`. Räume dazuschreiben geht ohne
+eine Zeile Logik.
 
 ---
 
@@ -136,5 +172,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist spielbar und durchspielbar. Die Story, die anderen sieben Level und
-das Freischalten der Crew stehen in [TODO.md](TODO.md).
+Level 1 ist spielbar und durchspielbar, auf zwei Wegen, mit Punkteabrechnung am
+Ende. Die anderen sieben Level, das Kampfsystem im Level-Modus und der Rest der
+Crew stehen in [TODO.md](TODO.md).

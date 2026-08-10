@@ -1,29 +1,32 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) ist spielbar, durchspielbar und hat zwei Wege raus.
+Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
 ---
 
-## Level 1 — Die Schule (spielbar, noch nicht fertig)
+## Level 1 — Die Schule (spielbar, fast fertig)
 
 **Fehlt noch:**
 
-- [ ] **Story-Text am Anfang** — warum bist Du überhaupt eingesperrt?
-- [ ] **Verstecken in Spinden** — zweite Deckung neben den Räumen
-- [ ] **Schleichen** — langsam laufen, dafür kleinerer Sichtradius der Lehrer
-- [ ] **Türen hörbar machen** — Lehrer reagieren auf Geräusche
-- [ ] **Mehr Fundstücke** — nicht nur der Schlüssel, auch Notizen die Story erzählen
-- [ ] **Zweiter Ausgang** als Alternative (Fenster im Erdgeschoss)
-- [ ] **Direktor als Patrouille** vor der Cutscene, nicht nur am Ende
-- [ ] **Zeitbonus** — schneller raus gibt mehr Punkte
+- [ ] **Zweite Etage für den Direktor sperren?** — er wechselt frei, das kann
+      sich unfair anfühlen, wenn er zweimal hintereinander hinterherkommt
+- [ ] **Mehr Notizen mit echter Story** — die Zettel sagen bisher nur, wo der
+      Schlüssel liegt. Sie könnten auch erzählen, warum Du eingesperrt bist
+- [ ] **Ton für das Fenster feiner** — das Knacken klingt noch nach Klick,
+      nicht nach Metall unter Druck
 
 **Bekannte Schwächen:**
 
-- [ ] Schlüsselsuche kann bis zu 2 Minuten reines Laufen bedeuten, wenn er im letzten Raum liegt. Braucht einen Hinweis, der die Suche eingrenzt
-- [ ] Lehrer laufen stumpf hin und her, keine Pausen, kein Umschauen
-- [ ] Nach dem Erwischtwerden setzt es Dich an der Treppe ab — das kann sich willkürlich anfühlen
+- [ ] Ohne Zettel ist die Schlüsselsuche immer noch lang. Der Hinweis auf die
+      Etage kommt erst mit dem ersten Fund
+- [ ] Die Türen sind je nach Raum zwischen 70 und 91 Prozent der Zeit sicher
+      erreichbar. Am Sekretariat (70) ist es am engsten — dort steht die Runde
+      des Lehrers am dichtesten vor der Tür
+- [ ] Der Fensterweg hängt stark davon ab, wo der Lehrer gerade steht. Wer den
+      Moment nicht abwarten kann, verliert Herzen, ohne zu verstehen warum
 
 ---
 
@@ -54,6 +57,8 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
+- [x] **Max Ferdi** ist freigeschaltet und gibt +15% Tempo. Er bleibt über
+      Runden hinweg dabei
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
@@ -79,10 +84,16 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+**Das hier blockiert alle weiteren Level:**
+
+- [ ] **Level-Daten in eine eigene Struktur**, damit neue Level ohne Code
+      entstehen. `RAEUME`, `SPINDE`, `LEHRER_START`, `BODEN`, `AUSGANG` und
+      `FENSTER` liegen heute als lose Konstanten nebeneinander und heißen
+      überall so, wie Level 1 sie braucht
 - [ ] Kampfsystem und Level-System zusammenführen
+- [ ] Übergänge zwischen den Leveln
+- [ ] Spielstand: welches Level ist frei? (Crew, Bestzeit und Rekord liegen
+      schon im `localStorage`, das Muster steht also)
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
@@ -90,11 +101,11 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
 - [ ] Bildschirmerschütterung und Treffer-Effekte feiner abstimmen
+- [ ] Die Möbel in den Räumen wiederholen sich noch — die Wände nicht mehr
 
 ---
 
@@ -110,3 +121,17 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] **Cutscene am Ende von Level 1: der Direktor wird gepackt**
 - [x] Bewegung mit Beschleunigung und Bremsung statt an/aus
 - [x] GitHub Pages läuft
+- [x] **Story-Text am Anfang** — Intro im Klassenzimmer, überspringbar
+- [x] **Verstecken in Spinden** inklusive Nahaufnahme durch den Sehschlitz
+- [x] **Schleichen** — langsamer, dafür halbe Sichtweite der Lehrer
+- [x] **Türen und Geräusche** — Werfen lockt Lehrer weg, das Handy verrät Dich
+- [x] **Mehr Fundstücke** — Zettel grenzen erst die Etage, dann den Raum ein
+- [x] **Direktor als Patrouille**, wechselt die Etagen und folgt Dir die Treppe hoch
+- [x] **Eigene Raumstile** — sieben Sorten Wand, Deko und Schild
+- [x] **Zwei Spielarten** — Schlüssel im Raum oder am Gürtel des Hausmeisters
+- [x] **Die Uhr** — um 17:30 schließt der Hausmeister endgültig ab
+- [x] **Die dunkle Etage** und Stromausfälle, dazu Taschenlampe mit Akku
+- [x] **Zweiter Ausgang** — das Fenster im Erdgeschoss, Brecheisen nötig
+- [x] **Zeitbonus** — Punkteabrechnung am Ende, Rekord bleibt gespeichert
+- [x] **Lehrer machen Pausen und schauen sich um** statt stumpf hin und her
+- [x] **Fairer Neustart nach dem Erwischtwerden** — die Treppe weg vom Fänger
