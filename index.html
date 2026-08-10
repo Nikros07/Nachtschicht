@@ -135,7 +135,8 @@ const TUNE = {
   /* (2h) DIE UHR - um halb sechs schliesst der Hausmeister endgueltig ab */
   startMinute:  16*60+40,
   endMinute:    17*60+30,
-  levelSekunden:  240,     // Echtzeit bis dahin
+  levelSekunden:  165,     // Echtzeit bis dahin (war 240 - viel zu grosszuegig)
+  zeitstrafe:      14,     // so viele Sekunden kostet dich ein Erwischtwerden
 
   /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
   chefTempo:       19,
@@ -440,29 +441,44 @@ const STIL = {
 };
 
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste','spind'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
   { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
   { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch','regal'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
   { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
   { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel','kiste'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
 ];
 const AUSGANG = { e:0, x:648 };
 
-/* Was die Jungs dir waehrend des Levels schreiben. Jede Nachricht laesst
-   das Handy vibrieren - und das hoert man. */
-const NACHRICHTEN = [
-  { t:  9, von:'MAX FERDI', txt:'alter wo bleibst du' },
-  { t: 26, von:'DIE JUNGS', txt:'wir sind schon am spaeti' },
-  { t: 44, von:'MAX FERDI', txt:'ich sitz auch noch fest lol' },
-  { t: 62, von:'DIE JUNGS', txt:'ohne euch faengt nix an' },
-  { t: 80, von:'MAX FERDI', txt:'ich hau ab durchs fenster' },
-  { t: 99, von:'DIE JUNGS', txt:'letzter macht das licht aus' },
-  { t:118, von:'MAX FERDI', txt:'beeil dich mann' },
+/* Nachrichten haengen jetzt an dem, was du TUST, nicht an der Uhr.
+   Vorher kam die letzte erst nach 118 Sekunden - bei einem schnellen
+   Lauf hast du die halbe Story nie gesehen. */
+const NACHRICHTEN = {
+  start:     [{von:'MAX FERDI', txt:'alter wo bleibst du'}],
+  raum:      [{von:'DIE JUNGS', txt:'wir sind schon am spaeti'},
+              {von:'MAX FERDI', txt:'ich sitz auch noch fest lol'}],
+  zettel:    [{von:'MAX FERDI', txt:'schau im lehrerzimmer, da liegt immer was'},
+              {von:'DIE JUNGS', txt:'ohne euch faengt nix an'}],
+  etage:     [{von:'MAX FERDI', txt:'ich hau ab durchs fenster'},
+              {von:'DIE JUNGS', txt:'letzter macht das licht aus'}],
+  erwischt:  [{von:'MAX FERDI', txt:'war das eben ein schrei'},
+              {von:'DIE JUNGS', txt:'lebst du noch'}],
+  schluessel:[{von:'MAX FERDI', txt:'SAG DASS DU DEN SCHLUESSEL HAST'}],
+  knapp:     [{von:'DIE JUNGS', txt:'gleich schliesst der laden'},
+              {von:'MAX FERDI', txt:'beeil dich mann'}],
+};
+const pick = a => a[Math.floor(Math.random()*a.length)];
+/* Notizen, die man beim Durchsuchen findet - reine Welt, kein Nutzen. */
+const NOTIZEN = [
+  'ZETTEL: NACHSITZEN BIS 16:30 - UNTERSCHRIFT FEHLT',
+  'ZETTEL: KLASSENFAHRT ABGESAGT. SCHON WIEDER.',
+  'ZETTEL: HAUSMEISTER SUCHT SEINEN ZWEITSCHLUESSEL',
+  'ZETTEL: WER DAS LIEST SCHULDET MIR ZEHN EURO',
+  'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
 ];
 
 /* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
@@ -505,7 +521,8 @@ function neuesSpiel(){
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
     lampe:false, akku:TUNE.akkuStart, stumm:false,
-    chat:[], naechsteNachricht:0, vibriert:0,
+    chat:[], vibriert:0, genutzt:{}, startNachricht:false, knappNachricht:false,
+    funde:[], boost:0, skipT:0,
     wurf:null, wurfAbkuehlung:0,
     minute:TUNE.startMinute, zeitWarnung:false,
     lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
@@ -538,7 +555,15 @@ function neuesSpiel(){
     raum.moebel.forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
   for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
     [frei[i],frei[j]]=[frei[j],frei[i]]; }
-  S.zettel=frei.slice(0,TUNE.zettelAnzahl).map((f,i)=>({...f,stufe:i+1,gefunden:false}));
+  /* Keine feste Stufe mehr. Entscheidend ist, in welcher Reihenfolge du
+     sie FINDEST - vorher war in 47 Prozent der Runden der Etagenhinweis
+     wertlos, weil der Raumhinweis zuerst auf dem Weg lag. */
+  S.zettel=frei.slice(0,TUNE.zettelAnzahl).map(f=>({...f,gefunden:false}));
+
+  /* Kleine Funde, damit sich Durchsuchen ueberhaupt lohnt. */
+  const rest=frei.slice(TUNE.zettelAnzahl);
+  S.funde=rest.slice(0,5).map((f,i)=>({...f,
+    art:['akku','akku','energie','notiz','notiz'][i], gefunden:false }));
 
   /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
      weit und gibt nicht so schnell auf wie die Lehrer. */
@@ -563,6 +588,7 @@ neuesSpiel();
    ========================================================================== */
 const keys={};
 let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false, schleichAn=false;
+let aktionGehalten=false;
 let sprungPuffer=[], aktionPuffer=[];
 
 function druckSprung(){
@@ -665,7 +691,7 @@ addEventListener('keydown',e=>{
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
-  if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); druckAktion(); }
+  if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); schleichAn=true; }
   if(e.code==='KeyQ'){ e.preventDefault(); lampeSchalten(); }
   if(e.code==='KeyH'){ e.preventDefault(); S.stumm=!S.stumm;
@@ -680,9 +706,10 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
   if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
   if(['ShiftLeft','ShiftRight'].includes(e.code)) schleichAn=false;
+  if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false;
 });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=aktionGehalten=false; });
 
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
@@ -704,6 +731,21 @@ if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); remove
    ========================================================================== */
 const raumBei=(e,x)=>RAEUME.findIndex(r=>r.e===e && Math.abs(r.x-x)<12);
 const spindBei=(e,x)=>SPINDE.findIndex(s=>s.e===e && Math.abs(s.x-x)<TUNE.spindReichweite);
+/* ---- Nachricht ausloesen. Jede Kategorie hat mehrere Zeilen, jede
+   wird nur einmal benutzt, damit sich nichts wiederholt. ---- */
+function nachricht(art){
+  const liste=NACHRICHTEN[art]; if(!liste) return;
+  S.genutzt=S.genutzt||{}; S.genutzt[art]=S.genutzt[art]||0;
+  if(S.genutzt[art]>=liste.length) return;
+  const n=liste[S.genutzt[art]++];
+  S.chat.push({...n,alter:0});
+  if(S.chat.length>3) S.chat.shift();
+  if(S.stumm){ piep(200,.02,'sine',.01); return; }
+  /* Vibration ist laut - genau das ist der Preis fuers Mithoeren. */
+  S.vibriert=.9; rauschen(.16,.05);
+  if(S.modus==='spiel'&&S.imSpind<0) laerm(S.x,S.etage,TUNE.vibrationWeite);
+}
+
 /* ---- Handy ---- */
 function lampeSchalten(){
   if(S.modus!=='spiel'&&S.modus!=='raum') return;
@@ -817,18 +859,11 @@ function update(dt){
   if(S.lampe){ S.akku=Math.max(0,S.akku-TUNE.akkuProSek*dt);
     if(S.akku<=0){ S.lampe=false; meldung('AKKU LEER',1.6); SFX.nichts(); } }
 
-  /* Nachrichten von den Jungs - und die Vibration, die dich verraet */
-  while(S.naechsteNachricht<NACHRICHTEN.length && S.zeit>=NACHRICHTEN[S.naechsteNachricht].t){
-    const n=NACHRICHTEN[S.naechsteNachricht++];
-    S.chat.push({...n,alter:0});
-    if(S.chat.length>3) S.chat.shift();
-    if(S.stumm){ piep(200,.02,'sine',.01); }
-    else {
-      S.vibriert=.9; rauschen(.16,.05);
-      if(S.modus==='spiel'&&S.imSpind<0) laerm(S.x,S.etage,TUNE.vibrationWeite);
-    }
-  }
+  /* Erste Nachricht kurz nach dem Start, spaeter nur noch per Ereignis */
+  if(!S.startNachricht && S.zeit>5){ S.startNachricht=true; nachricht('start'); }
+  if(!S.knappNachricht && S.minute>=TUNE.endMinute-18){ S.knappNachricht=true; nachricht('knapp'); }
   for(const c of S.chat) c.alter+=dt;
+  if(S.boost>0) S.boost-=dt;
 
   /* Geworfener Gegenstand fliegt und macht beim Aufschlag Laerm */
   if(S.wurf){
@@ -856,7 +891,8 @@ function update(dt){
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
   S.schleicht = schleichAn && S.amBoden;
-  const hoechst = TUNE.gehTempo*(S.schleicht?TUNE.schleichTempo:1)*tempoBonus();
+  const hoechst = TUNE.gehTempo*(S.schleicht?TUNE.schleichTempo:1)
+                *tempoBonus()*(S.boost>0?1.35:1);
   const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
   if(richtung){
     S.vx += richtung*TUNE.beschleunigung*kontrolle*dt;
@@ -909,11 +945,11 @@ function update(dt){
   const runterAn = !!(keys['ArrowDown'] || keys['KeyS']);
   if(treppe && hochAn && S.etage < BODEN.length-1){
     S.etage++; S.y=BODEN[S.etage]; S.vy=0; hochAn=false;
-    SFX.landen(); meldung('ETAGE '+(S.etage+1),1);
+    SFX.landen(); meldung('ETAGE '+(S.etage+1),1); nachricht('etage');
   } else if(treppe && runterAn && S.etage > 0){
     S.etage--; S.y=BODEN[S.etage]; S.vy=0;
     keys['ArrowDown']=false; keys['KeyS']=false;
-    SFX.landen(); meldung('ETAGE '+(S.etage+1),1);
+    SFX.landen(); meldung('ETAGE '+(S.etage+1),1); nachricht('etage');
   }
 
   /* Aktion: Ausgang, Tuer oder Spind */
@@ -945,9 +981,11 @@ function update(dt){
 
 /* ---- Raum betreten und verlassen ---- */
 function betreteRaum(i){
+  const ersterRaum=S.entdeckt.size===0;
   S.raum=i; S.modus='raum'; S.raumX=W/2; S.suchT=0; S.suchZiel=-1;
   S.entdeckt.add(i); SFX.tuer(); S.blende=1;
   meldung(RAEUME[i].name,1.4);
+  if(ersterRaum) nachricht('raum');
 }
 function verlasseRaum(){
   S.modus='spiel'; S.raum=null; SFX.tuer(); S.blende=1; S.vx=0;
@@ -972,15 +1010,23 @@ function imRaum(dt){
     if(S.suchT<=0){
       S.durchsucht.add(S.raum+':'+S.suchZiel);
       const zettel=S.zettel.find(z=>z.raum===S.raum&&z.moebel===S.suchZiel&&!z.gefunden);
+      const fund=S.funde.find(f=>f.raum===S.raum&&f.moebel===S.suchZiel&&!f.gefunden);
       if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+        nachricht('schluessel');
       } else if(zettel){
         zettel.gefunden=true;
-        S.hinweisStufe=Math.max(S.hinweisStufe,zettel.stufe);
+        S.hinweisStufe++;                     // erster Fund = Etage, zweiter = Raum
         SFX.fund(); S.blitz=.5;
-        meldung(zettel.stufe===1?'ZETTEL GEFUNDEN':'NOTIZ GEFUNDEN',1.6);
-        zeigeHinweis(zielText(zettel.stufe),4);
+        meldung(S.hinweisStufe===1?'ZETTEL GEFUNDEN':'NOTIZ GEFUNDEN',1.6);
+        zeigeHinweis(zielText(S.hinweisStufe),4);
+        nachricht('zettel');
+      } else if(fund){
+        fund.gefunden=true; SFX.fund(); S.blitz=.35;
+        if(fund.art==='akku'){ S.akku=Math.min(100,S.akku+40); meldung('AKKU +40',1.6); }
+        else if(fund.art==='energie'){ S.boost=8; meldung('ENERGYDRINK - SCHNELLER',1.8); }
+        else { meldung(pick(NOTIZEN),2.6); }
       } else { SFX.nichts(); meldung('NICHTS DRIN',1); }
     }
     return;
@@ -1072,8 +1118,15 @@ function raumDeko(st,deckeY,bodenY){
 }
 
 function moebelPlaetze(r){
-  const start=78, abstand=(W-160)/Math.max(1,r.moebel.length-1);
-  return r.moebel.map((m,i)=>({ typ:m, x:start+i*abstand }));
+  const n=r.moebel.length;
+  const start=78, abstand=(W-160)/Math.max(1,n-1);
+  /* Feste, aber pro Raum unterschiedliche Verschiebung. Vorher standen
+     die Moebel in jedem der zehn Raeume exakt gleich. */
+  const saat=RAEUME.indexOf(r)+1;
+  return r.moebel.map((m,i)=>{
+    const versatz=((saat*37+i*61)%23)-11;
+    return { typ:m, x:Math.round(start+i*abstand+versatz) };
+  });
 }
 
 /* ---- Lehrer ---- */
@@ -1102,11 +1155,24 @@ function lehrerLogik(dt){
         /* Am Zielort schaut sich JEDER noch kurz um - das ist dein
            Zeitfenster, nicht nur beim Hausmeister. */
         L.abgelenkt=2.6; }
+    } else if(L.pause>0){
+      /* Stehenbleiben und sich umschauen. Ohne das laufen sie wie auf
+         Schienen und sind auf die langweilige Art berechenbar. */
+      L.pause-=dt;
+      if(!L.umgedreht && L.pause<L.pauseDauer*0.5){ L.umgedreht=true; L.v*=-1; }
+      if(L.pause<=0){ L.umgedreht=false; }
     } else {
       if(L.abgelenkt>0) L.abgelenkt-=dt;
       L.x+=L.v*tempo*dt;
-      if(L.x<L.von){ L.x=L.von; L.v=1; }
-      if(L.x>L.bis){ L.x=L.bis; L.v=-1; }
+      /* dreht=false am Rand: dort ist die Richtung schon korrigiert.
+         Wuerde die Pause sie nochmal umdrehen, liefe er sofort wieder
+         aus dem Bereich und pausierte endlos - 92 Prozent Stillstand. */
+      const halt=(dreht)=>{ L.pauseDauer=0.7+Math.random()*1.1;
+                            L.pause=L.pauseDauer; L.umgedreht=!dreht; };
+      if(L.x<L.von){ L.x=L.von; L.v=1; halt(false); }
+      else if(L.x>L.bis){ L.x=L.bis; L.v=-1; halt(false); }
+      /* Und ab und zu mittendrin kurz zurueckschauen */
+      else if(Math.random()<0.05*dt) halt(true);
       /* Der Direktor wechselt regelmaessig die Etage */
       if(L.chef){
         L.wechselT-=dt;
@@ -1146,7 +1212,13 @@ function lehrerLogik(dt){
 function gefangen(L){
   if(S.unverwundbar>0) return;
   S.hp--; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
-  S.faenger = L&&L.chef ? 'DER DIREKTOR HAT DICH' : 'EIN LEHRER HAT DICH';
+  /* Ein Fehler kostet nicht nur ein Herz, sondern auch Zeit. Damit
+     bekommt die Uhr ueberhaupt erst Zaehne. */
+  S.zeit+=TUNE.zeitstrafe;
+  nachricht('erwischt');
+  S.faenger = L&&L.chef ? 'DER DIREKTOR HAT DICH'
+            : L&&L.hausmeister ? 'DER HAUSMEISTER HAT DICH'
+            : 'EIN LEHRER HAT DICH';
   S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; });
 }
 function weiterNachFang(){
@@ -1204,7 +1276,21 @@ function starteCutscene(){
   S.maxX=W+40; S.maxDa=false;
   SFX.tuer(); zeigeHinweis('',0);
 }
+/* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
+function levelGeschafft(){
+  speichereCrew('MAX FERDI');
+  const best=ladeBest();
+  if(best===null||S.zeit<best){ S.neueBestzeit=true;
+    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+}
+
 function cutscene(dt){
+  /* E halten ueberspringt die ganze Szene. 35 Sekunden beim fuenften
+     Anlauf sind eine Strafe, keine Belohnung. */
+  if(aktionGehalten){
+    S.skipT+=dt;
+    if(S.skipT>0.7){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); SFX.gewonnen(); return; }
+  } else S.skipT=Math.max(0,S.skipT-dt*2);
   S.szeneT+=dt;
   const s=SZENEN[S.szene];
   if(S.szene<=1) S.dirX += (S.x+30 - S.dirX)*Math.min(1,3*dt);
@@ -1225,10 +1311,7 @@ function cutscene(dt){
     S.szene++; S.szeneT=0;
     if(S.szene===SZENE_DRAUSSEN) S.blende=1;          // Schnitt nach draussen
     if(S.szene>=SZENEN.length){
-      S.modus='ende'; S.gewonnen=true; SFX.gewonnen();
-      const best=ladeBest();
-      if(best===null||S.zeit<best){ S.neueBestzeit=true;
-        try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+      S.modus='ende'; S.gewonnen=true; SFX.gewonnen(); levelGeschafft();
     }
   }
 }
