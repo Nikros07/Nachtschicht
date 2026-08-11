@@ -225,9 +225,40 @@ Objekt in `LEVELS` eintragen, `typ:'schule'` und `fertig:true` setzen, fertig.
 | `intro` · `szenen` | Anfang und Abspann, `txt:null` holt Text aus `introVariante` |
 | `nachrichten` · `notizen` | Was die Jungs schreiben, was rumliegt |
 | `freischaltung` | Wer am Ende dazustößt (Eintrag aus `CREW`) |
+| `gegner` | Wer sich prügelt. Ohne dieses Feld gibt es keinen Kampf |
 | `steuerung` · `kurz` · `untertitel` | Was die Karte über die Station anzeigt |
 
 Die Raumstile (`STIL`) sind levelunabhängig — jedes Gebäude darf sie benutzen.
+
+## Der Kampf
+
+Regler stehen in `KAMPF`, Gegnerarten in `GEGNER_ART`. Ein Level schaltet den
+Kampf ein, indem es eine `gegner`-Liste mitbringt — Level 1 hat keine, dort
+läuft nichts davon.
+
+Jeder Gegner läuft immer denselben Kreis:
+
+```
+lauf → aus (holt aus) → schlag (gefährlich) → offen (angreifbar)
+  ↑                                              │
+  └────────────── block (undurchdringlich) ←──────┘
+```
+
+Vier Regeln machen den Unterschied zum alten Brawler:
+
+- **Blocken.** Wer blockt, nimmt keinen Schaden — kann dafür aber auch nicht
+  schlagen. Deckung kostet ihn Tempo.
+- **Fehlschläge kosten.** Ein Treffer gibt Dir nach 0,26 s die Kontrolle
+  zurück, ein Schlag ins Leere erst nach 0,62 s, einer in einen Block nach
+  0,80 s. Draufhauen ohne hinzuschauen ist teurer, als es bringt.
+- **Kontern ist Timing.** Nur im **letzten Drittel** des Ausholens, kurz
+  bevor sein Schlag kommt. Der Balken über seinem Kopf leuchtet auf, wenn das
+  Fenster offen ist. Gepanzerte (`brocken`) lassen sich gar nicht kontern.
+- **Ausdauer.** Vier Schläge, dann bist Du außer Atem. Sie erholt sich erst,
+  wenn Du kurz die Finger stillhältst.
+
+`E` ist die Kampftaste. Steht jemand vor Dir, schlägt `E` zu — sonst öffnet es
+wie gewohnt Türen und durchsucht Möbel.
 
 ## Spielstand
 
@@ -248,6 +279,25 @@ python -m http.server 5173
 ```
 
 Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+
+## Testen
+
+```bash
+npm install && npx playwright install chromium
+npm test
+```
+
+Der Rauchtest startet `index.html` in einem echten Browser, spielt einen
+Durchlauf und prüft die Regeln, die man beim Draufschauen nicht sieht: welche
+Aufsicht in welcher Spielart im Haus steht, wann ein Konter zählt, was ein
+Fehlschlag kostet, ob ein alter Spielstand übernommen wird. Jeder
+Konsolenfehler lässt ihn scheitern. Er läuft auch in der CI bei jedem Push.
+
+Steckt schon ein Chromium auf der Platte, geht es ohne Download:
+
+```bash
+CHROME_PATH=/pfad/zu/chrome npm test
+```
 
 ## Technisch
 

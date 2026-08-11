@@ -1,0 +1,13 @@
+{
+  "name": "nachtschicht",
+  "version": "0.9.0",
+  "private": true,
+  "description": "Party Game drunk. Ein Pixel-Art-Spiel im Browser ueber eine Nacht, die aus dem Ruder laeuft.",
+  "scripts": {
+    "test": "node test/rauchtest.js",
+    "start": "python3 -m http.server 5173"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

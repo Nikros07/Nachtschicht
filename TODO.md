@@ -30,6 +30,22 @@ starten. Ein Level der Bauart `schule` braucht nur noch ein Datenobjekt; alles
 andere braucht vorher seine eigene Spielart.
 
 - [ ] **Level 2 — Vorglühen.** Enge Wohnung, erste Kämpfe, Pegel-System wird eingeführt
+
+      Technisch steht alles bereit: das Level ist ein Datenobjekt, der Kampf
+      hängt an einer `gegner`-Liste. **Was fehlt, sind Entscheidungen, die
+      nicht am Code hängen** — und die laut dieser Liste vom Nick kommen:
+
+      - Was macht der **Pegel** eigentlich? Steigt er durch Trinken, sinkt er
+        mit der Zeit? Hilft er (mutiger, mehr Schaden) oder stört er
+        (Steuerung schwimmt, Sicht schwankt)? Wahrscheinlich beides — aber ab
+        welchem Punkt kippt es?
+      - **Wer** ist auf der Party, und wer von den Jungs kommt hier dazu?
+      - Was ist das **Ziel** in der Wohnung? Rauskommen? Jemanden mitnehmen?
+      - Warum wird überhaupt geprügelt — wer fängt an?
+
+      Solange das offen ist, wäre ein gebautes Level 2 geraten. Deshalb steht
+      es auf der Karte als "wird noch gebaut" und nicht als halbe Fassung.
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,14 +83,26 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 ## Kampfsystem (aus dem alten Modus übernehmen und härter machen)
 
-Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
+Das Kampfsystem liegt in `runner.html`. **Achtung:** die Datei war eine Weile
+mit dem alten Schul-Prototyp überschrieben — wiederhergestellt aus `b5a76dd`.
 
-- [ ] Nahkampf, Konter, Combos übernehmen
-- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
-- [ ] **Ausdauer** — nicht unbegrenzt schlagen können
-- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+- [x] **Nahkampf und Konter übernommen** — steht in `index.html` unter `KAMPF`
+      und `GEGNER_ART`. Ein Level schaltet es mit einer `gegner`-Liste ein
+- [x] **Gegner können blocken** — eigener Zustand `block`, Treffer prallen ab.
+      Wer blockt, kann nicht schlagen: Deckung kostet ihn Tempo
+- [x] **Fehlschläge bestrafen** — daneben 0,62 s Erholung statt 0,26 s, in
+      einen Block 0,80 s. Spammen kostet mehr, als es bringt
+- [x] **Konterfenster verkleinert** auf das letzte Drittel des Ausholens
+      (`KAMPF.konterFenster`). Der Balken über dem Gegner leuchtet auf,
+      wenn es offen ist — Gepanzerte bleiben rot und sind nicht konterbar
+- [x] **Ausdauer** — vier Schläge, dann ist außer Atem. Balken links unten
+- [ ] Combos: gezählt und angezeigt, aber sie **wirken noch nicht**.
+      Offen: was eine Combo eigentlich bringen soll (Schaden? Tempo?)
+- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere
+      Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      — braucht erst ein Level mit Boss
+- [ ] Kampf im Raum: drinnen steht die Zeit still, Räume sind weiter sicher.
+      Absichtlich so, aber für Level 5 (Club) vermutlich falsch
 
 ---
 

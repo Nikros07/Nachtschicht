@@ -166,6 +166,65 @@ const TUNE = {
   staub:         true,
 };
 
+/* ============================================================================
+   KAMPF - die Regler
+
+   Uebernommen aus dem alten Brawler (runner.html) und an den vier Stellen
+   haerter gemacht, die TODO.md verlangt:
+
+     1. Gegner koennen blocken - sie sind nicht dauerhaft angreifbar
+     2. Fehlschlaege bestrafen - danebenhauen kostet die doppelte Erholung
+     3. Konterfenster nur noch im letzten Drittel des Ausholens (war: ganz)
+     4. Ausdauer - man kann nicht unbegrenzt schlagen
+
+   Jeder Gegner laeuft immer denselben Kreis:
+
+     lauf -> aus (holt aus) -> schlag (gefaehrlich) -> offen (angreifbar)
+       ^                                                |
+       +---------------- block (undurchdringlich) <-----+
+
+   Der Kampf spielt auf einer Achse - Etage plus X, wie alles hier. Echte
+   Trefferzonen waeren Genauigkeit, die bei 320x180 niemand sieht.
+   ========================================================================== */
+const KAMPF = {
+  /* (K1) DEIN SCHLAG */
+  ausholen:      0.04,   // Vorlauf, bevor die Faust gefaehrlich wird
+  treffZeit:     0.11,   // wie lange sie es bleibt
+  erholung:      0.26,   // Pause nach einem Treffer
+  fehlErholung:  0.62,   // Pause nach einem Schlag ins Leere
+  abpraller:     0.80,   // Pause, wenn du in einen Block schlaegst
+  reichweite:      15,
+  rueckstoss:      20,   // so weit fliegt ein Getroffener
+  wumms:         0.07,   // so lange steht das Bild bei einem Treffer
+
+  /* (K2) AUSDAUER - ohne sie waere Schlagen umsonst */
+  ausdauer:       100,
+  proSchlag:       24,   // vier Schlaege, dann ist Schluss
+  erholtProSek:    34,
+  erholungPause: 0.55,   // so lange nach einem Schlag erholt sich nichts
+  ausserAtem:    1.30,   // Zwangspause, wenn sie ganz leer ist
+
+  /* (K3) KONTERN - Timing statt Tastendruecken */
+  konterFenster: 0.34,   // Anteil des Ausholens, ganz am Ende
+  konterSchaden:    9,   // ein Konter raeumt praktisch alles ab
+
+  /* (K4) IHRE SEITE */
+  fangDistanz:     13,   // ab hier trifft ihr Schlag
+  schaden:          1,
+  comboFenster:   3.4,
+};
+
+/* Gegnerarten. Ein neuer Typ ist ein Eintrag hier - alles andere ist
+   dieselbe Zustandsmaschine. panzer heisst: nicht konterbar. */
+const GEGNER_ART = {
+  schlaeger:{ hp:2, tempo:26, ausholen:0.46, schlag:0.16, offen:0.70,
+              reichweite:16, blockNeigung:0.30, blockDauer:0.90 },
+  brocken:  { hp:3, tempo:17, ausholen:0.69, schlag:0.20, offen:0.88,
+              reichweite:18, blockNeigung:0.50, blockDauer:1.30, panzer:true },
+  flitzer:  { hp:1, tempo:44, ausholen:0.33, schlag:0.13, offen:0.56,
+              reichweite:15, blockNeigung:0.15, blockDauer:0.60 },
+};
+
 /* ---- Palette ---- */
 const P = {
   ink:'#07060d', wand:'#1d2033', wandHell:'#2a2e46', boden:'#141726', bodenKante:'#3a3f5c',
@@ -304,6 +363,15 @@ const SPR = {
   ],
 
   /* Einrichtung */
+  /* Kampf. Du schlaegst nach rechts, sie nach links - wie ihre Sprites
+     ohnehin gedreht werden. */
+  schlag: ['..hhh...','.hsssh..','.sssss..','..sss...','..ttt...',
+           '.tttttts','k.ttt...','..ttt...','..ppp...','..p.p...','..p.p...','.pp.pp..','.kk..kk.'],
+  gegner:     [...KOPF,'..vvv..','.vvvvv.','k.vvv.k','..vvv..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  gegnerAus:  [...KOPF,'..vvv..','.vvvvv.','kv.vvv.','..vvv..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  gegnerHau:  ['..hhh...','.hsssh..','.sssss..','..sss...','..vvv...',
+               's.vvvvv.','..vvv...','..vvv...','..ppp...','..p.p...','..p.p...','.pp.pp..','.kk..kk.'],
+  gegnerBlock:[...KOPF,'..vvv..','kvvvvvk','kvvvvvk','..vvv..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
   spind:  ['uuuuuu','u....u','u..k.u','u....u','uuuuuu','u....u','u..k.u','u....u','uuuuuu','dddddd'],
   tisch:  ['zzzzzzzz','z......z','dd....dd','d......d','d......d','d......d'],
   regal:  ['zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','ddddddd'],
@@ -357,6 +425,14 @@ const SFX={
   gefangt:()=>{ glissando(400,80,.4,'sawtooth',.07); rauschen(.3,.08); },
   packen: ()=>{ rauschen(.12,.14); glissando(240,70,.2,'square',.08); },
   gewonnen:()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
+  /* Kampf */
+  schwung:()=>piep(150,.04,'sawtooth',.03),
+  klatsch:()=>{ rauschen(.07,.11); piep(120,.05,'square',.05); },
+  block:  ()=>{ piep(320,.05,'square',.045); piep(210,.06,'triangle',.03); },
+  ausholt:()=>piep(230,.05,'square',.028),
+  konter: ()=>{ piep(1046,.06); setTimeout(()=>piep(1568,.12),60); rauschen(.08,.09); },
+  ko:     ()=>{ glissando(300,60,.26,'sawtooth',.07); rauschen(.16,.07); },
+  leer:   ()=>piep(140,.12,'sine',.035),
 };
 const BASS=[98,0,0,0, 87,0,0,0, 73,0,0,0, 82,0,0,98];
 const BASS_JAGD=[147,147,0,175, 147,0,131,0, 117,117,0,131, 117,0,175,196];
@@ -754,6 +830,9 @@ function neuesSpiel(){
      traegt ihn am Guertel. Der ausgewuerfelte Raum oben hat trotzdem
      seinen Zweck: die Zettel meiden ihn. */
   if(S.variante==='hausmeister') S.schluesselRaum=-1;
+
+  /* Kampf nur in Leveln, die Gegner mitbringen */
+  S.kampf=neuerKampf();
 
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
 }
@@ -1184,9 +1263,12 @@ function update(dt){
     SFX.landen(); meldung('ETAGE '+(S.etage+1),1); nachricht('etage');
   }
 
-  /* Aktion: Ausgang, Tuer oder Spind */
+  /* Aktion: schlagen, Ausgang, Tuer oder Spind.
+     E ist die Kampftaste. Steht jemand vor dir, gilt das vor allem
+     anderen - waehrend einer Schlaegerei will niemand eine Tuer suchen. */
   while(aktionPuffer.length){
     aktionPuffer.shift();
+    if(S.kampf && gegnerNah()){ schlage(); continue; }
     const ri=raumBei(S.etage,S.x), si=spindBei(S.etage,S.x);
     const hm=S.lehrer.find(L=>L.hausmeister&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<14);
     if(amAusgang(S.x)){
@@ -1208,6 +1290,7 @@ function update(dt){
   }
 
   lehrerLogik(dt);
+  kampfLogik(dt);
   kamera(dt,false);
 }
 
@@ -1453,6 +1536,163 @@ function gefangen(L){
             : 'EIN LEHRER HAT DICH';
   S.lehrer.forEach(x=>{ x.jagd=0; x.verdacht=0; x.gesehenPiep=false; });
 }
+/* ==========================================================================
+   KAMPF - die Logik
+
+   Ein Level ohne gegner-Liste hat keinen Kampf: S.kampf bleibt null und
+   nichts hiervon laeuft. Level 1 ist so ein Level.
+   ========================================================================== */
+function neuerKampf(){
+  if(!LV.gegner||!LV.gegner.length) return null;
+  return {
+    gegner: LV.gegner.map((g,i)=>{
+      const art=GEGNER_ART[g.art]||GEGNER_ART.schlaeger;
+      return { ...art, ...g, nr:i, art:g.art||'schlaeger',
+               hp:g.hp||art.hp, maxHp:g.hp||art.hp,
+               st:'lauf', t:0, v:g.v||-1, stumpf:0, tot:false, weh:0 };
+    }),
+    schlagT:-99, schlagFrei:0, schlagTraf:false, letzterSchlag:-99,
+    ausdauer:KAMPF.ausdauer, ausserAtem:0,
+    combo:0, comboT:0,
+  };
+}
+/* Ist gerade jemand in Schlagreichweite? Danach entscheidet sich, ob E
+   zuschlaegt oder eine Tuer aufmacht. */
+function gegnerNah(){
+  const K=S.kampf; if(!K) return null;
+  let naechster=null, dist=1e9;
+  for(const o of K.gegner){
+    if(o.tot||o.e!==S.etage) continue;
+    const d=Math.abs(o.x-S.x);
+    if(d<KAMPF.reichweite+6 && d<dist){ dist=d; naechster=o; }
+  }
+  return naechster;
+}
+/* Schlagen. Die Erholung wird gleich als Fehlschlag angesetzt und erst
+   beim Treffer verkuerzt - dadurch kostet Danebenhauen von allein mehr,
+   ohne dass irgendwo ein Sonderfall dafuer stehen muss. */
+function schlage(){
+  const K=S.kampf; if(!K) return;
+  if(S.t<K.schlagFrei||K.ausserAtem>0) return;         // noch nicht wieder dran
+  if(K.ausdauer<KAMPF.proSchlag){
+    K.ausserAtem=KAMPF.ausserAtem; meldung('AUSSER ATEM',1.2); SFX.leer(); return;
+  }
+  K.ausdauer-=KAMPF.proSchlag;
+  K.schlagT=S.t; K.letzterSchlag=S.t; K.schlagTraf=false;
+  K.schlagFrei=S.t+KAMPF.ausholen+KAMPF.treffZeit+KAMPF.fehlErholung;
+  SFX.schwung();
+}
+const schlaegtGerade=()=>{
+  const K=S.kampf; if(!K) return false;
+  const alter=S.t-K.schlagT;
+  return alter>=KAMPF.ausholen && alter<=KAMPF.ausholen+KAMPF.treffZeit;
+};
+
+function kampfLogik(dt){
+  const K=S.kampf; if(!K) return;
+
+  /* Ausdauer erholt sich erst, wenn man kurz die Finger stillhaelt */
+  if(K.ausserAtem>0){
+    K.ausserAtem-=dt;
+    if(K.ausserAtem<=0) meldung('WIEDER DA',1);
+  } else if(S.t-K.letzterSchlag>KAMPF.erholungPause){
+    K.ausdauer=Math.min(KAMPF.ausdauer,K.ausdauer+KAMPF.erholtProSek*dt);
+  }
+  if(K.comboT>0){ K.comboT-=dt; if(K.comboT<=0) K.combo=0; }
+
+  /* ---- Deine Faust ---- */
+  if(schlaegtGerade()&&!K.schlagTraf){
+    for(const o of K.gegner){
+      if(o.tot||o.e!==S.etage) continue;
+      if(Math.abs(o.x-S.x)>KAMPF.reichweite) continue;
+      if(Math.sign(o.x-S.x)!==S.blick&&Math.abs(o.x-S.x)>4) continue;  // nach vorn
+      K.schlagTraf=true;
+      trefferAn(o);
+      break;
+    }
+  }
+
+  /* ---- Ihre Seite ---- */
+  for(const o of K.gegner){
+    if(o.tot) continue;
+    if(o.weh>0) o.weh-=dt;
+    if(o.stumpf>0){ o.stumpf-=dt; continue; }
+    const aufDerEtage=o.e===S.etage;
+    const d=aufDerEtage?o.x-S.x:1e9;
+
+    if(o.st==='aus'){
+      o.t-=dt;
+      if(o.t<=0){ o.st='schlag'; o.t=o.schlag; }
+    } else if(o.st==='schlag'){
+      o.t-=dt;
+      /* Der Schlag trifft einmal, im Moment seines Beginns */
+      if(!o.trafSchon&&Math.abs(d)<KAMPF.fangDistanz&&S.imSpind<0){
+        o.trafSchon=true; getroffen(o);
+      }
+      if(o.t<=0){ o.st='offen'; o.t=o.offen; o.trafSchon=false; }
+    } else if(o.st==='offen'){
+      /* Offen stehen ist sein Risiko - danach deckt er sich oft erst mal */
+      o.t-=dt;
+      if(o.t<=0){
+        if(Math.random()<o.blockNeigung){ o.st='block'; o.t=o.blockDauer; }
+        else o.st='lauf';
+      }
+    } else if(o.st==='block'){
+      /* Wer blockt, kann nicht schlagen. Deckung kostet ihn Tempo -
+         das ist der Preis dafuer, dass sie nicht dauernd offen stehen. */
+      o.t-=dt;
+      if(o.t<=0) o.st='lauf';
+    } else {
+      o.v=Math.sign(-d)||o.v;
+      if(!aufDerEtage||Math.abs(d)>o.reichweite){
+        if(aufDerEtage) o.x-=Math.sign(d)*o.tempo*dt;
+        o.x=Math.max(14,Math.min(LEVEL_B-14,o.x));
+      } else { o.st='aus'; o.t=o.ausholen; SFX.ausholt(); }
+    }
+  }
+}
+/* Du triffst ihn */
+function trefferAn(o){
+  const K=S.kampf;
+  if(o.st==='block'){
+    /* Abgeprallt. Der lange Stillstand danach ist die Strafe fuers
+       Draufhauen ohne hinzuschauen. */
+    K.schlagFrei=S.t+KAMPF.abpraller;
+    o.x+=Math.sign(o.x-S.x)*4;
+    SFX.block(); S.ruettel=2; meldung('GEBLOCKT',.9);
+    return;
+  }
+  /* Kontern: treffen, waehrend er ausholt - aber nur im letzten Drittel,
+     kurz bevor sein Schlag kommt. Gepanzerte lassen sich nicht kontern. */
+  const konter = o.st==='aus' && !o.panzer && o.t<=o.ausholen*KAMPF.konterFenster;
+  o.hp -= konter?KAMPF.konterSchaden:1;
+  o.st='offen'; o.t=o.offen; o.trafSchon=false;   // sein Schlag ist unterbrochen
+  o.x += Math.sign(o.x-S.x)*KAMPF.rueckstoss*(o.hp>0?.5:1);
+  o.x  = Math.max(14,Math.min(LEVEL_B-14,o.x));
+  o.weh=.22;
+  K.schlagFrei=S.t+KAMPF.ausholen+KAMPF.treffZeit+KAMPF.erholung;   // Treffer verkuerzt
+  S.ruettel=konter?6:4; S.blitz=konter?.5:.15;
+  staub(o.x,BODEN[o.e],konter?9:5);
+  if(o.hp>0){ o.stumpf=.3; SFX.klatsch(); }
+  else {
+    o.tot=true; K.combo++; K.comboT=KAMPF.comboFenster;
+    if(konter) SFX.konter(); else SFX.ko();
+    meldung(konter?'KONTER':'UMGEHAUEN',1.2);
+  }
+}
+/* Er trifft dich */
+function getroffen(o){
+  if(S.unverwundbar>0||S.modus!=='spiel') return;
+  S.hp--; S.unverwundbar=TUNE.unverwundbarMs/1000;
+  S.ruettel=6; S.blitz=.4; SFX.gefangt();
+  S.vx=Math.sign(S.x-o.x)*90;
+  const K=S.kampf; if(K){ K.combo=0; K.schlagFrei=S.t+.35; }
+  /* Ein Treffer beendet die Runde nicht - erst das letzte Herz. Sonst
+     waere jede Schlaegerei nach dem ersten Fehler vorbei. */
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false;
+    S.faenger=LV.kampfVerloren||'SIE WAREN ZU VIELE'; }
+}
+
 function weiterNachFang(){
   if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; return; }
   S.modus='spiel'; S.unverwundbar=TUNE.unverwundbarMs/1000;
@@ -1789,6 +2029,8 @@ function zeichneKorridor(){
     ctx.globalAlpha=1;
   }
 
+  zeichneGegner();
+
   /* Spieler */
   const blinkt = S.unverwundbar>0 && Math.floor(S.t*16)%2===0;
   if(!blinkt&&S.modus!=='cutscene'&&S.imSpind<0) zeichneSpieler(S.x,S.y);
@@ -1908,9 +2150,46 @@ function zeichneKorridor(){
   }
 }
 
+/* Die Gegner. Ihr Zustand muss man ihnen ansehen koennen - sonst ist
+   Kontern raten statt lesen. */
+function zeichneGegner(){
+  const K=S.kampf; if(!K) return;
+  for(const o of K.gegner){
+    if(o.tot) continue;
+    const by=BODEN[o.e], fern=o.e!==S.etage;
+    ctx.globalAlpha=fern?.3:1;
+    const rows = o.st==='block'  ? SPR.gegnerBlock
+               : o.st==='schlag' ? SPR.gegnerHau
+               : o.st==='aus'    ? SPR.gegnerAus
+               : SPR.gegner;
+    const tint = o.weh>0&&Math.floor(S.t*24)%2===0 ? P.weiss : null;
+    if(!fern) outline(rows,o.x,by-13,1,.6);
+    if(o.v>0) spriteFlip(rows,o.x,by-13,1,tint); else sprite(rows,o.x,by-13,1,tint);
+    if(fern){ ctx.globalAlpha=1; continue; }
+
+    /* Wie viel er noch aushaelt */
+    for(let i=0;i<o.maxHp;i++){
+      ctx.fillStyle = i<o.hp ? (o.panzer?P.dim:P.rot) : '#2a2440';
+      ctx.fillRect(o.x-2+i*4,by-18,3,2);
+    }
+    /* Das Ausholen als Balken - und das Konterfenster leuchtet auf.
+       Gepanzerte lassen sich nicht kontern, ihr Balken bleibt rot. */
+    if(o.st==='aus'){
+      const rest=o.t/o.ausholen, jetzt=rest<=KAMPF.konterFenster&&!o.panzer;
+      ctx.fillStyle='#000a'; ctx.fillRect(o.x-4,by-25,16,4);
+      ctx.fillStyle=jetzt?P.gold:P.rot;
+      ctx.fillRect(o.x-3,by-24,Math.round(14*(1-rest)),2);
+      if(jetzt&&Math.floor(S.t*10)%2===0) text('E',o.x+2,by-32,P.gold);
+    }
+    if(o.st==='block'&&Math.floor(S.t*4)%2===0)
+      text('DECKUNG',o.x+3-textW('DECKUNG')/2,by-25,P.neon2);
+    ctx.globalAlpha=1;
+  }
+}
 function zeichneSpieler(x,y){
   let rows;
-  if(!S.amBoden) rows = S.vy<0?SPR.sprung:SPR.fall;
+  if(schlaegtGerade()||(S.kampf&&S.t-S.kampf.schlagT<KAMPF.ausholen)) rows=SPR.schlag;
+  else if(!S.amBoden) rows = S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows = SPR.geh[Math.floor(S.gehPhase)%4];
   else rows = SPR.steh;
   outline(rows,x,y-13,1,.6);
@@ -2037,6 +2316,20 @@ function hud(){
   if(S.stumm) text('STUMM',ax+18,ay,P.dunkel);
   if(S.vibriert>0&&Math.floor(S.t*20)%2===0) text('BZZZ',ax+18,ay-8,P.neon);
 
+  /* Ausdauer - nur in Leveln, in denen geschlagen wird. Ohne Anzeige
+     waere die Grenze eine unsichtbare Regel statt einer Entscheidung. */
+  if(S.kampf){
+    const K=S.kampf, bx=6, by=H-28, bw=34;
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,5);
+    ctx.fillStyle=K.ausserAtem>0?P.rot:(K.ausdauer<KAMPF.proSchlag?P.gold:P.gruen);
+    ctx.fillRect(bx,by,Math.round(bw*K.ausdauer/KAMPF.ausdauer),3);
+    /* Wo eine Schlagladung endet - man soll sehen, wie viele noch drin sind */
+    ctx.fillStyle='#0008';
+    for(let s=KAMPF.proSchlag;s<KAMPF.ausdauer;s+=KAMPF.proSchlag)
+      ctx.fillRect(bx+Math.round(bw*s/KAMPF.ausdauer),by,1,3);
+    if(K.ausserAtem>0&&Math.floor(S.t*6)%2===0) text('AUSSER ATEM',bx+bw+4,by-1,P.rot);
+    if(K.combo>1) text(K.combo+'ER',W-textW(K.combo+'ER')-6,H-28,P.gold);
+  }
   /* Schleichen */
   if(S.schleicht) text('LEISE',6,H-12,P.neon2);
   /* Abkuehlungen */
@@ -2066,7 +2359,8 @@ function hud(){
   if(S.modus==='spiel'){
     const ri=raumBei(S.etage,S.x);
     let t=null;
-    if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
+    if(S.kampf&&gegnerNah()) t='E  SCHLAGEN';
+    else if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
     else if(ri>=0) t='E  REIN';
     else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? 'W  HOCH' : 'S  RUNTER';
     if(t&&Math.floor(S.t*3)%2===0) textC(t,H-42,P.gold);

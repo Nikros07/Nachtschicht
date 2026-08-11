@@ -1,0 +1,28 @@
+name: Rauchtest
+
+# Das Spiel ist eine einzige HTML-Datei ohne Bauschritt - dafuer laeuft der
+# Test im echten Browser. Er startet index.html, spielt einen Durchlauf und
+# prueft die Regeln, die man beim Draufschauen nicht sieht.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rauchtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install --no-audit --no-fund
+
+      # Nur Chromium - mehr braucht der Test nicht.
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm test
