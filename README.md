@@ -161,6 +161,52 @@ Bestzeit zählen trotzdem.
 
 ---
 
+---
+
+## Level 2 — Bei Moritz
+
+21:10. Vorglühen bei Moritz. Die Bahn fährt um **22:00**, vier Leute sitzen seit
+zwei Stunden rum und keiner macht Anstalten loszugehen. Also machst Du es.
+
+**Kein zweites Schleich-Level.** In Level 1 geht es darum, nicht gesehen zu
+werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
+
+### Vier Aufgaben
+
+| Aufgabe | Wie |
+|:--|:--|
+| **Deine Jacke finden** | Möbel durchsuchen — sie liegt jede Runde woanders |
+| **Moritz' Ausweis finden** | Auch versteckt. Ohne kommt er nirgends rein |
+| **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
+| **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
+
+### Der Pegel
+
+Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
+
+An den Getränken in der Küche trinkst Du mit `E`. Jeder Schluck bringt Dich
+weiter. Ab einem gewissen Punkt traust Du Dich Sachen, die Du nüchtern nicht
+machen würdest — zum Beispiel jemandem einfach das Handy abnehmen.
+
+Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
+langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
+auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
+
+### Und dann klingelt es
+
+Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
+eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
+roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
+Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+
+### Moritz
+
+Danach schließt sich Moritz an: dunkle Haare, etwas größer als Du, weiß-blaues
+Fußballtrikot, das er seit drei Tagen trägt. **Mit ihm läuft es besser mit den
+Chayas** — das wird im Club-Level wichtig.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf

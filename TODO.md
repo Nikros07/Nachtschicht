@@ -24,7 +24,13 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
-- [ ] **Level 2 — Vorglühen.** Enge Wohnung, erste Kämpfe, Pegel-System wird eingeführt
+- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
+
+**Offen in Level 2:**
+
+- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
+- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
+- [ ] Musik lauter/verzerrter je höher der Pegel
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
