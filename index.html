@@ -128,14 +128,11 @@ const TUNE = {
   laermWeite:     130,     // so weit hoeren Lehrer ein Geraeusch
   suchTempo:       40,     // Tempo, wenn sie einem Geraeusch nachgehen
 
-  /* (2g) DIE DUNKLE ETAGE */
-  dunkleEtage:      2,     // im zweiten Stock sind die Roehren kaputt
+  /* (2g) DUNKLE ETAGEN - WELCHE Etage dunkel ist, steht beim Level */
   dunkelRadius:    34,     // was du dort ohne Licht siehst
 
-  /* (2h) DIE UHR - um halb sechs schliesst der Hausmeister endgueltig ab */
-  startMinute:  16*60+40,
-  endMinute:    17*60+30,
-  levelSekunden:  165,     // Echtzeit bis dahin (war 240 - viel zu grosszuegig)
+  /* (2h) DIE UHR - Startzeit, Endzeit und Laenge stehen beim Level.
+     Hier steht nur, was fuer jedes Level gleich gilt. */
   zeitstrafe:      14,     // so viele Sekunden kostet dich ein Erwischtwerden
 
   /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
@@ -415,14 +412,25 @@ function vollbild(){
 document.getElementById('fs').addEventListener('click',e=>{e.preventDefault();vollbild();});
 
 /* ==========================================================================
-   DAS LEVEL
-   ========================================================================== */
-const ETAGE_H = 66;                      // Abstand zwischen den Etagen
-const BODEN   = [ 250, 184, 118 ];       // Boden-Y je Etage (0 = Erdgeschoss)
-const LEVEL_B = 760;                     // Korridorlaenge
-const TREPPE_L = 30, TREPPE_R = 706;
+   DIE LEVEL
 
-/* Jeder Raum hat einen eigenen Stil - sonst sehen alle zehn gleich aus. */
+   Ein Level ist reine Daten. Die Spiellogik kennt keinen einzigen Wert aus
+   der Schule mehr - sie liest alles aus dem Level, das gerade geladen ist.
+   Ein weiteres Level der Bauart 'schule' entsteht dadurch ohne eine Zeile
+   Logik: Objekt in LEVELS eintragen, fertig.
+
+     typ     welche Spielart das Level benutzt. Bisher gibt es 'schule'
+             (Etagen, Korridor, Raeume, Aufsicht mit Sichtkegeln).
+     fertig  ob es spielbar ist. Was nicht fertig ist, steht trotzdem auf
+             der Karte - anschauen ja, starten nein.
+
+   Levels ohne typ 'schule' brauchen erst ihre eigene Spielart. Bis dahin
+   stehen sie hier als Konzept, damit die Nacht auf der Karte vollstaendig
+   ist und man sieht, worauf es hinauslaeuft.
+   ========================================================================== */
+
+/* Jeder Raum hat einen eigenen Stil - sonst sehen alle zehn gleich aus.
+   Raumstile sind levelunabhaengig, jedes Gebaeude darf sie benutzen. */
 const STIL = {
   hausmeister:{ wand:'#2b2519', kante:'#40381f', boden:'#1d1a11', fenster:0,
                 licht:'rgba(255,200,110,.13)', deko:'rohre',   schild:'#c9a24a' },
@@ -440,79 +448,252 @@ const STIL = {
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
 };
 
-const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
-];
-const AUSGANG = { e:0, x:648 };
-
-/* Nachrichten haengen jetzt an dem, was du TUST, nicht an der Uhr.
-   Vorher kam die letzte erst nach 118 Sekunden - bei einem schnellen
-   Lauf hast du die halbe Story nie gesehen. */
-const NACHRICHTEN = {
-  start:     [{von:'MAX FERDI', txt:'alter wo bleibst du'}],
-  raum:      [{von:'DIE JUNGS', txt:'wir sind schon am spaeti'},
-              {von:'MAX FERDI', txt:'ich sitz auch noch fest lol'}],
-  zettel:    [{von:'MAX FERDI', txt:'schau im lehrerzimmer, da liegt immer was'},
-              {von:'DIE JUNGS', txt:'ohne euch faengt nix an'}],
-  etage:     [{von:'MAX FERDI', txt:'ich hau ab durchs fenster'},
-              {von:'DIE JUNGS', txt:'letzter macht das licht aus'}],
-  erwischt:  [{von:'MAX FERDI', txt:'war das eben ein schrei'},
-              {von:'DIE JUNGS', txt:'lebst du noch'}],
-  schluessel:[{von:'MAX FERDI', txt:'SAG DASS DU DEN SCHLUESSEL HAST'}],
-  knapp:     [{von:'DIE JUNGS', txt:'gleich schliesst der laden'},
-              {von:'MAX FERDI', txt:'beeil dich mann'}],
-};
 const pick = a => a[Math.floor(Math.random()*a.length)];
-/* Notizen, die man beim Durchsuchen findet - reine Welt, kein Nutzen. */
-const NOTIZEN = [
-  'ZETTEL: NACHSITZEN BIS 16:30 - UNTERSCHRIFT FEHLT',
-  'ZETTEL: KLASSENFAHRT ABGESAGT. SCHON WIEDER.',
-  'ZETTEL: HAUSMEISTER SUCHT SEINEN ZWEITSCHLUESSEL',
-  'ZETTEL: WER DAS LIEST SCHULDET MIR ZEHN EURO',
-  'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
+
+/* --------------------------------------------------------------------------
+   LEVEL 1 - DIE SCHULE
+   -------------------------------------------------------------------------- */
+const SCHULE = {
+  nr:1, typ:'schule', fertig:true,
+  name:'DIE SCHULE',
+  untertitel:'FREITAG. 16:40. LETZTER SCHULTAG.',
+  kurz:'DU BIST EINGESPERRT. FIND DEN SCHLUESSEL.',
+  ziel:'FIND DEN SCHLUESSEL',           // steht beim Start gross im Bild
+  freischaltung:'MAX FERDI',            // wen du am Ende dazubekommst
+  steuerung:[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
+             ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
+             ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']],
+
+  /* Die Uhr dieses Abschnitts. Um halb sechs schliesst der Hausmeister ab. */
+  uhr:{ start:16*60+40, ende:17*60+30, sekunden:165 },
+  zuSpaet:'DER HAUSMEISTER HAT ABGESCHLOSSEN',
+  verloren:'DIE SCHULE HAT GEWONNEN',
+  dunkleEtage:2,                        // dort sind die Roehren kaputt
+
+  /* Der Bau */
+  etageH:66,                            // Abstand zwischen den Etagen
+  boden:[250,184,118],                  // Boden-Y je Etage (0 = Erdgeschoss)
+  breite:760,                           // Korridorlaenge
+  treppeL:30, treppeR:706,
+  start:{ e:0, x:60 },
+  ausgang:{ e:0, x:648 },
+
+  raeume:[
+    { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
+    { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
+    { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
+    { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
+    { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
+    { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
+    { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
+    { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
+    { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
+    { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  ],
+
+  /* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
+  spinde:[
+    { e:0, x:200 }, { e:0, x:400 }, { e:0, x:560 },
+    { e:1, x:180 }, { e:1, x:350 }, { e:1, x:510 }, { e:1, x:660 },
+    { e:2, x:220 }, { e:2, x:420 }, { e:2, x:600 },
+  ],
+
+  /* Wer hier patrouilliert. nurVariante blendet jemanden aus, wenn die
+     Runde anders laeuft - der Hausmeister ist nur in seiner Spielart da. */
+  aufsicht:[
+    { e:0, von:180, bis:600, x:400, v: 1 },
+    { e:1, von: 90, bis:660, x:200, v: 1 },
+    { e:2, von:110, bis:600, x:480, v:-1 },
+    { chef:true, e:0, von:40, bis:720, x:640, v:-1 },
+    { hausmeister:true, nurVariante:'hausmeister',
+      e:0, von:150, bis:640, x:420, v:-1, hatSchluessel:true },
+  ],
+
+  /* Zwei Spielarten, damit sich Runden unterscheiden: entweder liegt der
+     Schluessel irgendwo herum, oder der Hausmeister traegt ihn am Guertel. */
+  varianten:['raum','hausmeister'],
+
+  /* Nachrichten haengen an dem, was du TUST, nicht an der Uhr. Vorher kam
+     die letzte erst nach 118 Sekunden - bei einem schnellen Lauf hast du
+     die halbe Story nie gesehen. */
+  nachrichten:{
+    start:     [{von:'MAX FERDI', txt:'alter wo bleibst du'}],
+    raum:      [{von:'DIE JUNGS', txt:'wir sind schon am spaeti'},
+                {von:'MAX FERDI', txt:'ich sitz auch noch fest lol'}],
+    zettel:    [{von:'MAX FERDI', txt:'schau im lehrerzimmer, da liegt immer was'},
+                {von:'DIE JUNGS', txt:'ohne euch faengt nix an'}],
+    etage:     [{von:'MAX FERDI', txt:'ich hau ab durchs fenster'},
+                {von:'DIE JUNGS', txt:'letzter macht das licht aus'}],
+    erwischt:  [{von:'MAX FERDI', txt:'war das eben ein schrei'},
+                {von:'DIE JUNGS', txt:'lebst du noch'}],
+    schluessel:[{von:'MAX FERDI', txt:'SAG DASS DU DEN SCHLUESSEL HAST'}],
+    knapp:     [{von:'DIE JUNGS', txt:'gleich schliesst der laden'},
+                {von:'MAX FERDI', txt:'beeil dich mann'}],
+  },
+  /* Notizen, die man beim Durchsuchen findet - reine Welt, kein Nutzen. */
+  notizen:[
+    'ZETTEL: NACHSITZEN BIS 16:30 - UNTERSCHRIFT FEHLT',
+    'ZETTEL: KLASSENFAHRT ABGESAGT. SCHON WIEDER.',
+    'ZETTEL: HAUSMEISTER SUCHT SEINEN ZWEITSCHLUESSEL',
+    'ZETTEL: WER DAS LIEST SCHULDET MIR ZEHN EURO',
+    'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
+  ],
+
+  /* Intro. txt:null heisst: hier steht, wie DIESE Runde laeuft - der Text
+     kommt aus introVariante, in derselben Reihenfolge. */
+  intro:[
+    { d:2.6, txt:'FREITAG. LETZTER SCHULTAG.' },
+    { d:2.4, txt:'16:40 - NACHSITZEN VORBEI.' },
+    { d:2.4, txt:'DU HAST GEPENNT. ALLE SIND WEG.' },
+    { d:2.4, txt:'UND DIE TUEREN SIND ZU.' },
+    { d:2.6, txt:'HEUTE ABEND GEHT WAS. DA WILLST DU HIN.' },
+    { d:2.8, txt:null },
+    { d:2.8, txt:null },
+  ],
+  introVariante:{
+    hausmeister:['DER HAUSMEISTER HAT DEN SCHLUESSEL AM GUERTEL.',
+                 'LENK IHN AB - WIRF WAS MIT R.'],
+    raum:       ['IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.',
+                 'DURCHSUCH DIE RAEUME. ZETTEL HELFEN.'],
+  },
+
+  /* Schlusszene. draussen = ab welcher Szene es vor der Schule spielt,
+     freigabe = bei welcher Szene der Junge dazustoesst. */
+  szenen:[
+    { d:1.2,  txt:'' },
+    { d:2.4,  txt:'DIREKTOR: WO WILLST DU HIN' },
+    { d:2.2,  txt:'DIREKTOR: DIE SCHULE IST ZU' },
+    { d:2.0,  txt:'DU: MEIN ABEND FAENGT GRAD ERST AN' },
+    { d:1.0,  txt:'' },
+    { d:1.6,  txt:'*DU PACKST IHN AM KRAGEN*' },
+    { d:1.4,  txt:'DIREKTOR: ...' },
+    { d:1.6,  txt:'DU: GUTE NACHT, HERR DIREKTOR' },
+    { d:1.2,  txt:'' },
+    { d:2.0,  txt:'*DU STEHST DRAUSSEN*' },
+    { d:2.2,  txt:'???: EY! HIER DRUEBEN!' },
+    { d:2.2,  txt:'MAX FERDI: ICH DACHTE SCHON ICH PENN HIER' },
+    { d:2.2,  txt:'DU: DU WARST AUCH NOCH DRIN?' },
+    { d:2.4,  txt:'MAX FERDI: FENSTER. ERDGESCHOSS. ZWEI SEKUNDEN.' },
+    { d:2.2,  txt:'DU: ANGEBER' },
+    { d:2.4,  txt:'MAX FERDI: KOMM, ICH GEB DAS TEMPO VOR' },
+    { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  +15% TEMPO' },
+    { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
+  ],
+  szeneDraussen:9,
+  szeneFreigabe:16,
+};
+
+/* --------------------------------------------------------------------------
+   DIE NACHT - acht Stationen. Was noch keinen typ hat, ist Konzept und
+   laesst sich auf der Karte anschauen, aber nicht starten.
+   -------------------------------------------------------------------------- */
+const LEVELS = [ SCHULE,
+  { nr:2, fertig:false, name:'VORGLUEHEN',  untertitel:'ZU VIELE LEUTE, ZU WENIG PLATZ',
+    kurz:'ENGE WOHNUNG, ERSTE KAEMPFE. DER PEGEL FAENGT AN ZU ZAEHLEN.' },
+  { nr:3, fertig:false, name:'DER NACHTBUS', untertitel:'LINIE N7, LETZTE FAHRT',
+    kurz:'EIN FAHRENDER UNTERGRUND. KONTROLLEURE UND TIMING.' },
+  { nr:4, fertig:false, name:'DIE SCHLANGE', untertitel:'VOR DER TUER, HALB EINS',
+    kurz:'ERSTER ECHTER BOSS: DER TUERSTEHER.' },
+  { nr:5, fertig:false, name:'CLUB',        untertitel:'STROBOSKOP UND SCHLECHTE SICHT',
+    kurz:'DRINNEN. HIER ENTSCHEIDET SICH, WIE DER ABEND LAEUFT.' },
+  { nr:6, fertig:false, name:'AFTERHOUR',   untertitel:'IRGENDWANN NACH VIER',
+    kurz:'ALLES VERZERRT. DIE SCHULE TAUCHT WIEDER AUF.' },
+  { nr:7, fertig:false, name:'SPAETI',      untertitel:'RUHE. ENDLICH.',
+    kurz:'KEIN KAMPF. NUR IHR UND DER BORDSTEIN.' },
+  { nr:8, fertig:false, name:'HEIMWEG',     untertitel:'ES WIRD HELL',
+    kurz:'ENDGEGNER: DIE SONNE.' },
 ];
 
-/* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit1';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-/* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* --------------------------------------------------------------------------
+   Das gerade geladene Level. Der Rest des Spiels arbeitet mit diesen Namen -
+   dadurch bleibt die Spiellogik unveraendert, egal welches Level laeuft.
+   -------------------------------------------------------------------------- */
+let LV, BODEN, LEVEL_B, TREPPE_L, TREPPE_R, RAEUME, SPINDE, AUSGANG,
+    NACHRICHTEN, NOTIZEN, INTRO, SZENEN, SZENE_DRAUSSEN;
+function ladeLevel(nr){
+  const l = LEVELS.find(x=>x.nr===nr);
+  if(!l || l.typ!=='schule') return false;      // noch keine Spielart dafuer
+  LV=l;
+  BODEN=l.boden; LEVEL_B=l.breite; TREPPE_L=l.treppeL; TREPPE_R=l.treppeR;
+  RAEUME=l.raeume; SPINDE=l.spinde; AUSGANG=l.ausgang;
+  NACHRICHTEN=l.nachrichten; NOTIZEN=l.notizen;
+  INTRO=l.intro; SZENEN=l.szenen; SZENE_DRAUSSEN=l.szeneDraussen;
+  const leiste=document.getElementById('base');
+  if(leiste) leiste.firstElementChild.textContent='LEVEL '+l.nr+' - '+l.name;
+  return true;
+}
 
-/* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
-const SPINDE = [
-  { e:0, x:200 }, { e:0, x:400 }, { e:0, x:560 },
-  { e:1, x:180 }, { e:1, x:350 }, { e:1, x:510 }, { e:1, x:660 },
-  { e:2, x:220 }, { e:2, x:420 }, { e:2, x:600 },
-];
+/* ==========================================================================
+   SPIELSTAND
 
-const LEHRER_START = [
-  { e:0, von:180, bis:600, x:400, v:1 },
-  { e:1, von: 90, bis:660, x:200, v:1 },
-  { e:2, von:110, bis:600, x:480, v:-1 },
-];
+   Alles, was eine Runde ueberdauert, liegt in einem einzigen Eintrag:
+   welches Level offen ist, wer dabei ist, welche Bestzeiten stehen.
+   Der Stand wird einmal gelesen und danach im Speicher gehalten - vorher
+   lief in jedem Bild ein localStorage-Zugriff samt JSON.parse.
+   ========================================================================== */
+const STAND_KEY='nachtschicht.spielstand';
+const STAND_V=1;
+
+/* Die Jungs. Jeder bringt eine Faehigkeit mit - hier stehen sie an einer
+   Stelle, damit ein neuer Junge nicht durchs ganze Spiel verteilt wird. */
+const CREW = {
+  'MAX FERDI':{ level:1, gabe:'+15% TEMPO', tempo:1.15, farbe:'#42d9ff' },
+};
+
+let STAND = ladeStand();
+function leererStand(){ return { v:STAND_V, frei:1, crew:[], zeiten:{} }; }
+function ladeStand(){
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(STAND_KEY)); }catch(e){}
+  if(!s || typeof s!=='object' || s.v!==STAND_V){
+    s=leererStand();
+    /* Stand aus der Zeit vor der Levelauswahl uebernehmen, damit niemand
+       seinen Fortschritt verliert, nur weil das Spiel weitergebaut wurde.
+       Alles in einem try: in privaten Fenstern wirft schon der Zugriff. */
+    try{
+      const alt=JSON.parse(localStorage.getItem('nachtschicht.crew'));
+      if(Array.isArray(alt)) s.crew=alt.filter(n=>CREW[n]);
+      const b=parseFloat(localStorage.getItem('nachtschicht.bestzeit1'));
+      if(isFinite(b)) s.zeiten[1]=b;
+      if(s.crew.length || isFinite(b)) s.frei=2;
+    }catch(e){}
+    schreibeStand(s);
+  }
+  /* Auch ein gueltiger Stand kann Luecken haben - lieber hier gerade-
+     ziehen als spaeter an zehn Stellen auf undefined pruefen. */
+  if(!Array.isArray(s.crew)) s.crew=[];
+  if(!s.zeiten || typeof s.zeiten!=='object') s.zeiten={};
+  s.frei=Math.max(1,Math.min(LEVELS.length,parseInt(s.frei,10)||1));
+  return s;
+}
+function schreibeStand(s){ try{ localStorage.setItem(STAND_KEY,JSON.stringify(s)); }catch(e){} }
+function speichereStand(){ schreibeStand(STAND); }
+function crewDazu(name){
+  if(!name || STAND.crew.includes(name)) return false;
+  STAND.crew.push(name); speichereStand(); return true;
+}
+const bestzeit=nr=>{ const v=STAND.zeiten[nr]; return isFinite(v)?v:null; };
+const offen=nr=>nr<=STAND.frei;
+/* Faehigkeiten der Crew. Max Ferdi ist Sportler - mit ihm laeufst du
+   schneller. Weitere Jungs multiplizieren sich einfach dazu. */
+const tempoBonus=()=>STAND.crew.reduce((f,n)=>f*((CREW[n]&&CREW[n].tempo)||1),1);
+const zeitText=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+const uhrzeit=m=>Math.floor(m/60)+':'+String(Math.floor(m%60)).padStart(2,'0');
 
 /* ==========================================================================
    ZUSTAND
    ========================================================================== */
 let S={};
 function neuesSpiel(){
+  /* Die Spielart entscheidet sich vor allem anderen - die Aufsicht haengt
+     davon ab, wer ueberhaupt im Haus ist. */
+  const variante = pick(LV.varianten||['raum']);
   S={
-    modus:'titel',            // titel | spiel | raum | gefangen | cutscene | ende | pause
-    t:0, zeit:0,
-    x:60, y:BODEN[0], vx:0, vy:0, etage:0, amBoden:true, letzterBoden:0,
+    modus:'titel',            // titel | karte | intro | spiel | raum |
+                              // gefangen | cutscene | uebergang | ende | pause
+    t:0, zeit:0, variante,
+    x:LV.start.x, y:BODEN[LV.start.e], vx:0, vy:0, etage:LV.start.e,
+    amBoden:true, letzterBoden:0,
     blick:1, gehPhase:0,
     hp:TUNE.leben, unverwundbar:0,
     kamX:0, kamY:0,
@@ -524,8 +705,12 @@ function neuesSpiel(){
     chat:[], vibriert:0, genutzt:{}, startNachricht:false, knappNachricht:false,
     funde:[], boost:0, skipT:0,
     wurf:null, wurfAbkuehlung:0,
-    minute:TUNE.startMinute, zeitWarnung:false,
-    lehrer:LEHRER_START.map(l=>({...l, verdacht:0, jagd:0, gesehenPiep:false})),
+    minute:LV.uhr.start, zeitWarnung:false,
+    /* Wer in dieser Spielart im Haus ist. Der Direktor bekommt seine
+       Wechseluhr, alle anderen starten unverdaechtig. */
+    lehrer:LV.aufsicht.filter(a=>!a.nurVariante||a.nurVariante===variante)
+                      .map(a=>({...a, verdacht:0, jagd:0, gesehenPiep:false,
+                                ...(a.chef?{wechselT:TUNE.chefEtagenWechsel}:{})})),
     lehrerJagt:false,
     entdeckt:new Set(),        // welche Raeume schon betreten wurden
     durchsucht:new Set(),      // "raumIndex:moebelIndex"
@@ -539,8 +724,8 @@ function neuesSpiel(){
      sonst ist die Runde nach zwanzig Sekunden vorbei und fuehlt sich
      jedes Mal gleich an. Etagen werden gleich gewichtet, damit nicht
      immer die Etage mit den meisten Raeumen gewinnt. */
-  const startX=60;
-  const erlaubt=RAEUME.map((r,i)=>i).filter(i=>!(RAEUME[i].e===0 && Math.abs(RAEUME[i].x-startX)<120));
+  const startX=LV.start.x;
+  const erlaubt=RAEUME.map((r,i)=>i).filter(i=>!(RAEUME[i].e===LV.start.e && Math.abs(RAEUME[i].x-startX)<120));
   const etagen=[...new Set(erlaubt.map(i=>RAEUME[i].e))];
   const etage=etagen[Math.floor(Math.random()*etagen.length)];
   const inEtage=erlaubt.filter(i=>RAEUME[i].e===etage);
@@ -565,22 +750,14 @@ function neuesSpiel(){
   S.funde=rest.slice(0,5).map((f,i)=>({...f,
     art:['akku','akku','energie','notiz','notiz'][i], gefunden:false }));
 
-  /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
-     weit und gibt nicht so schnell auf wie die Lehrer. */
-  S.lehrer.push({ chef:true, e:0, von:40, bis:LEVEL_B-40, x:LEVEL_B-120, v:-1,
-                  verdacht:0, jagd:0, gesehenPiep:false, wechselT:TUNE.chefEtagenWechsel });
+  /* In der Hausmeister-Variante liegt gar kein Schluessel herum - er
+     traegt ihn am Guertel. Der ausgewuerfelte Raum oben hat trotzdem
+     seinen Zweck: die Zettel meiden ihn. */
+  if(S.variante==='hausmeister') S.schluesselRaum=-1;
 
-  /* Zwei Spielarten, damit sich Runden unterscheiden:
-     entweder liegt der Schluessel irgendwo herum, oder der Hausmeister
-     traegt ihn am Guertel und muss abgelenkt werden. */
-  S.variante = Math.random()<0.5 ? 'hausmeister' : 'raum';
-  if(S.variante==='hausmeister'){
-    S.schluesselRaum=-1;
-    S.lehrer.push({ hausmeister:true, e:0, von:150, bis:LEVEL_B-120, x:420, v:-1,
-                    verdacht:0, jagd:0, gesehenPiep:false, hatSchluessel:true });
-  }
   S.kamX=S.x-W/2; S.kamY=S.y-H*0.62;
 }
+ladeLevel(1);
 neuesSpiel();
 
 /* ==========================================================================
@@ -591,12 +768,19 @@ let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false, schleichAn=fals
 let aktionGehalten=false;
 let sprungPuffer=[], aktionPuffer=[];
 
+/* Nach dem Abspann geht es weiter: gewonnen fuehrt ueber den Uebergang
+   zur naechsten Station, verloren zurueck auf die Karte. */
+function nachDemEnde(){
+  if(S.gewonnen) starteUebergang(); else zeigeKarte(LEVELS.findIndex(l=>l.nr===LV.nr));
+}
 function druckSprung(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='karte'){ karteWaehlen(); return; }
+  if(S.modus==='uebergang'){ S.szeneT=99; return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='ende'){ nachDemEnde(); return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
   if(S.modus==='cutscene'){ return; }
   sprungPuffer.push(S.t); sprungAn=true;
@@ -604,40 +788,86 @@ function druckSprung(){
 function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='karte'){ karteWaehlen(); return; }
+  if(S.modus==='uebergang'){ S.szeneT=99; return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='ende'){ nachDemEnde(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
   aktionPuffer.push(S.t);
 }
-/* ---- Intro ---- */
-const INTRO=[
-  { d:2.6, txt:'FREITAG. LETZTER SCHULTAG.' },
-  { d:2.4, txt:'16:40 - NACHSITZEN VORBEI.' },
-  { d:2.4, txt:'DU HAST GEPENNT. ALLE SIND WEG.' },
-  { d:2.4, txt:'UND DIE TUEREN SIND ZU.' },
-  { d:2.6, txt:'HEUTE ABEND GEHT WAS. DA WILLST DU HIN.' },
-  { d:2.8, txt:null },      // wird je nach Spielart gefuellt
-  { d:2.8, txt:null },
-];
-/* Die letzten zwei Zeilen sagen dir, wie diese Runde laeuft. */
+/* ---- Intro ----
+   txt:null heisst: hier steht, wie DIESE Runde laeuft. Der Text kommt aus
+   introVariante des Levels, in der Reihenfolge der Leerstellen. */
 function introText(i){
-  if(INTRO[i].txt!==null) return INTRO[i].txt;
-  if(S.variante==='hausmeister')
-    return i===INTRO.length-2 ? 'DER HAUSMEISTER HAT DEN SCHLUESSEL AM GUERTEL.'
-                              : 'LENK IHN AB - WIRF WAS MIT R.';
-  return i===INTRO.length-2 ? 'IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.'
-                            : 'DURCHSUCH DIE RAEUME. ZETTEL HELFEN.';
+  const z=INTRO[i]; if(!z) return '';
+  if(z.txt!==null) return z.txt;
+  let n=0; for(let k=0;k<i;k++) if(INTRO[k].txt===null) n++;
+  return ((LV.introVariante||{})[S.variante]||[])[n] || '';
 }
-function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ S.modus='spiel';
-  zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){
   S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){
     S.szene++; S.szeneT=0;
-    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03);
+    if(S.szene>=INTRO.length) levelBeginnt(); else piep(440,.05,'sine',.03);
   }
+}
+
+/* ==========================================================================
+   DER ABEND ALS ABLAUF
+
+     Titel -> Karte -> Intro -> Level -> Uebergang -> Karte
+
+   Die Karte ist die Nacht: acht Stationen nebeneinander, offene und noch
+   verschlossene. Von dort startet jedes Level, dorthin kehrt jedes zurueck.
+   ========================================================================== */
+let karteWahl=0;                        // welche Station auf der Karte anliegt
+
+/* Beim Oeffnen liegt die weiteste Station an, die man auch spielen kann -
+   nicht die weiteste ueberhaupt, sonst zeigt die Karte auf eine Tuer, die
+   sich nicht aufmachen laesst. */
+const letzteSpielbare=()=>{
+  let i=0;
+  LEVELS.forEach((l,k)=>{ if(offen(l.nr)&&l.fertig) i=k; });
+  return i;
+};
+function zeigeKarte(index){
+  karteWahl = index==null ? letzteSpielbare() : Math.max(0,Math.min(LEVELS.length-1,index));
+  S.modus='karte'; S.hinweisT=0; S.meldungT=0;
+  piep(330,.1,'sine',.04);
+}
+function karteBewegen(d){
+  if(S.modus!=='karte') return;
+  karteWahl=(karteWahl+d+LEVELS.length)%LEVELS.length;
+  piep(520,.04,'square',.03);
+}
+function karteWaehlen(){
+  const l=LEVELS[karteWahl];
+  if(!offen(l.nr)){ meldung('DA BIST DU NOCH NICHT',1.4); SFX.nichts(); return; }
+  if(!l.fertig){ meldung('DIESE STATION WIRD NOCH GEBAUT',1.8); SFX.nichts(); return; }
+  levelStarten(l.nr);
+}
+function levelStarten(nr){
+  if(!ladeLevel(nr)) return false;
+  neuesSpiel();
+  S.modus='intro'; S.szene=0; S.szeneT=0;
+  piep(330,.1,'sine',.04);
+  return true;
+}
+function starte(){ zeigeKarte(); }
+function levelBeginnt(){ S.modus='spiel';
+  zeigeHinweis(LV.ziel||'LOS GEHTS',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+
+/* ---- Uebergang: der Weg von einer Station zur naechsten ---- */
+function starteUebergang(){
+  const naechste=LEVELS.find(l=>l.nr===LV.nr+1);
+  if(!naechste){ zeigeKarte(); return; }
+  S.modus='uebergang'; S.szeneT=0; S.uebergangZu=naechste;
+  piep(392,.14,'sine',.04); setTimeout(()=>piep(523,.16,'sine',.04),140);
+}
+function uebergang(dt){
+  S.szeneT+=dt;
+  if(S.szeneT>=5.2) zeigeKarte(LEVELS.indexOf(S.uebergangZu));
 }
 function zeichneIntro(){
   const t=S.t;
@@ -687,8 +917,8 @@ function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
-  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
-  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; karteBewegen(-1); }
+  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; karteBewegen(1); }
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
@@ -713,9 +943,9 @@ addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=aktion
 
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
-bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchstart','mousedown'],()=>{ linksAn=true; karteBewegen(-1); });
 bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
-bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchstart','mousedown'],()=>{ rechtsAn=true; karteBewegen(1); });
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
 bind('tup',['touchstart','mousedown'],()=>hochAn=true);
 bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
@@ -828,8 +1058,9 @@ function update(dt){
   S.blitz=Math.max(0,S.blitz-dt*2.2);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
-  if(S.modus==='pause'||S.modus==='titel') return;
+  if(S.modus==='pause'||S.modus==='titel'||S.modus==='karte') return;
 
+  if(S.modus==='uebergang'){ uebergang(dt); return; }
   if(S.modus==='intro'){ intro(dt); return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt,true); return; }
   if(S.modus==='ende'){ S.zeit+=dt; return; }
@@ -844,14 +1075,15 @@ function update(dt){
   if(S.wurfAbkuehlung>0)  S.wurfAbkuehlung=Math.max(0,S.wurfAbkuehlung-dt);
   if(S.vibriert>0)        S.vibriert-=dt;
 
-  /* Die Uhr laeuft. Um 17:30 schliesst der Hausmeister endgueltig ab. */
-  const spanne=TUNE.endMinute-TUNE.startMinute;
-  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
-  if(!S.zeitWarnung && S.minute>=TUNE.endMinute-15){
-    S.zeitWarnung=true; zeigeHinweis('17:15 - GLEICH SCHLIESST ER AB',3.4); SFX.alarm();
+  /* Die Uhr laeuft. Wann Schluss ist, steht beim Level. */
+  const U=LV.uhr, spanne=U.ende-U.start;
+  S.minute=U.start+Math.min(spanne,S.zeit/U.sekunden*spanne);
+  if(!S.zeitWarnung && S.minute>=U.ende-15){
+    S.zeitWarnung=true;
+    zeigeHinweis(uhrzeit(U.ende-15)+' - GLEICH IST SCHLUSS',3.4); SFX.alarm();
   }
-  if(S.minute>=TUNE.endMinute && S.modus!=='cutscene'){
-    S.modus='ende'; S.gewonnen=false; S.faenger='DER HAUSMEISTER HAT ABGESCHLOSSEN';
+  if(S.minute>=U.ende && S.modus!=='cutscene'){
+    S.modus='ende'; S.gewonnen=false; S.faenger=LV.zuSpaet||'ZU SPAET';
     SFX.gefangt(); return;
   }
 
@@ -861,7 +1093,7 @@ function update(dt){
 
   /* Erste Nachricht kurz nach dem Start, spaeter nur noch per Ereignis */
   if(!S.startNachricht && S.zeit>5){ S.startNachricht=true; nachricht('start'); }
-  if(!S.knappNachricht && S.minute>=TUNE.endMinute-18){ S.knappNachricht=true; nachricht('knapp'); }
+  if(!S.knappNachricht && S.minute>=LV.uhr.ende-18){ S.knappNachricht=true; nachricht('knapp'); }
   for(const c of S.chat) c.alter+=dt;
   if(S.boost>0) S.boost-=dt;
 
@@ -1247,41 +1479,26 @@ function staubUpdate(dt){ for(const p of STAUB){ p.leben-=dt; p.vy+=110*dt; p.x+
 
 /* ==========================================================================
    CUTSCENE - der Direktor stellt sich in den Weg
+   Die Szenen selbst stehen beim Level, hier steht nur, wie sie ablaufen.
    ========================================================================== */
-const SZENEN=[
-  { d:1.2,  txt:'' },
-  { d:2.4,  txt:'DIREKTOR: WO WILLST DU HIN' },
-  { d:2.2,  txt:'DIREKTOR: DIE SCHULE IST ZU' },
-  { d:2.0,  txt:'DU: MEIN ABEND FAENGT GRAD ERST AN' },
-  { d:1.0,  txt:'' },
-  { d:1.6,  txt:'*DU PACKST IHN AM KRAGEN*' },
-  { d:1.4,  txt:'DIREKTOR: ...' },
-  { d:1.6,  txt:'DU: GUTE NACHT, HERR DIREKTOR' },
-  { d:1.2,  txt:'' },
-  /* Ab hier: draussen. Max Ferdi kommt aus dem Fenster. */
-  { d:2.0,  txt:'*DU STEHST DRAUSSEN*' },
-  { d:2.2,  txt:'???: EY! HIER DRUEBEN!' },
-  { d:2.2,  txt:'MAX FERDI: ICH DACHTE SCHON ICH PENN HIER' },
-  { d:2.2,  txt:'DU: DU WARST AUCH NOCH DRIN?' },
-  { d:2.4,  txt:'MAX FERDI: FENSTER. ERDGESCHOSS. ZWEI SEKUNDEN.' },
-  { d:2.2,  txt:'DU: ANGEBER' },
-  { d:2.4,  txt:'MAX FERDI: KOMM, ICH GEB DAS TEMPO VOR' },
-  { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  +15% TEMPO' },
-  { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
-];
-const SZENE_DRAUSSEN=9;                 // ab hier spielt es vor der Schule
 function starteCutscene(){
   S.modus='cutscene'; S.szene=0; S.szeneT=0; S.vx=0;
   S.dirX=S.x+58; S.dirY=BODEN[0]; S.packT=0;
   S.maxX=W+40; S.maxDa=false;
   SFX.tuer(); zeigeHinweis('',0);
 }
-/* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
+/* Abschluss des Levels - egal ob durchgesehen oder uebersprungen.
+   Hier und nur hier waechst der Spielstand. */
 function levelGeschafft(){
-  speichereCrew('MAX FERDI');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(S.abgerechnet) return;             // Ueberspringen darf nicht doppelt zaehlen
+  S.abgerechnet=true;
+  crewDazu(LV.freischaltung);
+  const best=bestzeit(LV.nr);
+  if(best===null||S.zeit<best){ S.neueBestzeit=true; STAND.zeiten[LV.nr]=S.zeit; }
+  if(STAND.frei<LV.nr+1 && LV.nr<LEVELS.length){
+    STAND.frei=LV.nr+1; S.neuFrei=LEVELS.find(l=>l.nr===LV.nr+1);
+  }
+  speichereStand();
 }
 
 function cutscene(dt){
@@ -1303,9 +1520,10 @@ function cutscene(dt){
     const ziel=S.x+34;
     if(S.maxX>ziel) S.maxX=Math.max(ziel,S.maxX-130*dt);
   }
-  /* Freischaltung */
-  if(S.szene===SZENE_DRAUSSEN+7 && !S.crewGespeichert){
-    S.crewGespeichert=true; speichereCrew('MAX FERDI'); S.blitz=.9; SFX.fund();
+  /* Der Moment, in dem der Junge dazustoesst */
+  if(S.szene===LV.szeneFreigabe && !S.crewGespeichert){
+    S.crewGespeichert=true;
+    if(crewDazu(LV.freischaltung)){ S.blitz=.9; SFX.fund(); }
   }
   if(S.szeneT>=s.d){
     S.szene++; S.szeneT=0;
@@ -1385,6 +1603,8 @@ function draw(dt){
   staubUpdate(dt);
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
+  if(S.modus==='karte'){ kartenbild(); return; }
+  if(S.modus==='uebergang'){ uebergangsbild(); return; }
   if(S.modus==='intro'){ zeichneIntro(); return; }
 
   ctx.save();
@@ -1618,7 +1838,7 @@ function zeichneKorridor(){
 
   /* Dunkelheit: Stromausfall oder die kaputte Etage.
      Die Taschenlampe vergroessert den Kreis - deshalb lohnt sie sich. */
-  const kaputteEtage = S.etage===TUNE.dunkleEtage;
+  const kaputteEtage = S.etage===LV.dunkleEtage;
   if(S.dunkelT>0 || kaputteEtage){
     const flackern = S.dunkelT>0 ? Math.min(1,S.dunkelT*2.2)*(Math.random()<.12?.4:1) : 1;
     const staerke = (S.dunkelT>0?.92:.86)*flackern;
@@ -1805,7 +2025,7 @@ function hud(){
   /* Uhr - der Druck im Hintergrund */
   const std=Math.floor(S.minute/60), min=Math.floor(S.minute%60);
   const uhr=std+':'+String(min).padStart(2,'0');
-  const knapp=S.minute>=TUNE.endMinute-15;
+  const knapp=S.minute>=LV.uhr.ende-15;
   text(uhr,W-textW(uhr)-6,14,knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.dim));
 
   /* Handy: Akku und Zustand */
@@ -1854,26 +2074,114 @@ function hud(){
 }
 
 /* ---- Bildschirme ---- */
-function titelbild(){
+/* Der Sternenhimmel hinter Titel und Karte - dieselbe Nacht, damit der
+   Uebergang zwischen beiden nicht wie ein Programmwechsel wirkt. */
+function nachthimmel(){
   ctx.fillStyle='#07060d'; ctx.fillRect(0,0,W,H);
   for(let i=0;i<50;i++){ const x=(i*79)%W, y=(i*53)%H;
     ctx.fillStyle=i%7===0?'#2a2440':'#15121f'; ctx.fillRect(x,y,1,1); }
-  textGlowC('NACHTSCHICHT',24,P.neon,3);
-  textC('LEVEL 1 - DIE SCHULE',46,P.dim);
-  const zeilen=[
-    'DU BIST NACH SCHULSCHLUSS EINGESPERRT',
-    'FIND DEN SCHLUESSEL UND KOMM RAUS',
-    'DIE LEHRER SIND NOCH DA',
-  ];
-  zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
-  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
-            ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
-            ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
-  st.forEach((z,i)=>{ const y=100+i*8;
-    text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
-  const crew=ladeCrew();
-  if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-9,P.weiss,1);
+}
+function titelbild(){
+  nachthimmel();
+  textGlowC('NACHTSCHICHT',36,P.neon,3);
+  textC('EINE NACHT, ACHT STATIONEN',62,P.dim);
+  /* Wie weit man ist - der einzige Grund, hier stehen zu bleiben */
+  const geschafft=LEVELS.filter(l=>bestzeit(l.nr)!==null).length;
+  if(geschafft) textC(geschafft+' VON '+LEVELS.length+' GESCHAFFT',80,P.gold);
+  if(STAND.crew.length) textC('DABEI: '+STAND.crew.join(', '),94,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-30,P.weiss,1);
+  textC('M TON   P PAUSE   F VOLLBILD',H-12,P.dunkel);
+}
+
+/* ---- Die Karte: die Nacht als Kette von Stationen ---- */
+function kartenbild(){
+  nachthimmel();
+  const l=LEVELS[karteWahl], frei=offen(l.nr), spielbar=frei&&l.fertig;
+  textGlowC('DIE NACHT',8,P.neon,2);
+
+  /* Die Kette. Jede Station ein Punkt, verbunden durch die Strasse. */
+  const n=LEVELS.length, abst=Math.min(34,(W-60)/(n-1)), links=Math.round((W-abst*(n-1))/2);
+  const ky=32;
+  ctx.fillStyle='#2a2440'; ctx.fillRect(links,ky+2,abst*(n-1),1);
+  LEVELS.forEach((x,i)=>{
+    const px=Math.round(links+i*abst), gewaehlt=i===karteWahl;
+    const farbe = !offen(x.nr) ? '#2a2440' : x.fertig ? (bestzeit(x.nr)!==null?P.gold:P.neon) : P.dunkel;
+    if(gewaehlt){ ctx.fillStyle='#00000099'; ctx.fillRect(px-5,ky-4,11,13); }
+    ctx.fillStyle=farbe; ctx.fillRect(px-2,ky,5,5);
+    if(gewaehlt&&Math.floor(S.t*3)%2===0){ ctx.fillStyle=P.weiss; ctx.fillRect(px-1,ky+1,3,3); }
+    text(String(x.nr),px-1,ky+8,gewaehlt?P.weiss:P.dunkel);
+  });
+
+  /* Was an der gewaehlten Station steht */
+  textC('STATION '+l.nr,48,P.dunkel);
+  textGlowC(l.name,56,spielbar?P.weiss:P.dunkel,2);
+  textC(l.untertitel||'',74,P.dim);
+  textC(l.kurz||'',86,spielbar?P.weiss:P.dunkel);
+
+  if(!frei){
+    textC('NOCH ZU - SCHAFF ERST DIE STATION DAVOR',102,P.rot);
+  } else if(!l.fertig){
+    textC('WIRD NOCH GEBAUT',102,P.rot);
+    textC('SIEHE TODO.MD',114,P.dunkel);
+  } else {
+    const b=bestzeit(l.nr);
+    textC(b!==null?'BESTZEIT  '+zeitText(b):'NOCH NICHT GESCHAFFT',102,b!==null?P.gold:P.dim);
+    /* Sieben Zeilen Steuerung muessen ueber der Crewzeile enden - deshalb
+       7 Pixel Abstand und Start bei 110, nicht das uebliche 8er-Raster. */
+    (l.steuerung||[]).forEach((z,i)=>{ const y=110+i*7;
+      text(z[0],Math.round(W*0.16),y,P.gold); text(z[1],Math.round(W*0.16)+34,y,P.dim); });
+  }
+
+  /* Fusszeile: Crew und Bedienung der Karte */
+  if(STAND.crew.length){
+    const t='DABEI: '+STAND.crew.map(n=>n+' '+((CREW[n]||{}).gabe||'')).join(', ');
+    text(t,(W-textW(t))/2,H-20,P.neon2);
+  }
+  if(Math.floor(S.t*2)%2===0||!spielbar)
+    textC(spielbar?'A D  WAEHLEN     E  LOSGEHEN':'A D  WAEHLEN',H-11,spielbar?P.weiss:P.dunkel);
+  /* Meldung, wenn man an eine verschlossene Tuer klopft */
+  if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
+    textGlowC(S.meldung,H-32,P.rot,1); ctx.globalAlpha=1; }
+}
+
+/* ---- Uebergang: der Weg zur naechsten Station ---- */
+function uebergangsbild(){
+  const zu=S.uebergangZu||{}, t=S.szeneT;
+  nachthimmel();
+  /* Der Horizont, an dem es weitergeht */
+  const bodenY=Math.round(H*0.68);
+  ctx.drawImage(verlauf('uebergangHimmel',W,bodenY,g=>{
+    const gr=g.createLinearGradient(0,0,0,bodenY);
+    gr.addColorStop(0,'#0a0818'); gr.addColorStop(.7,'#241636'); gr.addColorStop(1,'#5a2540');
+    g.fillStyle=gr; g.fillRect(0,0,W,bodenY); }),0,0);
+  ctx.fillStyle='#0b0d18'; ctx.fillRect(0,bodenY,W,H-bodenY);
+  ctx.fillStyle='#232a44'; ctx.fillRect(0,bodenY,W,1);
+  /* Haeuser, die vorbeiziehen - der Weg dauert, das soll man sehen */
+  for(let i=0;i<14;i++){
+    const bx=Math.round(((i*61 - t*26)%(W+40))+W+40)%(W+40)-20;
+    const bh=14+((i*37)%22), bw=10+((i*23)%14);
+    ctx.fillStyle='#12162a'; ctx.fillRect(bx,bodenY-bh,bw,bh);
+    ctx.fillStyle=((i+Math.floor(t))%3===0)?'#3f4a72':'#0e1120';
+    ctx.fillRect(bx+2,bodenY-bh+3,3,3);
+  }
+  /* Ihr lauft */
+  const gehX=Math.round(W*0.30);
+  const rows=SPR.geh[Math.floor(t*9)%4];
+  outline(rows,gehX,bodenY-13,1,.6); sprite(rows,gehX,bodenY-13);
+  STAND.crew.forEach((name,i)=>{
+    const x=gehX+22+i*16, r=SPR.geh[Math.floor(t*9+i*1.7)%4];
+    outline(r,x,bodenY-13,1,.5); sprite(r,x,bodenY-13);
+    ctx.fillStyle=(CREW[name]||{}).farbe||P.neon2; ctx.fillRect(x+2,bodenY-9,3,4);
+  });
+
+  ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,44);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,44,W,1);
+  textC('DIE NACHT GEHT WEITER',10,P.dim);
+  textGlowC(zu.name||'',22,P.neon,2);
+  textC(zu.untertitel||'',36,P.dim);
+  if(t>1.6) textC(zu.kurz||'',bodenY+14,P.weiss);
+  if(t>2.6&&!zu.fertig) textC('DIESE STATION WIRD NOCH GEBAUT',bodenY+26,P.rot);
+  if(Math.floor(S.t*2)%2===0) textC('E  WEITER',H-10,P.dunkel);
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1897,23 +2205,22 @@ function bildschirme(){
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
     if(S.gewonnen){
-      textGlowC('LEVEL 1 GESCHAFFT',40,P.gold,2);
-      textC('DIE NACHT FAENGT JETZT ERST AN',62,P.weiss);
-      const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
-      const zt=min+':'+String(sek).padStart(2,'0');
-      textC('ZEIT  '+zt,84,S.neueBestzeit?P.gold:P.dim);
-      if(S.neueBestzeit) textC('NEUE BESTZEIT',94,P.gold);
-      else { const b=ladeBest();
-        if(b!==null) textC('BESTZEIT  '+Math.floor(b/60)+':'+String(Math.floor(b%60)).padStart(2,'0'),94,P.dunkel); }
-      textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,106,P.dim);
-      const crew=ladeCrew();
-      if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
-      textC('NAECHSTES LEVEL FOLGT',134,P.dunkel);
+      textGlowC('LEVEL '+LV.nr+' GESCHAFFT',30,P.gold,2);
+      textC(LV.name,50,P.dim);
+      textC('ZEIT  '+zeitText(S.zeit),66,S.neueBestzeit?P.gold:P.dim);
+      if(S.neueBestzeit) textC('NEUE BESTZEIT',76,P.gold);
+      else { const b=bestzeit(LV.nr);
+        if(b!==null) textC('BESTZEIT  '+zeitText(b),76,P.dunkel); }
+      textC('DURCHSUCHT  '+S.durchsucht.size,88,P.dim);
+      if(STAND.crew.length) textC('DABEI: '+STAND.crew.join(', '),100,P.neon2);
+      if(S.neuFrei) textGlowC('NEU OFFEN: '+S.neuFrei.name,116,P.neon,1);
+      if(Math.floor(S.t*2)%2===0) textC('LEERTASTE - WEITER',H-20,P.gold);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
-      textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
+      textC(LV.verloren||'DIE NACHT IST VORBEI',76,P.weiss);
+      textC(S.faenger||'',90,P.dim);
+      if(Math.floor(S.t*2)%2===0) textC('LEERTASTE - ZURUECK ZUR KARTE',H-20,P.gold);
     }
-    if(Math.floor(S.t*2)%2===0) textC('LEERTASTE FUER NEUSTART',H-20,P.gold);
   }
 }
 

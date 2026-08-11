@@ -24,6 +24,11 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
+Alle acht stehen inzwischen auf der Karte im Spiel — mit Namen, Untertitel und
+einem Satz dazu. Was noch nicht gebaut ist, lässt sich anschauen, aber nicht
+starten. Ein Level der Bauart `schule` braucht nur noch ein Datenobjekt; alles
+andere braucht vorher seine eigene Spielart.
+
 - [ ] **Level 2 — Vorglühen.** Enge Wohnung, erste Kämpfe, Pegel-System wird eingeführt
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
@@ -47,10 +52,13 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
+- [x] **Struktur steht:** `CREW` im Code — Name, Gabe, Wirkung an einer Stelle.
+      Ein neuer Junge ist ein Eintrag dort plus `freischaltung` beim Level
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
 - [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
+      — bisher wirkt nur `tempo`, weitere Gaben brauchen je einen Haken in der Logik
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
@@ -72,10 +80,13 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
-- [ ] Kampfsystem und Level-System zusammenführen
+- [x] **Level-Daten in eine eigene Struktur** — ein Level ist reine Daten
+      (`LEVELS`), die Logik kennt keinen Wert aus der Schule mehr
+- [x] **Spielstand speichern** — `nachtschicht.spielstand`: welche Station
+      offen ist, wer dabei ist, welche Bestzeiten stehen. Alte Stände werden
+      übernommen
+- [x] **Übergänge zwischen den Leveln** — Karte, Übergangsbild, Freischaltung
+- [ ] Kampfsystem und Level-System zusammenführen ← **blockiert Level 2**
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
@@ -117,3 +128,6 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Level als Daten statt als Code — neue Level ohne eine Zeile Logik
+- [x] Spielstand mit Fortschritt, Crew und Bestzeiten je Station
+- [x] Karte der Nacht mit allen acht Stationen, Übergang zwischen den Leveln

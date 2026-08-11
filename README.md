@@ -2,8 +2,9 @@
 
 *Party Game drunk.*
 
-Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Jedes
-Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
+Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Acht
+Stationen, jede eine Stufe des Abends. Kein Download, keine Installation,
+kein Konto.
 
 **▶ [Jetzt spielen](https://nikros07.github.io/Nachtschicht/)**
 
@@ -13,7 +14,20 @@ Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
 
 # Spielanleitung
 
-## Level 1 — Die Schule
+## Die Karte
+
+Nach dem Titelbild kommst Du auf **die Karte** — die Nacht als Kette von acht
+Stationen. Mit `A` `D` wählst Du, mit `E` gehst Du los. Offene Stationen
+leuchten, geschaffte sind golden, der Rest ist noch zu. Jede Station zeigt
+Dir ihre Bestzeit und ihre Steuerung.
+
+Zur Zeit ist **Station 1 gebaut**. Die anderen sieben stehen als Konzept auf
+der Karte — anschauen ja, starten noch nicht. Was fehlt, steht in
+[TODO.md](TODO.md).
+
+---
+
+## Station 1 — Die Schule
 
 Freitag, letzter Schultag, 16:40. Du hast das Nachsitzen verpennt, alle sind weg,
 die Türen sind zu. Heute Abend geht was, und da willst Du hin.
@@ -147,6 +161,9 @@ Fenster, und ist Sportler. Ab dann läufst Du in jeder Runde **15 % schneller**.
 Die Cutscene lässt sich mit gedrücktem `E` überspringen. Freischaltung und
 Bestzeit zählen trotzdem.
 
+Danach läufst Du weiter — der Übergang zeigt Dir, wo es hingeht, und setzt
+Dich auf der Karte an der nächsten Station ab.
+
 ---
 
 ## Ein paar Tipps
@@ -184,12 +201,43 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 | `chefSicht` · `chefEtagenWechsel` | Wie präsent der Direktor ist |
 | `wurfWeite` · `laermWeite` | Reichweite von Wurf und Geräusch |
 | `akkuProSek` · `lampeSichtBonus` | Der Handel mit der Taschenlampe |
-| `levelSekunden` · `zeitstrafe` | Wie hart die Uhr drückt |
-| `leben` | Wie viele Fehler Du machen darfst |
+| `zeitstrafe` · `leben` | Wie teuer ein Fehler ist |
 
-Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
-`LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
-Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+## Ein Level dazubauen
+
+Ein Level ist **reine Daten**. Die Spiellogik kennt keinen einzigen Wert aus der
+Schule mehr — sie liest alles aus dem Level, das gerade geladen ist. Alle acht
+Stationen der Nacht stehen in `LEVELS`, Level 1 als Objekt `SCHULE` darüber.
+
+Ein weiteres Level der Bauart `schule` entsteht dadurch ohne eine Zeile Logik:
+Objekt in `LEVELS` eintragen, `typ:'schule'` und `fertig:true` setzen, fertig.
+
+| Feld | Was drinsteht |
+|:--|:--|
+| `typ` | Welche Spielart. Bisher gibt es nur `'schule'` |
+| `fertig` | Ob es spielbar ist. Was fehlt, steht auf der Karte, startet aber nicht |
+| `boden` · `breite` · `treppeL/R` | Der Bau: Etagenhöhen, Korridorlänge, Treppen |
+| `start` · `ausgang` | Wo Du anfängst und wo Du rauskommst |
+| `raeume` · `spinde` | Türen und Verstecke, je mit Etage und X |
+| `aufsicht` | Wer patrouilliert. `chef`, `hausmeister`, `nurVariante` |
+| `varianten` | Welche Spielarten ausgewürfelt werden |
+| `uhr` | `start`, `ende`, `sekunden` — der Zeitdruck dieses Abschnitts |
+| `intro` · `szenen` | Anfang und Abspann, `txt:null` holt Text aus `introVariante` |
+| `nachrichten` · `notizen` | Was die Jungs schreiben, was rumliegt |
+| `freischaltung` | Wer am Ende dazustößt (Eintrag aus `CREW`) |
+| `steuerung` · `kurz` · `untertitel` | Was die Karte über die Station anzeigt |
+
+Die Raumstile (`STIL`) sind levelunabhängig — jedes Gebäude darf sie benutzen.
+
+## Spielstand
+
+Alles, was eine Runde überdauert, liegt in einem Eintrag unter
+`nachtschicht.spielstand`: welche Station offen ist (`frei`), wer dabei ist
+(`crew`), welche Bestzeiten stehen (`zeiten`). Ältere Stände aus der Zeit vor
+der Levelauswahl werden beim ersten Start übernommen.
+
+Die Jungs stehen in `CREW` — Name, Gabe, Wirkung. Ein neuer Junge ist ein
+Eintrag dort plus ein `freischaltung` beim Level.
 
 ## Lokal starten
 
@@ -219,5 +267,7 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 ist fertig und durchspielbar. Das Gerüst für die Nacht steht: Level
+sind Daten, der Spielstand hält Fortschritt und Crew, die Karte verbindet die
+Stationen. Level 2 bis 8 brauchen jetzt vor allem Inhalt — und Level 2 zuerst
+das Kampfsystem aus `runner.html`. Alles Offene steht in [TODO.md](TODO.md).
