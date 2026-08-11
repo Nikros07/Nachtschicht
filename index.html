@@ -1656,8 +1656,10 @@ function trefferAn(o){
   const K=S.kampf;
   if(o.st==='block'){
     /* Abgeprallt. Der lange Stillstand danach ist die Strafe fuers
-       Draufhauen ohne hinzuschauen. */
-    K.schlagFrei=S.t+KAMPF.abpraller;
+       Draufhauen ohne hinzuschauen - gemessen wie die anderen beiden
+       Erholungen, ab dem Ende des Schlags, damit die drei Werte in KAMPF
+       vergleichbar bleiben. */
+    K.schlagFrei=S.t+KAMPF.ausholen+KAMPF.treffZeit+KAMPF.abpraller;
     o.x+=Math.sign(o.x-S.x)*4;
     SFX.block(); S.ruettel=2; meldung('GEBLOCKT',.9);
     return;

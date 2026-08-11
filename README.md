@@ -248,9 +248,9 @@ Vier Regeln machen den Unterschied zum alten Brawler:
 
 - **Blocken.** Wer blockt, nimmt keinen Schaden — kann dafür aber auch nicht
   schlagen. Deckung kostet ihn Tempo.
-- **Fehlschläge kosten.** Ein Treffer gibt Dir nach 0,26 s die Kontrolle
-  zurück, ein Schlag ins Leere erst nach 0,62 s, einer in einen Block nach
-  0,80 s. Draufhauen ohne hinzuschauen ist teurer, als es bringt.
+- **Fehlschläge kosten.** Nach dem Schlag gibt Dir ein Treffer die Kontrolle
+  nach 0,26 s zurück, ein Schlag ins Leere erst nach 0,62 s, einer in einen
+  Block nach 0,80 s. Draufhauen ohne hinzuschauen ist teurer, als es bringt.
 - **Kontern ist Timing.** Nur im **letzten Drittel** des Ausholens, kurz
   bevor sein Schlag kommt. Der Balken über seinem Kopf leuchtet auf, wenn das
   Fenster offen ist. Gepanzerte (`brocken`) lassen sich gar nicht kontern.

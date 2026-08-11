@@ -1,6 +1,9 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Das Gerüst für die
+ganze Nacht steht — Level sind Daten, der Spielstand hält Fortschritt und Crew,
+die Karte verbindet die Stationen, und der Kampf ist drin und wartet auf ein
+Level, das ihn benutzt. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
