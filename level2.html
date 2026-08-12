@@ -332,15 +332,34 @@ SPR.gaesteLehnt= GAST_FARBEN.map(([s,h])=>gastLehnt(s,h));
 /* ==========================================================================
    AUDIO
    ========================================================================== */
-let AC=null, muted=false;
+let AC=null, muted=false, MBUS=null, MDRY=null, MWET=null, MFILT=null;
 function ensureAudio(){ if(AC) return AC;
-  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
+  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05;
+       baueMusikweg(); }
   catch(e){ AC=null; } return AC; }
-function ton(f,when,dur,type='square',vol=.05){
+
+/* Der Weg der Musik. Sauber und verzerrt laufen nebeneinander her, der
+   Pegel blendet zwischen beiden ueber - so muss nie eine Kennlinie neu
+   gerechnet werden, es sind nur zwei Lautstaerken. Die Geraeusche gehen
+   daran vorbei: verzerren soll die Anlage, nicht dein Gehoer. */
+function baueMusikweg(){
+  const kurve=new Float32Array(1024), k=42;
+  for(let i=0;i<1024;i++){ const x=i*2/1024-1; kurve[i]=(1+k)*x/(1+k*Math.abs(x)); }
+  const zerr=AC.createWaveShaper(); zerr.curve=kurve; zerr.oversample='2x';
+  MBUS=AC.createGain();
+  MDRY=AC.createGain(); MDRY.gain.value=1;
+  MWET=AC.createGain(); MWET.gain.value=0;
+  MFILT=AC.createBiquadFilter(); MFILT.type='lowpass';
+  MFILT.frequency.value=16000; MFILT.Q.value=.9;
+  MBUS.connect(MDRY); MDRY.connect(MFILT);
+  MBUS.connect(zerr); zerr.connect(MWET); MWET.connect(MFILT);
+  MFILT.connect(AC.destination);
+}
+function ton(f,when,dur,type='square',vol=.05,ziel=null){
   if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(f,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-  o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02); }
+  o.connect(g); g.connect(ziel||AC.destination); o.start(when); o.stop(when+dur+.02); }
 const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
 function glissando(f1,f2,dur,type='square',vol=.05){
   ensureAudio(); if(!AC||muted) return;
@@ -368,18 +387,40 @@ const SFX={
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* Musik: das Vorgluehen laeuft. Je hoeher der Pegel, desto lauter, desto
+   verzerrter, desto dumpfer - und der Takt zieht leicht an. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
-const MUS={step:0,next:0};
+const MUS={step:0,next:0,mische:-1};
+/* 0 bis 1 ab dem Pegel, ab dem auch das Bild anfaengt zu schwanken.
+   Bewusst derselbe Punkt: was man sieht und was man hoert, kippt zusammen. */
+const zerrGrad=()=> S.modus==='spiel'&&S.pegel>TUNE.wackelnAb
+  ? Math.min(1,(S.pegel-TUNE.wackelnAb)/(TUNE.pegelMax-TUNE.wackelnAb)) : 0;
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const z=zerrGrad();
+  /* Nicht in jedem Bild nachstellen - alle 100 ms reicht und haelt die
+     Liste der geplanten Werte kurz. */
+  if(MWET&&S.t-MUS.mische>0.1){
+    MUS.mische=S.t;
+    const jetzt=AC.currentTime;
+    MWET.gain.setTargetAtTime(z*.85,jetzt,.2);
+    MDRY.gain.setTargetAtTime(1-z*.7,jetzt,.2);
+    /* Der Tiefpass macht zu und eiert dabei: die Anlage kommt naeher und
+       geht wieder weg, so wie wenn man den Kopf nicht mehr stillhaelt. */
+    MFILT.frequency.setTargetAtTime(16000-z*(13000+Math.sin(S.t*1.6)*2200),jetzt,.15);
+  }
+  const st=60/(128+z*7)/4;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
+    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.026:.014;
+    if(f){
+      ton(f,MUS.next,st*.85,'square',laut,MBUS);
+      /* Zweite, leicht verstimmte Stimme. Das Schweben daraus ist das, was
+         man als verzerrt hoert - die Kennlinie allein klingt nur dreckig. */
+      if(z>.15) ton(f*(1+.014*z),MUS.next,st*.85,'sawtooth',laut*.55*z,MBUS);
+    }
     if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+      if(i%4===0) ton(55,MUS.next,.09,'sine',.05,MBUS);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -390,7 +431,7 @@ function rauschenKurz(when){
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(MBUS||AC.destination); s.start(when);
 }
 
 /* ==========================================================================
