@@ -26,11 +26,12 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** nichts mehr.
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Elf Gäste als Kulisse — dunkler, weiter hinten, ohne Namen und ohne `E`
+- [x] Der Kracher hat drei Angriffsmuster mit je eigener Antwort
+- [x] Musik wird lauter, verzerrter und dumpfer mit dem Pegel
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,12 +68,25 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Drei Punkte von hier sind im Kracher-Kampf in `level2.html` schon gebaut und
+haben sich bewährt — sie stehen dort aber für sich, nicht in einem gemeinsamen
+System. Beim Zusammenführen von dort übernehmen, nicht neu erfinden:
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
+      *(in Level 2 als `gedeckt`: wer während des Ausholens danebenhaut,
+      kann diesen Angriff nicht mehr kontern)*
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      *(in Level 2 gebaut: 0,38 s, in denen weder `E` noch Springen geht.
+      Wichtig: die Erholung allein reicht nicht — ist sie kürzer als das
+      Ausholen, landet Dauerdrücken von selbst im Konterfenster.)*
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      *(in Level 2 gebaut, dort das letzte 55 % — der erste Kampf darf
+      großzügiger sein. Der weiße Strich im Balken zeigt, ab wo.)*
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      *(Fernangriff und unblockbarer Angriff gibt es im Kracher schon als
+      geworfene Flasche und als Tiefschlag, über den man springen muss.)*
 
 ---
 

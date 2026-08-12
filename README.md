@@ -192,12 +192,38 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+Ab demselben Punkt, ab dem das Bild schwankt, kippt auch die Musik: lauter,
+verzerrter, dumpfer, und der Takt zieht an. Was Du siehst und was Du hörst,
+gibt zusammen nach.
+
+### Die anderen auf der Party
+
+Außer den vieren stehen noch elf Leute rum, die nichts von Dir wollen. Sie
+haben keinen Namen über dem Kopf und reagieren nicht auf `E` — daran erkennst
+Du, wen Du ansprechen kannst. Sie stehen etwas weiter hinten, sind dunkler, und
+je höher Dein Pegel, desto mehr wanken sie mit.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Du kannst Dich dabei
+bewegen und springen wie sonst auch.
+
+Er kündigt jeden Angriff an. **Farbe und Zeichen über ihm sagen Dir, was zu tun
+ist:**
+
+| Vorwarnung | Sein Angriff | Deine Antwort |
+|:--|:--|:--|
+| 🔴 rot, `!` | **Schlag** — er holt aus | `E` **im letzten Drittel** des Balkens |
+| 🟡 gold, `!!` | **Tiefschlag** — er geht runter und fegt | **Springen**. Danach steht er offen — `E` |
+| 🔵 blau, `!` | **Flasche** — er wirft | `E`, wenn sie bei Dir ist |
+
+Im roten Balken steht ein weißer Strich: **ab da zählt `E`.** Vorher nicht.
+
+**Hau nicht einfach drauf.** Ein Schlag ins Leere kostet Dich einen Moment, in
+dem gar nichts geht — und wenn Du danebenhaust, während er ausholt, hat er Dich
+kommen sehen: **diesen Angriff kannst Du nicht mehr kontern** (der Balken wird
+grau). Vier Treffer, dann liegt er. Mit jedem holt er schneller aus.
 
 ### Moritz
 
@@ -246,6 +272,24 @@ python -m http.server 5173
 ```
 
 Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+
+## Kopflos prüfen
+
+Zum Spielen wird nichts davon gebraucht. Es gibt aber zwei Sorten Fehler, die
+sich von Hand kaum finden lassen: eine Datei lädt gar nicht mehr, oder ein Kampf
+lässt sich mit stumpfem Tastendrücken gewinnen. Dafür liegt in `werkzeug/` eine
+Prüfung, die das Spiel in einem unsichtbaren Browser wirklich spielt — einmal
+mit einem Bot, der jedes Angriffsmuster richtig beantwortet, und einmal mit
+reinem Gehämmer auf `E`.
+
+```bash
+npm install playwright && npx playwright install chromium
+node werkzeug/pruefen.mjs
+```
+
+Beim Umbau des Kracher-Kampfs hat sie zwei echte Fehler gefunden: dass
+Dauerdrücken den Kampf trotz Erholungszeit weiterhin gewann, und dass ein kurz
+angetippter Sprung nicht über den Tiefschlag kam.
 
 ## Technisch
 
