@@ -266,6 +266,19 @@ const SPR={
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* geduckt, Arm am Boden - der Tiefschlag */
+  kracherFege:['.........','.........','..ddd....','.dkkkd...','.dsssd...','..sss....',
+               '.vvvvv...','vvvvvvv..','..vvv....','..mmm....','.mm.mm...','kk....sss','kk.....ss'],
+  /* Flasche ueber dem Kopf */
+  kracherWurf:['....gg.','..ddgg.','.dkkkd.','.dsssd.','..ksk..','..sssk.','.vvvvv.','vvvvvvv',
+               '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
+  /* nach einem Fehlschlag: haengt vornueber und ist offen */
+  kracherOffen:['.........','..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....',
+                '.vvvvvk..','vvvvvvvk.','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+
+  /* Die Kulisse: Gaeste, die nur da sind. Zwei Zeichen bestimmen den Gast -
+     Shirt und Haare -, damit sich keiner wiederholt. */
+  gaeste:[], gaesteProst:[], gaesteLehnt:[],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -283,7 +296,30 @@ const SPR={
   ausweis:['ggggggg','g.....g','g.ss..g','g.ss..g','g.....g','ggggggg'],
   flasche:['..gg..','..gg..','.gggg.','.gwgg.','.gggg.','.gggg.','..gg..'],
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
+  /* Die Flasche, die der Kracher wirft - kleiner als die im Regal */
+  wurfFlasche:['.gg.','gwgg','.gg.'],
 };
+
+/* ---- Gaeste bauen ---------------------------------------------------------
+   Ein Gast ist der Standkoerper mit zwei getauschten Farben: sh fuers Shirt,
+   ha fuer die Haare. Drei Haltungen reichen - stehen, prosten, anlehnen. */
+const gastSteh=(sh,ha)=>[
+  '..'+ha+ha+ha+'..', '.'+ha+'sss'+ha+'.', '.sssss.', '..sss..',
+  '..'+sh+sh+sh+'..', '.'+sh+sh+sh+sh+sh+'.', 'k.'+sh+sh+sh+'.k', '..'+sh+sh+sh+'..',
+  '..ppp..', '..p.p..', '..p.p..', '.pp.pp.', '.kk..kk'];
+const gastProst=(sh,ha)=>[
+  '..'+ha+ha+ha+'.l', '.'+ha+'sss'+ha+'l', '.sssssk', '..sss..',
+  '..'+sh+sh+sh+'..', '.'+sh+sh+sh+sh+sh+'.', 'k.'+sh+sh+sh+'..', '..'+sh+sh+sh+'..',
+  '..ppp..', '..p.p..', '..p.p..', '.pp.pp.', '.kk..kk'];
+const gastLehnt=(sh,ha)=>[
+  '..'+ha+ha+ha+'..', '.'+ha+'sss'+ha+'.', '.sssss.', '..sss..',
+  '..'+sh+sh+sh+'..', '.'+sh+sh+sh+sh+sh+'.', 'k.'+sh+sh+sh+'.k', '..'+sh+sh+sh+'..',
+  '..ppp..', '..ppp..', '..pp.p.', '..pp..p', '.kk..kk'];
+/* vier Sorten, damit vier nebeneinander nicht wie eine Reihe Klone aussehen */
+const GAST_FARBEN=[['n','h'],['c','o'],['v','H'],['u','b']];
+SPR.gaeste     = GAST_FARBEN.map(([s,h])=>gastSteh(s,h));
+SPR.gaesteProst= GAST_FARBEN.map(([s,h])=>gastProst(s,h));
+SPR.gaesteLehnt= GAST_FARBEN.map(([s,h])=>gastLehnt(s,h));
 
 /* ==========================================================================
    AUDIO
@@ -428,6 +464,27 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Die Kulisse. Zehn Gaeste, die nichts von dir wollen: kein Name, kein E,
+   keine Aufgabe. Sie stehen eine Spur weiter hinten und sind abgedunkelt -
+   wer hier vergeblich E drueckt, soll das nach dem ersten Mal wissen.
+   Bewusst mit Abstand zu den vier Wichtigen platziert, damit im Gedraenge
+   klar bleibt, wen man ansprechen kann.
+   sorte = Farbvariante, art = Haltung, takt = Sekunden bis zum naechsten
+   Schluck, phase = Versatz, damit nicht alle gleichzeitig nicken. */
+const KULISSE=[
+  { x:212, sorte:0, art:'steh',  blick: 1, takt:6.5, phase:0.0, tempo:1.00 },
+  { x:302, sorte:1, art:'steh',  blick: 1, takt:5.0, phase:1.7, tempo:1.15 },
+  { x:316, sorte:2, art:'steh',  blick:-1, takt:7.5, phase:3.1, tempo:0.90 },
+  { x:372, sorte:3, art:'lehnt', blick:-1, takt:9.0, phase:0.8, tempo:0.75 },
+  { x:466, sorte:1, art:'steh',  blick: 1, takt:4.5, phase:2.4, tempo:1.25 },
+  { x:520, sorte:0, art:'steh',  blick: 1, takt:6.0, phase:4.2, tempo:1.05 },
+  { x:534, sorte:3, art:'steh',  blick:-1, takt:5.5, phase:1.1, tempo:0.95 },
+  { x:570, sorte:2, art:'lehnt', blick: 1, takt:8.0, phase:5.0, tempo:0.80 },
+  { x:690, sorte:0, art:'steh',  blick:-1, takt:7.0, phase:2.9, tempo:1.10 },
+  { x:800, sorte:1, art:'lehnt', blick: 1, takt:9.5, phase:3.6, tempo:0.70 },
+  { x:950, sorte:2, art:'steh',  blick:-1, takt:6.8, phase:0.5, tempo:0.85 },
+];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -450,7 +507,7 @@ function neuesSpiel(){
     reden:null, redeZeile:0, redeT:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     suchT:0, suchZiel:null,
-    ruettel:0, blitz:0,
+    ruettel:0, blitz:0, jubel:0, erholung:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
   };
@@ -563,6 +620,8 @@ function update(dt){
   S.t+=dt; musik();
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   S.blitz=Math.max(0,S.blitz-dt*2.2);
+  S.jubel=Math.max(0,S.jubel-dt);
+  S.erholung=Math.max(0,S.erholung-dt);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
@@ -864,6 +923,11 @@ function zeichneWohnung(){
   for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
   ctx.fillRect(890,BODEN-26,90,2);
 
+  /* Kulisse. Vor den Moebeln gezeichnet, damit sie dahinter verschwinden -
+     zusammen mit dem hoeheren Fusspunkt und der Deckkraft ergibt das die
+     Tiefe, ohne dass irgendwo skaliert werden muesste. */
+  zeichneKulisse();
+
   /* Dinge */
   for(const d of DINGE){
     const rows=SPR[d.moebel]; if(!rows) continue;
@@ -932,6 +996,44 @@ function zeichneWohnung(){
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
   ctx.globalAlpha=1;
+}
+
+/* ---- Kulisse zeichnen ----
+   Sie nicken auf den Takt (128 bpm = 2,13 Schlaege je Sekunde), trinken
+   ab und zu und schauen zum Kampf, wenn einer laeuft. Mehr macht sie nicht -
+   sie sollen den Raum fuellen, nicht die Aufmerksamkeit. */
+function zeichneKulisse(){
+  const rausch = S.pegel>TUNE.wackelnAb ? (S.pegel-TUNE.wackelnAb)/(100-TUNE.wackelnAb) : 0;
+  for(const k of KULISSE){
+    /* Beim Kampf drehen sich die Umstehenden hin und hoeren auf zu trinken */
+    const zuschauer = S.gegner && Math.abs(k.x-S.gegner.x)<130;
+    const trinkt = !zuschauer && ((S.t+k.phase)%k.takt)<0.7;
+    const satz = trinkt?SPR.gaesteProst : k.art==='lehnt'?SPR.gaesteLehnt : SPR.gaeste;
+    const rows = satz[k.sorte];
+    /* Kopfnicker: kurz unten, lange oben. Mit Pegel wird daraus ein Wanken. */
+    const takt = Math.sin((S.t+k.phase)*4.3*k.tempo);
+    const nick = takt>0.55 ? 1 : 0;
+    const wank = rausch ? Math.round(Math.sin((S.t*1.9+k.phase))*rausch*1.6) : 0;
+    const x = k.x + wank;
+    const y = BODEN-3-rows.length + nick;
+    const blick = zuschauer ? Math.sign(S.gegner.x-k.x)||1 : k.blick;
+    /* Deckkraft erst nach outline setzen - outline stellt sie selbst auf 1
+       zurueck und wuerde die Abdunklung sonst wieder aufheben. */
+    outline(rows,x-3,y,1,.30);
+    ctx.globalAlpha=.55;
+    if(blick<0) spriteFlip(rows,x-3,y); else sprite(rows,x-3,y);
+    /* Zweiter Durchgang in Schwarz. Das nimmt Farbe raus, ohne die Form
+       anzutasten - so bleiben die vier Wichtigen die hellsten im Bild. */
+    ctx.globalAlpha=.22;
+    if(blick<0) spriteFlip(rows,x-3,y,1,'#000'); else sprite(rows,x-3,y,1,'#000');
+    ctx.globalAlpha=1;
+    /* Schatten auf dem hinteren Fusspunkt */
+    ctx.globalAlpha=.16; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(x-3),BODEN-3,7,1); ctx.globalAlpha=1;
+    /* Beim Treffer geht ein Raunen durch die Umstehenden */
+    if(S.jubel>0&&zuschauer&&Math.floor(S.t*8)%2===0)
+      text('OOOH',x+3-textW('OOOH')/2,y-8,'#ffffff66');
+  }
 }
 
 /* ---- HUD ---- */
