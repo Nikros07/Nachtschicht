@@ -48,6 +48,20 @@
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
     border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
   #fs:hover { color:#ffd447; border-color:#ffd447; }
+
+  /* Levelauswahl als echte Links. Die Tastenbelegung allein reichte nicht:
+     ohne Klick ins Bild hat die Seite keinen Tastatur-Fokus, und am Handy
+     gibt es gar keine Taste 2. */
+  #levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
+  #levelbar a { flex:1; text-align:center; text-decoration:none;
+    font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+    color:#8d86a8; background:rgba(255,255,255,.04);
+    border:1px solid #2a2246; border-radius:5px; }
+  #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
+  #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  html.touch #levelbar { padding:6px 8px; }
+  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
   html.touch #cab { padding:0; border-radius:0; box-shadow:none; background:#000; }
@@ -79,6 +93,10 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
+  <div id="levelbar">
+    <a href="index.html" class="aktiv">1 &middot; DIE SCHULE</a>
+    <a href="level2.html">2 &middot; BEI MORITZ</a>
+  </div>
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
