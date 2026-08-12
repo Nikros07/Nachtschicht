@@ -117,11 +117,19 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* (6) DER KRACHER AM ENDE - drei Muster, drei Antworten */
+  gegnerTreffer:    4,     // so oft musst du ihn treffen
+  gegnerWindup:     0.85,  // Vorwarnzeit am Anfang - er ist der erste Kampf
+  gegnerWindupMin:  0.55,  // ... und wenn es eng wird
+  konterFenster:    0.55,  // letzter Teil des Ausholens, in dem E zaehlt
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
+  gegnerPauseMin:   0.72,
+  fegeDauer:        0.26,  // wie lange der Tiefschlag scharf ist
+  offenDauer:       0.9,   // wie lange er nach einem Fehlschlag offen steht
+  flascheTempo:   132,     // Pixel je Sekunde
+  flascheFenster:  16,     // ab diesem Abstand kannst du sie wegschlagen
+  erholung:         0.38,  // Strafe fuer einen Schlag ins Leere
   leben:            3,
 };
 
@@ -507,7 +515,7 @@ function neuesSpiel(){
     reden:null, redeZeile:0, redeT:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     suchT:0, suchZiel:null,
-    ruettel:0, blitz:0, jubel:0, erholung:0,
+    ruettel:0, blitz:0, jubel:0, erholung:0, schwungT:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
   };
@@ -622,6 +630,7 @@ function update(dt){
   S.blitz=Math.max(0,S.blitz-dt*2.2);
   S.jubel=Math.max(0,S.jubel-dt);
   S.erholung=Math.max(0,S.erholung-dt);
+  S.schwungT=Math.max(0,S.schwungT-dt);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
@@ -649,36 +658,7 @@ function update(dt){
   }
 
   /* --- Bewegung --- */
-  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
-  if(richtung) S.blick=richtung;
-  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
-  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
-  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
-  if(richtung){
-    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
-    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
-  } else {
-    const brems=TUNE.bremsung*kontrolle*dt;
-    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
-  }
-  S.x+=S.vx*dt;
-  S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
-
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
-    const n=Math.floor(S.gehPhase);
-    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
-  }
-  while(sprungPuffer.length){
-    const t0=sprungPuffer.shift();
-    if(S.t-t0>TUNE.puffermMs/1000) continue;
-    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
-  }
-  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
-  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
-    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+  bewegung(dt,14,LEVEL_B-14);
 
   /* --- Suchen laeuft --- */
   if(S.suchT>0){
@@ -705,6 +685,45 @@ function update(dt){
     else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
   }
   kamera(dt);
+}
+
+/* ---- Laufen, Springen, Fallen ----
+   Steht bewusst fuer sich: im Kampf gilt dieselbe Bewegung, nur zwischen
+   engeren Grenzen. Vorher stand das mitten in update() und der Kampf war
+   deshalb ein Standbild - springen ging dort gar nicht. */
+function bewegung(dt,minX,maxX){
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  if(richtung) S.blick=richtung;
+  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
+  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
+  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
+  if(richtung){
+    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
+    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+  } else {
+    const brems=TUNE.bremsung*kontrolle*dt;
+    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+  }
+  S.x+=S.vx*dt;
+  if(S.x<minX){ S.x=minX; S.vx=0; }
+  if(S.x>maxX){ S.x=maxX; S.vx=0; }
+
+  if(S.amBoden&&Math.abs(S.vx)>12){
+    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+    const n=Math.floor(S.gehPhase);
+    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+  }
+  while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.erholung>0) continue;                    // nach einem Fehlschlag geht nichts
+    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
+      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 }
 
 /* ---- Dinge benutzen ---- */
@@ -783,47 +802,196 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
-   ========================================================================== */
+
+   Drei Muster, drei Antworten:
+
+     SCHLAG      er holt aus        E im letzten Drittel   -> Konter
+     TIEFSCHLAG  er geht runter     springen               -> er steht offen
+     FLASCHE     er wirft           E, wenn sie da ist     -> zurueck damit
+
+   Vorher gab es nur den Schlag, und weil ein Druck auf E im ganzen Ausholen
+   zaehlte, gewann Dauerdruecken den Kampf. Beides ist jetzt anders:
+   das Konterfenster ist das letzte Drittel, und ein Schlag ins Leere kostet
+   eine kurze Erholung, in der weder E noch Springen geht.
+
+   Die Muster kommen nacheinander dazu - jedes wird an einem Treffer gelernt,
+   nicht an einem verlorenen Herzen. */
+const MUSTER={
+  schlag: { name:'SCHLAG',     hinweis:'E  IM RICHTIGEN MOMENT' },
+  fege:   { name:'TIEFSCHLAG', hinweis:'DA MUSST DU DRUEBER - SPRINGEN' },
+  flasche:{ name:'FLASCHE',    hinweis:'E  WENN SIE BEI DIR IST' },
+};
+const ARENA_L=20, ARENA_R=200;
+
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
+  S.x=Math.max(96,Math.min(ARENA_R,S.x)); S.vx=0;
+  S.gegner={ x:S.x-74, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0,
+             muster:'schlag', windup:TUNE.gegnerWindup, letztes:'', wieOft:0,
+             kette:0, durch:false, gesehen:{}, flasche:null };
   zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+
+/* Welches Muster als naechstes kommt */
+function waehleMuster(){
+  const g=S.gegner;
+  const frei=['schlag'];
+  if(g.getroffen>=1) frei.push('fege');
+  if(g.getroffen>=2) frei.push('flasche');
+  let m=pick(frei);
+  /* Dreimal dasselbe hintereinander wird ein Rhythmus statt ein Kampf */
+  if(frei.length>1&&m===g.letztes&&g.wieOft>=2) m=pick(frei.filter(x=>x!==g.letztes));
+  g.wieOft = m===g.letztes ? g.wieOft+1 : 1;
+  g.letztes=m; g.muster=m;
+  g.windup=Math.max(TUNE.gegnerWindupMin,TUNE.gegnerWindup-g.getroffen*0.1);
+  /* Ab der Haelfte haengt er an einen gelandeten Schlag einen zweiten dran */
+  g.kette = (m==='schlag'&&g.getroffen>=2&&Math.random()<0.45)?1:0;
+  g.gedeckt=false; g.zustand='wind'; g.t=0; SFX.warn();
+  if(!g.gesehen[m]){ g.gesehen[m]=true; zeigeHinweis(MUSTER[m].hinweis,2.6); }
+}
+
+function treffer(txt){
+  const g=S.gegner;
+  g.hp--; g.getroffen++; g.zustand='getroffen'; g.t=0; g.flasche=null;
+  S.ruettel=5; S.blitz=.5; S.jubel=1.4; SFX.klatsch();
+  meldung(txt||pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
+}
+function fehlschlag(txt){
+  S.erholung=TUNE.erholung; S.schwungT=.18;
+  /* Wer waehrend des Ausholens ins Leere haut, hat sich verraten: dieser
+     Angriff laesst sich nicht mehr kontern. Ohne das reicht Dauerdruecken -
+     die Erholung allein ist kuerzer als sein Ausholen, ein Hammer auf E
+     landet also frueher oder spaeter von selbst im Konterfenster. */
+  if(S.gegner&&S.gegner.zustand==='wind') S.gegner.gedeckt=true;
+  meldung(txt,1.0); SFX.nichts();
+}
+/* true, wenn danach nichts mehr zu tun ist - der Kampf ist vorbei */
+function spielerGetroffen(txt){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  S.vx=(Math.sign(S.x-S.gegner.x)||1)*90;        // Rueckstoss
+  meldung(txt,1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false;
+    S.faenger='ER HAT DICH RAUSGEWORFEN'; return true; }
+  return false;
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
+  bewegung(dt,ARENA_L,ARENA_R);
   const dist=S.x-g.x;
+
+  /* Dein eigener Schlag. Waehrend der Erholung faellt er ersatzlos aus. */
+  let schlag=false;
+  while(aktionPuffer.length){ aktionPuffer.shift(); if(S.erholung<=0) schlag=true; }
+  if(schlag) S.schwungT=.18;
+  /* Kontern geht nur in Reichweite. Ohne das koennte man aus zehn Metern
+     treffen - und weil er nur aus der Naehe zuschlaegt, waere der Kampf
+     ein Knopfdruck aus sicherer Entfernung. */
+  const inReichweite=()=>Math.abs(S.x-g.x)<34;
+
   if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+    /* Aus der Ferne kommt er schneller - auslaufen laesst er sich nicht */
+    g.x+=Math.sign(dist)*(Math.abs(dist)>70?108:74)*dt;
+    if(schlag) fehlschlag('DANEBEN');
+    if(Math.abs(dist)<26) waehleMuster();
+  }
+
+  else if(g.zustand==='wind'){
+    g.x+=Math.sign(dist)*26*dt;                  // er kommt beim Ausholen nach
+    const offen = g.t>=g.windup*(1-TUNE.konterFenster);
+    if(schlag){
+      if(!inReichweite()) fehlschlag('DANEBEN');
+      else if(g.gedeckt) fehlschlag('ER SIEHT DICH KOMMEN');
+      else if(g.muster==='schlag'&&offen) treffer('KONTER');
+      else if(g.muster==='schlag') fehlschlag('ZU FRUEH');
+      else fehlschlag(g.muster==='fege'?'DER GEHT TIEF':'NOCH NICHT');
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
+    else if(g.t>=g.windup){
+      if(g.muster==='schlag'){ g.zustand='schlag'; g.t=0;
+        /* Wer weit genug weg steht, wird nicht getroffen. Viel bringt das
+           nicht: treffen kann man ihn von dort auch nicht, und die Uhr
+           laeuft weiter. */
+        if(inReichweite()){ if(spielerGetroffen('AUTSCH')) return; }
+        else { g.kette=0; meldung('VORBEIGERAUSCHT',1); }
+      }
+      else if(g.muster==='fege'){ g.zustand='fegen'; g.t=0; g.durch=false; SFX.klatsch(); }
+      else wirfFlasche();
+    }
+  }
+
+  else if(g.zustand==='schlag'){
+    if(g.t>=TUNE.gegnerSchlag){
+      if(g.kette>0){ g.kette--; g.muster='schlag'; g.zustand='wind'; g.t=0;
+        g.gedeckt=false; g.windup=Math.max(0.45,g.windup*0.85);
+        SFX.warn(); meldung('NOCH EINER',1); }
+      else { g.zustand='pause'; g.t=0; }
+    }
+  }
+
+  /* Der Tiefschlag. Wer am Boden steht, liegt gleich. Wer springt, sieht
+     ihn ins Leere fegen - und hat danach ein Fenster. */
+  else if(g.zustand==='fegen'){
+    g.x+=Math.sign(dist)*170*dt;                 // er wirft sich nach vorn
+    /* Es zaehlt die Hoehe, nicht ob du am Boden klebst: die Fuesse muessen
+       weg. Wer nur antippt statt zu halten, kommt keine sieben Pixel hoch -
+       ein voller Sprung reicht mit Abstand. */
+    const tief = S.y>BODEN-7;
+    if(!g.durch&&tief&&Math.abs(S.x-g.x)<32){
+      g.durch=true; if(spielerGetroffen('DIE BEINE WEG')) return;
+      g.zustand='pause'; g.t=0;
+    }
+    else if(g.t>=TUNE.fegeDauer){
+      /* Offen steht er nur, wenn er wirklich unter dir durchgefegt ist.
+         Wer nur weit genug weg stand, bekommt kein Geschenk. */
+      if(Math.abs(S.x-g.x)<38){
+        g.zustand='offen'; g.t=0; SFX.warn(); meldung('DRUEBER - JETZT',1.2);
+      } else { g.zustand='pause'; g.t=0; }
+    }
+  }
+
+  else if(g.zustand==='offen'){
+    if(schlag){ if(inReichweite()) treffer('VOLL DRAUF'); else fehlschlag('ZU WEIT WEG'); }
+    else if(g.t>=TUNE.offenDauer){ g.zustand='pause'; g.t=0; meldung('ER FAENGT SICH',1); }
+  }
+
+  else if(g.zustand==='wurf'){
+    const f=g.flasche;
+    f.x+=f.vx*dt;
+    f.y=Math.min(BODEN-10,f.y+34*dt);            // sie sinkt auf Brusthoehe
+    const nah=Math.abs(f.x-S.x);
+    /* Nur was auf deiner Hoehe ankommt, trifft dich auch */
+    const aufHoehe = f.y>S.y-14&&f.y<S.y+2;
+    if(schlag&&nah<TUNE.flascheFenster){ g.flasche=null; treffer('ZURUECK DAMIT'); }
+    else if(schlag) fehlschlag(nah<40?'ZU FRUEH':'DANEBEN');
+    else if(nah<5&&aufHoehe){ g.flasche=null;
+      if(spielerGetroffen('DIE FLASCHE')) return;
+      g.zustand='pause'; g.t=0; }
+    else if(f.x<ARENA_L-20||f.x>ARENA_R+20||g.t>2.6){
+      g.flasche=null; g.zustand='pause'; g.t=0;
+      if(nah>=5) meldung('VORBEI',1); }
+  }
+
+  else if(g.zustand==='getroffen'){
     g.x-=Math.sign(dist)*90*dt;
     if(g.t>=0.5){
       if(g.hp<=0){ starteCutscene(); return; }
       g.zustand='pause'; g.t=0;
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
   }
+
+  else if(g.zustand==='pause'){
+    if(schlag) fehlschlag('DANEBEN');
+    const dauer=Math.max(TUNE.gegnerPauseMin,TUNE.gegnerPause-g.getroffen*0.12);
+    if(g.t>=dauer){ g.zustand='komm'; g.t=0; }
+  }
+}
+
+function wirfFlasche(){
+  const g=S.gegner;
+  g.zustand='wurf'; g.t=0;
+  g.flasche={ x:g.x+3, y:BODEN-30, vx:(Math.sign(S.x-g.x)||1)*TUNE.flascheTempo };
+  SFX.klatsch();
 }
 
 /* ==========================================================================
@@ -958,18 +1126,43 @@ function zeichneWohnung(){
   /* Der Kracher */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
+    const holtAus = g.zustand==='wind';
+    const rows = g.zustand==='schlag' ? SPR.kracherAus
+               : g.zustand==='fegen'||(holtAus&&g.muster==='fege') ? SPR.kracherFege
+               : g.zustand==='wurf'||(holtAus&&g.muster==='flasche') ? SPR.kracherWurf
+               : g.zustand==='offen' ? SPR.kracherOffen
+               : SPR.kracher;
+    const blinkt = holtAus&&Math.floor(S.t*16)%2===0;
     outline(rows,g.x,BODEN-rows.length,1,.6);
     sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+
+    /* Die Vorwarnung. Farbe und Zeichen sagen, welche Antwort gilt:
+       rot = kontern, gold = springen, blau = die Flasche wegschlagen. */
+    if(holtAus){
+      /* Grau heisst: du hast schon ins Leere gehauen, hier geht nichts mehr */
+      const farbe = g.gedeckt ? P.dunkel
+                  : g.muster==='schlag'?P.rot : g.muster==='fege'?P.gold : P.neon2;
+      const zeichen = g.muster==='fege'?'!!':'!';
+      const oben = BODEN-rows.length;
+      if(Math.floor(S.t*10)%2===0)
+        text(zeichen,g.x+3-textW(zeichen)/2,oben-9,farbe);
+      const bw=18, bx=g.x-3, by=oben-6;
+      ctx.fillStyle='#000a'; ctx.fillRect(bx,by,bw+2,4);
+      ctx.fillStyle=farbe;
+      ctx.fillRect(bx+1,by+1,Math.round(bw*Math.min(1,g.t/g.windup)),2);
+      /* Beim Schlag steht im Balken, ab wo E zaehlt */
+      if(g.muster==='schlag'){
+        const marke=bx+1+Math.round(bw*(1-TUNE.konterFenster));
+        ctx.fillStyle=P.weiss; ctx.fillRect(marke,by,1,4);
+      }
     }
-    /* Lebensbalken */
+    if(g.zustand==='offen'&&Math.floor(S.t*12)%2===0)
+      text('E',g.x+3,BODEN-rows.length-9,P.gruen);
+    if(g.flasche) sprite(SPR.wurfFlasche,g.flasche.x,g.flasche.y);
+
+    /* Lebensbalken mit Namen */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
+    text('DER KRACHER',Math.round(S.kamX)+(W-textW('DER KRACHER'))/2,18,P.dim);
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
     ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
   }
@@ -977,12 +1170,15 @@ function zeichneWohnung(){
   /* Spieler */
   let rows;
   if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
+  else if(S.schwungT>0) rows=SPR.konter;
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
   if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Erholung nach einem Schlag ins Leere: hier geht gerade nichts */
+  if(S.erholung>0&&Math.floor(S.t*12)%2===0)
+    text('...',S.x-2,S.y-rows.length-8,P.dunkel);
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
@@ -1069,7 +1265,10 @@ function hud(){
     text(a.text,14,y,ok?P.dunkel:P.weiss);
     y+=8;
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
+  /* Im Kampf hat der Hinweis nichts mehr verloren - da steht der Weg raus
+     ja gerade vor dir und schlaegt zu. */
+  if(alleFertig()&&S.modus==='spiel'&&Math.floor(S.t*2)%2===0)
+    textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;
