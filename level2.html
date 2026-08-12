@@ -509,6 +509,8 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
+  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
+    e.preventDefault(); location.href='index.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1005,7 +1007,11 @@ function titelbild(){
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-12,P.weiss,1);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
+  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
+  text(a,(W-textW(a))/2,H-11,P.dunkel);
+  text(b,(W-textW(b))/2,H-5,P.neon2);
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);

@@ -701,6 +701,10 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
+  /* Levelauswahl auf dem Titelbild. Ohne das kommt man nur zu Level 2,
+     wenn man Level 1 gewinnt - und sieht bis dahin nicht, dass es da ist. */
+  if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
+    e.preventDefault(); location.href='level2.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1875,7 +1879,12 @@ function titelbild(){
     text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-9,P.weiss,1);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt */
+  const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
+  const b='TASTE 2    LEVEL 2 - BEI MORITZ';
+  text(a,(W-textW(a))/2,H-11,P.dunkel);
+  text(b,(W-textW(b))/2,H-5,P.neon2);
 }
 function bildschirme(){
   if(S.modus==='pause'){
