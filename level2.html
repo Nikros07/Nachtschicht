@@ -581,6 +581,14 @@ const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
   try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
 const BEST_KEY='nachtschicht.bestzeit2';
 const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+
+/* Welches Level ist frei - dieselben Zeilen wie in index.html. Absicht,
+   solange jede Datei fuer sich laufen soll; siehe TODO, "Technik". */
+const GESCHAFFT_KEY='nachtschicht.geschafft';
+const ladeGeschafft=()=>{ try{ return JSON.parse(localStorage.getItem(GESCHAFFT_KEY))||[]; }
+  catch(e){ return []; } };
+const merkeGeschafft=n=>{ const g=ladeGeschafft(); if(!g.includes(n)){ g.push(n);
+  try{ localStorage.setItem(GESCHAFFT_KEY,JSON.stringify(g)); }catch(e){} } };
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 
 /* ==========================================================================
@@ -609,7 +617,10 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
-  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true;
+    /* Auf dem Titelbild fuehrt Links zurueck zur Auswahl - dieselbe Taste
+       wie in Level 1, damit man nicht suchen muss. */
+    if(S.modus==='titel'){ location.href='index.html'; return; } }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
@@ -625,7 +636,8 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
 addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=false; });
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
-bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchstart','mousedown'],()=>{ linksAn=true;
+  if(S.modus==='titel') location.href='index.html'; });
 bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
 bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
@@ -1057,6 +1069,7 @@ function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('MORITZ');
+  merkeGeschafft(2);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -1347,6 +1360,7 @@ function titelbild(){
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
+  textC('A  ZURUECK ZUR LEVEL-AUSWAHL',H-22,P.dunkel);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-12,P.weiss,1);
 }
 function zeichneIntro(){
@@ -1400,7 +1414,7 @@ function bildschirme(){
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
       textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZUR LEVEL-AUSWAHL',136,P.dunkel);
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

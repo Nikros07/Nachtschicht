@@ -159,6 +159,40 @@ for (const datei of ['index.html', 'level2.html', 'runner.html']) {
   await page.close();
 }
 
+/* ---------------------------------------------------------------------------
+   4. Die Level-Auswahl: vor dem ersten Sieg gibt es nichts zu waehlen,
+      danach fuehrt sie ohne Umweg nach Level 2 und wieder zurueck.
+   --------------------------------------------------------------------------- */
+{
+  const ctxt = await browser.newContext();          // frischer localStorage
+  const page = await ctxt.newPage();
+  const fehler = [];
+  page.on('pageerror', e => fehler.push(e.message));
+  await page.goto(seite('index.html'));
+  await page.waitForTimeout(500);
+  const frisch = await page.evaluate(() => ({ frei: hoechstesFreies(), geschafft: ladeGeschafft().length }));
+
+  await page.evaluate(() => levelGeschafft());       // so wie es der Abspann tut
+  await page.reload(); await page.waitForTimeout(500);
+  const nachSieg = await page.evaluate(() => ({ frei: hoechstesFreies(), wahl }));
+
+  await page.keyboard.press('KeyD'); await page.waitForTimeout(150);
+  const gewaehlt = await page.evaluate(() => wahl);
+  await page.keyboard.press('KeyE'); await page.waitForTimeout(700);
+  const ziel = page.url();
+  await page.keyboard.press('KeyA'); await page.waitForTimeout(700);
+  const zurueck = page.url();
+
+  pruefe('Auswahl: frisch ist nur Level 1 frei', frisch.frei === 1 && frisch.geschafft === 0);
+  pruefe('Auswahl: nach dem Sieg sind zwei Level frei', nachSieg.frei === 2);
+  pruefe('Auswahl: sie startet auf Level 1', nachSieg.wahl === 1);
+  pruefe('Auswahl: rechts waehlt Level 2', gewaehlt === 2);
+  pruefe('Auswahl: E startet das gewaehlte Level', ziel.endsWith('level2.html'), ziel);
+  pruefe('Auswahl: von Level 2 fuehrt links zurueck', zurueck.endsWith('index.html'), zurueck);
+  pruefe('Auswahl: keine Fehler in der Konsole', fehler.length === 0, fehler.join('; '));
+  await ctxt.close();
+}
+
 await browser.close();
 
 for (const e of ergebnisse)

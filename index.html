@@ -488,6 +488,27 @@ const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
   try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
 const BEST_KEY='nachtschicht.bestzeit1';
 const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+
+/* ---- Welches Level ist frei ----------------------------------------------
+   Ein Level gilt als frei, wenn das davor geschafft ist. Ohne das musste man
+   Level 1 jedes Mal neu durchspielen, um an Level 2 zu kommen - der einzige
+   Weg dorthin war der Abspann von Level 1.
+   Die paar Zeilen stehen in beiden Level-Dateien. Das ist Absicht, solange es
+   keine gemeinsame Datei gibt: jede Datei laeuft fuer sich, Doppelklick
+   genuegt. Beim Zusammenlegen (siehe TODO, "Technik") wandern sie an eine
+   Stelle. */
+const GESCHAFFT_KEY='nachtschicht.geschafft';
+const ladeGeschafft=()=>{ try{ return JSON.parse(localStorage.getItem(GESCHAFFT_KEY))||[]; }
+  catch(e){ return []; } };
+const merkeGeschafft=n=>{ const g=ladeGeschafft(); if(!g.includes(n)){ g.push(n);
+  try{ localStorage.setItem(GESCHAFFT_KEY,JSON.stringify(g)); }catch(e){} } };
+const LEVEL_LISTE=[
+  { nr:1, name:'DIE SCHULE',  datei:'index.html'  },
+  { nr:2, name:'BEI MORITZ',  datei:'level2.html' },
+];
+const levelFrei=n=> n===1||ladeGeschafft().includes(n-1);
+const hoechstesFreies=()=>LEVEL_LISTE.filter(l=>levelFrei(l.nr)).length;
+
 /* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 
@@ -631,7 +652,20 @@ function introText(i){
   return i===INTRO.length-2 ? 'IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.'
                             : 'DURCHSUCH DIE RAEUME. ZETTEL HELFEN.';
 }
-function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+/* Auf dem Titelbild waehlen Links und Rechts das Level. Das laeuft ueber
+   dieselben Tasten wie das Laufen, also auch ueber das Steuerkreuz am Handy -
+   es braucht dafuer keine eigene Bedienung. */
+let wahl=1;
+function waehle(d){
+  const neu=Math.max(1,Math.min(hoechstesFreies(),wahl+d));
+  if(neu===wahl) return;
+  wahl=neu; piep(520+wahl*60,.05,'square',.03);
+}
+function starte(){
+  const ziel=LEVEL_LISTE[wahl-1];
+  if(ziel&&ziel.datei!=='index.html'){ location.href=ziel.datei; return; }
+  neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04);
+}
 function starteLevel(){ S.modus='spiel';
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){
@@ -689,8 +723,10 @@ function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
-  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
-  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true;
+    if(S.modus==='titel') waehle(-1); }
+  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true;
+    if(S.modus==='titel') waehle(1); }
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
@@ -715,9 +751,11 @@ addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=aktion
 
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
-bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchstart','mousedown'],()=>{ linksAn=true;
+  if(S.modus==='titel') waehle(-1); });
 bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
-bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchstart','mousedown'],()=>{ rechtsAn=true;
+  if(S.modus==='titel') waehle(1); });
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
 bind('tup',['touchstart','mousedown'],()=>hochAn=true);
 bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
@@ -1268,7 +1306,7 @@ const SZENEN=[
   { d:2.4,  txt:'MAX FERDI: FENSTER. ERDGESCHOSS. ZWEI SEKUNDEN.' },
   { d:2.2,  txt:'DU: ANGEBER' },
   { d:2.4,  txt:'MAX FERDI: KOMM, ICH GEB DAS TEMPO VOR' },
-  { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  +15% TEMPO' },
+  { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  TEMPO +15' },
   { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
 ];
 const SZENE_DRAUSSEN=9;                 // ab hier spielt es vor der Schule
@@ -1281,6 +1319,7 @@ function starteCutscene(){
 /* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
 function levelGeschafft(){
   speichereCrew('MAX FERDI');
+  merkeGeschafft(1);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -1861,20 +1900,43 @@ function titelbild(){
   for(let i=0;i<50;i++){ const x=(i*79)%W, y=(i*53)%H;
     ctx.fillStyle=i%7===0?'#2a2440':'#15121f'; ctx.fillRect(x,y,1,1); }
   textGlowC('NACHTSCHICHT',24,P.neon,3);
-  textC('LEVEL 1 - DIE SCHULE',46,P.dim);
-  const zeilen=[
+  const gewaehlt=LEVEL_LISTE[wahl-1];
+  textC('LEVEL '+gewaehlt.nr+' - '+gewaehlt.name,46,P.dim);
+  const zeilen = wahl===1 ? [
     'DU BIST NACH SCHULSCHLUSS EINGESPERRT',
     'FIND DEN SCHLUESSEL UND KOMM RAUS',
     'DIE LEHRER SIND NOCH DA',
+  ] : [
+    'VORGLUEHEN BEI MORITZ',
+    'VIER LEUTE. KEINER WILL LOS.',
+    'DIE BAHN FAEHRT UM ZEHN',
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
-  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
-            ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
-            ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
+  const st = wahl===1
+    ? [['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
+       ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
+       ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']]
+    : [['A D','LAUFEN'],['LEER','SPRINGEN'],
+       ['E','REDEN, SUCHEN, TRINKEN'],['E','IM KAMPF: SCHLAGEN']];
   st.forEach((z,i)=>{ const y=100+i*8;
     text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   const crew=ladeCrew();
-  if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
+  if(crew.length) textC('DABEI: '+crew.join(', ')+'  TEMPO +15',60,P.neon2);
+
+  /* Level-Auswahl. Steht nur da, wenn es ueberhaupt etwas zu waehlen gibt -
+     beim ersten Start soll das Titelbild nicht nach Menue aussehen. */
+  const frei=hoechstesFreies();
+  if(frei>1){
+    /* Klammern gibt es im Font nicht - das Gewaehlte steht in Gold, der Rest
+       dunkel, Pfeile zeigen, wohin es noch geht. */
+    const nummern=LEVEL_LISTE.slice(0,frei).map(l=>String(l.nr));
+    const zeile=nummern.join('  '), x0=Math.round((W-textW(zeile))/2), y=H-22;
+    text(zeile,x0,y,P.dunkel);
+    text(nummern[wahl-1],x0+(wahl-1)*12,y,P.gold);
+    if(wahl>1)    text('<',x0-9,y,P.dim);
+    if(wahl<frei) text('>',x0+textW(zeile)+5,y,P.dim);
+    textC('A D  LEVEL WAEHLEN',H-16,P.dunkel);
+  }
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-9,P.weiss,1);
 }
 function bildschirme(){

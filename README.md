@@ -25,6 +25,16 @@ der durchs ganze Gebäude wandert — und eine Uhr, die um **17:30** abläuft.
 
 ---
 
+## Level wählen
+
+Beim ersten Start geht es direkt in die Schule. Sobald Du ein Level geschafft
+hast, steht unten auf dem Titelbild eine Auswahl: mit `A` und `D` — am Handy
+mit dem Steuerkreuz — wählst Du das Level, mit `Leertaste` oder `E` geht es
+los. Was Du geschafft hast, merkt sich der Browser; ein neuer Anlauf fängt
+nicht wieder bei Null an.
+
+---
+
 ## Steuerung
 
 | Taste | Aktion |

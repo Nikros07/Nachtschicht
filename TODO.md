@@ -93,8 +93,15 @@ System. Beim Zusammenführen von dort übernehmen, nicht neu erfinden:
 ## Technik
 
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+      *(dringlicher geworden: `level2.html` wiederholt rund 600 Zeilen aus
+      `index.html` — Font, Sprite-Cache, Audio, Bildschirmanpassung. Ein
+      drittes Level verdreifacht das. Vor Level 3 klären.)*
+- [x] Spielstand speichern: welches Level ist frei (`nachtschicht.geschafft`),
+      welche Jungs sind dabei (`nachtschicht.crew`)
+- [x] Übergang zwischen Level 1 und 2 in beide Richtungen — Level-Auswahl auf
+      dem Titelbild, bedienbar mit Links/Rechts und damit auch am Handy
+- [ ] Level-Auswahl erweitern, sobald Level 3 steht (die Liste steht in
+      `LEVEL_LISTE` in `index.html`, sie muss dann nur einen Eintrag mehr haben)
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
