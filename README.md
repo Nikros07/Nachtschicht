@@ -192,6 +192,14 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+### Die anderen Gäste
+
+Außer den vier Jungs steht noch anderes Volk in der Wohnung herum: im Flur,
+zwei im Wohnzimmer die sich unterhalten, einer in der Küche, einer in Moritz'
+Zimmer und einer der vor dem Bad wartet. An denen hängt keine Aufgabe — sie
+wippen zum Takt, heben ab und zu den Becher, und mit `E` sagen sie Dir was.
+Meistens nichts Hilfreiches.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner

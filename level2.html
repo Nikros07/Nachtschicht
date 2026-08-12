@@ -285,6 +285,16 @@ const SPR={
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
 };
 
+/* Gaeste: gleicher Koerperbau wie du, nur andere Shirt- und Haarfarbe.
+   Der Kopf bleibt ein eigener Block, damit spaeter Pixel-Gesichter
+   reinpassen. Zwei Posen reichen - stehen und den Becher heben. */
+const gastSteh=(s,h)=>['..'+h+h+h+'..','.'+h+'sss'+h+'.','.sssss.','..sss..',
+  '..'+s+s+s+'..','.'+s+s+s+s+s+s,'k.'+s+s+s+'.k','..'+s+s+s+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+const gastProst=(s,h)=>['..'+h+h+h+'..','.'+h+'sss'+h+'.','.sssss.','..sss..',
+  '..'+s+s+s+'.k','.'+s+s+s+s+s+s,'k.'+s+s+s+'..','..'+s+s+s+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+
 /* ==========================================================================
    AUDIO
    ========================================================================== */
@@ -428,6 +438,33 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Die Gaeste. Sie stehen nur rum und machen die Wohnung voll.
+   An ihnen haengt keine Aufgabe - sie haben je ein paar Sprueche und
+   sind bewusst weit weg von den Moebeln gesetzt, damit sie nie ein
+   Versteck fuer Jacke oder Ausweis verdecken. */
+const GAESTE=[
+  { x:100, shirt:'o', haar:'b', blick:-1, trinkt:true, name:'IRGENDWER',
+    sprueche:['JA GLEICH. GLEICH.','ICH KENN HIER KEINEN','ICH WART NUR AUF JEMANDEN'] },
+  { x:292, shirt:'n', haar:'l', blick:1, name:'DIE AUS DER PARALLELKLASSE',
+    sprueche:['UND DANN SAGT ER EINFACH NICHTS','ICH SCHWOER DIR','WARST DU DAS HEUTE IN DER SCHULE'] },
+  { x:310, shirt:'q', haar:'h', blick:-1, name:'IHR KUMPEL',
+    sprueche:['MHM','JA VOLL','HAB ICH AUCH GEHOERT'] },
+  { x:478, shirt:'u', haar:'h', blick:1, trinkt:true, name:'JEMAND IN DER KUECHE',
+    sprueche:['HAT JEMAND FEUER','TRINK MAL WAS, DU STEHST NUR RUM','WER RAEUMT DAS HIER EIGENTLICH AUF'] },
+  { x:676, shirt:'g', haar:'z', blick:-1, trinkt:true, name:'EIN GAST',
+    sprueche:['SCHOENE WOHNUNG','WER HAT DIE MUSIK GEMACHT','IST DAS MORITZ ZIMMER? OKAY.'] },
+  { x:862, shirt:'v', haar:'l', blick:1, name:'VOR DEM BAD',
+    sprueche:['DA IST SEIT ZEHN MINUTEN JEMAND DRIN','NEIN DU KANNST NICHT VOR','ICH GEH GLEICH AUF DEN BALKON'] },
+];
+/* Sprites einmal backen - der Bild-Cache haengt an der Identitaet der
+   Zeilen, frisch gebaute Arrays waeren jedes Bild ein neuer Eintrag. */
+for(const g of GAESTE){
+  g.gast=true;
+  g.steh=gastSteh(g.shirt,g.haar);
+  g.prost=gastProst(g.shirt,g.haar);
+  g.phase=Math.random()*6.283;
+}
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -458,7 +495,7 @@ function neuesSpiel(){
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
      gleichem Abstand gewinnt die Person. Ein Fund dort waere nicht
      erreichbar. */
-  const belegt=LEUTE.map(l=>l.x);
+  const belegt=[...LEUTE.map(l=>l.x),...GAESTE.map(g=>g.x)];
   const versteckbar=DINGE.filter(d=>
     ['tisch','schrank','regal','bett','box','spuele'].includes(d.art) &&
     !belegt.some(px=>Math.abs(px-(d.x+6))<TUNE.reichweite));
@@ -640,8 +677,13 @@ function update(dt){
     let ding=null, dDing=1e9;
     for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
       if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
+    /* Gaeste kommen zuletzt: sie sollen nie eine Aufgabe verdecken. */
+    let gast=null, dGast=1e9;
+    for(const g of GAESTE){ const d=Math.abs(g.x-S.x);
+      if(d<TUNE.reichweite&&d<dGast){ gast=g; dGast=d; } }
     if(person&&(!ding||dPerson<=dDing)) rede(person);
     else if(ding) benutze(ding);
+    else if(gast) rede(gast);
     else if(S.x<60&&alleFertig()) starteKampf();
     else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
   }
@@ -690,6 +732,8 @@ function suchErgebnis(){
 /* ---- Reden ---- */
 function rede(p){
   S.reden=p; S.redeZeile=0; S.redeT=0; S.vx=0; SFX.reden();
+  /* Gaeste haben keine Bedingung - ein Spruch, fertig. */
+  if(p.gast){ p._zeilen=[pick(p.sprueche)]; return; }
   /* Bedingungen pruefen */
   p._zeilen = p.zeilen;
   if(p.id==='moritz'&&S.inventar.ausweis&&!S.erledigt.ausweis){
@@ -863,6 +907,19 @@ function zeichneWohnung(){
   ctx.fillStyle='#2a3450';
   for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
   ctx.fillRect(890,BODEN-26,90,2);
+
+  /* Gaeste - reine Deko, deshalb hinter den Moebeln. Sie wippen zum
+     Takt, ab und zu hebt einer den Becher. */
+  for(const g of GAESTE){
+    const rows=(g.trinkt&&Math.sin(S.t*.8+g.phase)>.55)?g.prost:g.steh;
+    const y=BODEN-rows.length-(Math.sin(S.t*3.2+g.phase)>.4?1:0);
+    outline(rows,g.x-3,y,1,.4);
+    if(g.blick<0) spriteFlip(rows,g.x-3,y); else sprite(rows,g.x-3,y);
+    ctx.globalAlpha=.22; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(g.x-3),BODEN,7,1); ctx.globalAlpha=1;
+    const nah=Math.abs(g.x-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
+    if(nah&&Math.floor(S.t*4)%2===0) text('E',g.x+2,y-9,P.dim);
+  }
 
   /* Dinge */
   for(const d of DINGE){

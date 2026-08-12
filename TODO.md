@@ -28,7 +28,8 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
+- [x] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre) — sechs Gäste,
+      jeder mit eigenen Sprüchen, an keinem hängt eine Aufgabe
 - [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
 - [ ] Musik lauter/verzerrter je höher der Pegel
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
