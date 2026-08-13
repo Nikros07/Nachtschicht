@@ -22,7 +22,7 @@ function malflaeche(){
     imageSmoothingEnabled:true, fillStyle:'#000', globalAlpha:1,
     fillRect(){}, clearRect(){}, drawImage(){}, save(){}, restore(){},
     translate(){}, scale(){}, setTransform(){}, beginPath(){}, closePath(){},
-    moveTo(){}, lineTo(){}, stroke(){}, fill(){},
+    moveTo(){}, lineTo(){}, stroke(){}, fill(){}, rect(){}, clip(){}, arc(){},
     getImageData(){ return {data:[]}; }, putImageData(){},
     createLinearGradient(){ return verlauf; },
     createRadialGradient(){ return verlauf; }, createPattern(){ return null; },

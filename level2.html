@@ -84,8 +84,9 @@
   </div>
   <button id="fs">VOLLBILD</button>
   <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
+    <a href="index.html">1 &middot; SCHULE</a>
+    <a href="level2.html" class="aktiv">2 &middot; MORITZ</a>
+    <a href="level3.html">3 &middot; NACHTBUS</a>
   </div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -658,7 +659,7 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='level3.html'; return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -672,6 +673,8 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
     e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'&&(e.code==='Digit3'||e.code==='Numpad3')){
+    e.preventDefault(); location.href='level3.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1084,8 +1087,14 @@ const SZENEN=[
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
+/* Der Pegel wandert mit in den Nachtbus. In der Anleitung steht seit
+   Level 2, dass er dich durch die restliche Nacht begleitet - jetzt tut
+   er das auch. */
+const PEGEL_KEY='nachtschicht.pegel';
+const speicherePegel=p=>{ try{ localStorage.setItem(PEGEL_KEY,String(Math.round(p))); }catch(e){} };
 function levelGeschafft(){
   speichereCrew('MORITZ');
+  speicherePegel(S.pegel);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -1365,8 +1374,8 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
+  const a='LEERTASTE  2 BEI MORITZ';
+  const b='TASTE 1  SCHULE     TASTE 3  NACHTBUS';
   text(a,(W-textW(a))/2,H-11,P.dunkel);
   text(b,(W-textW(b))/2,H-5,P.neon2);
 }
@@ -1420,8 +1429,8 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      textC('WEITER: DER NACHTBUS',124,P.neon2);
+      if(Math.floor(S.t*2)%2===0) textC('E  AB IN DEN BUS',136,P.gold);
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

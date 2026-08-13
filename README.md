@@ -238,6 +238,69 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+22:00. Die Bahn hat gewartet. Sechs Haltestellen bis zum Club, keiner von Euch
+hat einen Fahrschein — und der Boden gehört Dir nicht.
+
+**Kein drittes Suchspiel.** Level 1 ist Nicht-gesehen-werden, Level 2 ist eine
+Meute in Bewegung kriegen. Hier ist der Untergrund selbst der Gegner: alles was
+Du tust, passiert in den Sekunden zwischen zwei Bremsungen.
+
+### Der fahrende Untergrund
+
+Der Bus fährt, bremst, hält, fährt an — im Kreis. Beim **Anfahren** drückt es
+Dich nach hinten, beim **Bremsen** nach vorne. Wer sich dann nicht festhält,
+rutscht und liegt anderthalb Sekunden auf dem Boden.
+
+`Shift` **hält Dich fest** — aber nur an einer der senkrechten Haltestangen.
+Die stehen mit Absicht nicht überall. Oben in der Mitte steht immer, was der
+Bus als Nächstes tut; vor dem Bremsen hast Du gut eine Sekunde Vorwarnung.
+
+**Je höher Dein Pegel, desto später merkst Du es** — und desto weiter rutschst
+Du, bevor Du Dich fängst.
+
+### Die Kontrolle
+
+Zweimal steigt eine Fahrscheinkontrolle zu. Beim ersten Mal einer, von hinten.
+Beim zweiten Mal **zwei, von beiden Seiten** — da hilft Ausweichen nicht mehr.
+
+Sie arbeiten sich durch den Bus und halten sich an jedem Fahrgast auf. Kommen
+sie bei Dir an, läuft ein roter Balken. Der ist Dein Fenster: bist Du weg,
+bevor er voll ist, macht der Kontrolleur weiter. Ist er voll, kostet es ein
+Herz. **An jeder Haltestelle fangen sie mit Dir von vorne an.**
+
+Zwei Wege raus:
+
+**Der Fahrschein.** In den Sitzen liegt Kleingeld — durchsuchen mit `E`. Drei
+Euro brauchst Du, dann zum Automaten. Der braucht zweieinhalb Sekunden, in
+denen Du Dich nicht festhalten kannst. Such und kauf während der Fahrt, nicht
+beim Bremsen.
+
+**Die Tür.** An der Haltestelle mit `E` aussteigen — draußen kommt keiner an
+Dich ran. Aber die Türen gehen zu, und der Countdown läuft oben mit. Wer nicht
+rechtzeitig wieder drin ist, steht allein an der Haltestelle. Das war's dann.
+
+### Deine Jungs sind dabei
+
+Wen Du freigeschaltet hast, fährt mit. **Moritz** hat noch einen Euro von
+gestern — und ein Wegbier. **Max Ferdi** sagt Dir, in welchem Teil des Busses
+noch was zu holen ist.
+
+Und **Fremde ansprechen kostet Mut**: ab Pegel 35 traust Du Dich, jemanden nach
+einem Euro zu fragen. Genau dafür ist Moritz' Wegbier da.
+
+### Am Ende
+
+An der Endstation steigst Du aus, und **der Lange** schließt sich an — der
+stand die ganze Fahrt über da und hat ein Monatsticket. Ab dann siehst Du in
+den kommenden Leveln früher, was kommt.
+
+> **Sein Name ist ein Platzhalter.** Er steht in `level3.html` als eine einzige
+> Konstante `NEUER_JUNGE`. Der richtige Name kommt vom Nick.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -285,8 +348,9 @@ laden das `<script>` aus der HTML-Datei in einen kopflosen Nachbau von Canvas
 und Audio. Kein npm, keine Abhängigkeiten, nur `node`:
 
 ```bash
-node werkzeug/leveltest.js      # Zufallseingaben, Kollisionen, Musikbus, Verstecke
-node werkzeug/kampfbalance.js   # spielt den Kracher-Kampf 400x gegen 10 Spielertypen
+node werkzeug/leveltest.js      # Level 2: Zufallseingaben, Kollisionen, Musikbus, Verstecke
+node werkzeug/kampfbalance.js   # Level 2: spielt den Kracher-Kampf 400x gegen 10 Spielertypen
+node werkzeug/leveltest3.js     # Level 3: ganze Busfahrten mit verschiedenen Spielweisen
 ```
 
 `kampfbalance.js` ist der Grund, warum die Zahlen im `TUNE`-Block von Level 2
@@ -294,6 +358,11 @@ so stehen, wie sie stehen: bis 420 ms Reaktionszeit gewinnt man den ersten
 Kampf sicher, bei 550 ms wird es knapp, auf eine Finte reinzubeißen kostet im
 Schnitt ein Herz, und E-Dauerfeuer gewinnt in 0 % der Fälle. Wer an den
 Reglern dreht, sieht sofort, was es kostet.
+
+`leveltest3.js` fährt ganze Busfahrten mit vier Spielweisen durch — nichts tun,
+nur festhalten, Fahrschein kaufen, Zufallseingaben — und prüft, dass jede das
+tut, was sie soll: Nichtstun kommt nie an, nur Festhalten stirbt an der
+Kontrolle, und wer den Fahrschein löst, kommt ohne einen Kratzer durch.
 
 Was die Skripte **nicht** können: sehen. Der Canvas schluckt jeden Malbefehl
 kommentarlos. Ob etwas gut aussieht, muss weiterhin ein Mensch im Browser
@@ -317,5 +386,6 @@ beurteilen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1, 2 und 3 sind fertig und durchspielbar, und sie hängen zusammen: Crew
+und Pegel wandern über `localStorage` von Level zu Level mit. Level 4 bis 8
+sowie das Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).

@@ -35,7 +35,18 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       Fehlschlag-Strafe, Steigerung pro Treffer
 - [x] Musik lauter/verzerrter je höher der Pegel — eigener Musikbus mit
       Sättigungskurve, Sägezahn ab Stufe 2, Schwebung und Taktdrift
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+- [x] **Level 3 — Der Nachtbus.** ✅ Fahrender Untergrund, zwei Kontrollwellen,
+      Fahrschein oder Tür, der Lange schaltet frei
+
+**Offen in Level 3:**
+
+- [ ] **Der Name vom Langen.** Steht als Konstante `NEUER_JUNGE` in
+      `level3.html` — eine Zeile ändern, dann heißt er richtig. Kommt vom Nick
+- [ ] Seine Fähigkeit ist angekündigt, aber nirgends eingebaut: „sagt früher
+      Bescheid“ müsste in Level 4+ die Vorwarnzeiten verlängern
+- [ ] Der Bus fährt immer denselben Fahrplan. Eine Etappe, die länger oder
+      kürzer ist als die anderen, würde das Auswendiglernen brechen
+- [ ] Draußen an der Haltestelle passiert nichts außer Warten
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -86,12 +97,29 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
+- [ ] **Der Motor liegt jetzt dreimal im Repo.** Font, Bild-Cache, Audio,
+      Canvas-Aufbau, Eingabe und Vollbild sind in `index.html`, `level2.html`
+      und `level3.html` Zeichen für Zeichen identisch — rund 300 Zeilen mal
+      drei. Bei Level 3 ging das noch, weil sie beim Bauen aus `level2.html`
+      herauskopiert wurden (siehe Commit). Ab Level 4 ist das der teuerste
+      Punkt auf dieser Liste: jede Änderung am Font oder an der Eingabe muss
+      an vier Stellen passieren.
+      **Weg raus:** ein `motor.js` als klassisches `<script src>`. Das lädt
+      auch über `file://`, der Doppelklick auf `index.html` funktioniert
+      weiter. ES-Module gehen dagegen nicht — die blockiert der Browser bei
+      `file://`.
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] Spielstand speichern — Crew und Pegel wandern über `localStorage`
+      (`nachtschicht.crew`, `nachtschicht.pegel`) von Level zu Level mit.
+      Offen bleibt: welches Level freigeschaltet ist, wird nirgends gemerkt
+- [x] Übergänge zwischen den Leveln — Levelleiste in allen drei Dateien,
+      Tastenwahl auf dem Titelbild, und wer gewinnt, landet im nächsten Level
 - [ ] Kampfsystem und Level-System zusammenführen
-- [ ] Musik pro Level statt einer Schleife
+- [x] Musik pro Level statt einer Schleife — Level 2 hat den Pegel-Bus,
+      Level 3 den Motor. Level 1 läuft noch auf der alten Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
+- [x] Kopfloser Prüfstand in `werkzeug/` — fährt ein Level ohne Browser,
+      damit Balance gemessen statt geschätzt wird
 
 ---
 
