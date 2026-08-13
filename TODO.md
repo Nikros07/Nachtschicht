@@ -26,11 +26,15 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** — nichts mehr. Die drei Restpunkte sind erledigt:
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — sieben Statisten mit
+      eigenen Haltungen und Sprüchen, Prioritätsregel beim Zielen
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — vier Muster
+      (Schwinger, Schneller, Finte, Doppelschlag), Farbcode, Konterfenster,
+      Fehlschlag-Strafe, Steigerung pro Treffer
+- [x] Musik lauter/verzerrter je höher der Pegel — eigener Musikbus mit
+      Sättigungskurve, Sägezahn ab Stufe 2, Schwebung und Taktdrift
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -69,8 +73,12 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Fehlschläge bestrafen** — in Level 2 drin: 0,55 s Erholung, und jeder
+      weitere Druck hängt sich dran. Muss beim Zusammenführen mitwandern
+- [x] **Konterfenster verkleinern** — in Level 2 drin, aber als *letzte drei
+      Viertel*, nicht als letztes Drittel. Ein Drittel war bei den schnellen
+      Mustern unter 0,2 s und damit Raten statt Timing. Bei späteren Bossen
+      kann es enger werden, für den ersten Kampf nicht
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 

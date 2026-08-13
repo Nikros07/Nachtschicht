@@ -192,12 +192,43 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst ihn auch.** Die Anlage läuft die ganze Zeit, aber je voller der
+Pegel, desto lauter und dreckiger wird sie: der saubere Rechteckton kippt in
+einen Sägezahn, eine verstimmte Oktave legt sich drüber, der Takt fängt an zu
+schwanken. Die Geräusche des Spiels selbst — Schritte, Funde, Treffer — bleiben
+sauber, sonst hörst Du ab Pegel 60 nicht mehr, was gerade passiert.
+
+### Die anderen in der Wohnung
+
+Außer den vier Leuten, an denen etwas hängt, stehen noch sieben andere rum:
+einer tanzt an der Box, einer hockt in der Küche auf dem Boden, einer wartet
+vorm Bad. Die haben keine Aufgabe, die reden nur. Mit `E` kriegst Du einen
+Spruch, sonst quatschen sie von allein vor sich hin — und je voller Dein Pegel,
+desto weniger Sinn ergibt, was Du von ihnen hörst.
+
+Sie stehen Dir nicht im Weg: wer eine Aufgabe hat oder ein Möbelstück ist,
+kommt beim Druck auf `E` immer zuerst dran.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Er holt sichtbar aus, über
+ihm läuft ein Balken voll. Drück `E`, **sobald der Balken den weißen Strich
+passiert hat** — das ist ein Konter. **Viermal kontern, dann liegt er.**
+
+Er kann vier Sachen, und Du erkennst sie an der Farbe:
+
+| Farbe | Was kommt | Was Du machst |
+|:--|:--|:--|
+| **Rot** | Der Schwinger. Langsam, sein Grundschlag | Kontern |
+| **Gelb** | Deutlich schneller | Kontern, aber zügig |
+| **Grau, gestrichelt** | Eine Finte — die kommt gar nicht an | **Finger still.** Danach kommt sofort ein echter |
+| **Rot, dann gelb** | Doppelschlag: zwei hintereinander | Zweimal kontern |
+
+Je mehr Treffer er kassiert, desto schneller wird er und desto mehr Muster
+holt er raus. Und: **daneben hauen kostet.** Wer blind drückt, steht danach
+eine halbe Sekunde offen da — und wer weiter draufhämmert, kommt gar nicht
+mehr rein. E-Dauerfeuer gewinnt hier nichts.
 
 ### Moritz
 
@@ -246,6 +277,27 @@ python -m http.server 5173
 ```
 
 Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+
+## Nachrechnen statt raten
+
+In `werkzeug/` liegen zwei Skripte, die ein Level ohne Browser fahren. Sie
+laden das `<script>` aus der HTML-Datei in einen kopflosen Nachbau von Canvas
+und Audio. Kein npm, keine Abhängigkeiten, nur `node`:
+
+```bash
+node werkzeug/leveltest.js      # Zufallseingaben, Kollisionen, Musikbus, Verstecke
+node werkzeug/kampfbalance.js   # spielt den Kracher-Kampf 400x gegen 10 Spielertypen
+```
+
+`kampfbalance.js` ist der Grund, warum die Zahlen im `TUNE`-Block von Level 2
+so stehen, wie sie stehen: bis 420 ms Reaktionszeit gewinnt man den ersten
+Kampf sicher, bei 550 ms wird es knapp, auf eine Finte reinzubeißen kostet im
+Schnitt ein Herz, und E-Dauerfeuer gewinnt in 0 % der Fälle. Wer an den
+Reglern dreht, sieht sofort, was es kostet.
+
+Was die Skripte **nicht** können: sehen. Der Canvas schluckt jeden Malbefehl
+kommentarlos. Ob etwas gut aussieht, muss weiterhin ein Mensch im Browser
+beurteilen.
 
 ## Technisch
 
