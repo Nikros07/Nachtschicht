@@ -28,9 +28,18 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre) — zehn Statisten
+      in `STATISTEN`, tanzend, sitzend, quatschend. Reine Kulisse, sie tauchen in
+      keiner Reichweiten-Prüfung auf
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — Schwinger, Finte
+      und Flaschenwurf, dazu Deckung ab dem zweiten Treffer. Farbe des Balkens
+      sagt die Antwort. Bewegung und Springen im Kampf freigeschaltet
+- [x] Musik lauter/verzerrter je höher der Pegel — eigener Musikbus mit
+      Verzerrer und Tiefpass, Beat zieht sich, Bass schwankt
+- [ ] Die Statisten sind noch stumme Kulisse — ein oder zwei davon könnten beim
+      zweiten Durchgang etwas Nützliches sagen (wo die Jacke liegt zum Beispiel)
+- [ ] Der Kracher wiederholt sich nach vier Treffern nicht mehr — für einen
+      härteren Modus fehlt eine zweite Phase (kürzere Vorwarnung, zwei Flaschen)
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,10 +76,18 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+In Level 2 ist ein erster Teil davon schon gebaut und getestet — Blocken,
+Patzer-Strafe und ein begrenztes Konterfenster stehen dort im `TUNE`-Block und
+können beim Zusammenführen von dort übernommen werden.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
-- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Gegner müssen blocken können** — in Level 2 gebaut: der Kracher deckt
+      sich ab dem zweiten kassierten Treffer beim Anlauf
+- [x] **Fehlschläge bestrafen** — in Level 2 gebaut: ein Patzer kostet Tempo
+      *und* den laufenden Angriff. Blindes Hämmern verliert dort zuverlässig
+- [x] **Konterfenster verkleinern** auf das letzte Stück des Ausholens — in
+      Level 2 gebaut (`konterFenster`, letzte 62 % des Ausholens)
+- [ ] Dasselbe für die Gegner aus `runner.html` nachziehen
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -123,3 +140,8 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Zehn Statisten in Moritz' Wohnung — tanzen, sitzen, quatschen
+- [x] Der Kracher mit drei Angriffsmustern, Deckung und Patzer-Strafe
+- [x] Bewegen und Springen während des Kampfes
+- [x] Musik reagiert auf den Pegel: Zerre, Tiefpass, schleppender Beat
+- [x] Pause funktioniert auch mitten im Kampf und führt dorthin zurück

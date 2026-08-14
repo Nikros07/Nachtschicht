@@ -192,12 +192,43 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Und Du hörst es.** Die Musik im Hintergrund richtet sich nach dem Pegel: sie
+wird lauter, verzerrter und dumpfer, der Beat zieht sich, und der Bass fängt an
+zu schwanken. Nicht der Song ändert sich, sondern der Kopf, der ihn hört.
+Warnungen, Treffer und Stimmen bleiben davon unberührt und damit klar.
+
+### Die Wohnung ist voll
+
+Außer den vier Leuten, um die es geht, stehen überall welche rum: einer tanzt
+vor der Box, zwei diskutieren im Wohnzimmer, einer sitzt auf dem Boden, einer
+wartet vorm Bad, einer friert auf dem Balkon. Die kannst Du nicht ansprechen und
+sie halten Dich auch nicht auf — Du läufst einfach durch sie durch. Sie sind da,
+damit die Wohnung nach Party aussieht und nicht nach Kulisse.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er hat **drei
+Angriffsmuster**. Über seinem Kopf läuft ein Balken, und **die Farbe sagt Dir,
+was zu tun ist**:
+
+| Was Du siehst | Was er macht | Was Du tust |
+|:--|:--|:--|
+| **Roter** Balken, `!` | Schwinger, er holt weit aus | Warten |
+| Balken wird **grün**, `E` | Das Konterfenster ist offen | `E` — jetzt |
+| **Blauer** Balken, `?` | Finte. Der Schlag kommt nicht | **Nichts.** Finger weg |
+| **Goldener** Balken, Pfeil hoch | Er nimmt eine Flasche hoch | **Springen** |
+| Grünes `E`, keine Deckung | Nach dem Wurf steht er frei | Hingehen und `E` |
+| Arme vor dem Gesicht | Er deckt sich beim Anlauf | Warten, da geht nichts durch |
+
+**Du kannst Dich im Kampf bewegen.** Wer weit genug zurückweicht, entgeht dem
+Schwinger auch ohne Konter — das kostet Dich aber die Chance und Zeit, und die
+Bahn fährt trotzdem um 22:00.
+
+**Blind auf `E` hämmern verliert.** Jeder Druck zur falschen Zeit ist ein Patzer:
+Du bist kurz aus dem Tritt, **und der laufende Angriff ist für Dich gelaufen** —
+der Balken wird grau und wird nicht mehr grün. Ein Druck pro Angriff, und der
+muss sitzen. Viermal treffen, dann liegt er.
 
 ### Moritz
 
@@ -236,6 +267,17 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+In `level2.html` liegt derselbe `TUNE`-Block. Der Kampf gegen den Kracher steht
+komplett darin — `schwingerWindup`, `konterFenster`, `finteWindup`,
+`wurfTempo`, `deckungAb`, `patzerZeit` und die Arena-Grenzen `arenaVon`/
+`arenaBis`. Die Reihenfolge, in der die Muster gezeigt werden, steht in
+`MUSTER_FOLGE`, die Zufallsmischung danach in `MUSTER_MISCHUNG`.
+
+Die Wohnung selbst ist ebenfalls Daten: `ORTE` (Räume), `DINGE` (Möbel),
+`LEUTE` (wer eine Aufgabe hat) und `STATISTEN` (wer nur rumsteht). Statisten
+tauchen bewusst in keiner Reichweiten-Prüfung auf — einen dazuschreiben heißt
+eine Zeile in `STATISTEN`, sonst nichts.
 
 ## Lokal starten
 
