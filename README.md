@@ -9,6 +9,12 @@ Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
 
 > Was noch fehlt, steht in [TODO.md](TODO.md).
 
+**Die Level bauen aufeinander auf.** Level 2 ist zu, bis Du Level 1 geschafft
+hast — die Leiste unter dem Bild zeigt Dir, was schon offen ist. Dein Stand
+(welches Level frei ist, wer dabei ist, Deine Bestzeiten) liegt im Browser und
+bleibt erhalten. Zum Ausprobieren hängt `?frei=alle` an der Adresse alle
+Schlösser aus.
+
 ---
 
 # Spielanleitung
@@ -278,6 +284,25 @@ Die Wohnung selbst ist ebenfalls Daten: `ORTE` (Räume), `DINGE` (Möbel),
 `LEUTE` (wer eine Aufgabe hat) und `STATISTEN` (wer nur rumsteht). Statisten
 tauchen bewusst in keiner Reichweiten-Prüfung auf — einen dazuschreiben heißt
 eine Zeile in `STATISTEN`, sonst nichts.
+
+## Spielstand
+
+Alles liegt in einem localStorage-Schlüssel, `nachtschicht.stand`:
+
+```json
+{ "frei": 2, "crew": ["MAX FERDI"], "zeiten": { "1": 131.5 } }
+```
+
+`frei` ist die höchste freigespielte Levelnummer, `crew` sind die Jungs,
+`zeiten` die Bestzeiten pro Level. Ältere Stände (`nachtschicht.crew` und
+`nachtschicht.bestzeitN`) werden beim ersten Laden automatisch übernommen.
+
+Der `SPIELSTAND`-Block steht in jeder Leveldatei wortgleich; nur `LEVEL_NR`
+unterscheidet sich. Neues Level eintragen heißt: eine Zeile in `LEVELS`, ein
+`<a data-level="N">` in der Levelleiste.
+
+Die Sperre ist eine Sperre in der Oberfläche, kein Schloss: wer `level2.html`
+direkt aufruft, kommt rein. Das ist Absicht — Deeplinks sollen funktionieren.
 
 ## Lokal starten
 

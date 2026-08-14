@@ -52,6 +52,11 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Noch nicht freigespielt: sichtbar, aber tot. */
+  #levelbar a.zu { color:#4a4363; border-color:#221c3a; background:rgba(255,255,255,.02);
+    cursor:not-allowed; }
+  #levelbar a.zu::after { content:'  ZU'; color:#6b4a2a; }
+  #levelbar a.zu:hover { color:#4a4363; border-color:#221c3a; background:rgba(255,255,255,.02); }
   html.touch #levelbar { padding:6px 8px; }
   html.touch #levelbar a { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
@@ -84,8 +89,8 @@
   </div>
   <button id="fs">VOLLBILD</button>
   <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
+    <a href="index.html" data-level="1">1 &middot; DIE SCHULE</a>
+    <a href="level2.html" class="aktiv" data-level="2">2 &middot; BEI MORITZ</a>
   </div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -633,13 +638,70 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+/* ==========================================================================
+   SPIELSTAND
+   Ein Schluessel fuer alles: welches Level frei ist, wer dabei ist, welche
+   Bestzeiten stehen. Vorher lagen Crew und Bestzeit in getrennten Schluesseln
+   und niemand wusste, wie weit man gekommen war.
+
+   Der Block steht in jeder Leveldatei wortgleich - genau wie ladeCrew()
+   vorher auch. Nur LEVEL_NR unterscheidet sich. Solange es keine gemeinsame
+   Datei gibt, ist wortgleiches Kopieren ehrlicher als ein halber Umweg.
+   ========================================================================== */
+const STAND_KEY='nachtschicht.stand';
+const LEVELS=[
+  { nr:1, datei:'index.html',  name:'DIE SCHULE' },
+  { nr:2, datei:'level2.html', name:'BEI MORITZ' },
+];
+const LEVEL_NR=2;
+/* Zum Ausprobieren und Entwickeln: ?frei=alle haengt alle Schloesser aus. */
+const ALLES_FREI=/[?&]frei=alle/.test(location.search);
+
+let _stand=null;
+function ladeStand(){
+  if(_stand) return _stand;
+  const s={ frei:1, crew:[], zeiten:{} };
+  let gelesen=null;
+  try{ gelesen=JSON.parse(localStorage.getItem(STAND_KEY)); }catch(e){}
+  if(gelesen&&typeof gelesen==='object'){ _stand=Object.assign(s,gelesen); return _stand; }
+  /* Alte Staende uebernehmen, damit niemand von vorne anfangen muss. Wer
+     Max Ferdi dabei hat, hat Level 1 geschafft - also ist Level 2 frei. */
+  try{
+    const c=JSON.parse(localStorage.getItem('nachtschicht.crew'));
+    if(Array.isArray(c)){ s.crew=c; if(c.includes('MAX FERDI')) s.frei=2; }
+  }catch(e){}
+  for(const l of LEVELS){
+    const v=parseFloat(localStorage.getItem('nachtschicht.bestzeit'+l.nr));
+    if(isFinite(v)) s.zeiten[l.nr]=v;
+  }
+  _stand=s; return _stand;
+}
+function speichereStand(s){ _stand=s;
+  try{ localStorage.setItem(STAND_KEY,JSON.stringify(s)); }catch(e){} }
+const istFrei=nr=>ALLES_FREI||nr<=ladeStand().frei;
+function schalteFrei(nr){ const s=ladeStand(); if(nr>s.frei){ s.frei=nr; speichereStand(s); } }
+function gehZuLevel(nr){
+  const l=LEVELS.find(x=>x.nr===nr);
+  if(!l||!istFrei(nr)) return false;
+  location.href=l.datei; return true;
+}
+
+const ladeCrew=()=>ladeStand().crew;
+const speichereCrew=n=>{ const s=ladeStand();
+  if(!s.crew.includes(n)){ s.crew.push(n); speichereStand(s); } };
+const ladeBest=()=>{ const v=ladeStand().zeiten[LEVEL_NR]; return isFinite(v)?v:null; };
+const speichereBest=z=>{ const s=ladeStand(); s.zeiten[LEVEL_NR]=z; speichereStand(s); };
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+
+/* Levelleiste unter dem Bild: gesperrte Level bleiben sichtbar, aber tot.
+   Man soll sehen, dass da noch was kommt. Die Leiste steht im HTML ueber
+   diesem Script, sie ist hier also schon da. */
+document.querySelectorAll('#levelbar a[data-level]').forEach(a=>{
+  const nr=+a.dataset.level;
+  if(istFrei(nr)) return;
+  a.classList.add('zu');
+  a.addEventListener('click',e=>e.preventDefault());
+});
 
 /* ==========================================================================
    EINGABE
@@ -661,7 +723,12 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  /* Nach dem Sieg ins naechste Level - solange es das nicht gibt, zurueck
+     zum Anfang der Nacht. */
+  if(S.modus==='ende'){
+    if(S.gewonnen&&(gehZuLevel(LEVEL_NR+1)||gehZuLevel(1))) return;
+    neuesSpiel(); return;
+  }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -674,7 +741,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+    e.preventDefault(); gehZuLevel(1); }
   /* Pause muss auch im Kampf gehen - und danach wieder in den Kampf
      zurueck, nicht ins freie Laufen. */
   if(e.code==='KeyP'){
@@ -1122,9 +1189,11 @@ function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('MORITZ');
+  /* Level 3 gibt es noch nicht - der Stand merkt es sich trotzdem, damit
+     der Nachtbus fuer alle offen ist, die bis hierher gekommen sind. */
+  schalteFrei(LEVEL_NR+1);
   const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(best===null||S.zeit<best){ S.neueBestzeit=true; speichereBest(S.zeit); }
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;

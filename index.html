@@ -59,6 +59,11 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Noch nicht freigespielt: sichtbar, aber tot. */
+  #levelbar a.zu { color:#4a4363; border-color:#221c3a; background:rgba(255,255,255,.02);
+    cursor:not-allowed; }
+  #levelbar a.zu::after { content:'  ZU'; color:#6b4a2a; }
+  #levelbar a.zu:hover { color:#4a4363; border-color:#221c3a; background:rgba(255,255,255,.02); }
   html.touch #levelbar { padding:6px 8px; }
   html.touch #levelbar a { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
@@ -94,8 +99,8 @@
   </div>
   <button id="fs">VOLLBILD</button>
   <div id="levelbar">
-    <a href="index.html" class="aktiv">1 &middot; DIE SCHULE</a>
-    <a href="level2.html">2 &middot; BEI MORITZ</a>
+    <a href="index.html" class="aktiv" data-level="1">1 &middot; DIE SCHULE</a>
+    <a href="level2.html" data-level="2">2 &middot; BEI MORITZ</a>
   </div>
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -499,15 +504,72 @@ const NOTIZEN = [
   'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
 ];
 
+/* ==========================================================================
+   SPIELSTAND
+   Ein Schluessel fuer alles: welches Level frei ist, wer dabei ist, welche
+   Bestzeiten stehen. Vorher lagen Crew und Bestzeit in getrennten Schluesseln
+   und niemand wusste, wie weit man gekommen war.
+
+   Der Block steht in jeder Leveldatei wortgleich - genau wie ladeCrew()
+   vorher auch. Nur LEVEL_NR unterscheidet sich. Solange es keine gemeinsame
+   Datei gibt, ist wortgleiches Kopieren ehrlicher als ein halber Umweg.
+   ========================================================================== */
+const STAND_KEY='nachtschicht.stand';
+const LEVELS=[
+  { nr:1, datei:'index.html',  name:'DIE SCHULE' },
+  { nr:2, datei:'level2.html', name:'BEI MORITZ' },
+];
+const LEVEL_NR=1;
+/* Zum Ausprobieren und Entwickeln: ?frei=alle haengt alle Schloesser aus. */
+const ALLES_FREI=/[?&]frei=alle/.test(location.search);
+
+let _stand=null;
+function ladeStand(){
+  if(_stand) return _stand;
+  const s={ frei:1, crew:[], zeiten:{} };
+  let gelesen=null;
+  try{ gelesen=JSON.parse(localStorage.getItem(STAND_KEY)); }catch(e){}
+  if(gelesen&&typeof gelesen==='object'){ _stand=Object.assign(s,gelesen); return _stand; }
+  /* Alte Staende uebernehmen, damit niemand von vorne anfangen muss. Wer
+     Max Ferdi dabei hat, hat Level 1 geschafft - also ist Level 2 frei. */
+  try{
+    const c=JSON.parse(localStorage.getItem('nachtschicht.crew'));
+    if(Array.isArray(c)){ s.crew=c; if(c.includes('MAX FERDI')) s.frei=2; }
+  }catch(e){}
+  for(const l of LEVELS){
+    const v=parseFloat(localStorage.getItem('nachtschicht.bestzeit'+l.nr));
+    if(isFinite(v)) s.zeiten[l.nr]=v;
+  }
+  _stand=s; return _stand;
+}
+function speichereStand(s){ _stand=s;
+  try{ localStorage.setItem(STAND_KEY,JSON.stringify(s)); }catch(e){} }
+const istFrei=nr=>ALLES_FREI||nr<=ladeStand().frei;
+function schalteFrei(nr){ const s=ladeStand(); if(nr>s.frei){ s.frei=nr; speichereStand(s); } }
+function gehZuLevel(nr){
+  const l=LEVELS.find(x=>x.nr===nr);
+  if(!l||!istFrei(nr)) return false;
+  location.href=l.datei; return true;
+}
+
 /* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit1';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeCrew=()=>ladeStand().crew;
+const speichereCrew=n=>{ const s=ladeStand();
+  if(!s.crew.includes(n)){ s.crew.push(n); speichereStand(s); } };
+const ladeBest=()=>{ const v=ladeStand().zeiten[LEVEL_NR]; return isFinite(v)?v:null; };
+const speichereBest=z=>{ const s=ladeStand(); s.zeiten[LEVEL_NR]=z; speichereStand(s); };
 /* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+
+/* Levelleiste unter dem Bild: gesperrte Level bleiben sichtbar, aber tot.
+   Man soll sehen, dass da noch was kommt. Die Leiste steht im HTML ueber
+   diesem Script, sie ist hier also schon da. */
+document.querySelectorAll('#levelbar a[data-level]').forEach(a=>{
+  const nr=+a.dataset.level;
+  if(istFrei(nr)) return;
+  a.classList.add('zu');
+  a.addEventListener('click',e=>e.preventDefault());
+});
 
 /* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
 const SPINDE = [
@@ -535,7 +597,7 @@ function neuesSpiel(){
     hp:TUNE.leben, unverwundbar:0,
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
-    raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
+    raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0, zuT:0,
     imSpind:-1, spindAbkuehlung:0, schleicht:false,
     zettel:[], hinweisStufe:0, dunkelT:0, faenger:'',
     lampe:false, akku:TUNE.akkuStart, stumm:false,
@@ -623,11 +685,15 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  /* Nach gewonnenem Level fuehrt E direkt ins naechste. Das stand frueher
+     unter der Zeile darunter und war damit nie erreichbar - der Endbildschirm
+     versprach "E WEITER ZU LEVEL 2" und hat Level 1 neu gestartet. */
+  if(S.modus==='ende'){
+    if(S.gewonnen&&gehZuLevel(LEVEL_NR+1)) return;
+    neuesSpiel(); return;
+  }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
-  /* Nach gewonnenem Level fuehrt E direkt ins naechste */
-  if(S.modus==='ende'&&S.gewonnen){ location.href='level2.html'; return; }
   aktionPuffer.push(S.t);
 }
 /* ---- Intro ---- */
@@ -722,7 +788,10 @@ addEventListener('keydown',e=>{
   /* Levelauswahl auf dem Titelbild. Ohne das kommt man nur zu Level 2,
      wenn man Level 1 gewinnt - und sieht bis dahin nicht, dass es da ist. */
   if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
-    e.preventDefault(); location.href='level2.html'; }
+    e.preventDefault();
+    /* meldung() wird auf dem Titelbild nicht gezeichnet - deshalb ein
+       eigener kurzer Hinweis, der dort auch ankommt. */
+    if(!gehZuLevel(2)){ S.zuT=1.8; piep(160,.12,'square',.05); } }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -852,6 +921,7 @@ function update(dt){
   S.blitz=Math.max(0,S.blitz-dt*2.2);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
+  if(S.zuT>0) S.zuT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
 
   if(S.modus==='intro'){ intro(dt); return; }
@@ -1303,9 +1373,9 @@ function starteCutscene(){
 /* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
 function levelGeschafft(){
   speichereCrew('MAX FERDI');
+  schalteFrei(LEVEL_NR+1);          // ab jetzt steht Level 2 offen
   const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(best===null||S.zeit<best){ S.neueBestzeit=true; speichereBest(S.zeit); }
 }
 
 function cutscene(dt){
@@ -1898,11 +1968,16 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt */
+  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt.
+     Gesperrt wird es trotzdem angezeigt: man soll wissen, was kommt. */
+  const frei2=istFrei(2);
   const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
-  const b='TASTE 2    LEVEL 2 - BEI MORITZ';
+  const b=frei2?'TASTE 2    LEVEL 2 - BEI MORITZ'
+               :'ZU         LEVEL 2 - BEI MORITZ';
   text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  text(b,(W-textW(b))/2,H-5,frei2?P.neon2:P.dunkel);
+  if(S.zuT>0){ ctx.globalAlpha=Math.min(1,S.zuT*1.5);
+    textGlowC('ERST DIE SCHULE HINTER DICH BRINGEN',H-30,P.gold,1); ctx.globalAlpha=1; }
 }
 function bildschirme(){
   if(S.modus==='pause'){

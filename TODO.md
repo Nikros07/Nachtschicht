@@ -95,10 +95,37 @@ können beim Zusammenführen von dort übernommen werden.
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei) —
+      ein Schlüssel `nachtschicht.stand` mit `{ frei, crew, zeiten }`. Alte
+      Stände (`nachtschicht.crew`, `nachtschicht.bestzeitN`) werden beim ersten
+      Laden übernommen. `?frei=alle` hängt zum Ausprobieren alle Schlösser aus
+- [x] Übergänge zwischen den Leveln — Level 1 schaltet Level 2 frei, `E` auf dem
+      Siegbildschirm führt wirklich dorthin (stand vorher hinter einem `return`
+      und war toter Code), die Levelleiste sperrt was noch zu ist
+- [ ] **Level-Daten in eine eigene Struktur, damit neue Level ohne Code
+      entstehen.** Das ist inzwischen der eigentliche Engpass, siehe unten
 - [ ] Kampfsystem und Level-System zusammenführen
+
+### Entscheidung vor Level 3
+
+`index.html` und `level2.html` sind zwei vollständige Kopien derselben Engine:
+Bitmap-Font, Bild-Cache, Sprite-Backen, Vollbild, Touch, Kamera, Audio und
+jetzt auch der Spielstand-Block stehen in beiden Dateien wortgleich. Bei zwei
+Dateien ist das noch überschaubar, bei acht Leveln ist es nicht mehr zu warten
+— jede Änderung am Font oder am Spielstand muss dann achtmal gemacht werden.
+
+Ein drittes Level anzufangen heißt, eine dritte Kopie anzulegen. Deshalb steht
+hier eine Entscheidung an, bevor der Nachtbus gebaut wird:
+
+- **A — gemeinsame Datei.** Engine nach `motor.js` ziehen, Level laden sie per
+  `<script src>`. Läuft auch von der Festplatte. Kostet die Eigenschaft, dass
+  jede Leveldatei für sich allein funktioniert.
+- **B — eine Datei, mehrere Level.** Alles in `index.html`, Level als Daten,
+  Umschalten ohne Seitenwechsel. Passt am besten zu „kein Download, keine
+  Installation“, ist aber der größte Umbau.
+- **C — weiter kopieren.** Schnell für Level 3, teuer ab Level 4.
+
+**Braucht eine Ansage vom Nick.** Bis dahin bleibt es bei C.
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
@@ -145,3 +172,5 @@ können beim Zusammenführen von dort übernommen werden.
 - [x] Bewegen und Springen während des Kampfes
 - [x] Musik reagiert auf den Pegel: Zerre, Tiefpass, schleppender Beat
 - [x] Pause funktioniert auch mitten im Kampf und führt dorthin zurück
+- [x] Ein gemeinsamer Spielstand statt drei einzelner Schlüssel
+- [x] Level 2 ist gesperrt, bis Level 1 durch ist
