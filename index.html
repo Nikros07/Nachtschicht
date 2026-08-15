@@ -253,6 +253,40 @@ const SPR = {
   tafel:  ['dddddddddd','dqqqqqqqqd','dq.q..qq.d','dqqqqqqqqd','dq..qq..qd','dqqqqqqqqd','dddddddddd'],
   pflanze:['..ggg..','.ggggg.','g.ggg.g','..ggg..','...z...','..zzz..','.zzzzz.'],
   kiste:  ['oooooo','o....o','o.oo.o','o....o','oooooo'],
+
+  /* ---- Einrichtung nach Raumart ----
+     Vorher gab es sieben Moebel fuer zehn Raeume, und sechs davon hatten
+     einen Tisch. Man lief durch die Schule und sah ueberall dasselbe.
+     Jede Raumart hat jetzt Sachen, die es nur dort gibt - daran erkennt
+     man beim Reinkommen sofort, wo man ist. */
+  /* Hausmeister */
+  werkbank:['zzzzzzzzzzzz','jjjjjjjjjjjj','j..u....u..j','j..........j','j.dddd.dd..j','j..........j','jj........jj'],
+  fass:   ['.oooooo.','oooooooo','o......o','oooooooo','o......o','oooooooo','.oooooo.'],
+  leiter: ['u....u','uuuuuu','u....u','uuuuuu','u....u','uuuuuu','u....u','uuuuuu','u....u','u....u'],
+  /* Turnhalle */
+  bock:   ['.bbbbbbbb.','bbbbbbbbbb','bbbbbbbbbb','..d....d..','..d....d..','..d....d..','.dd....dd.'],
+  matte:  ['vvvvvvvvvv','mmmmmmmmmm','vvvvvvvvvv','mmmmmmmmmm'],
+  ballkorb:['dd....dd','d.oooo.d','d.oggo.d','d.oooo.d','d......d','dd....dd','.d....d.','.d....d.'],
+  /* Buero */
+  aktenschrank:['uuuuuuu','u.....u','u.ddd.u','uuuuuuu','u.....u','u.ddd.u','uuuuuuu','u.....u','u.ddd.u','uuuuuuu','ddddddd'],
+  kopierer:['.uuuuuuu.','uuuuuuuuu','u.......u','u.wwwww.u','uuuuuuuuu','u..ggg..u','u.......u','ddddddddd'],
+  stuhl:  ['.zzzz.','.z..z.','.z..z.','zzzzzz','.d..d.','.d..d.','.d..d.'],
+  /* Klassenraum */
+  bank:   ['zzzzzzzzzz','jjjjjjjjjj','d........d','d.zzzzzz.d','d.jjjjjj.d','d........d','dd......dd'],
+  pult:   ['..zzzzzz..','.zzzzzzzz.','.j......j.','.j......j.','.j.dddd.j.','.j......j.','.jj....jj.'],
+  karte:  ['dddddddddd','dqqqqqqqqd','dq.tt...qd','dqtttt.t.d','dq.tt..ttd','dq....t..d','dqqqqqqqqd','dddddddddd'],
+  /* Chemie */
+  abzug:  ['uuuuuuuuuu','u........u','u.wwwwww.u','u.wwwwww.u','u........u','uuuuuuuuuu','u.c....c.u','u........u','uuuuuuuuuu','dddddddddd'],
+  glaskasten:['uuuuuuuu','u.c..c.u','u.c..c.u','uuuuuuuu','u.g..t.u','u.g..t.u','uuuuuuuu','dddddddd'],
+  waschbecken:['uuuuuuuu','u......u','u.dddd.u','uuuuuuuu','...uu...','...uu...','..dddd..'],
+  /* Bibliothek */
+  buecherwand:['zzzzzzzzz','zvbgvbrgz','zzzzzzzzz','zbrvgbvbz','zzzzzzzzz','zgvbrvgbz','zzzzzzzzz','zbvgbrvbz','zzzzzzzzz','ddddddddd'],
+  lesetisch:['....ll....','...llll...','....dd....','zzzzzzzzzz','j........j','d........d','dd......dd'],
+  karteikasten:['zzzzzzz','z.....z','z.lll.z','zzzzzzz','z.....z','z.lll.z','zzzzzzz','ddddddd'],
+  /* Lehrerzimmer */
+  kaffee: ['dddddd','d.gg.d','d....d','dwwwwd','d....d','d.bb.d','dddddd','.dddd.'],
+  sofa:   ['.qqqqqqqqq.','qqqqqqqqqqq','qqqqqqqqqqq','q.........q','q.........q','.dd.....dd.'],
+  faecher:['zzzzzzzzz','z.z.z.z.z','zzzzzzzzz','z.z.z.z.z','zzzzzzzzz','z.z.z.z.z','zzzzzzzzz','ddddddddd'],
   /* Tuerblatt muss gefuellt sein - sonst sieht man durch die Tuer die Wand */
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
@@ -318,18 +352,47 @@ const STIL = {
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
 };
 
+/* Was in welcher Raumart steht.
+   'fest' ist immer dabei - ohne Tafel ist ein Klassenraum kein Klassenraum.
+   Aus 'vorrat' wird der Rest jede Runde neu gezogen. */
+const EINRICHTUNG = {
+  hausmeister:{ fest:['werkbank'],     vorrat:['spind','eimer','regal','kiste','fass','leiter'] },
+  turnhalle:  { fest:['bock'],         vorrat:['kiste','matte','ballkorb','bank'] },
+  buero:      { fest:['aktenschrank'], vorrat:['tisch','regal','pflanze','kopierer','stuhl'] },
+  klasse:     { fest:['tafel'],        vorrat:['bank','pult','tisch','spind','pflanze','karte','stuhl'] },
+  chemie:     { fest:['abzug'],        vorrat:['regal','glaskasten','tisch','kiste','waschbecken'] },
+  biblio:     { fest:['buecherwand'],  vorrat:['regal','lesetisch','karteikasten','tisch','stuhl'] },
+  lehrer:     { fest:['kaffee'],       vorrat:['tisch','sofa','faecher','spind','pflanze','stuhl'] },
+};
+
+/* Die Raeume sagen nur noch, wie viele Moebel drinstehen. Was genau,
+   entscheidet die Raumart - und der Wuerfel. */
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', anzahl:4 },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   anzahl:3 },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       anzahl:3 },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      anzahl:3 },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      anzahl:3 },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      anzahl:4 },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      anzahl:3 },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      anzahl:4 },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      anzahl:3 },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      anzahl:3 },
 ];
+
+/* Jede Runde neu einrichten. Damit unterscheiden sich Runden nicht nur
+   darin, WO die Moebel stehen, sondern auch WELCHE es sind. */
+function richteEin(){
+  return RAEUME.map(r=>{
+    const e=EINRICHTUNG[r.stil];
+    const liste=[...e.fest];
+    const vorrat=mische(e.vorrat);
+    let i=0;
+    while(liste.length<r.anzahl) liste.push(vorrat[i++ % vorrat.length]);
+    /* Das feste Stueck soll nicht in jeder Runde links stehen. */
+    return mische(liste);
+  });
+}
 const AUSGANG = { e:0, x:648 };
 
 /* Nachrichten haengen jetzt an dem, was du TUST, nicht an der Uhr.
@@ -410,7 +473,12 @@ function neuesSpiel(){
     schritte:0, gewonnen:false,
     nahesMoebel:-1, anTuerRaus:false,
     neueBestzeit:false, alteBest:null, gesperrtBis:0,
+    moebel:[],                 // pro Raum die Einrichtung dieser Runde
   };
+  /* Erst einrichten, dann verstecken - was wo liegt, haengt daran, wie
+     viele Moebel diese Runde ueberhaupt in einem Raum stehen. */
+  S.moebel=richteEin();
+
   /* Der Schluessel darf nicht im Raum direkt neben dem Start liegen -
      sonst ist die Runde nach zwanzig Sekunden vorbei und fuehlt sich
      jedes Mal gleich an. Etagen werden gleich gewichtet, damit nicht
@@ -422,13 +490,13 @@ function neuesSpiel(){
   const inEtage=erlaubt.filter(i=>RAEUME[i].e===etage);
   const r=inEtage[Math.floor(Math.random()*inEtage.length)];
   S.schluesselRaum=r;
-  S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
+  S.schluesselMoebel=Math.floor(Math.random()*S.moebel[r].length);
 
   /* Zettel verstecken. Sie liegen bewusst NICHT im Schluesselraum -
      sonst findet man beides auf einmal und der Hinweis ist wertlos. */
   const frei=[];
   RAEUME.forEach((raum,ri)=>{ if(ri===r) return;
-    raum.moebel.forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
+    S.moebel[ri].forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
   for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
     [frei[i],frei[j]]=[frei[j],frei[i]]; }
   /* Keine feste Stufe mehr. Entscheidend ist, in welcher Reihenfolge du
@@ -1007,12 +1075,13 @@ function raumDeko(st,deckeY,bodenY){
 }
 
 function moebelPlaetze(r){
-  const n=r.moebel.length;
+  const saat=RAEUME.indexOf(r)+1;
+  const liste=S.moebel[saat-1]||[];
+  const n=liste.length;
   const start=78, abstand=(W-160)/Math.max(1,n-1);
   /* Feste, aber pro Raum unterschiedliche Verschiebung. Vorher standen
      die Moebel in jedem der zehn Raeume exakt gleich. */
-  const saat=RAEUME.indexOf(r)+1;
-  return r.moebel.map((m,i)=>{
+  return liste.map((m,i)=>{
     const versatz=((saat*37+i*61)%23)-11;
     return { typ:m, x:Math.round(start+i*abstand+versatz) };
   });

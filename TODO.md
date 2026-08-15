@@ -16,7 +16,9 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
 - [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
-- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
+- [x] **Mehr Abwechslung in den Möbelarten selbst** — 20 neue Möbel, jede
+      Raumart hat eigene. Ein Stück steht fest, der Rest wird jede Runde neu
+      gezogen (`EINRICHTUNG` in `index.html`).
 
 ---
 
@@ -105,7 +107,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [x] **Mehr Abwechslung in den Räumen** — jede Raumart hat eigene Möbel, die
+      Einrichtung wird pro Runde gewürfelt (Level 1). Level 2 hat weiter feste
+      Möbel, dort ist ihre Position aber Teil des Rätsels.
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler

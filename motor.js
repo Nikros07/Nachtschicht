@@ -119,6 +119,14 @@ function textGlow(str,x,y,col,s=1){
 const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,s);
 
 const pick=a=>a[Math.floor(Math.random()*a.length)];
+/* Richtig mischen (Fisher-Yates) und dabei eine neue Liste zurueckgeben.
+   sort(()=>Math.random()-.5) sieht kuerzer aus, verteilt aber nachweislich
+   ungleich - bei kurzen Listen bleibt das erste Element viel zu oft vorn. */
+function mische(liste){
+  const a=[...liste];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
 
 /* ==========================================================================
    TON

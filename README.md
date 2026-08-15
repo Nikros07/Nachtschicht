@@ -60,6 +60,12 @@ Beim Start sagt Dir das Intro, welche gerade läuft — sie wechselt jede Runde:
 Im Korridor siehst Du nur Türen. Was dahinter liegt, siehst Du erst, wenn Du
 reingehst — unbetretene Türen zeigen `? ? ?`.
 
+**Jede Raumart hat ihre eigene Einrichtung.** Im Chemieraum steht ein Abzug, in
+der Bibliothek eine Bücherwand, beim Hausmeister eine Werkbank, in der Turnhalle
+ein Bock. Ein Stück steht immer da — ohne Tafel ist ein Klassenraum kein
+Klassenraum — der Rest wird **jede Runde neu gewürfelt**. Zweimal derselbe Raum
+sieht nicht gleich aus.
+
 Drinnen durchsuchst Du Möbel mit `E`. Die meisten sind leer, aber nicht alle:
 
 | Fund | Wirkung |
@@ -297,8 +303,13 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 | `leben` | Wie viele Fehler Du machen darfst |
 
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
-`LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
-Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+`LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`, `EINRICHTUNG`. Räume dazuschreiben
+geht ohne eine Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN`
+und `NOTIZEN`.
+
+`EINRICHTUNG` sagt pro Raumart, was immer dasteht (`fest`) und woraus der Rest
+jede Runde gezogen wird (`vorrat`). Ein Raum in `RAEUME` sagt nur noch, wie
+viele Möbel drinstehen (`anzahl`) — welche, entscheidet die Raumart.
 
 ## Der Spielstand im Code
 
