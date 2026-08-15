@@ -192,12 +192,38 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst ihn auch.** Der Bass wird lauter, verstimmt sich, zieht das Tempo
+runter und fängt irgendwann an zu sägen. Ab ganz oben liegt eine schiefe Quinte
+drunter. Du merkst am Ton, wie voll Du bist, bevor Du auf den Balken schaust.
+
+### Die anderen
+
+In der Wohnung stehen noch fünf Leute rum, die Du nicht ansprechen kannst und
+nicht mitnimmst. Einer tanzt, einer hockt vorm Bad, einer hält seinen Becher
+fest. Ab und zu sagt einer was — immer nur einer. Ab **Mut** klingt das, was sie
+sagen, anders.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel.
+
+Über seinem Kopf läuft ein Balken. **Hinten liegt das Konterfenster, hell
+unterlegt.** Drückst Du `E`, wenn der Balken dort angekommen und **gold** ist,
+sitzt der Konter. Drückst Du vorher, haust Du daneben — und **kannst danach eine
+gute halbe Sekunde gar nichts**, während sein Schlag ankommt. Draufhalten
+funktioniert nicht.
+
+Er hat drei Muster, und er lernt dazu, während Du es tust:
+
+| Muster | Zeichen | Wie |
+|:--|:--|:--|
+| **Schwinger** | `!` | Von Anfang an. Lange Vorwarnung, breites Fenster — daran lernst Du es |
+| **Doppelschlag** | `!!` | Ab dem ersten Konter. Zweimal kurz hintereinander, engeres Fenster. Ein Konter bricht beides ab |
+| **Finte** | `!` dann `?` | Ab dem zweiten Konter. Er holt aus — und **hält an**. Der Balken steht still und wird grau. Wer da drückt, haut daneben. Warte, bis er weiterläuft |
+
+Zweimal dasselbe hintereinander kommt nicht. Beim letzten Herz zieht er das
+Tempo an. Dreimal kontern, dann liegt er.
 
 ### Moritz
 

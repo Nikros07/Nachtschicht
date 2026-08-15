@@ -28,9 +28,16 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] **Mehr Leute in der Wohnung, die nur rumstehen** — fünf Statisten, einer
+      tanzt, einer hockt vorm Bad. Immer nur einer redet, ab Mut anderer Text.
+- [x] **Der Kracher braucht mehr als ein Angriffsmuster** — Schwinger,
+      Doppelschlag, Finte. Sie schalten sich mit jedem Konter frei, nie zweimal
+      dasselbe hintereinander. Konterfenster nur noch im letzten Teil des
+      Ausholens, Fehlschläge sperren dich 0,65 s.
+- [x] **Musik lauter/verzerrter je höher der Pegel** — verstimmt ab 45 %,
+      sägt ab 60 %, schiefe Quinte ab 75 %, Tempo zieht sich um 12 BPM.
+- [ ] Noch offen im Kampf: Fernangriff (Flasche werfen), den man wegspringen
+      muss — der Sprung tut im Kampf bisher nichts
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -69,8 +76,10 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [~] **Fehlschläge bestrafen** — im Kracher-Kampf drin (0,65 s Sperre), muss
+      beim Zusammenführen ins gemeinsame Kampfsystem wandern
+- [~] **Konterfenster verkleinern** — im Kracher-Kampf als `konterFenster`
+      (letzte 40 % des Ausholens), gilt noch nicht für `runner.html`
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
