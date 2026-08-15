@@ -87,7 +87,12 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
+- [x] **Motor aus den Leveldateien ziehen** — `motor.js`: Schrift, Bild-Cache,
+      Zeichenhilfen, Ton, Leinwand. Lag vorher in jeder Leveldatei doppelt
+      und war schon auseinandergelaufen.
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
+      (Räume, Möbel, Wege als Daten — der Motor steht, die Levelbeschreibung
+      fehlt noch)
 - [x] **Spielstand speichern** — `spielstand.js`, ein Datensatz für alle Level:
       Fortschritt, Crew, Bestzeiten. Level schalten sich frei, die Leiste zeigt
       offen/zu/bald. Alte Einzelschlüssel werden übernommen.

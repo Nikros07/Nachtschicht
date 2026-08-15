@@ -258,6 +258,28 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 # Für Entwickler
 
+## Wie die Dateien zusammenhängen
+
+| Datei | Was drin steht |
+|:--|:--|
+| `motor.js` | Was **alle** Level gleich machen: Schrift, Bild-Cache, Zeichenhilfen, Ton, Leinwand und Vollbild |
+| `spielstand.js` | Fortschritt, Crew, Bestzeiten — und die Liste `LEVEL` |
+| `index.html` | Level 1 — Die Schule |
+| `level2.html` | Level 2 — Bei Moritz |
+| `runner.html` | Der alte Endlos-Modus, unverändert |
+
+Beide Level laden zuerst `motor.js`, dann `spielstand.js`, dann ihr eigenes
+Skript. Alles drei sind ganz normale Skripte, keine Module — die Level rufen
+`sprite()`, `text()`, `ctx` und `W` weiter direkt auf, ohne Präfix. Deshalb
+reicht `motor.js` als Datei, ohne dass tausend Aufrufe umgeschrieben werden.
+
+**In der Leveldatei bleibt nur, was das Level eigen macht:** `TUNE`, die
+Palette `P`, die Farbtafel `KEY`, die Sprites `SPR`, die Geräusche `SFX`, die
+Musikfigur — und die ganze Spiellogik.
+
+Ein neues Level ist damit: eine HTML-Datei nach dem Muster von `level2.html`,
+plus eine Zeile in `LEVEL` in `spielstand.js`.
+
 ## Selbst dran drehen
 
 Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
@@ -321,7 +343,8 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 ## Technisch
 
 - 320 × 180 interne Auflösung, Breite wächst auf breiten Schirmen mit
-- Eigener 3×5-Bitmap-Font statt Browser-Schrift
+- Eigener 3×5-Bitmap-Font statt Browser-Schrift (keine Umlaute — im Spiel
+  heißt es `AE`, `OE`, `UE`; alles ohne Glyph fällt auf `?` zurück)
 - Sprites, Konturen, Schrift und Farbverläufe werden einmal gebacken und danach
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
