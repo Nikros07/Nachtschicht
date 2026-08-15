@@ -41,6 +41,45 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 - [ ] Noch offen im Kampf: Fernangriff (Flasche werfen), den man wegspringen
       muss — der Sprung tut im Kampf bisher nichts
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+
+  <details><summary>Vorschlag, wie das Level funktionieren könnte — bitte
+  gegenlesen, bevor es gebaut wird</summary>
+
+  **Was es anders macht als 1 und 2.** In Level 1 geht es ums Nichtgesehenwerden,
+  in Level 2 darum, eine Meute in Bewegung zu kriegen. Hier bewegt sich **das
+  Level selbst**. Das ist der Haken, den es sonst nirgends gibt.
+
+  **Der Bus als Gegner.** Er beschleunigt, bremst, nimmt Kurven. Bei jeder
+  Bewegung rutschst Du in Fahrtrichtung, und wer nicht an einer **Haltestange**
+  hängt (`E`), fällt hin: laut, und Du liegst zwei Sekunden. Vorne an der
+  Frontscheibe siehst Du die Straße — eine Kurve kündigt sich an, bevor sie
+  kommt. Das ist das Timing aus dem Zettel.
+
+  **Der Kontrolleur.** Steigt an der zweiten Haltestelle zu und arbeitet sich
+  durch den Bus. Drei Wege an ihm vorbei, alle an die Busbewegung gekoppelt:
+  Fahrschein am Automaten ziehen (Münzen unter den Sitzen suchen, geht nur wenn
+  der Bus ruhig fährt), hinten in der Menge verschwinden, oder an einer
+  Haltestelle raus und durch die andere Tür wieder rein, bevor sie zugeht.
+
+  **Warum das trägt:** Festhalten und Handeln schließen sich aus. Jede Aktion —
+  suchen, Automat, Tür — kostet genau die Sekunden, in denen Du nicht
+  festhältst. Der Bus entscheidet, wann Du Dir das leisten kannst.
+
+  **Technisch steht alles bereit:** `motor.js` bringt Schrift, Sprites, Ton und
+  Leinwand mit, `spielstand.js` hat Level 3 schon als Eintrag (`datei:null` →
+  wird als `BALD` angezeigt). Ein neues Level ist eine HTML-Datei nach dem
+  Muster von `level2.html` plus die Dateiangabe in `LEVEL`.
+
+  **Was fehlt und nicht ohne Nick entschieden werden kann:**
+
+  - **Wer steigt hier zu?** Level 1 gibt Max Ferdi, Level 2 Moritz. Für Level 3
+    fehlt der Name und die Eigenheit — genau das, was unten unter *Die Jungs*
+    als „kommt vom Nick" steht. Solange das offen ist, schaltet Level 3 keinen
+    frei (`junge:null` in `spielstand.js`), und das Level funktioniert trotzdem.
+  - **Wohin fährt der Bus?** Level 4 ist die Schlange vor dem Club. Ob der Bus
+    dort ankommt oder ob noch was dazwischen liegt, gehört zur Story.
+
+  </details>
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -69,6 +108,9 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
+      — **das blockiert gerade Level 3.** Fest sind bisher nur Max Ferdi
+      (Level 1, +15 % Tempo) und Moritz (Level 2, besser bei den Chayas).
+      Wer ab Level 3 dazukommt und was er kann, steht noch nicht fest.
 
 ---
 
