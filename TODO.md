@@ -79,7 +79,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 ## Technik
 
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
+- [x] **Spielstand speichern** — `spielstand.js`, ein Datensatz für alle Level:
+      Fortschritt, Crew, Bestzeiten. Level schalten sich frei, die Leiste zeigt
+      offen/zu/bald. Alte Einzelschlüssel werden übernommen.
 - [ ] Übergänge zwischen den Leveln
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife

@@ -207,6 +207,21 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Der Spielstand
+
+Was Du geschafft hast, bleibt im Browser gespeichert — kein Konto, kein Server.
+
+**Level schalten sich frei.** Level 2 ist zu, bis Level 1 durch ist. Die Leiste
+unter dem Bild zeigt Dir, was offen ist, was noch zu ist und was noch gar nicht
+gebaut wurde.
+
+**Die Crew bleibt.** Wer sich Dir anschließt, ist ab dann in jedem Level dabei —
+mit seiner Fähigkeit. Max Ferdi bringt Dir 15 % Tempo, in jedem Level.
+
+**Bestzeiten** werden pro Level gezählt.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -236,6 +251,36 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+## Der Spielstand im Code
+
+`spielstand.js` liegt neben den Leveln und wird von allen geladen. Es hält
+Fortschritt, Crew und Bestzeiten in **einem** Datensatz unter
+`nachtschicht.stand`:
+
+```js
+{ v:1, geschafft:[1,2], crew:['MAX FERDI'], best:{ '1':142.6 } }
+```
+
+Ganz oben in der Datei steht die Liste `LEVEL` — **das ist die einzige Stelle,
+an der ein neues Level eingetragen wird.** Levelleiste, Freischaltung und das
+„weiter zu“ am Ende jedes Levels lesen daraus. `datei:null` heißt „gibt es noch
+nicht“ und erscheint als `BALD`.
+
+| Aufruf | Bewirkt |
+|:--|:--|
+| `Stand.frei(nr)` | Ist das Level offen? |
+| `Stand.geschafft(nr, zeit, junge)` | Level abschließen, gibt `true` bei neuer Bestzeit |
+| `Stand.naechstes(nr)` | Das nächste Level, das es wirklich gibt |
+| `Stand.crew()` · `Stand.hat(name)` | Wer ist dabei |
+| `Stand.baueLeiste(nr)` | Baut die Leiste unter dem Bild |
+| `Stand.zuruecksetzen()` | Fortschritt löschen (Konsole) |
+
+Alte Einzelschlüssel (`nachtschicht.crew`, `nachtschicht.bestzeit1/2`) werden
+beim ersten Laden übernommen — bestehende Spielstände gehen nicht verloren.
+
+**Zum Testen:** `?frei=alle` an die Adresse hängen macht alle Level auf, ohne
+den Spielstand anzufassen. Der Parameter wandert beim Levelwechsel mit.
 
 ## Lokal starten
 

@@ -52,8 +52,14 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Noch zu (Level davor fehlt) bzw. noch gar nicht gebaut. */
+  #levelbar span.zu, #levelbar span.bald {
+    flex:1; text-align:center; font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+    color:#3f3a55; background:rgba(255,255,255,.02);
+    border:1px dashed #241d3c; border-radius:5px; user-select:none; cursor:default; }
+  #levelbar span.bald { border-style:dotted; }
   html.touch #levelbar { padding:6px 8px; }
-  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  html.touch #levelbar a, html.touch #levelbar span { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
@@ -83,13 +89,13 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
-  </div>
+  <!-- Inhalt kommt aus spielstand.js. -->
+  <div id="levelbar"></div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
+
+<script src="spielstand.js"></script>
 
 <script>
 /* ============================================================================
@@ -470,6 +476,7 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
+    neueBestzeit:false, alteBest:null,
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -486,13 +493,12 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Crew, Bestzeit und Freischaltung liegen im gemeinsamen Spielstand. */
+const LEVEL_NR=2;
+const ladeCrew=()=>Stand.crew();
+const ladeBest=()=>Stand.best(LEVEL_NR);
+const tempoBonus=()=>Stand.hat('MAX FERDI')?1.15:1;
+Stand.baueLeiste(LEVEL_NR);
 
 /* ==========================================================================
    EINGABE
@@ -514,7 +520,13 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){
+    /* Gewonnen fuehrt weiter - solange es ein naechstes Level gibt.
+       Sonst bleibt nur der Neustart, zurueck nach Level 1 waere ein
+       Rueckschritt. */
+    if(S.gewonnen){ const n=Stand.naechstes(LEVEL_NR);
+      if(n){ location.href=Stand.link(n.datei); return; } }
+    neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -527,7 +539,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+    e.preventDefault(); Stand.geheZu(1); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -807,10 +819,9 @@ const SZENEN=[
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
 function levelGeschafft(){
-  speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  /* Alte Bestzeit vor dem Speichern merken - danach ist sie ueberschrieben. */
+  S.alteBest=ladeBest();
+  S.neueBestzeit=Stand.geschafft(LEVEL_NR,S.zeit,'MORITZ');
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -1025,8 +1036,8 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
+  const a='TASTE 1    LEVEL 1 - '+Stand.level(1).name;
+  const b='LEERTASTE  LEVEL 2 - '+Stand.level(2).name;
   text(a,(W-textW(a))/2,H-11,P.dunkel);
   text(b,(W-textW(b))/2,H-5,P.neon2);
 }
@@ -1077,11 +1088,18 @@ function bildschirme(){
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
       textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),74,S.neueBestzeit?P.gold:P.dim);
       if(S.neueBestzeit) textC('NEUE BESTZEIT',84,P.gold);
+      else if(S.alteBest!==null&&S.alteBest!==undefined)
+        textC('BESTZEIT  '+Math.floor(S.alteBest/60)+':'+String(Math.floor(S.alteBest%60)).padStart(2,'0'),84,P.dunkel);
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      const n=Stand.naechstes(LEVEL_NR), bald=Stand.level(LEVEL_NR+1);
+      if(n){
+        textC('LEVEL '+n.nr+' - '+n.name,124,P.dunkel);
+        if(Math.floor(S.t*2)%2===0) textGlowC('E  WEITER',136,P.gruen,1);
+      } else {
+        textC(bald?'LEVEL '+bald.nr+' - '+bald.name+' FOLGT':'MEHR KOMMT NOCH',124,P.dunkel);
+      }
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
