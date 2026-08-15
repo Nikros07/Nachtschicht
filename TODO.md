@@ -38,8 +38,20 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       Ausholens, Fehlschläge sperren dich 0,65 s.
 - [x] **Musik lauter/verzerrter je höher der Pegel** — verstimmt ab 45 %,
       sägt ab 60 %, schiefe Quinte ab 75 %, Tempo zieht sich um 12 BPM.
+- [x] **Das Level war eine Checkliste** — vier Aufgaben abhaken, dazwischen kein
+      Druck. Jetzt springen die Jungs wieder ab: alle vier müssen *gleichzeitig*
+      stehen. Wer wie lange durchhält, hängt daran, wie teuer er zurückzuholen
+      ist. Reihenfolge ist das eigentliche Rätsel.
+- [x] **Der Sprung war ein Knopf ohne Wirkung** — Möbel sind begehbar. Oben auf
+      dem Schrank steht der Schnaps (setzt alle Balken zurück, kostet Pegel),
+      und wer oben sitzt, ist von unten nicht ansprechbar.
+- [x] **Der Pegel war ein Schalter** — jetzt zweiseitig: betrunken suchst du
+      langsamer und übersiehst auch mal was. Erst nüchtern suchen, dann trinken.
 - [ ] Noch offen im Kampf: Fernangriff (Flasche werfen), den man wegspringen
       muss — der Sprung tut im Kampf bisher nichts
+- [ ] Von Hand gegenspielen: die Geduldswerte sind an einem Bot gemessen, der
+      Dialoge sofort wegdrückt. Ein Mensch liest mit und ist langsamer — kann
+      sein, dass 15 s für den Schläfer beim ersten Durchlauf zu knapp sind.
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 
   <details><summary>Vorschlag, wie das Level funktionieren könnte — bitte

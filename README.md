@@ -177,6 +177,32 @@ zwei Stunden rum und keiner macht Anstalten loszugehen. Also machst Du es.
 **Kein zweites Schleich-Level.** In Level 1 geht es darum, nicht gesehen zu
 werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 
+### Der Haken
+
+**Es reicht nicht, alle fertig zu kriegen. Sie müssen es gleichzeitig sein.**
+
+Wen Du überredet hast, der bleibt nicht ewig bereit. Über jedem Kopf und in der
+Aufgabenliste läuft ein Balken — so lange hat er noch Lust. Läuft er ab, setzt
+sich der wieder hin, nickt wieder ein oder geht wieder ans Telefon. Und Du
+läufst zurück.
+
+Die Balken sind unterschiedlich lang, und zwar danach, wie teuer es ist, jemanden
+wieder einzusammeln:
+
+| Wer | Hält durch | Wieder holen |
+|:--|:--|:--|
+| **Der Schläfer** | am kürzesten | einmal rütteln — er liegt an der Tür |
+| **Der Telefonierer** | mittel | Du brauchst wieder **Mut**, also wieder Pegel |
+| **Moritz** | länger | ein Wort. Er sitzt dann aber auf seinem **Bett** — da musst Du **hoch** |
+| **Max Ferdi** | am längsten | er geht eine rauchen. Auf dem Balkon |
+
+Deshalb ist die **Reihenfolge** das eigentliche Rätsel: von rechts nach links
+arbeiten, den kürzesten Balken zuletzt, und der liegt praktischerweise neben der
+Tür. Wer quer durch die Wohnung springt, holt sich Absprünge ab.
+
+Stehen alle vier gleichzeitig, ist Schluss mit Absprüngen — sie sammeln sich
+von selbst an der Tür.
+
 ### Vier Aufgaben
 
 | Aufgabe | Wie |
@@ -185,6 +211,18 @@ werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 | **Moritz' Ausweis finden** | Auch versteckt. Ohne kommt er nirgends rein |
 | **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
 | **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
+
+### Spring auf die Möbel
+
+Sofa, Tisch, Kühlschrank, Bett, Schrank und Regal sind **begehbar**. Zwei Gründe:
+
+**Oben auf dem Schrank steht der gute Schnaps.** Von unten kommst Du nicht dran.
+Einmal pro Runde, und dann `E` — **eine Runde für alle**: alle Balken sind wieder
+voll. Kostet Dich Pegel, die Rettung ist nicht umsonst.
+
+**Und wer oben sitzt, ist von unten nicht ansprechbar.** Moritz auf dem Bett
+kriegst Du nur, wenn Du raufspringst. Ein `*` über jemandem heißt: der ist
+über Dir.
 
 ### Der Pegel
 
@@ -197,6 +235,12 @@ machen würdest — zum Beispiel jemandem einfach das Handy abnehmen.
 Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
+
+**Und Du suchst schlechter.** Je voller Du bist, desto länger wühlst Du in
+jedem Möbel — und ab 55 rutscht Dir auch mal was durch, was Du gerade in der
+Hand hattest. Das Möbel bleibt dann offen, Du kannst nochmal ran, es kostet nur
+Zeit. Deshalb: **erst nüchtern suchen, dann trinken.** Der Pegel ist kein
+Schalter, den man einmal umlegt.
 
 **Du hörst ihn auch.** Der Bass wird lauter, verstimmt sich, zieht das Tempo
 runter und fängt irgendwann an zu sägen. Ab ganz oben liegt eine schiefe Quinte

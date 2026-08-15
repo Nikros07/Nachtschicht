@@ -133,14 +133,53 @@ const TUNE = {
   langsamAb:       70,     // ab hier wirst du spuerbar langsamer
   blackoutBei:    100,
 
-  /* (4) DIE UHR - um 22:00 faehrt die Bahn */
+  /* (4) DIE UHR - um 22:00 faehrt die Bahn
+     190 Sekunden waren zu viel: eine saubere Runde dauert keine dreissig.
+     Der Druck kommt jetzt aus der Geduld der Jungs, die Uhr ist die
+     aeussere Grenze fuer eine Runde, die aus dem Ruder laeuft. */
   startMinute:   21*60+10,
   endMinute:     22*60,
-  levelSekunden: 190,
+  levelSekunden: 165,
 
   /* (5) REDEN UND SUCHEN */
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
+  /* Betrunken suchst du schlechter. Das ist die andere Seite vom Pegel -
+     vorher war er nur ein Schalter fuer den Telefonierer. */
+  suchPegel:        1.1,   // so viel langsamer bei vollem Pegel
+  uebersehenAb:    55,     // ab hier uebersiehst du auch mal was
+  uebersehen:       0.5,   // wie oft dann ein Fund durchrutscht
+
+  /* (5c) DIE GEDULD DER JUNGS - das Herz des Levels
+     Vorher war eine Aufgabe erledigt und blieb erledigt. Man konnte in
+     aller Ruhe eine Liste abarbeiten. So laeuft ein Vorgluehen aber
+     nicht: wer fertig ist, macht nach zwei Minuten wieder eine auf.
+     Es reicht nicht, alle vier fertig zu KRIEGEN - sie muessen es
+     GLEICHZEITIG sein.
+
+     Die Zahlen sind an einer sauberen Runde gemessen: einmal quer durch
+     die Wohnung und alle vier einsammeln dauert gut zehn Sekunden. Wer
+     von rechts nach links arbeitet - Telefonierer, Moritz, Schlaefer,
+     Max, und der kuerzeste Balken liegt an der Tuer - schafft es ohne
+     einen einzigen Absprung. Wer die Reihenfolge nicht sieht, laeuft
+     hinterher. Genau das soll der Unterschied sein.
+
+     Wer wie lange durchhaelt, haengt daran, wie teuer es ist, ihn wieder
+     einzusammeln. Den Schlaefer ruettelt man im Vorbeigehen wach, und er
+     liegt an der Tuer - der darf der kuerzeste sein. Den Telefonierer
+     kostet es Mut, also einen Umweg ueber die Kueche: der braucht Luft. */
+  geduldSchlaefer: 15,     // schlaeft am schnellsten wieder ein
+  geduldTelefon:   22,     // teuer zurueckzuholen, darum mehr Zeit
+  geduldMoritz:    26,
+  geduldMax:       36,     // der will ja los, der haelt am laengsten durch
+  geduldWarnung:    7,     // ab hier blinkt sein Balken
+  leuteTempo:      42,     // wie schnell sie durch die Wohnung laufen
+  sammelX:         74,     // wo sie sich sammeln - nicht direkt vor der Tuer
+
+  /* (5d) DER GUTE SCHNAPS - steht oben auf dem Schrank
+     Einmal pro Runde. Setzt die Geduld aller zurueck und kostet Pegel. */
+  schnapsPegel:    24,
+  schnapsHoehe:    18,     // wie weit ueber dem Schrank die Flasche steht
 
   /* (5b) DIE ANDEREN - Statisten, die nur rumstehen */
   schwatzDauer:     2.6,   // wie lange ein Spruch stehen bleibt
@@ -271,6 +310,8 @@ const SPR={
   ausweis:['ggggggg','g.....g','g.ss..g','g.ss..g','g.....g','ggggggg'],
   flasche:['..gg..','..gg..','.gggg.','.gwgg.','.gggg.','.gggg.','..gg..'],
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
+  /* Der gute Schnaps - steht oben auf dem Schrank */
+  schnaps:['..ll..','..ll..','.llll.','.lwll.','.llll.','.llll.','.llll.'],
 };
 
 /* ==========================================================================
@@ -288,6 +329,9 @@ const SFX={
   warn:   ()=>piep(880,.07,'square',.05),
   klatsch:()=>{ rauschen(.09,.13); glissando(220,60,.14,'square',.07); },
   daneben:()=>{ rauschen(.12,.05); glissando(520,240,.14,'sine',.03); },
+  /* Wenn einer wieder abspringt - runter statt rauf, das hoert man sofort */
+  absprung:()=>{ glissando(520,220,.3,'square',.045); },
+  sammeln:()=>{ [523,659,784].forEach((f,i)=>setTimeout(()=>piep(f,.12,'square',.045),i*90)); },
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
@@ -351,24 +395,59 @@ const DINGE=[
   { x:180, art:'box',     label:'BOX',         moebel:'box',    h:7  },
 ];
 
-/* Die Leute. jeder hat eine Bedingung, bevor er mitkommt. */
+/* Die Leute.
+   braucht/brauchtMut ist die Bedingung, bevor er mitkommt. geduld sagt,
+   wie lange er dann durchhaelt, wegX wohin er verschwindet, wenn er
+   abspringt, und zurueck, was er sagt, wenn man ihn wieder einsammelt.
+
+   Der Unterschied zwischen braucht und brauchtMut ist der ganze Trick:
+   ein Gegenstand ist weg, wenn man ihn abgegeben hat - Moritz wieder
+   einzusammeln kostet nur ein Wort. Mut ist kein Gegenstand. Wer den
+   Telefonierer zurueckholen will, muss den Pegel wieder oben haben. */
 const LEUTE=[
   { id:'max',    x:150, name:'MAX FERDI', spr:'max',
     zeilen:['ALTER ENDLICH','ICH BIN SCHON SEIT NER STUNDE FERTIG','MACH HIN, BAHN GEHT UM ZEHN'],
-    fertig:true },
+    startFertig:true, geduld:'geduldMax', wegX:906,
+    absprung:'MAX FERDI GEHT EINE RAUCHEN',
+    zurueck:['JA GLEICH','LETZTER ZUG','OKAY OKAY'],
+    dabei:['STEH ICH DOCH SCHON','MACH HIN'] },
   { id:'moritz', x:606, name:'MORITZ', spr:'moritz', gross:true,
     zeilen:['ICH FIND MEINEN AUSWEIS NICHT','OHNE KOMM ICH DA NIE REIN','SUCH MAL MIT'],
-    braucht:'ausweis',
-    danach:['DU BIST EIN HELD','LOS GEHTS'] },
+    braucht:'ausweis', nimmt:'DU HAST IHN', geduld:'geduldMoritz', wegX:651, wegHoch:'bett',
+    danach:['ALTER DANKE','LOS GEHTS'],
+    absprung:'MORITZ SITZT WIEDER AUF DEM BETT',
+    zurueck:['JA JA ICH KOMM','ICH ZIEH NUR EBEN SCHUHE AN'],
+    dabei:['ALLES KLAR BEI DIR','WIR KOENNEN'] },
   { id:'schlaefer', x:256, name:'DER SCHLAEFER', spr:'schlaefer', liegt:true,
     zeilen:['...','ZZZZZ','...'],
-    braucht:'dose',
-    danach:['WAS','WIE SPAET','OKAY OKAY ICH KOMM'] },
+    braucht:'dose', nimmt:'*DU HAELTST IHM DIE DOSE HIN*', geduld:'geduldSchlaefer',
+    danach:['WAS','WIE SPAET','OKAY OKAY ICH KOMM'],
+    absprung:'DER SCHLAEFER IST WIEDER WEGGENICKT',
+    zurueck:['*DU RUETTELST IHN*','JA JA ICH BIN WACH'],
+    dabei:['ICH BIN WACH','WIRKLICH'] },
   { id:'telefon', x:920, name:'DER TELEFONIERER', spr:'telefon',
     zeilen:['NEIN DU HOERST MIR NICHT ZU','...','SEKUNDE JA'],
-    brauchtMut:true,
-    danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
+    brauchtMut:true, nimmt:'*DU NIMMST IHM EINFACH DAS HANDY AB*', geduld:'geduldTelefon',
+    danach:['JA GUT. AUFGELEGT.','LASS GEHEN'],
+    absprung:'DER TELEFONIERER IST WIEDER DRAN',
+    zurueck:['*DU LEGST FUER IHN AUF*','JETZT ABER'],
+    dabei:['ICH SAG NICHTS MEHR','GEHEN WIR'] },
 ];
+const person=id=>LEUTE.find(l=>l.id===id);
+
+/* ---- Was begehbar ist ----
+   Die Sprungphysik lag von Anfang an fertig da - Beschleunigung,
+   Coyote-Zeit, Sprungpuffer - und im ganzen Level gab es nichts zum
+   Draufspringen. Der Sprung war ein Knopf ohne Wirkung. */
+const PLATTFORMEN=[
+  { art:'sofa',    x:248, breite:15, y:BODEN-6  },
+  { art:'tisch',   x:328, breite:11, y:BODEN-6  },
+  { art:'kuehl',   x:428, breite:10, y:BODEN-10 },
+  { art:'bett',    x:638, breite:15, y:BODEN-6  },
+  { art:'schrank', x:698, breite:11, y:BODEN-9  },
+  { art:'regal',   x:748, breite:10, y:BODEN-7  },
+];
+const plattform=art=>PLATTFORMEN.find(p=>p.art===art);
 
 /* ---- Die anderen. Die stehen nur rum. ----
    Vier Leute in einer Wohnung sind keine Party, sondern ein Wartezimmer.
@@ -396,12 +475,15 @@ const GESCHWAETZ_SPAET=[
   'WIR SIND DOCH GERADE ERST GEKOMMEN','WER BIST DU NOCHMAL',
 ];
 
-/* Was du finden musst */
+/* Was erledigt sein muss, damit ihr rauskommt.
+   Die Jacke findet man einmal, die bleibt. Bei den Leuten steht die
+   Aufgabe nur so lange auf erledigt, wie sie auch mitkommen wollen. */
 const AUFGABEN=[
-  { id:'jacke',  text:'DEINE JACKE FINDEN' },
-  { id:'ausweis',text:'MORITZ AUSWEIS FINDEN' },
-  { id:'schlaefer',text:'DEN SCHLAEFER WECKEN' },
-  { id:'telefon',text:'DEN TELEFONIERER HOLEN' },
+  { id:'jacke',    text:'DEINE JACKE FINDEN' },
+  { id:'moritz',   text:'MORITZ',            wer:'moritz' },
+  { id:'schlaefer',text:'DER SCHLAEFER',     wer:'schlaefer' },
+  { id:'telefon',  text:'DER TELEFONIERER',  wer:'telefon' },
+  { id:'max',      text:'MAX FERDI',         wer:'max' },
 ];
 
 /* ==========================================================================
@@ -423,7 +505,15 @@ function neuesSpiel(){
     gegner:null, fehlT:0, gewonnen:false, faenger:'',
     neueBestzeit:false, alteBest:null,
     schwatzWer:-1, schwatzText:'', schwatzT:2,
+    /* Wer gerade mitkommt, wie lange er noch will, und wo er steht. */
+    bereit:{}, geduld:{}, warSchon:{}, leuteX:{},
+    abmarsch:false, abmarschT:0,
+    schnapsDa:true, hatSchnaps:false,
   };
+  LEUTE.forEach(l=>{
+    S.leuteX[l.id]=l.x;
+    if(l.startFertig){ S.bereit[l.id]=true; S.warSchon[l.id]=true; S.geduld[l.id]=TUNE[l.geduld]; }
+  });
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
      gleichem Abstand gewinnt die Person. Ein Fund dort waere nicht
@@ -432,7 +522,7 @@ function neuesSpiel(){
   const versteckbar=DINGE.filter(d=>
     ['tisch','schrank','regal','bett','box','spuele'].includes(d.art) &&
     !belegt.some(px=>Math.abs(px-(d.x+6))<TUNE.reichweite));
-  const mischen=[...versteckbar].sort(()=>Math.random()-0.5);
+  const mischen=mische(versteckbar);
   S.jackeBei=mischen[0].art;
   S.ausweisBei=mischen[1].art;
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
@@ -514,10 +604,13 @@ const INTRO=[
   { d:2.4, txt:'DIE BAHN FAEHRT UM ZEHN.' },
   { d:2.6, txt:'DIE JUNGS SITZEN SEIT ZWEI STUNDEN HIER.' },
   { d:2.6, txt:'UND KEINER MACHT ANSTALTEN LOSZUGEHEN.' },
-  { d:2.6, txt:'ALSO MACHST DU ES.' },
+  { d:2.8, txt:'DU KRIEGST SIE FERTIG. EINEN NACH DEM ANDEREN.' },
+  { d:3.0, txt:'UND WAEHREND DU DEN NAECHSTEN HOLST,' },
+  { d:2.8, txt:'MACHT DER ERSTE WIEDER EINE AUF.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ S.modus='spiel'; zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
+function starteLevel(){ S.modus='spiel';
+  zeigeHinweis('ALLE VIER MUESSEN GLEICHZEITIG STEHEN',4);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
@@ -531,7 +624,68 @@ function pruefeBlackout(){
 }
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
-const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
+/* Eine Aufgabe ist erledigt, wenn der Gegenstand da ist - oder, bei den
+   Leuten, solange derjenige gerade auch mitkommen will. */
+const aufgabeOk=a=>a.wer?!!S.bereit[a.wer]:!!S.erledigt[a.id];
+const alleFertig=()=>AUFGABEN.every(aufgabeOk);
+
+/* ==========================================================================
+   DIE GEDULD DER JUNGS
+   Vorher war eine Aufgabe erledigt und blieb erledigt - man konnte in
+   aller Ruhe eine Liste abarbeiten. Jetzt zaehlt nur der Moment, in dem
+   alle gleichzeitig stehen.
+   ========================================================================== */
+function machtMit(l){
+  S.bereit[l.id]=true;
+  S.warSchon[l.id]=true;
+  S.geduld[l.id]=TUNE[l.geduld];
+  SFX.erledigt();
+}
+function springtAb(l){
+  S.bereit[l.id]=false;
+  S.geduld[l.id]=0;
+  meldung(l.absprung,2.4);
+  SFX.absprung();
+}
+function geduldLaeuft(dt){
+  /* Sobald einmal alle vier gleichzeitig standen, ist Schluss. Sonst
+     koennte einem der Erfolg im letzten Moment noch wegbrechen, und das
+     waere keine Spannung mehr, sondern Willkuer. */
+  if(S.abmarsch){ S.abmarschT+=dt; return; }
+  for(const l of LEUTE){
+    if(!S.bereit[l.id]) continue;
+    S.geduld[l.id]-=dt;
+    if(S.geduld[l.id]<=0) springtAb(l);
+  }
+  if(alleFertig()) starteAbmarsch();
+}
+function starteAbmarsch(){
+  S.abmarsch=true; S.abmarschT=0;
+  zeigeHinweis('ALLE VIER STEHEN - RAUS HIER',4);
+  SFX.sammeln();
+}
+/* Sie laufen selbst durch die Wohnung: zu ihrem Rueckzugsort, wenn sie
+   abgesprungen sind, sonst auf ihren Platz - und am Ende alle zur Tuer. */
+function leuteLaufen(dt){
+  LEUTE.forEach((l,i)=>{
+    let ziel=l.x;
+    /* Nur wer schon mal mitkam und wieder abgesprungen ist, zieht sich
+       zurueck. Am Anfang steht jeder auf seinem Platz - Moritz sucht ja
+       noch seinen Ausweis, er sitzt nicht schon auf dem Bett. */
+    if(S.abmarsch) ziel=TUNE.sammelX+i*12;
+    else if(!S.bereit[l.id]&&S.warSchon[l.id]&&l.wegX!==undefined) ziel=l.wegX;
+    const jetzt=S.leuteX[l.id], d=ziel-jetzt;
+    if(Math.abs(d)>0.5) S.leuteX[l.id]=jetzt+Math.sign(d)*Math.min(Math.abs(d),TUNE.leuteTempo*dt);
+  });
+}
+/* Auf welcher Hoehe jemand steht. Moritz setzt sich aufs Bett, wenn er
+   abspringt - dann muss man zu ihm hoch. */
+function leuteY(l){
+  if(!S.abmarsch&&!S.bereit[l.id]&&S.warSchon[l.id]&&l.wegHoch){
+    const p=plattform(l.wegHoch); if(p) return p.y;
+  }
+  return BODEN;
+}
 
 /* Immer nur einer der Statisten sagt was, dann ist eine Weile Ruhe.
    Alle gleichzeitig waere Krach, nicht Atmosphaere. */
@@ -575,6 +729,10 @@ function update(dt){
   /* Im Kampf ist Ruhe - da soll man auf ihn achten, nicht auf die Gaeste. */
   if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
   geschwaetz(dt);
+  /* Die Geduld laeuft weiter, auch waehrend du mit jemandem redest.
+     Sonst waere Reden eine Pause, und genau das ist es nicht. */
+  geduldLaeuft(dt);
+  leuteLaufen(dt);
 
   /* --- Gespraech laeuft --- */
   if(S.reden){
@@ -611,13 +769,29 @@ function update(dt){
       S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
   }
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
-  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+  S.vy+=TUNE.gravitation*dt;
+  const vorherY=S.y;
+  S.y+=S.vy*dt;
+  /* Auf welcher Hoehe landen wir? Standardmaessig auf dem Boden - es sei
+     denn, wir kreuzen von oben eine Moebelkante. Nach oben blockiert
+     nichts: man springt durch die Platte durch und landet oben drauf. */
+  let boden=BODEN;
+  if(S.vy>=0){
+    for(const p of PLATTFORMEN){
+      if(S.x+3<p.x||S.x-3>p.x+p.breite) continue;
+      if(vorherY<=p.y+0.01&&S.y>=p.y&&p.y<boden) boden=p.y;
+    }
+  }
+  if(S.y>=boden){ S.y=boden; if(!S.amBoden) SFX.landen();
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
   /* --- Suchen laeuft --- */
   if(S.suchT>0){
     S.suchT-=dt;
+    /* Tastendruecke waehrend des Wuehlens verfallen. Vorher stapelten
+       sie sich und loesten danach alle auf einmal aus - man kam aus dem
+       Schrank raus und hatte drei Sachen gemacht, die man nicht wollte. */
+    while(aktionPuffer.length) aktionPuffer.shift();
     if(S.suchT<=0) suchErgebnis();
     kamera(dt); return;
   }
@@ -629,15 +803,28 @@ function update(dt){
        direkt neben jemandem gar nicht erreichbar - genau so war das Bett
        neben Moritz unbenutzbar und der Ausweis unauffindbar. */
     let person=null, dPerson=1e9;
-    for(const l of LEUTE){ const d=Math.abs(l.x-S.x);
-      if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
+    for(const l of LEUTE){
+      const d=Math.abs(S.leuteX[l.id]-S.x);
+      /* Wer ueber dir sitzt, ist von unten nicht ansprechbar - da muss man
+         hoch. Runter reicht man dagegen immer: wer auf dem Sofa steht,
+         kommt an den ran, der davor liegt. */
+      if(leuteY(l)<S.y-4) continue;
+      if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; }
+    }
     let ding=null, dDing=1e9;
     for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
       if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
-    if(person&&(!ding||dPerson<=dDing)) rede(person);
-    else if(ding) benutze(ding);
+    /* Der Schnaps oben auf dem Schrank geht allem vor - wer da oben
+       steht, will nicht den Schrank durchsuchen. */
+    if(schnapsInReichweite()) nimmSchnaps();
+    /* An der Tuer geht Rausgehen vor allem anderen. Sonst stehen einem
+       die eigenen Leute im Weg: sie sammeln sich beim Abmarsch neben der
+       Tuer, und jedes E hat dann mit ihnen geredet statt zu oeffnen. */
     else if(S.x<60&&alleFertig()) starteKampf();
-    else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
+    else if(S.hatSchnaps&&!person&&!ding) schnapsRunde();
+    else if(person&&(!ding||dPerson<=dDing)) rede(person);
+    else if(ding) benutze(ding);
+    else if(S.x<60){ meldung(fehltNoch(),1.8); SFX.nichts(); }
   }
   kamera(dt);
 }
@@ -664,10 +851,26 @@ function benutze(d){
     meldung(S.pegel>TUNE.mutAb?'DU SIEHST GUT AUS':'GEHT SO',1.4); SFX.reden(); return;
   }
   if(S.durchsucht[d.art]){ meldung('SCHON DURCHSUCHT',1); SFX.nichts(); return; }
-  S.suchT=TUNE.suchDauer; S.suchZiel=d; rauschen(.12,.03);
+  /* Je voller, desto laenger wuehlst du. */
+  S.suchT=TUNE.suchDauer*(1+(S.pegel/TUNE.pegelMax)*TUNE.suchPegel);
+  S.suchZiel=d; rauschen(.12,.03);
 }
 function suchErgebnis(){
   const d=S.suchZiel; S.suchZiel=null;
+  const treffer = (d.art===S.jackeBei&&!S.inventar.jacke)
+               || (d.art===S.ausweisBei&&!S.inventar.ausweis);
+  /* Betrunken rutscht dir auch mal was durch. Das Moebel bleibt dann
+     offen - du kannst nochmal ran, es kostet nur Zeit. Deshalb lohnt es
+     sich, nuechtern zu suchen und erst danach zu trinken.
+     Die Gefahr waechst von der Schwelle an, sie springt nicht: bei 55
+     ist sie null, erst ganz oben ist sie voll. Ein Schalter, der bei
+     einem Punkt Unterschied von 0 auf 50 Prozent geht, fuehlt sich
+     ungerecht an, auch wenn er angesagt ist. */
+  const risiko = S.pegel>=TUNE.uebersehenAb
+    ? TUNE.uebersehen*(S.pegel-TUNE.uebersehenAb)/(TUNE.pegelMax-TUNE.uebersehenAb) : 0;
+  if(treffer&&Math.random()<risiko){
+    SFX.nichts(); meldung('DA WAR DOCH WAS... NOCHMAL',1.8); return;
+  }
   S.durchsucht[d.art]=true;
   if(d.art===S.jackeBei&&!S.inventar.jacke){
     S.inventar.jacke=true; S.erledigt.jacke=true; SFX.fund(); S.blitz=.6;
@@ -681,26 +884,69 @@ function suchErgebnis(){
   SFX.nichts(); meldung(pick(['NICHTS','NUR KRAM','LEER']),1);
 }
 
+/* ---- Der gute Schnaps ----
+   Steht oben auf dem Schrank. Man sieht ihn von unten, kommt aber nur
+   dran, wenn man raufspringt. Einmal pro Runde, und er kostet Pegel -
+   die Rettung ist nicht umsonst. */
+const schnapsInReichweite=()=>{
+  if(!S.schnapsDa) return false;
+  const p=plattform('schrank');
+  return Math.abs(S.y-p.y)<1 && Math.abs(S.x-(p.x+p.breite/2))<10;
+};
+function nimmSchnaps(){
+  S.schnapsDa=false; S.hatSchnaps=true;
+  SFX.fund(); S.blitz=.5;
+  meldung('DER GUTE SCHNAPS',2);
+  zeigeHinweis('E IRGENDWO - EINE RUNDE FUER ALLE',4);
+}
+function schnapsRunde(){
+  S.hatSchnaps=false;
+  for(const l of LEUTE) if(S.bereit[l.id]) S.geduld[l.id]=TUNE[l.geduld];
+  S.pegel=Math.min(TUNE.pegelMax,S.pegel+TUNE.schnapsPegel);
+  SFX.schluck(); S.blitz=.7; S.ruettel=3;
+  meldung('EINE RUNDE FUER ALLE',2.2);
+  pruefeBlackout();
+}
+
+/* Wer noch fehlt - statt nur "NICHT OHNE DIE JUNGS". */
+function fehltNoch(){
+  const offen=AUFGABEN.filter(a=>!aufgabeOk(a));
+  if(!offen.length) return '';
+  if(offen.length===1) return 'OHNE '+offen[0].text+' NICHT';
+  return 'ES FEHLEN NOCH '+offen.length;
+}
+
 /* ---- Reden ---- */
 function rede(p){
   S.reden=p; S.redeZeile=0; S.redeT=0; S.vx=0; SFX.reden();
-  /* Bedingungen pruefen */
-  p._zeilen = p.zeilen;
-  if(p.id==='moritz'&&S.inventar.ausweis&&!S.erledigt.ausweis){
-    p._zeilen=['DU HAST IHN','ALTER DANKE',...p.danach];
-    S.erledigt.ausweis=true; S.inventar.ausweis=false; SFX.erledigt();
-  } else if(p.id==='schlaefer'&&S.inventar.dose&&!S.erledigt.schlaefer){
-    p._zeilen=['*DU HAELTST IHM DIE DOSE HIN*',...p.danach];
-    S.erledigt.schlaefer=true; S.inventar.dose=false; SFX.erledigt();
-  } else if(p.id==='telefon'&&!S.erledigt.telefon){
+  p._zeilen=p.zeilen;
+
+  /* Wer den Schnaps in der Hand hat und bei jemandem steht, der sowieso
+     schon mitkommt, macht daraus eine Runde. Sonst muesste man erst ein
+     leeres Fleckchen suchen, um ihn loszuwerden. */
+  if(S.bereit[p.id]){
+    if(S.hatSchnaps){ S.reden=null; schnapsRunde(); return; }
+    p._zeilen=p.dabei; return;
+  }
+
+  /* Mut ist kein Gegenstand: den Telefonierer muss man jedes Mal neu
+     unterbrechen, und dafuer muss der Pegel wieder oben sein. */
+  if(p.brauchtMut){
     if(S.pegel>=TUNE.mutAb){
-      p._zeilen=['*DU NIMMST IHM EINFACH DAS HANDY AB*',...p.danach];
-      S.erledigt.telefon=true; SFX.erledigt();
+      p._zeilen=S.warSchon[p.id]?p.zurueck:[p.nimmt,...p.danach];
+      machtMit(p);
     } else {
       p._zeilen=[...p.zeilen,'(DU TRAUST DICH NICHT, IHN ZU UNTERBRECHEN)'];
     }
-  } else if(p.id==='moritz'&&S.erledigt.ausweis){
-    p._zeilen=['ALLES KLAR BEI DIR','WIR KOENNEN'];
+    return;
+  }
+  /* Wer schon mal mitkam, braucht kein zweites Mal ueberzeugt zu werden.
+     Den Ausweis hat Moritz ja - er zieht nur wieder die Schuhe aus. */
+  if(S.warSchon[p.id]){ p._zeilen=p.zurueck; machtMit(p); return; }
+  if(p.braucht&&S.inventar[p.braucht]){
+    S.inventar[p.braucht]=false;
+    p._zeilen=[p.nimmt,...p.danach];
+    machtMit(p);
   }
 }
 function naechsteZeile(){
@@ -954,19 +1200,50 @@ function zeichneWohnung(){
     }
   }
 
-  /* Leute */
+  /* Leute.
+     Wer mitkommt, steht - wer abgesprungen ist, liegt/telefoniert wieder.
+     Man soll auf einen Blick sehen, wer gerade wieder weg ist. */
   for(const l of LEUTE){
-    const rows=SPR[l.spr]||SPR.steh;
-    const y=l.liegt?BODEN-8:BODEN-rows.length;
-    outline(rows,l.x-3,y,1,.55);
-    sprite(rows,l.x-3,y);
-    const erledigt = l.id==='max' || S.erledigt[l.id==='moritz'?'ausweis':l.id];
-    text(l.name,l.x+3-textW(l.name)/2,y-16,erledigt?P.gruen:P.dim);
-    if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
-    else {
-      const nah=Math.abs(l.x-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
-      if(nah&&Math.floor(S.t*4)%2===0) text('E',l.x+2,y-9,P.gold);
+    const bereit=!!S.bereit[l.id];
+    /* Der Schlaefer liegt nur, solange er wieder pennt. */
+    const liegt=l.liegt&&!bereit&&!S.abmarsch;
+    let rows=SPR[l.spr]||SPR.steh;
+    if(l.id==='schlaefer'&&!liegt) rows=SPR.steh;
+    if(l.id==='telefon'&&bereit) rows=SPR.steh;
+    const x=S.leuteX[l.id], fuss=leuteY(l);
+    const y=liegt?BODEN-8:fuss-rows.length;
+    outline(rows,x-3,y,1,.55);
+    sprite(rows,x-3,y);
+    text(l.name,x+3-textW(l.name)/2,y-16,bereit?P.gruen:P.dim);
+    if(bereit){
+      text('OK',x+3-textW('OK')/2,y-9,P.gruen);
+      /* Kleiner Geduldsbalken ueber dem Kopf, damit man nicht nur im HUD
+         sieht, wem gleich die Lust ausgeht. */
+      if(!S.abmarsch){
+        const g=S.geduld[l.id]/TUNE[l.geduld], bw=14;
+        const knapp=S.geduld[l.id]<=TUNE.geduldWarnung;
+        if(!knapp||Math.floor(S.t*6)%2===0){
+          ctx.fillStyle='#000a'; ctx.fillRect(x-4,y-6,bw+2,3);
+          ctx.fillStyle=knapp?P.rot:(g<.45?P.gold:P.gruen);
+          ctx.fillRect(x-3,y-5,Math.max(1,Math.round(bw*g)),1);
+        }
+      }
+    } else {
+      const nah=Math.abs(x-S.x)<TUNE.reichweite&&fuss>=S.y-4
+                &&S.modus==='spiel'&&!S.reden;
+      if(nah&&Math.floor(S.t*4)%2===0) text('E',x+2,y-9,P.gold);
+      /* Wer oben sitzt, bekommt einen Pfeil - sonst rennt man unten
+         dagegen und versteht nicht, warum E nichts tut. */
+      else if(fuss<BODEN&&Math.floor(S.t*3)%2===0) text('*',x+2,y-9,P.neon2);
     }
+  }
+
+  /* Der gute Schnaps auf dem Schrank */
+  if(S.schnapsDa){
+    const p=plattform('schrank');
+    const sx=p.x+p.breite/2-3, sy=p.y-7+Math.round(Math.sin(S.t*2)*.6);
+    outline(SPR.schnaps,sx,sy,1,.5); sprite(SPR.schnaps,sx,sy);
+    if(Math.floor(S.t*2)%2===0) text('*',sx+2,sy-7,P.gold);
   }
 
   /* Der Kracher */
@@ -1082,21 +1359,36 @@ function hud(){
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
-  /* Aufgabenliste */
+  /* Aufgabenliste - jetzt eine lebende Anzeige.
+     Bei den Leuten haengt hinter dem Haken ein Balken: so lange kommt er
+     noch mit. Man muss sehen koennen, wo es gleich kippt, sonst ist das
+     Abspringen eine Ueberraschung statt einer Ansage. */
   let y=22;
   for(const a of AUFGABEN){
-    const ok=!!S.erledigt[a.id];
+    const ok=aufgabeOk(a);
     text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
     text(a.text,14,y,ok?P.dunkel:P.weiss);
+    if(a.wer&&ok&&!S.abmarsch){
+      const l=person(a.wer), g=S.geduld[a.wer]/TUNE[l.geduld];
+      const knapp=S.geduld[a.wer]<=TUNE.geduldWarnung;
+      const bx=14+textW(a.text)+5, bw=26;
+      ctx.fillStyle='#2a2440'; ctx.fillRect(bx,y+1,bw,3);
+      if(!knapp||Math.floor(S.t*6)%2===0){
+        ctx.fillStyle=knapp?P.rot:(g<.45?P.gold:P.gruen);
+        ctx.fillRect(bx,y+1,Math.max(1,Math.round(bw*g)),3);
+      }
+    }
     y+=8;
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
+  if(S.abmarsch&&Math.floor(S.t*2)%2===0) textC('ALLE VIER STEHEN - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;
   if(S.inventar.jacke){ sprite(SPR.jacke,ix,16); ix-=12; }
   if(S.inventar.ausweis){ sprite(SPR.ausweis,ix,16); ix-=12; }
   if(S.inventar.dose){ sprite(SPR.dose,ix,16); ix-=10; }
+  if(S.hatSchnaps){ sprite(SPR.schnaps,ix,16); ix-=10;
+    if(Math.floor(S.t*2)%2===0) text('E',ix+8,17,P.gold); }
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
