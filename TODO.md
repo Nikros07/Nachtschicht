@@ -15,7 +15,8 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 **Offen geblieben (bewusst):**
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
-- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
+- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert) —
+      **blockiert:** geht nur mit einem Gerät in der Hand, nicht am Rechner
 - [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
 
 ---
@@ -28,9 +29,15 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre) — sechs Statisten,
+      wippen zur Musik, reden vor sich hin, ändern ihre Sprüche mit dem Pegel
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — Schlag, Feger, Finte;
+      Konterfenster mit sichtbarer Marke, Patzer bestraft blindes Hämmern
+- [x] Musik lauter/verzerrter je höher der Pegel — eigener Musikweg mit Sättigung
+      und Tiefpass, Takt schleppt; die Geräusche bleiben bewusst sauber
+- [ ] Die Statisten sind stumm. Wenn sie mal ansprechbar werden sollen, braucht
+      die Aktionstaste eine Rangfolge — sonst verdecken sie die Möbel, in denen
+      Jacke und Ausweis liegen
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,10 +74,18 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+In Level 2 sind drei dieser Punkte in kleiner Form schon gebaut. Beim Zusammenführen
+sollte man dort abschreiben statt neu erfinden:
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Fehlschläge bestrafen** — als „Patzer" in Level 2: 0,55 s handlungsunfähig.
+      Reicht dort; für den Runner-Modus wahrscheinlich zu milde
+- [x] **Konterfenster verkleinern** — in Level 2 auf die letzten 60 % statt aufs
+      letzte Drittel, mit sichtbarer Marke am Balken. Bewusst milder: das ist der
+      erste Kampf im Spiel. Für spätere Bosse enger stellen (`TUNE.kontFenster`)
+- [ ] **Mehrere Muster pro Gegner** wie beim Kracher — jedes Muster eine andere
+      Antwort (Timing, Sprung, Geduld), nicht nur andere Zahlen
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -123,3 +138,8 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Der Kracher: drei Angriffsmuster mit drei verschiedenen Antworten
+- [x] Statisten in Moritz' Wohnung
+- [x] Musik reagiert auf den Pegel (Lautstärke, Sättigung, Tiefpass, Tempo)
+- [x] Musikschleife holt nach einer Pause nicht mehr alle verpassten Schritte
+      auf einmal nach — betraf beide Level

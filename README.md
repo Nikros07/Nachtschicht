@@ -192,12 +192,41 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst den Pegel auch.** Die Musik wird lauter, dumpfer, verzerrter und
+schleppt, je mehr Du getrunken hast. Wer nicht auf den Balken schaut, merkt
+trotzdem, wann es kippt.
+
+### Die Wohnung ist voll
+
+Außer den vier Jungs steht noch eine Handvoll Leute herum, die niemand
+mitnimmt. Sie wippen zur Musik und reden vor sich hin, wenn Du danebenstehst —
+und wenn der Pegel steigt, reden sie anders. Ansprechen kannst Du sie nicht.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Laufen und Springen
+funktionieren hier ganz normal, nur der Flur ist die Arena.
+
+Über seinem Kopf läuft ein **Ausholbalken leer**. Die **weiße Marke** darauf ist
+die ganze Regel: erst wenn der Balken unter die Marke gefallen ist, zählt Dein
+`E`. Zu früh gedrückt ist ein **Patzer** — eine halbe Sekunde stehst Du dumm da,
+meist lang genug, um den Schlag zu kassieren.
+
+Er hat drei Muster:
+
+| Muster | Woran Du es erkennst | Was Du tust |
+|:--|:--|:--|
+| **Schlag** | roter Balken, er blinkt | `E`, sobald der Balken unter der Marke ist |
+| **Feger** | blauer Balken, er geht in die Hocke | **Springen.** Der Streifen am Boden zeigt, wann er Dich erreicht. Danach hängt er über dem eigenen Bein — dann `E` |
+| **Finte** | fängt an wie ein Schlag, aber der Balken **bleibt über der Marke stehen** | Nichts. Hand still, bis er wirklich ausholt |
+
+Die ersten beiden werden Dir angesagt, wenn sie zum ersten Mal kommen. Die
+Finte zeigt er erst, wenn Du ihn zweimal erwischt hast. Je öfter er einsteckt,
+desto kürzer wird seine Vorwarnung. **Viermal treffen, dann liegt er.**
+
+Die Uhr steht währenddessen still — wer alle vier Aufgaben geschafft hat, soll
+nicht an der Tür noch an der Bahn scheitern.
 
 ### Moritz
 
@@ -236,6 +265,20 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+`level2.html` ist genauso gebaut. Dort sind zusätzlich interessant:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `proSchluck` · `pegelAbbau` · `mutAb` · `wackelnAb` · `langsamAb` | Wie hart der Pegel drückt |
+| `kontFenster` | Ab wann ein Konter zählt — 1,0 wäre das ganze Ausholen |
+| `patzer` | Wie lange ein Schlag ins Leere kostet |
+| `gegnerWindup` · `fegerWindup` · `finteFake` · `finteHalt` | Vorwarnzeiten der drei Muster |
+| `gegnerHast` | Wie viel schneller er je kassiertem Treffer wird |
+| `kampfLinks` · `kampfRechts` | Wie groß die Arena im Flur ist |
+
+Die Daten daneben: `ORTE` (Räume), `DINGE` (Möbel), `LEUTE` (die Jungs),
+`STATISTEN` (Kulisse), `AUFGABEN`.
 
 ## Lokal starten
 

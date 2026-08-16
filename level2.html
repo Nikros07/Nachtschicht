@@ -134,12 +134,28 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* (6) DER KRACHER AM ENDE - drei Muster, drei verschiedene Antworten.
+     SCHLAG will einen Konter, FEGER will einen Sprung, FINTE will Geduld.
+     Wer nur E druckt, verliert - genau dafuer ist der Patzer da. */
+  gegnerTreffer:    4,     // so oft musst du ihn erwischen
+  gegnerWindup:     0.75,  // SCHLAG: Vorwarnzeit - grosszuegig, ist der erste Kampf
+  kontFenster:      0.6,   // der Konter zaehlt erst, wenn der Balken so weit runter ist
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
+  gegnerTempo:     70,     // wie schnell er auf dich zugeht
+  gegnerNah:       24,     // ab diesem Abstand faengt er an
+  gegnerHast:       0.07,  // je Treffer so viel kuerzere Vorwarnung
+  fegerWindup:      0.8,   // FEGER: er geht runter, dann fegt er durch
+  fegerDauer:       0.34,  // wie lange der Fegen ueber dem Boden liegt
+  fegerWeite:      34,     // wie weit der Fegen reicht
+  fegerOffen:       0.9,   // wie lange er danach offen steht
+  finteFake:        0.5,   // FINTE: der Balken laeuft wie beim SCHLAG ...
+  finteHalt:        0.45,  // ... bleibt stehen - hier nicht druecken ...
+  patzer:           0.55,  // ... sonst haust du daneben und stehst so lange dumm da
+  kampfLinks:      44,     // Arena: bis vor die Wohnungstuer und nicht weiter
+  kampfRechts:    210,
   leben:            3,
+  unverwundbarMs: 900,     // Gnadenfrist nach einem Treffer
 };
 
 const P = {
@@ -189,7 +205,10 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
   j:'#3d2f22', u:'#8c94ad', q:'#2e3350', z:'#5a4632',
   /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
+  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
+  /* Statisten - vier Hemden und zwei weitere Haarfarben, damit die
+     Wohnung nicht nach sechs Zwillingen aussieht */
+  f:'#4f7a52', i:'#6d3f72', x:'#3f5f7a', y:'#a8623a', G:'#6b4b2a', N:'#d9c184' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -278,11 +297,36 @@ const SPR={
   /* Der Telefonierer auf dem Balkon */
   telefon:['..hhh..','.hsssh.','.sssssg','..sss.g','..mmm..','.mmmmm.','k.mmm..','..mmm..',
            '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  /* Der Kracher am Ende */
+  /* Der Kracher am Ende - eine Haltung je Muster, damit man am Umriss
+     erkennt, was gleich kommt, und nicht erst am Farbbalken */
   kracher:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','vvvvvvv','k.vvv.k',
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* geht in die Hocke - Ansage fuer den Feger */
+  kracherTief:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','vvvvvvv','k.vvv.k',
+               '.mmmmm.','kk...kk'],
+  /* fegt durch: das Bein liegt flach auf dem Boden */
+  kracherFegt:['..ddd.....','.dkkkd....','.dsssd....','..ksk.....','..sss.....','.vvvvv....',
+               'vvvvvvv...','k.vvv.k...','.mmmmm....','kkmmmmmmmm'],
+  /* danach haengt er ueber dem eigenen Bein - jetzt kann man ihn holen */
+  kracherOffen:['.........','...ddd...','..dkkkd..','..dsssd..','...ksk...','..sss....',
+                '.vvvvv...','vvvvvvvk.','.vvv.....','.mmm.....','.m..m....','mm...m...','k.....k..'],
+
+  /* Statisten - stehen nur rum. Vier Hemden, zwei Haltungen, ein Sitzender. */
+  statA: ['..GGG..','.GsssG.','.sssss.','..sss..','..fff..','.fffff.','k.fff.g','..fff..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statAtrink:['..GGG..','.GsssG.','.sssssg','..sss.g','..fff..','.fffff.','k.fff..','..fff..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statB: ['..NNN..','.NsssN.','.sssssc','..sss.c','..iii..','.iiiii.','k.iii..','..iii..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statC: ['..hhh..','.hsssh.','.sssss.','..sss..','..xxx..','.xxxxx.','.kxxxk.','..xxx..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statD: ['..HHH..','.HsssH.','.sssss.','..sss..','..yyy..','.yyyyy.','kyyyyyk','..yyy..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statE: ['..NNN..','.NsssN.','.sssss.','..sss..','..xxx..','.xxxxx.','k.xxx.k','..xxx..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statSitz:['..GGG..','.GsssG.','.sssss.','..sss..','..fff..','.fffff.','kffffff','.pppppp','.kk..k.'],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -306,14 +350,27 @@ const SPR={
    AUDIO
    ========================================================================== */
 let AC=null, muted=false;
+/* Die Musik laeuft ueber einen eigenen Weg: erst Saettigung, dann ein
+   Tiefpass. Beides haengt am Pegel. Die Geraeusche (Schritte, Treffer,
+   Konter) gehen bewusst direkt raus - wenn das Bild schwankt und die
+   Musik zu Matsch wird, muss die Rueckmeldung trotzdem klar bleiben. */
+let MUSBUS=null, MUSDRIVE=null, MUSFILT=null;
 function ensureAudio(){ if(AC) return AC;
-  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
-  catch(e){ AC=null; } return AC; }
-function ton(f,when,dur,type='square',vol=.05){
+  try{
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    MUSDRIVE=AC.createWaveShaper(); MUSDRIVE.oversample='2x';
+    MUSFILT=AC.createBiquadFilter(); MUSFILT.type='lowpass'; MUSFILT.frequency.value=12800;
+    MUSBUS=AC.createGain(); MUSBUS.gain.value=1;
+    MUSBUS.connect(MUSDRIVE); MUSDRIVE.connect(MUSFILT); MUSFILT.connect(AC.destination);
+    pegelKlang(0);
+    MUS.next=AC.currentTime+.05;
+  } catch(e){ AC=null; }
+  return AC; }
+function ton(f,when,dur,type='square',vol=.05,ziel=null){
   if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(f,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-  o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02); }
+  o.connect(g); g.connect(ziel||AC.destination); o.start(when); o.stop(when+dur+.02); }
 const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
 function glissando(f1,f2,dur,type='square',vol=.05){
   ensureAudio(); if(!AC||muted) return;
@@ -341,18 +398,50 @@ const SFX={
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* Musik: das Vorgluehen laeuft im Hintergrund. Sie ist der zweite Anzeiger
+   fuer den Pegel - lauter, dumpfer, verzerrter und schleppender, je mehr du
+   getrunken hast. Man hoert also, wo man steht, ohne auf den Balken zu sehen. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
+
+/* Saettigung und Tiefpass werden nur bei spuerbarer Aenderung neu gesetzt.
+   Pro Bild eine neue Kurve zu bauen hiesse 60 Float32Arrays je Sekunde, und
+   setTargetAtTime wuerde die Zeitachse des Filters mit Ereignissen zumuellen.
+   Zwoelf Stufen ueber den ganzen Pegel hoert niemand als Stufen. */
+let _klangStufe=-1;
+function pegelKlang(p){
+  const s=Math.round(p*12)/12;
+  if(s===_klangStufe||!AC) return; _klangStufe=s;
+  /* Weiche Saettigung. Bei k=0 ist die Kurve die Gerade, also unveraendert. */
+  const k=s*s*120, n=256, c=new Float32Array(n);
+  for(let i=0;i<n;i++){ const x=i*2/n-1; c[i]=(1+k)*x/(1+k*Math.abs(x)); }
+  MUSDRIVE.curve=c;
+  /* Ab der Haelfte klingt es, als haette man Watte in den Ohren. */
+  MUSFILT.frequency.setTargetAtTime(12800-s*11200,AC.currentTime,.25);
+}
+
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  /* Nach Pause, Tabwechsel oder einem langen Bild liegt der Zeiger in der
+     Vergangenheit. Ohne Nachziehen holt die Schleife alle verpassten
+     Schritte auf einmal nach - man hoert dann einen Schlag statt eines Takts. */
+  if(MUS.next<AC.currentTime) MUS.next=AC.currentTime+.02;
+
+  const imSpiel=S.modus==='spiel'||S.modus==='kampf';
+  const p=imSpiel?Math.min(1,S.pegel/100):0;
+  pegelKlang(p);
+
+  const st=60/(128-p*12)/4;                      // der Takt schleppt mit dem Pegel
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+    const laut=imSpiel?.026+p*.028:.014;
+    if(f){
+      /* Die Stimmung faellt und schwankt langsam - der Bass zieht durch. */
+      const schwanken=1-p*.03+Math.sin(MUS.step*.37)*p*.02;
+      ton(f*schwanken,MUS.next,st*.85,'square',laut,MUSBUS);
+    }
+    if(imSpiel){
+      if(i%4===0) ton(55,MUS.next,.09+p*.06,'sine',.05+p*.03,MUSBUS);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -363,7 +452,7 @@ function rauschenKurz(when){
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(MUSBUS||AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -445,6 +534,40 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Statisten. Sie stehen rum, wippen zur Musik und reden vor sich hin, wenn
+   du vorbeikommst - mehr nicht.
+
+   Bewusst nicht ansprechbar: die Aktionstaste sucht das naechste Ding ODER
+   die naechste Person. Waeren die Statisten dabei, wuerden sie in ihrer
+   Umgebung die Moebel verdecken - und genau in diesen Moebeln liegen Jacke
+   und Ausweis. Sechs stumme Leute kosten nichts, sechs redende haetten die
+   Suche kaputtgemacht.
+
+   phase versetzt Wippen und Spruchwechsel gegeneinander, damit die Wohnung
+   nicht im Gleichtakt nickt. */
+const STATISTEN=[
+  { x:300, spr:'statA', trinkt:true, phase:0.0, blick:-1,
+    zeilen:['GEILER SONG','MACH MAL LAUTER','DEN KENN ICH'],
+    spaet:['ALTER DER SONG','DAS IST MEIN LIED','LAUTER LAUTER'] },
+  { x:380, spr:'statB', phase:1.7, blick:1,
+    zeilen:['JA ICH SCHREIB DIR GLEICH','NEIN ICH BIN NOCH HIER','SEKUNDE'],
+    spaet:['WO BIST DU','ICH HOER DICH NICHT','WAS'] },
+  { x:470, spr:'statC', phase:3.1, blick:-1,
+    zeilen:['IST NOCH WAS DA','WER HAT DEN LETZTEN GENOMMEN','ICH TRINK HEUT NICHTS MEHR'],
+    spaet:['ICH TRINK HEUT NICHTS MEHR','OKAY EINEN NOCH','WO IST MEIN GLAS'] },
+  { x:578, spr:'statD', phase:4.4, blick:1,
+    zeilen:['ICH GEH NUR KURZ RAUCHEN','GLEICH','EINE NOCH'],
+    spaet:['ICH GEH JETZT WIRKLICH','GLEICH','WO WAR ICH'] },
+  { x:672, spr:'statSitz', sitzt:true, phase:2.3, blick:-1,
+    zeilen:['ICH SITZ HIER GANZ GUT','JA','SAG NICHTS'],
+    spaet:['ICH STEH GLEICH AUF','GLEICH','FUENF MINUTEN'] },
+  { x:862, spr:'statE', phase:5.2, blick:1,
+    zeilen:['ICH WART HIER SEIT ZEHN MINUTEN','MACH MAL HIN DA DRIN','HALLO'],
+    spaet:['MACH AUF','ICH KLOPF JETZT','DAS IST NICHT MEHR LUSTIG'] },
+];
+/* Wenn alle vier Aufgaben stehen, kommentieren sie den Aufbruch. */
+const STAT_RAUS=['ENDLICH','VIEL SPASS','MACHTS GUT','SCHREIBT MAL','BIS SPAETER'];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -470,6 +593,7 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
+    unverwundbar:0, patzer:0, musterGezeigt:{},
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -589,17 +713,27 @@ function update(dt){
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
   if(S.modus==='ende'){ return; }
 
-  S.zeit+=dt;
-  const spanne=TUNE.endMinute-TUNE.startMinute;
-  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
-  if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
-    S.faenger='DIE BAHN IST WEG'; SFX.aua(); return; }
+  /* Die Uhr steht waehrend des Kampfes. Wer alle vier Aufgaben geschafft hat,
+     soll nicht an der Wohnungstuer noch an der Bahn scheitern - und die
+     Bestzeit misst so die Suche, nicht die Laenge einer festen Szene. */
+  if(S.modus!=='kampf'){
+    S.zeit+=dt;
+    const spanne=TUNE.endMinute-TUNE.startMinute;
+    S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
+    if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
+      S.faenger='DIE BAHN IST WEG'; SFX.aua(); return; }
+  }
 
   /* Pegel baut sich sehr langsam ab */
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+  if(S.unverwundbar>0) S.unverwundbar-=dt;
+  if(S.patzer>0) S.patzer-=dt;
 
-  if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
+  /* Im Kampf brauchst du Beine: der Feger will einen Sprung, und vor dem
+     Schlag darf man auch einfach zuruecktreten. Deshalb laeuft die Bewegung
+     hier genauso wie sonst - nur die Arena ist enger. */
+  if(S.modus==='kampf'){ bewegung(dt); kampf(dt); kamera(dt); return; }
 
   /* --- Gespraech laeuft --- */
   if(S.reden){
@@ -608,37 +742,7 @@ function update(dt){
     kamera(dt); return;
   }
 
-  /* --- Bewegung --- */
-  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
-  if(richtung) S.blick=richtung;
-  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
-  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
-  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
-  if(richtung){
-    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
-    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
-  } else {
-    const brems=TUNE.bremsung*kontrolle*dt;
-    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
-  }
-  S.x+=S.vx*dt;
-  S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
-
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
-    const n=Math.floor(S.gehPhase);
-    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
-  }
-  while(sprungPuffer.length){
-    const t0=sprungPuffer.shift();
-    if(S.t-t0>TUNE.puffermMs/1000) continue;
-    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
-  }
-  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
-  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
-    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+  bewegung(dt);
 
   /* --- Suchen laeuft --- */
   if(S.suchT>0){
@@ -665,6 +769,43 @@ function update(dt){
     else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
   }
   kamera(dt);
+}
+
+/* ---- Laufen, Springen, Fallen ---- */
+function bewegung(dt){
+  const imKampf=S.modus==='kampf';
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  if(richtung) S.blick=richtung;
+  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
+  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
+  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
+  if(richtung){
+    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
+    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+  } else {
+    const brems=TUNE.bremsung*kontrolle*dt;
+    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+  }
+  S.x+=S.vx*dt;
+  const links=imKampf?TUNE.kampfLinks:14, rechts=imKampf?TUNE.kampfRechts:LEVEL_B-14;
+  if(S.x<links||S.x>rechts) S.vx=0;
+  S.x=Math.max(links,Math.min(rechts,S.x));
+
+  if(S.amBoden&&Math.abs(S.vx)>12){
+    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+    const n=Math.floor(S.gehPhase);
+    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+  }
+  while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
+      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 }
 
 /* ---- Dinge benutzen ---- */
@@ -743,46 +884,187 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
+
+   Ein einziges Muster hiess: E druecken, sobald der Balken laeuft. Das war
+   keine Entscheidung, das war eine Reaktion. Jetzt hat er drei Muster, und
+   jedes will eine andere Antwort:
+
+     SCHLAG  roter Balken     -> E, wenn der Balken unter die Marke faellt
+     FEGER   blauer Balken    -> springen; danach steht er offen, dann E
+     FINTE   roter Balken,
+             der stehenbleibt -> warten, bis er wirklich ausholt, dann E
+
+   Eine Regel fuer alles: der Balken laeuft leer, die weisse Marke sagt, ab
+   wann der Konter zaehlt. Zu frueh gedrueckt ist ein Patzer - eine halbe
+   Sekunde handlungsunfaehig, oft genug lang, um den Schlag zu kassieren.
+   Die FINTE bleibt genau ueber der Marke stehen: wer die Marke liest, laesst
+   die Finger still; wer nur haemmert, faellt darauf rein.
+
+   Die Reihenfolge ist am Anfang fest: erst SCHLAG, dann FEGER. Beide werden
+   beim ersten Auftreten angesagt. Die FINTE kommt erst, wenn du ihn zweimal
+   erwischt hast - vorher waere sie eine Falle statt einer Pruefung.
    ========================================================================== */
+const MUSTER={
+  schlag:{ name:'SCHLAG', farbe:'#ff4d4d', hinweis:'E AB DER MARKE - NICHT FRUEHER' },
+  feger: { name:'FEGER',  farbe:'#42d9ff', hinweis:'DER GEHT TIEF - SPRING DRUEBER' },
+  finte: { name:'FINTE',  farbe:'#ffd447', hinweis:'ER TAEUSCHT AN - HAND STILL' },
+};
+/* Wie voll der Ausholbalken gerade ist. 1 = eben angesetzt, 0 = er schlaegt.
+   Die Finte laeuft nur bis knapp ueber die Konter-Marke und bleibt da stehen. */
+function balkenStand(g){
+  const w=hast(g);
+  if(g.zustand==='schlag') return 1-g.t/(TUNE.gegnerWindup*w);
+  if(g.zustand==='feger')  return 1-g.t/(TUNE.fegerWindup*w);
+  if(g.zustand==='finte'){
+    if(g.phase===0) return 1-.25*(g.t/(TUNE.finteFake*w));
+    if(g.phase===1) return .75;
+    return .75*(1-g.t/(TUNE.gegnerWindup*w));
+  }
+  return 0;
+}
+function waehleMuster(g){
+  if(g.angriffe===0) return 'schlag';            // der erste lehrt den Konter
+  if(g.angriffe===1) return 'feger';             // der zweite lehrt den Sprung
+  const topf=['schlag','feger'];
+  if(g.getroffen>=2) topf.push('finte');
+  const frei=topf.filter(m=>m!==g.letztes);      // nie zweimal dasselbe hintereinander
+  return pick(frei.length?frei:topf);
+}
+/* Je mehr er einsteckt, desto kuerzer die Vorwarnung. */
+const hast=g=>Math.max(.6,1-g.getroffen*TUNE.gegnerHast);
+
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  S.x=96; S.vx=0; S.y=BODEN; S.vy=0; S.amBoden=true;
+  S.gegner={ x:TUNE.kampfLinks, hp:TUNE.gegnerTreffer, zustand:'komm', t:0,
+             getroffen:0, angriffe:0, muster:'schlag', letztes:'', phase:0, sauber:true };
   SFX.warn(); meldung('WER IST DAS DENN',2);
+  zeigeHinweis('DU KANNST LAUFEN UND SPRINGEN',3.5);
 }
+
+/* Ein Treffer fuer dich. */
+function spielerTreffer(txt){
+  if(S.unverwundbar>0) return;
+  S.hp--; S.unverwundbar=TUNE.unverwundbarMs/1000;
+  S.ruettel=6; S.blitz=.5; SFX.aua(); meldung(txt,1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+}
+/* Ein Treffer fuer ihn. (TUNE.gegnerTreffer ist die Anzahl - das hier ist der Vorgang.) */
+function treffer(g,txt){
+  g.hp--; g.getroffen++; g.zustand='getroffen'; g.t=0;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch(); meldung(txt,1.2);
+}
+/* Daneben gehauen - kurz handlungsunfaehig. */
+function patzer(){
+  S.patzer=TUNE.patzer; S.ruettel=2;
+  SFX.nichts(); meldung('DANEBEN',.9);
+}
+function starteAngriff(g){
+  g.muster=waehleMuster(g); g.letztes=g.muster;
+  g.zustand=g.muster; g.t=0; g.phase=0; g.sauber=true; g.angriffe++;
+  const m=MUSTER[g.muster];
+  if(!S.musterGezeigt[g.muster]){ S.musterGezeigt[g.muster]=true; zeigeHinweis(m.hinweis,3); }
+  SFX.warn();
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
   const dist=S.x-g.x;
-  if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
-    }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
-      if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
-    }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+  /* Hoechstens eine Aktion je Bild - der Puffer darf sich nicht aufstauen
+     und spaeter drei Konter auf einmal ausloesen. */
+  let gedrueckt=aktionPuffer.length>0 && S.patzer<=0;
+  aktionPuffer.length=0;
+
+  switch(g.zustand){
+
+    case 'komm':
+      g.x+=Math.sign(dist)*TUNE.gegnerTempo*dt;
+      g.x=Math.max(TUNE.kampfLinks,Math.min(TUNE.kampfRechts,g.x));
+      if(gedrueckt) patzer();
+      if(Math.abs(dist)<TUNE.gegnerNah) starteAngriff(g);
+      break;
+
+    /* --- SCHLAG: das Grundmuster --- */
+    case 'schlag':
+      if(gedrueckt){
+        if(balkenStand(g)<=TUNE.kontFenster) { treffer(g,pick(['SITZT','KONTER','ZU LANGSAM'])); break; }
+        patzer();                                   // zu frueh
+      }
+      if(g.t>=TUNE.gegnerWindup*hast(g)){ g.zustand='trifft'; g.t=0;
+        /* Wer rechtzeitig zurueckgeht, kassiert nichts - kontert aber auch
+           nicht. Weglaufen kostet nur Zeit, nicht das Herz. */
+        if(Math.abs(dist)<30) spielerTreffer('AUTSCH');
+      }
+      break;
+
+    /* --- FEGER: tief, also drueber --- */
+    case 'feger':
+      if(gedrueckt) patzer();                       // in die Hocke haut man nicht rein
+      if(g.t>=TUNE.fegerWindup*hast(g)){ g.zustand='fegt'; g.t=0; g.sauber=true;
+        g.abgerechnet=false; SFX.klatsch(); }
+      break;
+    case 'fegt':
+      if(gedrueckt) patzer();
+      /* Der Fegen laeuft am Boden nach aussen und zaehlt genau einmal: in dem
+         Moment, in dem er dich erreicht. Wer die ganze Dauer ueber in der Luft
+         sein muesste, haette nur ein Fenster von zwei Zehnteln - so ist es
+         eine halbe Sekunde, und der Streifen am Boden zeigt genau, wann.
+         Wer weiter weg steht als der Fegen reicht, wird nie erreicht. */
+      if(!g.abgerechnet&&Math.abs(dist)<=TUNE.fegerWeite*(g.t/TUNE.fegerDauer)){
+        g.abgerechnet=true;
+        if(S.amBoden){ g.sauber=false; spielerTreffer('AM BODEN ERWISCHT'); }
+      }
+      if(g.t>=TUNE.fegerDauer){
+        if(g.sauber){ g.zustand='offen'; g.t=0; zeigeHinweis('JETZT - E',1.2); }
+        else { g.zustand='pause'; g.t=0; }
+      }
+      break;
+    case 'offen':
+      /* Er haengt ueber dem eigenen Bein. Nur wer nah genug dran ist,
+         kommt auch ran - der Sprung allein reicht nicht. */
+      if(gedrueckt){
+        if(Math.abs(dist)<30) treffer(g,pick(['DRAUF','DAS SASS','MITGENOMMEN']));
+        else patzer();
+      }
+      if(g.t>=TUNE.fegerOffen){ g.zustand='pause'; g.t=0; }
+      break;
+
+    /* --- FINTE: sieht aus wie SCHLAG, bleibt aber stehen --- */
+    case 'finte':
+      if(g.phase===0){                              // Ausholen, aber nur zum Schein
+        if(gedrueckt) patzer();
+        if(g.t>=TUNE.finteFake*hast(g)){ g.phase=1; g.t=0; }
+      } else if(g.phase===1){                       // er haelt an - hier nicht druecken
+        if(gedrueckt) patzer();
+        if(g.t>=TUNE.finteHalt){ g.phase=2; g.t=0; SFX.warn(); }
+      } else {                                      // und jetzt richtig
+        if(gedrueckt){
+          if(balkenStand(g)<=TUNE.kontFenster) { treffer(g,pick(['DURCHSCHAUT','GEDULD','SITZT'])); break; }
+          patzer();
+        }
+        if(g.t>=TUNE.gegnerWindup*hast(g)){ g.zustand='trifft'; g.t=0;
+          if(Math.abs(dist)<30) spielerTreffer('DARAUF BIST DU REINGEFALLEN');
+        }
+      }
+      break;
+
+    case 'trifft':
+      if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
+      break;
+
+    case 'getroffen':
+      g.x-=Math.sign(dist||1)*90*dt;
+      g.x=Math.max(TUNE.kampfLinks,Math.min(TUNE.kampfRechts,g.x));
+      if(g.t>=.5){
+        if(g.hp<=0){ starteCutscene(); return; }
+        g.zustand='pause'; g.t=0;
+      }
+      break;
+
+    case 'pause':
+      if(gedrueckt) patzer();
+      if(g.t>=TUNE.gegnerPause*hast(g)){ g.zustand='komm'; g.t=0; }
+      break;
   }
 }
 
@@ -863,9 +1145,11 @@ function zeichneWohnung(){
     /* Name des Raums */
     text(o.name,o.von+6,26,'#ffffff18');
   }
-  /* Wohnungstuer im Flur */
+  /* Wohnungstuer im Flur. Im Kampf ohne Beschriftung - der Kracher steht
+     genau davor, und Ausholbalken und RAUS lagen uebereinander. */
   sprite(SPR.tuer,34,BODEN-12);
-  text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
+  if(S.modus!=='kampf')
+    text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
 
   /* Partylicht im Wohnzimmer */
   const puls=(Math.sin(S.t*6)*.5+.5);
@@ -895,6 +1179,32 @@ function zeichneWohnung(){
     }
   }
 
+  /* Statisten - reine Kulisse, vor den Moebeln und hinter den Jungs.
+     Nur der Naechste redet: standen zwei nebeneinander, lagen ihre Zeilen
+     uebereinander und beide waren unlesbar. */
+  let nahster=null, nahsteD=53;
+  for(const st of STATISTEN){ const d=Math.abs(st.x-S.x);
+    if(d<nahsteD){ nahsteD=d; nahster=st; } }
+  for(const st of STATISTEN){
+    let rows=SPR[st.spr]||SPR.steh;
+    /* Wippen zur Musik, schneller je hoeher der Pegel. Nur ganze Pixel -
+       alles andere flimmert bei 320x180. */
+    const bob=Math.sin(S.t*(3.2+S.pegel/40)+st.phase)>.55?1:0;
+    if(st.trinkt&&Math.sin(S.t*.7+st.phase)>.92) rows=SPR.statAtrink;
+    const y=BODEN-rows.length+bob;
+    outline(rows,st.x-3,y,1,.45);
+    if(st.blick<0) spriteFlip(rows,st.x-3,y); else sprite(rows,st.x-3,y);
+    /* Sie reden vor sich hin, wenn du in der Naehe bist. Ansprechen kann man
+       sie nicht - siehe Kommentar bei STATISTEN. */
+    if(st===nahster&&S.modus==='spiel'&&!S.reden){
+      const quelle=alleFertig()?STAT_RAUS:(S.pegel>TUNE.wackelnAb?st.spaet:st.zeilen);
+      const z=quelle[Math.floor(S.t/3.4+st.phase)%quelle.length];
+      ctx.globalAlpha=Math.max(.3,1-nahsteD/60);
+      text(z,st.x+3-textW(z)/2,y-8,P.dunkel);
+      ctx.globalAlpha=1;
+    }
+  }
+
   /* Leute */
   for(const l of LEUTE){
     const rows=SPR[l.spr]||SPR.steh;
@@ -910,19 +1220,54 @@ function zeichneWohnung(){
     }
   }
 
-  /* Der Kracher */
+  /* Der Kracher. Haltung sagt, welches Muster laeuft; der Balken sagt, wann.
+     Nur die FINTE bleibt absichtlich stumm - ihr Tell ist, dass der Balken
+     auf halbem Weg stehenbleibt. */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+    /* Der Fegen: ein flacher Streifen, der ueber den Boden nach aussen laeuft */
+    if(g.zustand==='fegt'){
+      const f=Math.min(1,g.t/TUNE.fegerDauer), r=TUNE.fegerWeite*f;
+      ctx.globalAlpha=.75*(1-f); ctx.fillStyle=P.neon2;
+      ctx.fillRect(Math.round(g.x+3-r),BODEN-3,Math.round(r*2),2);
+      ctx.globalAlpha=1;
     }
+    let rows=SPR.kracher;
+    if(g.zustand==='trifft')      rows=SPR.kracherAus;
+    else if(g.zustand==='feger')  rows=SPR.kracherTief;
+    else if(g.zustand==='fegt')   rows=SPR.kracherFegt;
+    else if(g.zustand==='offen')  rows=SPR.kracherOffen;
+    const holtAus = g.zustand==='schlag'
+                 || (g.zustand==='finte'&&g.phase!==1);
+    const blinkt = holtAus&&Math.floor(S.t*16)%2===0;
+    const y=BODEN-rows.length;
+    outline(rows,g.x,y,1,.6);
+    sprite(rows,g.x,y,1,blinkt?'#ffffff':null);
+
+    /* Ausholbalken: laeuft leer, dann kommt der Schlag. Die weisse Marke
+       zeigt, ab wann der Konter zaehlt - dieselbe Sprache wie die Mut-Marke
+       auf dem Pegelbalken. */
+    const balken=(farbe,anteil)=>{
+      const bw=18;
+      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,y-6,bw+2,4);
+      ctx.fillStyle=farbe;
+      ctx.fillRect(g.x-2,y-5,Math.round(bw*Math.max(0,Math.min(1,anteil))),2);
+      ctx.fillStyle=P.weiss; ctx.fillRect(g.x-2+Math.round(bw*TUNE.kontFenster),y-6,1,4);
+    };
+    const ruf=farbe=>{ if(Math.floor(S.t*10)%2===0) text('!',g.x+3,y-13,farbe); };
+    if(g.zustand==='schlag'){ balken(MUSTER.schlag.farbe,balkenStand(g)); ruf(P.rot); }
+    else if(g.zustand==='feger'){ balken(MUSTER.feger.farbe,balkenStand(g)); ruf(P.neon2); }
+    else if(g.zustand==='finte'){
+      /* Phase 0 sieht aus wie ein Schlag - der Balken laeuft aber nur knapp
+         ueber die Marke und bleibt in Phase 1 dort stehen und pulsiert.
+         Genau das ist die Warnung. Phase 2 ist der echte Schlag. */
+      if(g.phase===1) balken(Math.floor(S.t*8)%2===0?MUSTER.finte.farbe:'#332a10',balkenStand(g));
+      else { balken(MUSTER.schlag.farbe,balkenStand(g)); ruf(P.rot); }
+    }
+    else if(g.zustand==='offen'){
+      if(Math.floor(S.t*12)%2===0) text('E',g.x+3,y-11,P.gold);
+    }
+
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
@@ -932,12 +1277,16 @@ function zeichneWohnung(){
   /* Spieler */
   let rows;
   if(S.suchT>0) rows=SPR.suchen;
+  else if(S.patzer>0) rows=SPR.suchen;                       // ins Leere gehauen
   else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Nach einem Treffer blinkt man durch die Gnadenfrist */
+  if(!(S.unverwundbar>0&&Math.floor(S.t*20)%2===0)){
+    outline(rows,S.x-3,S.y-rows.length,1,.6);
+    if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  }
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
@@ -978,15 +1327,18 @@ function hud(){
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
-  /* Aufgabenliste */
-  let y=22;
-  for(const a of AUFGABEN){
-    const ok=!!S.erledigt[a.id];
-    text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
-    text(a.text,14,y,ok?P.dunkel:P.weiss);
-    y+=8;
+  /* Aufgabenliste nur beim Spielen: im Kampf liegt dort der Lebensbalken des
+     Krachers, und in der Cutscene stand die Zeile bisher im Textkasten. */
+  if(S.modus==='spiel'){
+    let y=22;
+    for(const a of AUFGABEN){
+      const ok=!!S.erledigt[a.id];
+      text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
+      text(a.text,14,y,ok?P.dunkel:P.weiss);
+      y+=8;
+    }
+    if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;
@@ -994,10 +1346,14 @@ function hud(){
   if(S.inventar.ausweis){ sprite(SPR.ausweis,ix,16); ix-=12; }
   if(S.inventar.dose){ sprite(SPR.dose,ix,16); ix-=10; }
 
-  if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
-    textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
-  if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
-    textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+  /* Meldung und Hinweis liegen dort, wo in Cutscene und Abspann der
+     Textkasten steht - dort haben sie nichts zu suchen. */
+  if(S.modus==='spiel'||S.modus==='kampf'){
+    if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
+      textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
+    if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
+      textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+  }
 
   /* Gespraech */
   if(S.reden){
@@ -1044,6 +1400,8 @@ function zeichneIntro(){
     gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
     g.fillStyle=gr; g.fillRect(0,0,220,110); }),m-110,30);
   ctx.globalAlpha=1;
+  /* Zwei Statisten am Rand - die Wohnung ist voll, es geht nur keiner los */
+  sprite(SPR.statC,m-104,130-13); spriteFlip(SPR.statB,m+82,130-13);
   sprite(SPR.sofa,m-60,124);
   sprite(SPR.schlaefer,m-52,122);
   sprite(SPR.steh,m+20,130-13);
