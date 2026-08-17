@@ -1,6 +1,7 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) und Level 2 (Bei Moritz) sind spielbar und
+durchspielbar. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
@@ -26,11 +27,37 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Level 2 ist damit auch durch:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — sieben Statisten, wippen
+      im Takt, drei Posen, aufgeschnappte Sprüche je nach Pegel und Lage
+- [x] Der Kracher hat drei Angriffsmuster — Schlag, Doppelschlag, unblockbare
+      Grätsche. Rot heißt kontern, Gold heißt springen. Erst einzeln gezeigt,
+      dann gemischt, ab der Hälfte schneller
+- [x] Musik lauter/verzerrter je höher der Pegel — eigene Audiokette, gemessen
+      Faktor 5,2 lauter und doppelt so weit nach oben im Spektrum
+
+**Dabei aufgefallen, noch offen:**
+
+- [ ] Wer eine schon erledigte Person nochmal anspricht, hört wieder ihre
+      alten Zeilen („NEIN DU HÖRST MIR NICHT ZU"), obwohl die Sache längst
+      geklärt ist. Braucht einen zweiten Satz Zeilen für „schon erledigt"
+- [ ] Namensschilder am Bildrand werden abgeschnitten statt auszublenden
+
+---
+
+## Vor Level 3 zu klären
+
+**Der Motor liegt zweimal im Repo.** `index.html` und `level2.html` teilen
+Font, Bild-Cache, Sprite-Backen, Eingabe, Kamera und Spielschleife — jeweils
+als eigene Kopie, zusammen rund 90 KB. Jede Korrektur muss zweimal gemacht
+werden, und beim Blackout-Fehler ist genau das schon einmal schiefgegangen.
+
+Level 3 wäre die dritte Kopie. Der Punkt „Level-Daten in eine eigene Struktur"
+weiter unten unter *Technik* ist damit nicht mehr Aufräumarbeit, sondern steht
+Level 3 im Weg. **Empfehlung: erst den gemeinsamen Teil herausziehen, dann
+Level 3 bauen.** Sonst wird jede spätere Änderung dreimal fällig.
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,10 +94,19 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Der Kracher in Level 2 ist ein erster Vorgriff darauf: drei Muster, feste
+Lernreihenfolge, Phasenwechsel ab der Hälfte. Bewusst noch der einfachste Fall —
+es ist der erste Kampf im Spiel. Die Punkte hier zielen auf die späteren.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört.
+      Beim Kracher gibt es das nur für die goldene Grätsche: wer dort kontert,
+      steht vier Zehntel falsch. Für die roten Muster fehlt es noch — nur E
+      gedrückt zu halten gewinnt den Kampf zwar nicht mehr, kostet aber bloß
+      zwei von drei Herzen
+- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens —
+      beim Kracher zählt bewusst noch das ganze Ausholen
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -78,7 +114,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
+- [ ] **Level-Daten in eine eigene Struktur, damit neue Level ohne Code
+      entstehen** — siehe „Vor Level 3 zu klären" oben. Der gemeinsame Motor
+      liegt aktuell zweimal im Repo
 - [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
 - [ ] Übergänge zwischen den Leveln
 - [ ] Kampfsystem und Level-System zusammenführen
@@ -123,3 +161,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2 komplett: Wohnung, Pegel, vier Aufgaben, Statisten, Kracher
+      mit drei Mustern, Musik am Pegel**

@@ -192,12 +192,46 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Und Du hörst es.** Je voller der Pegel, desto lauter und verzerrter wird die
+Musik: der Bass wird rauh, die Töne stehen schief, die Tonhöhe sackt ab, das
+Blech schlägt doppelt so oft. Gemessen ist das gut fünfmal so laut — und der
+Klang wandert dabei doppelt so weit nach oben, wie er lauter wird. Die
+Spielgeräusche bleiben davon unberührt: was Du hören *musst*, matscht nicht mit.
+
+### Die anderen im Raum
+
+Außer den vier, um die es geht, steht noch eine Handvoll Leute rum, die
+einfach da sind. Sie wippen im Takt, trinken, reden mit den Händen — und
+manchmal schnappst Du auf, was einer davon gerade sagt. Je voller Dein Pegel,
+desto weniger Ruhe geben sie. Ansprechen kannst Du sie nicht. Sie sind die
+Party, nicht die Aufgabe.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Laufen kannst Du hier
+nicht — Du stehst in der Tür. Springen schon.
+
+Er kann drei Sachen, und Du erkennst sie an der Farbe über seinem Kopf:
+
+| Was er macht | Woran Du es siehst | Was Du tust |
+|:--|:--|:--|
+| **Schlag** | roter Balken, `!` | `E` während er ausholt — Konter |
+| **Doppelschlag** | roter Balken, `!!` | zweimal kontern, das zweite Fenster ist kürzer |
+| **Grätsche** | **goldener** Balken, `SPRUNG` | **Leertaste.** Kontern geht nicht |
+
+**Rot heißt kontern, Gold heißt springen.** Wer ins goldene Ausholen haut,
+steht kurz falsch und kommt nicht mehr hoch — einfach `E` gedrückt halten
+funktioniert also nicht.
+
+Nach einer übersprungenen Grätsche liegt er einen Moment offen. Dann blinkt ein
+grünes `E` über ihm: **das ist Deine Gelegenheit**, und sie ist die einzige, die
+Du Dir selbst holen musst.
+
+Die ersten drei Angriffe kommen immer in derselben Reihenfolge — Schlag,
+Grätsche, Doppelschlag — damit Du jedes Muster einmal in Ruhe siehst. Danach
+mischt er, und ab der Hälfte macht er kürzere Pausen. Vier Treffer hält er aus.
+Wer alles trifft, ist nach genau drei Angriffen durch.
 
 ### Moritz
 
@@ -237,6 +271,21 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+`level2.html` ist genauso gebaut. Der `TUNE`-Block dort hat sieben Abschnitte:
+
+| Abschnitt | Regler |
+|:--|:--|
+| Pegel | `proSchluck` · `mutAb` · `wackelnAb` · `langsamAb` · `blackoutBei` |
+| Der Kracher | `gegnerTreffer` · `gegnerWindup` · `gegnerWindup2` · `gegnerTrittWind` · `gegnerTrittAnlauf` · `gegnerTrittBreite` · `gegnerOffen` · `gegnerDaneben` · `gegnerSpaetTempo` |
+| Statisten | `gastWippen` · `gastPose` · `gastRedeMin` · `gastRedeMax` |
+| Musik | `musikBpm` · `musikDruck` · `musikVerzerrung` · `musikSchwanken` · `musikFilterZu` · `musikFilterAuf` · `musikSaegeAb` |
+
+Die Wohnung steht als `ORTE`, `DINGE`, `LEUTE` und `STATISTEN` daneben. Wer eine
+Person zum Mitspielen braucht, schreibt sie nach `LEUTE`; wer nur Kulisse will,
+nach `STATISTEN` — die tauchen in der Reichweitensuche der Aktionstaste bewusst
+nicht auf und blockieren dadurch keine Möbel. Die Sprüche der Statisten liegen
+in `GEQUATSCHE`, `GEQUATSCHE_SPAET` und `GEQUATSCHE_KAMPF`.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -256,6 +305,9 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
 - Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+- Musik läuft in Level 2 über eine eigene Audiokette (Druck → Verzerrer →
+  Filter → Lautstärke). Die Spielgeräusche gehen daran vorbei direkt zum
+  Ausgang, damit Signale, auf die man reagieren muss, sauber bleiben
 
 ## Woran es sich orientiert
 
@@ -265,5 +317,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar. Level 3 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md) — dort steht auch,
+was vor Level 3 am Aufbau geklärt werden sollte.
