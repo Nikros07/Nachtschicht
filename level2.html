@@ -165,8 +165,20 @@ const TUNE = {
   gegnerDaneben:    0.4,   // wer ins goldene Ausholen kontert, steht so lange falsch
   leben:            3,
 
-  /* (7) MUSIK */
+  /* (7) MUSIK - laeuft im Vorgluehen und kippt mit dem Pegel.
+     Nur die Musik haengt an dieser Kette. Spielgeraeusche gehen direkt
+     raus: worauf man reagieren muss, darf nicht mitverzerren. */
   musikBpm:       128,     // Takt der Vorgluehmusik. Die Statisten wippen mit.
+  musikLaut:        0.9,   // Endlautstaerke nuechtern
+  musikLautPegel:   1.15,  // ... bei vollem Pegel
+  musikDruck:      14,     // wie hart sie in die Verzerrung gefahren wird
+  musikVerzerrung:  6,     // Staerke der Verzerrungskurve bei vollem Pegel
+  musikSchwanken:  40,     // wie schief die Toene stehen (Cent)
+  musikSacken:      0.03,  // wie weit die Tonhoehe absackt
+  musikFilterZu: 3200,     // Klangfarbe nuechtern (Hz)
+  musikFilterAuf:6500,     // ... bei vollem Pegel, deutlich schaerfer
+  musikSaegeAb:    45,     // ab diesem Pegel wird die Bassfigur rauh
+  musikBlechAb:    50,     // ab hier schlaegt das Blech doppelt so oft
 };
 
 const P = {
@@ -365,15 +377,20 @@ const gastRows=(basis,oben,haar,haut)=>
 /* ==========================================================================
    AUDIO
    ========================================================================== */
-let AC=null, muted=false;
+let AC=null, muted=false, MUSIK=null;
 function ensureAudio(){ if(AC) return AC;
-  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
+  try{ AC=new (window.AudioContext||window.webkitAudioContext)();
+    MUS.next=AC.currentTime+.05; MUSIK=baueMusikkette(); }
   catch(e){ AC=null; } return AC; }
-function ton(f,when,dur,type='square',vol=.05){
+/* ziel: wohin der Ton geht. Ohne Angabe direkt raus - so bleiben alle
+   Spielgeraeusche sauber, egal wie voll der Pegel ist.
+   cent: Verstimmung in Hundertstel-Halbtoenen. */
+function ton(f,when,dur,type='square',vol=.05,ziel=null,cent=0){
   if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(f,when);
+  if(cent) o.detune.setValueAtTime(cent,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-  o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02); }
+  o.connect(g); g.connect(ziel||AC.destination); o.start(when); o.stop(when+dur+.02); }
 const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
 function glissando(f1,f2,dur,type='square',vol=.05){
   ensureAudio(); if(!AC||muted) return;
@@ -407,29 +424,102 @@ const SFX={
   drueber:()=>{ piep(1180,.06,'sine',.045); setTimeout(()=>piep(1560,.08,'sine',.035),60); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* ==========================================================================
+   MUSIK
+
+   Das Vorgluehen laeuft die ganze Zeit. Je hoeher der Pegel, desto
+   lauter, rauher und schiefer wird es - dieselbe Kurve, die auch das
+   Bild schwanken laesst.
+
+   Die Musik haengt an einer eigenen Kette:
+
+     Toene -> Druck -> Verzerrer -> Filter -> Lautstaerke -> Ausgang
+
+   Die Spielgeraeusche gehen daran vorbei direkt zum Ausgang. Was der
+   Spieler hoeren MUSS - der Konterschlag, die Graetsche, ein Fund -
+   bleibt dadurch klar, auch wenn die Musik schon matscht.
+   ========================================================================== */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
+
+/* Weiche Uebersteuerung: x/(1+k*|x|).
+
+   Wichtig ist die Normierung. Die uebliche Form (1+k)*x/(1+k*|x|) hat am
+   Nullpunkt die Steigung 1+k - fuer ein leises Signal ist das kein
+   Verzerrer, sondern ein Verstaerker um den Faktor 1+k. Bei k=20 wurde
+   die Musik dadurch zwanzigfach lauter statt rauh. So herum liegt die
+   Steigung am Nullpunkt bei 1, und verzerrt wird nur, was vorher laut
+   genug in die Kurve gefahren wurde - dafuer ist musikDruck da.
+   k=0 ist eine gerade Linie, also unveraendert. */
+const _kurven=new Map();
+function verzerrKurve(k){
+  let c=_kurven.get(k);
+  if(!c){ const n=1024; c=new Float32Array(n);
+    for(let i=0;i<n;i++){ const x=i*2/n-1; c[i]=x/(1+k*Math.abs(x)); }
+    _kurven.set(k,c); }
+  return c;
+}
+function baueMusikkette(){
+  const rein=AC.createGain(), form=AC.createWaveShaper(),
+        filter=AC.createBiquadFilter(), aus=AC.createGain();
+  filter.type='lowpass'; filter.Q.value=.7;
+  filter.frequency.value=TUNE.musikFilterZu;
+  form.curve=verzerrKurve(0); form.oversample='2x';
+  aus.gain.value=TUNE.musikLaut;
+  rein.connect(form); form.connect(filter);
+  filter.connect(aus); aus.connect(AC.destination);
+  return { rein, form, filter, aus, stufe:0 };
+}
+/* p von 0 bis 1. Gleitend nachgefuehrt, damit nichts knackt. */
+function stelleMusik(p){
+  const m=MUSIK, t=AC.currentTime, z=.12;
+  m.rein.gain.setTargetAtTime(1+p*(TUNE.musikDruck-1),t,z);
+  m.aus.gain.setTargetAtTime(TUNE.musikLaut+p*(TUNE.musikLautPegel-TUNE.musikLaut),t,z);
+  m.filter.frequency.setTargetAtTime(
+    TUNE.musikFilterZu+p*(TUNE.musikFilterAuf-TUNE.musikFilterZu),t,z);
+  /* Die Kurve nur neu bauen, wenn sie sich wirklich aendert. Ein
+     Float32Array pro Bild waere Verschwendung, elf Stufen reichen. */
+  const stufe=Math.round(p*10);
+  if(stufe!==m.stufe){ m.stufe=stufe;
+    m.form.curve=verzerrKurve(stufe/10*TUNE.musikVerzerrung); }
+}
 function musik(){
-  if(!AC||muted||S.modus==='pause') return;
+  if(!AC||!MUSIK) return;
+  if(muted||S.modus==='pause'){ MUS.next=0; return; }
+  /* Nach Pause, Stummschaltung oder einem Tabwechsel liegt die Uhr weit
+     zurueck. Ohne Nachstellen plant die Schleife hunderte Toene in die
+     Vergangenheit - und die feuern alle auf einmal. */
+  if(MUS.next<AC.currentTime) MUS.next=AC.currentTime+.05;
+
+  const imSpiel=S.modus==='spiel';
+  const p=imSpiel?Math.min(1,S.pegel/TUNE.pegelMax):0;
+  stelleMusik(p);
+
   const st=60/TUNE.musikBpm/4;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+    if(f){
+      /* Die Toene stehen nicht mehr sauber, und die Tonhoehe sackt ab. */
+      const cent=(Math.random()*2-1)*p*TUNE.musikSchwanken;
+      const form=S.pegel>=TUNE.musikSaegeAb?'sawtooth':'square';
+      ton(f*(1-p*TUNE.musikSacken),MUS.next,st*.85,form,
+          imSpiel?.026:.014,MUSIK.rein,cent);
+    }
+    if(imSpiel){
+      if(i%4===0) ton(55,MUS.next,.09,'sine',.05,MUSIK.rein);
       if(i%4===2) rauschenKurz(MUS.next);
+      /* Ab der Haelfte schlaegt das Blech doppelt so oft. */
+      if(S.pegel>=TUNE.musikBlechAb&&i%4===0) rauschenKurz(MUS.next+st*.5);
     }
     MUS.next+=st; MUS.step++;
   }
 }
 function rauschenKurz(when){
-  if(!AC||muted) return;
+  if(!AC||muted||!MUSIK) return;
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(MUSIK.rein); s.start(when);
 }
 
 /* ==========================================================================
