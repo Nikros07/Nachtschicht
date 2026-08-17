@@ -134,12 +134,24 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
+  /* (5b) DIE STATISTEN - Leute, die nur rumstehen.
+     Sie sind reine Kulisse: nicht ansprechbar, nichts zu holen. Wer hier
+     mitspielen soll, gehoert nach LEUTE. */
+  gastWippen:       1.7,   // wie weit sie im Takt wippen (Pixel bei vollem Pegel)
+  gastPose:         0.22,  // wie schnell sie zwischen Stehen, Trinken, Reden wechseln
+  gastRedeMin:      2.4,   // kuerzeste Pause zwischen zwei Spruechen
+  gastRedeMax:      6.0,   // laengste Pause - schrumpft mit steigendem Pegel
+  gastRedeDauer:    2.2,   // wie lange ein Spruch stehen bleibt
+
   /* (6) DER KRACHER AM ENDE */
   gegnerTreffer:    3,     // so oft musst du kontern
   gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
   leben:            3,
+
+  /* (7) MUSIK */
+  musikBpm:       128,     // Takt der Vorgluehmusik. Die Statisten wippen mit.
 };
 
 const P = {
@@ -189,7 +201,12 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
   j:'#3d2f22', u:'#8c94ad', q:'#2e3350', z:'#5a4632',
   /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
+  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
+  /* Statisten. Bewusst stumpfe Farben - wer wichtig ist, leuchtet.
+     Zweiter Hautton und zwei weitere Haarfarben, damit die Wohnung nicht
+     nach sieben Zwillingen aussieht. */
+  S:'#b57a52', Y:'#6b5a3a', X:'#8a8fa0',
+  1:'#3f3550', 2:'#5c4a33', 3:'#2f4a4a', 4:'#6a3550', 5:'#3a4a66' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -207,9 +224,11 @@ function sprite(rows,x,y,sc=1,tint=null,alpha=1){
   ctx.drawImage(c,Math.round(x),Math.round(y));
   if(alpha!==1) ctx.globalAlpha=1;
 }
-function spriteFlip(rows,x,y,sc=1,tint=null){
+function spriteFlip(rows,x,y,sc=1,tint=null,alpha=1){
   const c=holeSprite(rows,sc,tint);
-  ctx.save(); ctx.translate(Math.round(x)+c.width,Math.round(y)); ctx.scale(-1,1);
+  ctx.save();
+  if(alpha!==1) ctx.globalAlpha=alpha;
+  ctx.translate(Math.round(x)+c.width,Math.round(y)); ctx.scale(-1,1);
   ctx.drawImage(c,0,0); ctx.restore();
 }
 function outline(rows,x,y,sc=1,a=.7){
@@ -302,6 +321,24 @@ const SPR={
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
 };
 
+/* ---- Statisten-Rohlinge ------------------------------------------------
+   @ = Haare, % = Haut, # = Oberteil. Wird einmal beim Laden ersetzt,
+   nie im Bild - holeSprite merkt sich Sprites an der Identitaet des
+   Zeilen-Arrays, ein frisch gebautes Array pro Bild wuerde den Cache
+   unbegrenzt volllaufen lassen. */
+const GAST={
+  steh: ['..@@@..','.@%%%@.','.%%%%%.','..%%%..','..###..','.#####.','k.###.k','..###..',
+         '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  /* Glas auf Kopfhoehe, Hand darunter */
+  trink:['..@@@..','.@%%%@g','.%%%%%g','..%%%k.','..###..','.#####.','k.###..','..###..',
+         '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  /* redet mit den Haenden */
+  reden:['..@@@..','.@%%%@.','.%%%%%.','..%%%..','k.###..','.#####k','..###..','..###..',
+         '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+};
+const gastRows=(basis,oben,haar,haut)=>
+  basis.map(r=>r.split('#').join(oben).split('@').join(haar).split('%').join(haut));
+
 /* ==========================================================================
    AUDIO
    ========================================================================== */
@@ -332,6 +369,9 @@ const SFX={
   sprung: ()=>piep(430,.06,'square',.032),
   landen: ()=>piep(160,.05,'triangle',.028),
   reden:  ()=>piep(520+Math.random()*180,.04,'square',.025),
+  /* Statisten reden im Hintergrund - deutlich leiser als alles,
+     worauf du reagieren musst. */
+  gemurmel:()=>piep(280+Math.random()*140,.05,'sine',.012),
   fund:   ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.15),170); },
   nichts: ()=>piep(220,.09,'sine',.03),
   schluck:()=>{ glissando(300,160,.22,'sine',.05); rauschen(.1,.03); },
@@ -346,7 +386,7 @@ const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const st=60/TUNE.musikBpm/4;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
     const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
@@ -445,6 +485,50 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* ---- Die Statisten ------------------------------------------------------
+   Leute, die nur rumstehen. Genau das ist ihre Aufgabe: die Wohnung soll
+   sich voll anfuehlen, ohne dass noch eine Aufgabe daran haengt.
+
+   Sie tauchen bewusst NICHT in LEUTE auf. Die Aktionstaste sucht dort den
+   naechsten Ansprechpartner - stuenden sie mit drin, waeren Moebel neben
+   ihnen nicht mehr erreichbar, und der Ausweis koennte unauffindbar werden.
+   Aus demselben Grund blockieren sie auch keine Verstecke.
+
+   Die Positionen liegen in den Luecken zwischen den Moebeln. blick:1 heisst
+   nach rechts; Paare schauen sich an. */
+const STATISTEN=[
+  { x:205, blick: 1, oben:'1', haar:'h', haut:'s', seed:0.0 },
+  { x:217, blick:-1, oben:'3', haar:'Y', haut:'S', seed:1.7 },
+  { x:297, blick: 1, oben:'4', haar:'H', haut:'s', seed:0.8 },
+  { x:352, blick: 1, oben:'2', haar:'z', haut:'S', seed:2.3 },
+  { x:365, blick:-1, oben:'5', haar:'h', haut:'s', seed:1.1 },
+  { x:463, blick:-1, oben:'3', haar:'H', haut:'s', seed:2.7 },
+  { x:678, blick: 1, oben:'1', haar:'Y', haut:'S', seed:0.4 },
+];
+/* Sprites einmalig backen - siehe Kommentar bei GAST. */
+for(const g of STATISTEN){
+  g.spr={ steh: gastRows(GAST.steh, g.oben,g.haar,g.haut),
+          trink:gastRows(GAST.trink,g.oben,g.haar,g.haut),
+          reden:gastRows(GAST.reden,g.oben,g.haar,g.haut) };
+}
+
+/* Aufgeschnapptes. Drei Toepfe: nuechtern, spaeter am Abend, und waehrend
+   es im Flur knallt. */
+const GEQUATSCHE=[
+  'HAT WER FEUER','IST DAS DEIN GLAS','WER FAEHRT DENN','MACH MAL LAUTER',
+  'NEIN ECHT JETZT','ALTER ICH SCHWOER','WO IST MEIN GLAS','LASS MAL BALKON',
+  'DIE BAHN SCHAFFEN WIR NIE','SAG ICH DOCH DIE GANZE ZEIT','WEM GEHOERT DIE JACKE',
+];
+const GEQUATSCHE_SPAET=[
+  'BOAH DER SONG','DIGGA','ICH LIEB EUCH ALLE','WAS','NOCH EINEN',
+  'WIE SPAET IST ES','ALTER DAS IST MEIN LIED','WER HAT DAS BESTELLT',
+  'MIR GEHTS SO GUT','ICH SAG NUR EINS',
+];
+const GEQUATSCHE_KAMPF=[
+  'OH','WAS IST DA LOS','LASST DIE MAL','WER IST DAS DENN','NICHT SCHON WIEDER',
+  'FILMT DAS EINER','GEH DAZWISCHEN',
+];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -467,6 +551,7 @@ function neuesSpiel(){
     reden:null, redeZeile:0, redeT:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     suchT:0, suchZiel:null,
+    gastIdx:-1, gastText:'', gastT:0, gastPause:1.6,
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
@@ -571,6 +656,30 @@ function pruefeBlackout(){
   S.faenger='BLACKOUT. AUF MORITZ SOFA.'; SFX.aua();
   return true;
 }
+/* ---- Statisten: wer sagt wann was ----
+   Immer nur einer redet. Zwei Spruechen gleichzeitig kann man nicht
+   zuhoeren, und die Wohnung soll voll wirken, nicht unlesbar. */
+function statisten(dt){
+  if(S.gastT>0){ S.gastT-=dt; if(S.gastT<=0) S.gastIdx=-1; return; }
+  S.gastPause-=dt; if(S.gastPause>0) return;
+  /* Nur wer im Bild ist, sagt was - sonst verpufft der halbe Topf ungehoert. */
+  const sichtbar=[];
+  for(let i=0;i<STATISTEN.length;i++){
+    const g=STATISTEN[i];
+    if(g.x>S.kamX-8&&g.x<S.kamX+W+8) sichtbar.push(i);
+  }
+  if(!sichtbar.length){ S.gastPause=0.5; return; }
+  S.gastIdx=pick(sichtbar);
+  S.gastText=pick(S.modus==='kampf' ? GEQUATSCHE_KAMPF
+                : S.pegel>=TUNE.wackelnAb ? GEQUATSCHE_SPAET : GEQUATSCHE);
+  S.gastT=TUNE.gastRedeDauer;
+  /* Je voller der Pegel, desto weniger Ruhe im Raum. */
+  const p=S.pegel/TUNE.pegelMax;
+  S.gastPause=TUNE.gastRedeMin
+    +Math.random()*(TUNE.gastRedeMax-TUNE.gastRedeMin)*(1-p*.6);
+  SFX.gemurmel();
+}
+
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
@@ -590,6 +699,7 @@ function update(dt){
   if(S.modus==='ende'){ return; }
 
   S.zeit+=dt;
+  statisten(dt);
   const spanne=TUNE.endMinute-TUNE.startMinute;
   S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
   if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
@@ -882,6 +992,35 @@ function zeichneWohnung(){
   ctx.fillStyle='#2a3450';
   for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
   ctx.fillRect(890,BODEN-26,90,2);
+
+  /* Statisten - eine Ebene hinter den Moebeln.
+     Zwei Pixel hoeher und etwas blasser: das liest sich als "weiter hinten",
+     ohne dass dafuer eine zweite Zeichenebene noetig waere. Sie wippen im
+     Takt der Musik, und je hoeher der Pegel, desto deutlicher. */
+  const takt=60/TUNE.musikBpm, pgl=S.pegel/TUNE.pegelMax;
+  for(let i=0;i<STATISTEN.length;i++){
+    const g=STATISTEN[i];
+    const redet=S.gastIdx===i&&S.gastT>0;
+    const zyklus=(S.t*TUNE.gastPose+g.seed)%3;
+    const rows=redet||zyklus>=2.5 ? g.spr.reden
+             : zyklus>=1.9        ? g.spr.trink : g.spr.steh;
+    /* Nur nach oben wippen - wer im Boden versinkt, sieht kaputt aus. */
+    const hoch=Math.max(0,Math.sin((S.t/takt+g.seed)*Math.PI*2)*TUNE.gastWippen*(.3+pgl*.7));
+    const y=BODEN-2-rows.length-Math.round(hoch);
+    /* Wenn es im Flur knallt, schauen alle dorthin. */
+    const blick=S.modus==='kampf'?-1:g.blick;
+    outline(rows,g.x-3,y,1,.3);
+    if(blick<0) spriteFlip(rows,g.x-3,y,1,null,.82);
+    else        sprite(rows,g.x-3,y,1,null,.82);
+    if(redet){
+      /* Deutlich ueber die Namensschilder der Jungs. Die haengen auf
+         y-16, und Spruchblasen sind breit genug, um auch bei 50 Pixeln
+         Abstand noch mit ihnen zu kollidieren. */
+      const w=textW(S.gastText), tx=Math.round(g.x+3-w/2), ty=y-22;
+      ctx.fillStyle='#000000aa'; ctx.fillRect(tx-2,ty-1,w+4,7);
+      text(S.gastText,tx,ty,P.dim);
+    }
+  }
 
   /* Dinge */
   for(const d of DINGE){
