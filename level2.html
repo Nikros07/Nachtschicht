@@ -143,11 +143,26 @@ const TUNE = {
   gastRedeMax:      6.0,   // laengste Pause - schrumpft mit steigendem Pegel
   gastRedeDauer:    2.2,   // wie lange ein Spruch stehen bleibt
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
+  /* (6) DER KRACHER AM ENDE
+     Drei Muster. Sie werden in fester Reihenfolge eingefuehrt und danach
+     gemischt - wer alles trifft, ist nach genau drei Angriffen durch:
+     Schlag 1, Tritt 1, Doppelschlag 2. */
+  gegnerTreffer:    4,     // so viel haelt er aus
+  gegnerNah:       22,     // ab diesem Abstand greift er an
+  gegnerTempo:     70,     // wie schnell er auf dich zukommt
   gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  gegnerWindup2:    0.45,  // zweiter Schlag der Kombo, deutlich schneller
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
+  gegnerPauseSpaet: 0.7,   // ab der Haelfte macht er weniger Pause
+  gegnerSpaetTempo: 0.82,  // ... und holt kuerzer aus
+  gegnerTrittWind:  0.9,   // der Tritt kommt langsam - dafuer unblockbar
+  gegnerTrittAnlauf:60,    // so weit geht er beim Ausholen zurueck
+  gegnerTrittTempo:230,    // wie schnell die Graetsche ueber den Boden geht
+  gegnerTrittBreite:11,    // wie breit sie trifft - schmaler als seine Reichweite
+  gegnerTrittDauer: 0.6,
+  gegnerOffen:      0.9,   // Zeitfenster zum Nachsetzen nach dem Ausweichen
+  gegnerDaneben:    0.4,   // wer ins goldene Ausholen kontert, steht so lange falsch
   leben:            3,
 
   /* (7) MUSIK */
@@ -302,6 +317,14 @@ const SPR={
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* Die Graetsche: tief am Boden, Bein voraus. Weniger Zeilen heisst
+     weniger hoch - genau darum kann man drueberspringen. */
+  kracherTritt:['..ddd.....','.dkkkd....','.dsssd....','..sss.....','.vvvvvk...',
+                'kvvvvv....','.mmmmmmmm.','.kkm....kk'],
+  /* Danebengegangen: aus dem Gleichgewicht, Arme fliegen, Deckung offen. */
+  kracherOffen:['...ddd...','..dkkkd..','..dsssd..','...ksk...','k..sss..k',
+                '.k.vvv.k.','..vvvvv..','..vvvvv..','...mmm...','..mm.mm..',
+                '.mm...mm.','.kk...kk.'],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -379,6 +402,9 @@ const SFX={
   warn:   ()=>piep(880,.07,'square',.05),
   klatsch:()=>{ rauschen(.09,.13); glissando(220,60,.14,'square',.07); },
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
+  /* Die Graetsche rutscht ueber den Boden - tief und rauh. */
+  graetsche:()=>{ rauschen(.3,.07); glissando(150,55,.3,'sawtooth',.055); },
+  drueber:()=>{ piep(1180,.06,'sine',.045); setTimeout(()=>piep(1560,.08,'sine',.035),60); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
 /* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
@@ -554,7 +580,7 @@ function neuesSpiel(){
     gastIdx:-1, gastText:'', gastT:0, gastPause:1.6,
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
-    gegner:null, gewonnen:false, faenger:'',
+    gegner:null, gezeigt:{}, daneben:0, gewonnen:false, faenger:'',
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -709,7 +735,7 @@ function update(dt){
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
 
-  if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
+  if(S.modus==='kampf'){ kampfBewegung(dt); kampf(dt); kamera(dt); return; }
 
   /* --- Gespraech laeuft --- */
   if(S.reden){
@@ -854,46 +880,179 @@ function kamera(dt){
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
    ========================================================================== */
+/* Die Lernreihenfolge. Jedes Muster kommt einmal fuer sich, bevor
+   gemischt wird - sonst trifft dich der Tritt, bevor du weisst, dass es
+   ihn gibt. */
+const KRACHER_FOLGE=['schlag','tritt','doppel'];
+/* Ab der Haelfte wird er schneller. */
+const spaet=g=>g.hp<=TUNE.gegnerTreffer/2;
+
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
+  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, getroffen:0,
+             zustand:'komm', t:0, muster:'schlag', runde:0, rest:1,
+             dauer:TUNE.gegnerWindup, blick:1, richtung:1, durch:false };
   S.x=Math.max(80,S.x); S.vx=0;
+  geheHeran(S.gegner);
   zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+
+/* Naechstes Muster waehlen und herankommen. Das Muster steht schon fest,
+   waehrend er laeuft - nur so bleibt Zeit, den Hinweis zu lesen, bevor
+   er ausholt. */
+function geheHeran(g){
+  g.zustand='komm'; g.t=0; g.durch=false;
+  g.muster = g.runde<KRACHER_FOLGE.length
+    ? KRACHER_FOLGE[g.runde]
+    : pick(KRACHER_FOLGE.filter(m=>m!==g.muster));   // nie zweimal dasselbe
+  g.runde++;
+  g.rest = g.muster==='doppel'?2:1;
+  if(g.muster==='tritt'&&!S.gezeigt.tritt){ S.gezeigt.tritt=true;
+    zeigeHinweis('GOLD KANNST DU NICHT KONTERN - SPRING DRUEBER',3.5); }
+  if(g.muster==='doppel'&&!S.gezeigt.doppel){ S.gezeigt.doppel=true;
+    zeigeHinweis('ZWEI SCHLAEGE HINTEREINANDER',3); }
+}
+
+function gegnerTrifft(g){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false;
+    S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+}
+/* Ein Treffer bei ihm. Was danach passiert, entscheidet der Aufrufer -
+   im Doppelschlag geht es sofort weiter, sonst taumelt er zurueck. */
+function kracherSchaden(g){
+  g.hp--; g.getroffen++;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch();
+  if(g.hp>0&&spaet(g)&&!S.gezeigt.phase2){ S.gezeigt.phase2=true;
+    zeigeHinweis('JETZT WIRD ER SAUER',2.5); }
+}
+function kracherTaumelt(g,spruch){
+  g.zustand='getroffen'; g.t=0;
+  meldung(g.hp<=0?'DER LIEGT':spruch,1.3);
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
   const dist=S.x-g.x;
+  g.blick=Math.sign(dist)||1;
+  S.blick=-g.blick;          // du drehst dich mit - er wechselt die Seite
+
   if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+    g.x+=g.blick*TUNE.gegnerTempo*dt;
+    /* Gepufferte Tastendruecke verfallen beim Herankommen. Sonst kontert
+       ein festgehaltenes E das naechste Ausholen von ganz allein, und der
+       Kampf gewinnt sich durch Draufhalten. */
+    aktionPuffer.length=0;
+    if(Math.abs(dist)<TUNE.gegnerNah){
+      const f=spaet(g)?TUNE.gegnerSpaetTempo:1;
+      if(g.muster==='tritt'){ g.zustand='trittWind'; g.dauer=TUNE.gegnerTrittWind*f; }
+      else { g.zustand='wind'; g.dauer=TUNE.gegnerWindup*f; }
+      g.t=0; SFX.warn();
     }
-  } else if(g.zustand==='schlag'){
+    return;
+  }
+
+  /* --- Schlag und Doppelschlag: E waehrend des Ausholens --- */
+  if(g.zustand==='wind'){
+    if(aktionPuffer.length){
+      aktionPuffer.length=0;
+      g.rest--; kracherSchaden(g);
+      if(g.hp>0&&g.rest>0){
+        /* Kombo: er faengt sofort wieder an, kuerzer. Wer beide erwischt,
+           nimmt zwei Treffer mit - dafuer kostet ein verpasster zweiter
+           genauso ein Herz wie der erste. */
+        meldung('NOCH EINER',1.0); SFX.warn();
+        g.zustand='wind'; g.t=0;
+        g.dauer=TUNE.gegnerWindup2*(spaet(g)?TUNE.gegnerSpaetTempo:1);
+      } else {
+        kracherTaumelt(g,pick(['SITZT','KONTER','ZU LANGSAM']));
+      }
+      return;
+    }
+    if(g.t>=g.dauer){ g.zustand='schlag'; g.t=0;
+      gegnerTrifft(g); meldung('AUTSCH',1.4); }
+    return;
+  }
+
+  /* --- Der Tritt: unblockbar, es hilft nur springen --- */
+  if(g.zustand==='trittWind'){
+    if(aktionPuffer.length){
+      aktionPuffer.length=0;
+      /* Gold ist nicht zu kontern. Wer es trotzdem versucht, steht kurz
+         falsch und kommt nicht hoch. Frueh danebengehauen kann man noch
+         auffangen, spaet nicht mehr - und genau daran scheitert das
+         blosse Draufhalten auf E. */
+      if(S.daneben<=0){ S.daneben=TUNE.gegnerDaneben;
+        SFX.nichts(); meldung('DANEBEN',1.0); }
+    }
+    /* Er nimmt Anlauf. Aus dem Stand getreten waere das Sprungfenster nur
+       zwei Zehntel breit - man muesste abspringen, bevor er ueberhaupt
+       losrutscht. Mit Anlauf sieht man die Graetsche kommen. */
+    if(Math.abs(S.x-g.x)<TUNE.gegnerTrittAnlauf)
+      g.x=Math.max(0,Math.min(LEVEL_B,g.x-g.blick*TUNE.gegnerTempo*dt));
+    if(g.t>=g.dauer){ g.zustand='tritt'; g.t=0; g.durch=false;
+      g.richtung=g.blick; SFX.graetsche(); }
+    return;
+  }
+  if(g.zustand==='tritt'){
+    aktionPuffer.length=0;
+    g.x=Math.max(0,Math.min(LEVEL_B,g.x+g.richtung*TUNE.gegnerTrittTempo*dt));
+    /* Jedes Bild pruefen, nicht nur das erste: wer mitten in der
+       Graetsche aufsetzt, wird auch erwischt. */
+    if(Math.abs(S.x-g.x)<TUNE.gegnerTrittBreite){
+      if(S.amBoden){ g.zustand='pause'; g.t=0;
+        gegnerTrifft(g); meldung('DIE GRAETSCHE',1.4); return; }
+      if(!g.durch){ g.durch=true; SFX.drueber(); meldung('DRUEBER',1.2); }
+    }
+    if(g.t>=TUNE.gegnerTrittDauer){
+      g.t=0;
+      if(g.durch){ g.zustand='offen'; SFX.warn();
+        if(!S.gezeigt.offen){ S.gezeigt.offen=true; zeigeHinweis('JETZT E',2.2); } }
+      else g.zustand='pause';
+    }
+    return;
+  }
+  /* Nach der verfehlten Graetsche steht er offen. Nachsetzen mit E. */
+  if(g.zustand==='offen'){
+    if(aktionPuffer.length){ aktionPuffer.length=0;
+      kracherSchaden(g);
+      kracherTaumelt(g,pick(['NACHGESETZT','DAS HAT GESESSEN']));
+      return; }
+    if(g.t>=TUNE.gegnerOffen){ g.zustand='pause'; g.t=0; }
+    return;
+  }
+
+  aktionPuffer.length=0;
+  if(g.zustand==='schlag'){
     if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
   } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
+    g.x-=g.blick*90*dt;
     if(g.t>=0.5){
       if(g.hp<=0){ starteCutscene(); return; }
       g.zustand='pause'; g.t=0;
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
   } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+    if(g.t>=(spaet(g)?TUNE.gegnerPauseSpaet:TUNE.gegnerPause)) geheHeran(g);
   }
+}
+
+/* Im Kampf stehst du in der Tuer. Laufen geht nicht - springen schon,
+   sonst waere der Graetsche nicht auszuweichen. */
+function kampfBewegung(dt){
+  S.vx=0;
+  if(S.daneben>0) S.daneben=Math.max(0,S.daneben-dt);
+  if(S.daneben>0) sprungPuffer.length=0;       // du stehst falsch
+  else while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.amBoden){ S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; }
+  else S.amBoden=false;
 }
 
 /* ==========================================================================
@@ -975,7 +1134,11 @@ function zeichneWohnung(){
   }
   /* Wohnungstuer im Flur */
   sprite(SPR.tuer,34,BODEN-12);
-  text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
+  /* Im Kampf steht der Kracher genau davor, und sein Balken liegt auf
+     derselben Hoehe wie die Beschriftung. Waehrend geprueugelt wird, ist
+     die Tuer ohnehin nicht das Thema. */
+  if(S.modus!=='kampf')
+    text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
 
   /* Partylicht im Wohnzimmer */
   const puls=(Math.sin(S.t*6)*.5+.5);
@@ -1052,16 +1215,32 @@ function zeichneWohnung(){
   /* Der Kracher */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+    const rows = g.zustand==='schlag' ? SPR.kracherAus
+               : g.zustand==='tritt'  ? SPR.kracherTritt
+               : g.zustand==='offen'  ? SPR.kracherOffen : SPR.kracher;
+    const holt = g.zustand==='wind'||g.zustand==='trittWind';
+    const blinkt = holt&&Math.floor(S.t*16)%2===0;
+    const gy=BODEN-rows.length;
+    outline(rows,g.x,gy,1,.6);
+    /* Nach der Graetsche steht er auf der anderen Seite - er muss sich
+       drehen koennen. */
+    if(g.blick<0) spriteFlip(rows,g.x,gy,1,blinkt?'#ffffff':null);
+    else          sprite(rows,g.x,gy,1,blinkt?'#ffffff':null);
+    if(holt){
+      /* Rot heisst kontern, Gold heisst springen. Die Farbe ist auf 320
+         Pixel Breite das verlaesslichste Signal, das Wort daneben die
+         Absicherung. */
+      const gold=g.zustand==='trittWind';
+      const farbe=gold?P.gold:P.rot;
+      const zeichen=gold?'SPRUNG':(g.rest>1?'!!':'!');
+      /* Ueber den Balken, nicht hinein: SPRUNG ist breiter als er. */
+      if(Math.floor(S.t*10)%2===0) text(zeichen,g.x+3-textW(zeichen)/2,gy-13,farbe);
+      const f=1-g.t/g.dauer, bw=18;
+      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,gy-6,bw+2,4);
+      ctx.fillStyle=farbe; ctx.fillRect(g.x-2,gy-5,Math.round(bw*Math.max(0,f)),2);
     }
+    if(g.zustand==='offen'&&Math.floor(S.t*12)%2===0)
+      text('E',g.x+3,gy-9,P.gruen);
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
@@ -1071,8 +1250,9 @@ function zeichneWohnung(){
   /* Spieler */
   let rows;
   if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
+  else if(S.modus==='kampf'&&(S.daneben>0||
+          (S.gegner&&S.gegner.zustand==='getroffen'))) rows=SPR.konter;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
@@ -1125,7 +1305,10 @@ function hud(){
     text(a.text,14,y,ok?P.dunkel:P.weiss);
     y+=8;
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
+  /* Im Kampf hat der Spieler andere Sorgen - und die Zeile laege genau
+     ueber den Kampfmeldungen. */
+  if(alleFertig()&&S.modus!=='kampf'&&Math.floor(S.t*2)%2===0)
+    textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;
