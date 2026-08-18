@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <title>NACHTSCHICHT</title>
 <meta name="description" content="Level 1 - Die Schule. Find den Schluessel, komm raus.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body {
@@ -1759,7 +1760,7 @@ function titelbild(){
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
     textC(S.hinweis,H-25,P.rot); ctx.globalAlpha=1; }
   else if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-25,P.weiss,1);
-  levelZeile(H-13);
+  levelZeile(H-15);
 }
 
 /* Levelauswahl auf dem Titelbild. Eine Zeile, eine Farbe pro Zustand:

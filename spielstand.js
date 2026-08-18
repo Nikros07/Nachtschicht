@@ -39,7 +39,7 @@ const LEVEL = [
    -------------------------------------------------------------------------- */
 const SPIELSTAND = (function(){
   const SCHLUESSEL = 'nachtschicht.spielstand';
-  const LEER = { version:1, crew:[], geschafft:{}, best:{} };
+  const LEER = { version:1, crew:[], geschafft:{}, best:{}, pegel:null };
 
   /* Kein localStorage (Privatmodus, file:// in manchen Browsern)? Dann
      laeuft das Spiel eben ohne Gedaechtnis weiter, statt abzustuerzen. */
@@ -58,6 +58,9 @@ const SPIELSTAND = (function(){
       crew:      Array.isArray(s.crew) ? s.crew.slice() : [],
       geschafft: (s.geschafft && typeof s.geschafft==='object') ? Object.assign({},s.geschafft) : {},
       best:      (s.best      && typeof s.best     ==='object') ? Object.assign({},s.best)      : {},
+      /* Der Pegel, mit dem das letzte Level ausgegangen ist. Er faehrt mit
+         ins naechste - der Abend hoert ja nicht auf, weil ein Level endet. */
+      pegel:     (typeof s.pegel==='number'&&isFinite(s.pegel)) ? s.pegel : null,
     };
     return stand;
   }
@@ -116,8 +119,20 @@ const SPIELSTAND = (function(){
       if(!s.crew.includes(name)){ s.crew.push(name); sichere(); }
     },
     dabei(name){ return lade().crew.includes(name); },
-    /* Max Ferdi gibt Tempo. Weitere Faehigkeiten kommen hier dazu. */
-    tempoBonus(){ return api.dabei('MAX FERDI') ? 1.15 : 1; },
+
+    /* --- Was die Jungs koennen ---
+       Jeder aus der Crew bringt genau eine Sache mit. Sie stehen hier und
+       nicht in den Leveln, damit ein neues Level sie nur abfragen muss. */
+    tempoBonus(){ return api.dabei('MAX FERDI') ? 1.15 : 1; },   // Sportler
+    lebenBonus(){ return api.dabei('DER LANGE') ? 1 : 0; },      // ein Herz mehr
+
+    /* --- Der Pegel faehrt mit --- */
+    merkePegel(v){
+      const s=lade();
+      s.pegel=(typeof v==='number'&&isFinite(v))?Math.max(0,Math.min(100,v)):null;
+      sichere();
+    },
+    pegel(){ return lade().pegel; },
 
     /* --- Navigation --- */
     level(nr){ return LEVEL.find(x=>x.nr===nr) || null; },

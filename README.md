@@ -192,18 +192,131 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Und man hört es.** Je höher der Pegel, desto lauter und schiefer wird die
+Musik: die Wellenform wird härter, eine zweite Stimme kommt knapp daneben dazu,
+der Takt zieht an, die Hi-Hat verdoppelt sich. Wenn es anfängt zu schweben,
+weißt Du auch ohne Balken, wo Du stehst.
+
+### Die anderen
+
+In der Wohnung stehen noch fünf Leute rum, die nichts von Dir wollen. Sie wippen
+im Takt, drehen sich zu Dir, wenn Du vorbeikommst, und reden Unsinn. Was sie
+sagen, hängt daran, wie der Abend gerade steht — und ab hohem Pegel wird es
+wirrer. Mit ihnen ist nichts zu holen, sie machen die Wohnung nur voll.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er kann drei Sachen.
+Über seinem Kopf läuft ein Balken, und **die Farbe sagt Dir, was zu tun ist:**
+
+| Balken | Was kommt | Deine Antwort |
+|:--|:--|:--|
+| **Rot** | Normales Ausholen | `E` im letzten Stück des Balkens |
+| **Gold** | Schneller Haken, halb so lang | `E` — nur eben schneller |
+| **Blau** | Der Wuchtige, tief und breit | **Nicht** `E`. Springen oder weg. |
+
+Das Konterfenster ist der **hellere Abschnitt am Ende des Balkens**, und er
+leuchtet weiß auf, sobald es offen ist. Vorher zu drücken hilft nicht: ein
+Schlag ins Leere kostet Dich eine Erholung, die genau so lang ist, dass Du das
+echte Fenster verpasst. **Wer nur draufhaut, verliert.**
+
+Er fängt nur mit Rot an und packt pro kassiertem Treffer ein Muster drauf — die
+Ansage lernst Du also im Kampf. Im Flur kannst Du dabei laufen und springen; die
+anderen stehen an den Rändern im Weg. Dreimal kontern, dann liegt er.
 
 ### Moritz
 
 Danach schließt sich Moritz an: dunkle Haare, etwas größer als Du, weiß-blaues
 Fußballtrikot, das er seit drei Tagen trägt. **Mit ihm läuft es besser mit den
 Chayas** — das wird im Club-Level wichtig.
+
+---
+
+## Level 3 — Der Nachtbus
+
+22:04. Die letzte Bahn ist weg, also der Nachtbus. Max Ferdi hat ein Abo, Moritz
+auch. Du hast einen Pegel. **Fünf Stationen bis zum Club.**
+
+**Der Boden ist hier das Problem.** Der Bus fährt, bremst und zieht an, und wer
+frei im Gang steht, fliegt hin. Drei Möglichkeiten, und jede kostet etwas:
+
+| | Sicher gegen den Ruck | Preis |
+|:--|:--|:--|
+| **Stange** (`Shift` halten) | Ja | Du stehst fest und kannst nicht weg |
+| **Sitzplatz** (`E`) | Ja | Kontrolleure bleiben bei **jedem** Sitz stehen |
+| **Frei stehen** | Nein | Du kannst laufen — und liegst nach dem Ruck |
+
+### Der Ruck
+
+Bevor es Dich reißt, gibt es eine **Vorwarnung**: der Fahrer geht hörbar in die
+Eisen, und unten im Bild erscheint ein Pfeil. Die **Anzahl der Spitzen** sagt,
+wie hart es wird — `>` schubst Dich nur, `>>>` legt Dich hin. Deshalb lohnt es
+sich nicht, dauernd an der Stange zu kleben.
+
+Wer **im richtigen Moment springt** (`Leertaste`, kurz bevor es kracht), fängt
+den Ruck zur Hälfte ab. Das ist der Weg, ohne Stange durch die Fahrt zu kommen.
+
+**Der Pegel aus Level 2 fährt mit.** Er baut sich langsam ab, aber solange er
+hoch ist, wirfst Du leichter um — und fällst mehr auf.
+
+### Die Kontrolleure
+
+Ab dem **Hauptbahnhof** sind zwei an Bord, und sie arbeiten arbeitsteilig:
+
+- **Einer geht durch den Wagen** und bleibt bei jedem Fahrgast stehen.
+- **Einer bleibt an der vorderen Tür** stehen, damit keiner rausspaziert.
+
+Beide haben ein **Sichtfeld nach vorne**, das Du auf dem Boden siehst. Hinter
+ihnen ist Ruhe. Wenn der Gehende gerade einen Fahrschein in der Hand hat oder
+sich am Wagenende umdreht, **schrumpft sein Blickfeld** — genau dann kommst Du
+an ihm vorbei. Wer liegt oder sitzt, fällt zusätzlich auf.
+
+Wirst Du gesehen, kommt er auf Dich zu. Du bist schneller als er — und wenn der
+Bus gerade hält, kannst Du **durch die hintere Tür aussteigen** und wieder
+einsteigen. Nur: wenn die Türen zugehen und Du stehst draußen, fährt der Bus
+ohne Dich.
+
+Irgendwo im Wagen liegt eine **Monatskarte**. Die rettet Dich genau einmal —
+danach guckt der Nächste aufs Datum.
+
+### Verlieren kannst Du auf drei Arten
+
+- **Dreimal erwischt** — dann fliegst Du raus, zwei Stationen zu früh.
+- **Draußen stehen, wenn die Türen zugehen.**
+- **Am Club vorbeifahren.** Steig aus, solange die Tür offen ist.
+
+### Der Lange
+
+Am Hauptbahnhof steigt jemand zu, der die Linie seit vier Jahren fährt und den
+an der Tür kennt. **Der Lange** ist ab dann dabei und bringt **ein Herz mehr**
+mit — in jedem Level danach.
+
+> Sein Name ist ein Platzhalter, wie beim Schläfer und beim Telefonierer. Wie
+> er wirklich heißt, kommt vom Nick.
+
+---
+
+## Spielstand
+
+Der Fortschritt liegt im Browser (`localStorage`) und gilt für alle Level:
+
+- **welche Level offen sind** — jedes schaltet das nächste frei. Gesperrte
+  stehen als `ZU` in der Leiste, man sieht also, dass da noch was kommt
+- **wer aus der Crew dabei ist** und was er kann
+- **die Bestzeit pro Level**
+- **der Pegel**, mit dem das letzte Level ausgegangen ist
+
+Zum Ausprobieren: **`?frei=1`** an die Adresse hängen, dann ist alles offen.
+Auf dem Titelbild wechseln die **Zifferntasten** das Level.
+
+### Was die Jungs können
+
+| Wer | Aus | Bringt mit |
+|:--|:--|:--|
+| **Max Ferdi** | Level 1 | +15 % Tempo |
+| **Moritz** | Level 2 | Läuft besser mit den Chayas (kommt im Club) |
+| **Der Lange** | Level 3 | Ein Herz mehr |
 
 ---
 
@@ -219,8 +332,9 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
-Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
+Jede Leveldatei fängt mit einem Block namens `TUNE` an. Dort liegt das komplette
+Spielgefühl dieses Levels in benannten Werten. Die Spiellogik enthält keine
+festen Zahlen.
 
 | Regler | Bewirkt |
 |:--|:--|
@@ -236,6 +350,22 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+## Wie die Dateien zusammenhängen
+
+| Datei | Was drin steht |
+|:--|:--|
+| `motor.js` | Was in **jedem** Level gleich ist: Bildschirm, Zeichensatz, Bild-Cache, Ton-Grundlagen |
+| `spielstand.js` | Die Liste aller Level und der Fortschritt (Crew, Bestzeiten, Freischaltung, Pegel) |
+| `index.html` · `level2.html` · `level3.html` | Je ein Level: `TUNE`, Sprites, Farben, Ablauf |
+| `runner.html` | Der alte Endlos-Modus, unverändert |
+
+**Ein neues Level anlegen:** Datei schreiben, in `spielstand.js` eine Zeile in
+`LEVEL` eintragen — fertig. Die Leiste unter dem Bild und die Auswahl auf dem
+Titelbild bauen sich daraus von selbst, in allen Leveln gleichzeitig.
+
+Beides sind bewusst ganz normale `<script>`-Dateien und keine Module: so läuft
+das Spiel auch, wenn man die HTML-Datei einfach vom Rechner aus öffnet.
 
 ## Lokal starten
 
@@ -265,5 +395,5 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 bis 3 sind fertig und durchspielbar. Level 4 bis 8 sowie der Rest der
+Crew stehen in [TODO.md](TODO.md).
