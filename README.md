@@ -192,12 +192,40 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+Der Pegel hört man auch. Ab einem Viertel fängt die Musik an zu übersteuern,
+die Höhen verschwinden, die Töne ziehen weg und der Takt eiert. Nicht die
+Anlage wird lauter — Du hörst schlechter.
+
+### Die anderen im Raum
+
+Neben den vier Wichtigen steht noch eine ganze Wohnung voll Leute rum: an der
+Wand, in der Hocke, mit Becher, einer raucht auf dem Balkon. Die kannst Du
+nicht ansprechen und die brauchen auch nichts von Dir. Sie reden vor sich hin,
+und je voller Du bist, desto öfter.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat: **der Kracher**, der erste Kampf im Spiel. Die Umstehenden
+machen Platz, und in der Diele darfst Du laufen und springen.
+
+Er hat drei Muster, und über dem Kopf steht, welches kommt:
+
+| Zeichen | Muster | Antwort |
+|:--|:--|:--|
+| `!` rot | **Schwinger** | `E` drücken, sobald der Balken auf dem hellen Strich ist — das ist das Konterfenster. Oder weit genug weggehen, dann schlägt er ins Leere |
+| `!!` gold | **Doppelschlag** | Zweimal kontern, der zweite kommt schneller |
+| `*` blau | **Griff** | Nicht konterbar. Die Punkte auf dem Boden zeigen, wie weit er springt — **spring drüber** oder geh weg |
+
+Nach einem verfehlten Griff und nach einem Schlag ins Leere steht er offen da
+(blinkendes `E`): freier Treffer. **Danebengehauen kostet Zeit** — wer wild
+drückt, steht kurz da wie bestellt. Drei Treffer, dann liegt er. Auf dem
+letzten Herz zieht er an: kürzere Vorwarnung, kürzere Pausen, und er wechselt
+nur noch zwischen Doppelschlag und Griff.
+
+Die Uhr läuft im Kampf weiter — sie zählt für die Bestzeit — aber sie holt
+Dich dort nicht mehr ein. Der Kampf fängt erst an, wenn alles erledigt ist;
+an ihm zu verlieren, weil die Bahn fährt, wäre kein Zeitdruck mehr.
 
 ### Moritz
 

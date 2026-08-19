@@ -26,11 +26,25 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** — alles abgearbeitet
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — neun Statisten in sieben
+      Posen, mit eigenem Gequatsche. Bewusst nicht ansprechbar, sonst wären
+      Möbel neben ihnen nicht mehr durchsuchbar
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — Schwinger,
+      Doppelschlag und Griff, dazu Konterfenster, Fehlschlag-Sperre und
+      Bewegung im Kampf
+- [x] Musik lauter/verzerrter je höher der Pegel — der Ton läuft jetzt über
+      einen Bus mit Zerre und Tiefpass, dazu schiefe Töne und eiernder Takt
+
+**Noch offen in Level 2:**
+
+- [ ] Der Kracher könnte einen Fernangriff vertragen (Flasche), sobald das
+      Kampfsystem aus `runner.html` drin ist
+- [ ] Die Statisten reagieren nicht darauf, wenn man durch sie durchläuft
+
+**Die restlichen Level:**
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,10 +81,15 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Zwei Punkte davon stehen schon: am Kracher in Level 2 ist das Konterfenster
+und die Strafe fürs Danebenhauen ausprobiert. Beim Umzug übernehmen statt neu
+erfinden.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Fehlschläge bestrafen** — kurze Sperre, in Level 2 erprobt
+- [x] **Konterfenster verkleinern** — in Level 2 auf die letzten 60 % des
+      Ausholens, sichtbar als heller Strich unter dem Balken
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
