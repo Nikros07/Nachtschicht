@@ -86,6 +86,7 @@
   <div id="levelbar">
     <a href="index.html">1 &middot; DIE SCHULE</a>
     <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
+    <a href="level3.html">3 &middot; NACHTBUS</a>
   </div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -638,12 +639,20 @@ const AUFGABEN=[
 /* ==========================================================================
    ZUSTAND
    ========================================================================== */
+/* Die Jungs bringen etwas mit. Max Ferdi Tempo (siehe tempoBonus weiter
+   unten), der Lotse aus dem Nachtbus ein zusaetzliches Herz - wer die
+   Level in anderer Reihenfolge spielt, merkt das hier. */
+const CREW_KEY0='nachtschicht.crew';
+const bonusHerz=()=>{ try{
+  return (JSON.parse(localStorage.getItem(CREW_KEY0))||[]).includes('DER LOTSE')?1:0;
+} catch(e){ return 0; } };
+
 let S={};
 function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
-    kamX:0, hp:TUNE.leben,
+    kamX:0, hp:TUNE.leben+bonusHerz(), maxHp:TUNE.leben+bonusHerz(),
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
@@ -701,7 +710,7 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='level3.html'; return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -715,6 +724,8 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
     e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'&&(e.code==='Digit3'||e.code==='Numpad3')){
+    e.preventDefault(); location.href='level3.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1160,6 +1171,9 @@ function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('MORITZ');
+  /* Der Pegel faehrt mit in den Nachtbus. Das Vorgluehen hoert ja nicht
+     auf, nur weil man in den Bus steigt. */
+  try{ localStorage.setItem('nachtschicht.pegel',String(Math.round(S.pegel))); }catch(e){}
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -1367,7 +1381,7 @@ function zeichneWohnung(){
 /* ---- HUD ---- */
 function hud(){
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<S.maxHp;i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -1439,9 +1453,9 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
+  const a='LEERTASTE  2 BEI MORITZ';
+  const b='TASTE 1  DIE SCHULE    TASTE 3  NACHTBUS';
+  text(a,(W-textW(a))/2,H-12,P.dunkel);
   text(b,(W-textW(b))/2,H-5,P.neon2);
 }
 function zeichneIntro(){
@@ -1494,8 +1508,8 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      if(Math.floor(S.t*2)%2===0) textC('E  WEITER: DER NACHTBUS',126,P.gold);
+      textC('LEERTASTE  NOCHMAL',138,P.dunkel);
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

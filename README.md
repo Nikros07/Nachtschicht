@@ -235,6 +235,64 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+22:14, Linie N8, sechs Halte bis zur Hafenstraße. Level 1 war Schleichen,
+Level 2 war eine Meute in Bewegung kriegen. Hier ist **der Boden das Problem**.
+
+### Stehen bleiben
+
+Der Bus fährt an, bremst, geht um die Kurve — und schiebt Dich dabei durch den
+Gang. Beim Anfahren nach hinten, beim Bremsen nach vorn. Wer frei steht, fängt
+an zu **wanken**; der Balken oben in der Mitte zeigt, wie lange noch. Ist er
+voll, liegst Du.
+
+**Es gibt keine Taste zum Festhalten.** Wer neben einer Haltestange steht und
+keine Richtungstaste drückt, hält sich automatisch fest — die Stange leuchtet
+dann. Bewegung ist das Risiko, Stillstand ist die Antwort. Faustregel: einmal
+ungehalten durch eine Bremsung kostet ungefähr die Hälfte des Balkens, zweimal
+hintereinander liegst Du.
+
+Der **Restpegel aus Level 2 fährt mit** und macht alles schlimmer. Nüchtern
+fährt es sich besser Bus.
+
+### Die Kontrolleure
+
+Nach dem dritten Halt steigen zwei ein, einer vorne, einer hinten. Jeder
+arbeitet seine Hälfte bis zur Mitte ab und fragt jeden Sitzenden.
+
+**Sie sehen Dich nur, wenn sie laufen.** Während sie jemanden prüfen, läuft
+über ihrem Kopf ein grüner Balken — das ist Dein Fenster, um vorbeizukommen.
+Ein Bus-Gang ist eindimensional; ohne dieses Fenster käme man an ihnen gar
+nicht vorbei. Und was einer hinter sich hat, bleibt frei: einmal an einem
+vorbei, und seine Hälfte gehört Dir.
+
+Wer hinfällt, macht Krach. Dann gucken sie hoch und kommen direkt.
+
+### Zwei Wege durch
+
+| Weg | Wie |
+|:--|:--|
+| **Mit Schein** | Jemand hat einen liegenlassen — freie Sitze durchsuchen. Dann **entwerten** (die goldenen Kästen), sonst bist Du trotzdem schwarz. Danach wirst Du einmal geprüft und durchgewunken |
+| **Schwarz** | Gar nicht erst suchen, sondern an einem vorbeischlüpfen und in seiner geräumten Hälfte bleiben, bis beide fertig sind |
+
+Der Lotse hinten im Bus ist wach, sobald der Bus das erste Mal hält. Er sagt
+Dir, was gleich passiert.
+
+### Und kurz vor Schluss
+
+Auf dem letzten Stück macht der Fahrer eine **Vollbremsung**. Es hupt vorher.
+Wer dann nicht an einer Stange hängt, liegt — und wer schon rutscht, kriegt
+keine mehr zu fassen.
+
+### Der Lotse
+
+Danach ist er dabei: kennt jede Nachtlinie auswendig und jeden Fahrer mit
+Vornamen. **Mit ihm hältst Du einen Schlag mehr aus** — ein Herz extra in
+jedem Kampf.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -293,5 +351,12 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 bis 3 sind fertig und durchspielbar und hängen aneinander: die Crew,
+der Restpegel und die Bestzeiten wandern mit. Level 4 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).
+
+| Level | Ort | Was es ausmacht | Wer dazukommt |
+|:--|:--|:--|:--|
+| 1 | Die Schule | Schleichen, Sichtkegel, Zeitdruck | Max Ferdi — +15 % Tempo |
+| 2 | Bei Moritz | Vier Aufgaben, Pegel, erster Kampf | Moritz — besser bei den Chayas |
+| 3 | Der Nachtbus | Fahrender Boden, Kontrolleure, Timing | Der Lotse — ein Herz extra |

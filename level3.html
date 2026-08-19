@@ -1,0 +1,1513 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>NACHTSCHICHT - DER NACHTBUS</title>
+<meta name="description" content="Level 3 - Der Nachtbus. Stehen bleiben, Fahrschein finden, an den Kontrolleuren vorbei.">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:#03050a; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-family:monospace; touch-action:none; -webkit-tap-highlight-color:transparent;
+    background-image:radial-gradient(ellipse at 50% 40%,#0d1a26 0%,#03050a 70%); }
+  #cab { position:relative; padding:10px 12px 14px; border-radius:10px;
+    background:linear-gradient(#152130,#0a1018 60%,#121c28);
+    box-shadow:0 0 0 2px #1e2f40,0 0 60px rgba(60,180,220,.16),0 30px 60px rgba(0,0,0,.8); }
+  #marquee { text-align:center; font:700 11px/1 monospace; letter-spacing:5px; color:#ffb43d;
+    text-shadow:0 0 8px #ffb43d99,0 0 18px #ffb43d55; padding:2px 0 8px; user-select:none; }
+  #base { display:flex; justify-content:space-between; font:700 8px/1 monospace; letter-spacing:2px;
+    color:#43596b; padding-top:8px; user-select:none; }
+  #screen { position:relative; line-height:0; border-radius:6px; overflow:hidden;
+    box-shadow:inset 0 0 0 2px #000,0 0 24px rgba(80,200,255,.08); }
+  canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#000; }
+  #crt { position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(105deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 38%),
+      radial-gradient(ellipse at center,rgba(0,0,0,0) 54%,rgba(0,0,0,.6) 100%),
+      repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,rgba(0,0,0,0) 1px 3px); }
+  #crt::after { content:''; position:absolute; inset:0;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.8),inset 0 0 90px rgba(0,0,0,.5); }
+  #touch { position:absolute; inset:0; display:none; }
+  #touch .btn { position:absolute; border-radius:50%;
+    background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.13);
+    color:#ffffff55; font:700 11px/1 monospace; letter-spacing:1px;
+    display:flex; align-items:center; justify-content:center; user-select:none; }
+  #touch .btn:active { background:rgba(255,180,61,.3); border-color:#ffb43d; color:#fff; }
+  #tleft  { left:3%;  bottom:8%; width:17%; aspect-ratio:1; }
+  #tright { left:22%; bottom:8%; width:17%; aspect-ratio:1; }
+  #thit   { right:3%; bottom:8%; width:17%; aspect-ratio:1; }
+  #tjump  { right:22%;bottom:8%; width:17%; aspect-ratio:1; }
+  #fs { position:absolute; top:6px; right:8px; z-index:5;
+    background:rgba(14,22,32,.75); color:#7d94a8; border:1px solid #1e2f40;
+    border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
+  #fs:hover { color:#ffd447; border-color:#ffd447; }
+
+  /* Levelauswahl als echte Links - funktioniert ohne Tastatur-Fokus
+     und am Handy. */
+  #levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
+  #levelbar a { flex:1; text-align:center; text-decoration:none;
+    font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+    color:#7d94a8; background:rgba(255,255,255,.04);
+    border:1px solid #1e2f40; border-radius:5px; }
+  #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
+  #levelbar a.aktiv { color:#ffb43d; border-color:#ffb43d; background:rgba(255,180,61,.10); }
+  html.touch #levelbar { padding:6px 8px; }
+  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  #cab:fullscreen #levelbar { display:none; }
+  html.touch #touch { display:block; }
+  html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
+  html.touch #cab { padding:0; border-radius:0; box-shadow:none; background:#000; }
+  #cab:fullscreen { padding:0; border-radius:0; box-shadow:none; background:#000;
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  #cab:fullscreen #marquee, #cab:fullscreen #base { display:none; }
+  #rotate { position:fixed; inset:0; z-index:99; display:none; background:#04060c; color:#eef4ff;
+    flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px; }
+  #rotate .ph { width:52px; height:88px; border:3px solid #ffb43d; border-radius:8px;
+    animation:tip 1.8s ease-in-out infinite; }
+  #rotate b { font:700 13px monospace; letter-spacing:3px; color:#ffb43d; }
+  #rotate span { font:400 10px monospace; letter-spacing:1px; color:#7d94a8; }
+  @keyframes tip { 0%,35%{transform:rotate(0)} 65%,100%{transform:rotate(-90deg)} }
+  @media (orientation:portrait){ html.touch #rotate{display:flex;} }
+</style>
+</head>
+<body>
+<div id="cab">
+  <div id="marquee">D E R &nbsp; N A C H T B U S</div>
+  <div id="screen">
+    <canvas id="c" width="320" height="180"></canvas>
+    <div id="crt"></div>
+    <div id="touch">
+      <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
+      <div class="btn" id="tjump">SPR</div><div class="btn" id="thit">E</div>
+    </div>
+  </div>
+  <button id="fs">VOLLBILD</button>
+  <div id="levelbar">
+    <a href="index.html">1 &middot; DIE SCHULE</a>
+    <a href="level2.html">2 &middot; BEI MORITZ</a>
+    <a href="level3.html" class="aktiv">3 &middot; NACHTBUS</a>
+  </div>
+  <div id="base"><span>LEVEL 3 - DER NACHTBUS</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
+</div>
+<div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
+
+<script>
+/* ============================================================================
+   NACHTSCHICHT - LEVEL 3: DER NACHTBUS
+
+   Level 1 war Schleichen, Level 2 war eine Meute in Bewegung kriegen. Hier
+   ist der Boden das Problem: der Bus faehrt an, bremst, geht um die Kurve,
+   und du stehst da drin.
+
+   Zwei Regeln tragen das ganze Level:
+
+     1. STEHEN BLEIBEN heisst wirklich stehen bleiben. Wer neben einer
+        Haltestange steht und keine Richtungstaste haelt, haelt sich fest.
+        Bewegung ist Risiko. Es gibt dafuer bewusst KEINE eigene Taste -
+        am Handy waere die fuenfte Taste nicht mehr unterzubringen, und die
+        Regel ist so leichter zu lernen als zu erklaeren.
+
+     2. DIE KONTROLLEURE sehen dich nur, wenn sie gerade laufen. Waehrend
+        sie jemanden pruefen, sind sie beschaeftigt - das ist dein Fenster,
+        um vorbeizukommen. Ein Gang im Bus ist eindimensional; ohne dieses
+        Fenster kaeme man an ihnen gar nicht vorbei.
+
+   Beides greift ineinander: das Fenster zum Vorbeigehen liegt selten dann,
+   wenn der Bus ruhig faehrt.
+
+   Es gibt zwei Wege durch: mit Fahrschein (finden, entwerten, sich pruefen
+   lassen) oder schwarz an beiden vorbei bis nach vorn. Genau wie Level 1
+   zwei Spielarten hat.
+
+   >>> ALLE REGLER STEHEN HIER OBEN. <<<
+   ========================================================================== */
+const TUNE = {
+  /* (1) BEWEGUNG - etwas traeger als an Land, du stehst in einem Bus */
+  gehTempo:        96,
+  beschleunigung: 820,
+  bremsung:      1100,
+  luftKontrolle:   0.5,
+  gravitation:    920,
+  sprungKraft:   -230,
+  kurzsprung:      0.45,
+  coyoteMs:        95,
+  puffermMs:      130,
+
+  /* (2) KAMERA */
+  kameraTraegheit: 6.0,
+  blickVoraus:    22,
+
+  /* (3) DER BUS
+     Anfahren zieht lange und sanft, Bremsen ist kurz und hart. Beide
+     bringen den Bus auf dieselbe Endgeschwindigkeit - das haelt die
+     Optik draussen ehrlich. */
+  busAn:           40,     // Beschleunigung beim Anfahren
+  busBrems:        60,     // Verzoegerung beim Bremsen
+  busKurve:        34,     // Seitenkraft in der Kurve
+  busNot:         170,     // die Vollbremsung am Ende
+  notDauer:         1.3,
+  busVmax:        120,
+  anfahrDauer:      3.0,
+  bremsDauer:       2.0,
+  haltDauer:        4.5,
+  kurveAlle:        7.0,   // Abstand zwischen zwei Kurven
+  kurveWarnung:     0.8,   // so lange blinkt es vorher
+  kurveDauer:       1.5,
+
+  /* (4) STEHEN BLEIBEN
+
+     Der Schub laeuft ueber ein eigenes Rutschen und nicht ueber deine
+     Laufgeschwindigkeit. Sonst haette die Fussbremse aus bewegung() den
+     Schub in einem Sechzigstel weggebuegelt und man haette vom Bus nichts
+     gemerkt.
+
+     Gebremst wird das Rutschen ueber eine Daempfung pro Sekunde, nicht
+     ueber eine feste Reibung. Mit fester Reibung gab es nur zwei
+     Zustaende: entweder sie war groesser als der Schub, dann passierte
+     gar nichts, oder kleiner, dann rutschte man nach einer Vollbremsung
+     zehn Sekunden lang weiter. Die Daempfung ergibt von selbst eine
+     Endgeschwindigkeit je Schub - sanft beim Anfahren, heftig bei der
+     Vollbremsung - und alles kommt schnell wieder zur Ruhe.
+
+     Faustregel fuer das Wanken: einmal ungehalten durch eine Bremsung
+     kostet ungefaehr die Haelfte des Balkens. Zweimal hintereinander
+     liegst du. Mit Restpegel entsprechend frueher. */
+  stangeNah:       13,     // so nah musst du an eine Haltestange
+  haltTempo:       45,     // schneller vorbeigerutscht kriegst du sie nicht
+  schub:            1.6,   // wie stark der Bus dich schiebt
+  rutschHalt:      14,     // Daempfung an der Stange - du haengst fest
+  rutschBoden:      2.2,   // Daempfung frei stehend
+  rutschLuft:       0.5,   // in der Luft haelt dich gar nichts
+  rutschStop:       6,     // damit es am Ende wirklich auf null geht
+  wankProA:         0.55,  // Wanken pro Einheit Schub und Sekunde
+  wankLuft:         0.95,  // springen ist teuer
+  wankErholung:    58,     // an der Stange pro Sekunde zurueck
+  wankFrei:         0.15,  // frei stehend faengst du dich ein bisschen
+  wankPegel:        0.55,  // wie stark der Restpegel das Wanken verschlimmert
+  sturzZeit:        1.3,
+
+  /* (5) DIE KONTROLLEURE */
+  kontrollAb:       3,     // ab diesem Halt sind sie an Bord
+  kontTempo:       15,
+  pruefZeit:        3.0,
+  weiterGnade:      0.35,  // kurz nach einer Pruefung fangen sie noch nicht
+  fangNah:         14,
+  jagdTempo:       34,     // wenn du hinfaellst, kommen sie direkt
+  sturzZuschlag:    0.18,  // pro Sturz werden sie schneller
+
+  /* (6) SUCHEN UND REDEN */
+  reichweite:      15,
+  suchDauer:        0.7,
+
+  /* (7) DER RESTPEGEL AUS LEVEL 2 */
+  pegelMax:       100,
+  pegelAbbau:       0.35,  // pro Sekunde - auf der Fahrt wirst du nuechterner
+  langsamAb:       70,
+  zerrAb:          25,
+  zerrAnteil:       0.9,
+  zerrTiefe:       16,
+  dumpfAb:      18000,
+  dumpfBis:      2200,
+};
+
+const P = {
+  ink:'#04060c', weiss:'#eef4ff', dim:'#7d94a8', dunkel:'#43596b',
+  neon:'#ffb43d', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
+  boden:'#1b2530', bodenKante:'#39505f',
+};
+
+/* ==========================================================================
+   3x5 BITMAP-FONT
+   ========================================================================== */
+const F = {
+ A:'010,101,111,101,101', B:'110,101,110,101,110', C:'011,100,100,100,011',
+ D:'110,101,101,101,110', E:'111,100,110,100,111', F:'111,100,110,100,100',
+ G:'011,100,101,101,011', H:'101,101,111,101,101', I:'111,010,010,010,111',
+ J:'001,001,001,101,010', K:'101,110,100,110,101', L:'100,100,100,100,111',
+ M:'101,111,111,101,101', N:'101,111,101,101,101', O:'010,101,101,101,010',
+ P:'110,101,110,100,100', Q:'010,101,101,110,011', R:'110,101,110,101,101',
+ S:'011,100,010,001,110', T:'111,010,010,010,010', U:'101,101,101,101,111',
+ V:'101,101,101,101,010', W:'101,101,111,111,101', X:'101,101,010,101,101',
+ Y:'101,101,010,010,010', Z:'111,001,010,100,111',
+ 0:'111,101,101,101,111', 1:'010,110,010,010,111', 2:'111,001,111,100,111',
+ 3:'111,001,111,001,111', 4:'101,101,111,001,001', 5:'111,100,111,001,111',
+ 6:'111,100,111,101,111', 7:'111,001,001,001,001', 8:'111,101,111,101,111',
+ 9:'111,101,111,001,111',
+ ' ':'000,000,000,000,000', '.':'000,000,000,000,010', ':':'000,010,000,010,000',
+ '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
+ '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
+ '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+};
+const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
+
+/* ==========================================================================
+   BILD-CACHE
+   ========================================================================== */
+const _ids=new WeakMap(); let _nid=0;
+const _spr=new Map(), _out=new Map(), _txt=new Map(), _gly=new Map(), _grd=new Map();
+const rowsId=r=>{ let i=_ids.get(r); if(i===undefined){ i=++_nid; _ids.set(r,i);} return i; };
+function leinwand(w,h){ const c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h));
+  const x=c.getContext('2d'); x.imageSmoothingEnabled=false; return [c,x]; }
+function verlauf(key,w,h,mal){ let c=_grd.get(key);
+  if(!c){ const [cc,xx]=leinwand(w,h); mal(xx); c=cc; _grd.set(key,c); } return c; }
+
+const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'#f2f0ff',
+  g:'#ffd447', n:'#ffb43d', c:'#42d9ff', r:'#ff4d4d', d:'#43596b', b:'#6b4a2a',
+  o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
+  j:'#3d2f22', u:'#8c94ad', q:'#22303f', z:'#5a4632',
+  /* Moritz und Max Ferdi, falls sie mitfahren */
+  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
+  /* Uniform der Kontrolleure, Kapuze vom Lotsen, Sitzpolster */
+  U:'#26406b', V:'#16233a', A:'#3a7d5c', F:'#33506a', D:'#1d2c3a',
+  /* Oberteile der Fahrgaeste - Platzhalter X wird beim Backen ersetzt */
+  G:'#3f9e5a', O:'#c9702f', R:'#8c3a3a', Y:'#c9a63a', C:'#2f6f7a',
+  W:'#9aa3bd', N:'#a03a6b', Z:'#5b3f8c' };
+
+function backeSprite(rows,sc,tint){
+  let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
+  const [c,x]=leinwand(bw*sc,rows.length*sc);
+  for(let r=0;r<rows.length;r++){ const row=rows[r];
+    for(let i=0;i<row.length;i++){ const ch=row[i]; if(ch==='.') continue;
+      x.fillStyle=tint||KEY[ch]||'#fff'; x.fillRect(i*sc,r*sc,sc,sc); } }
+  return c;
+}
+function holeSprite(rows,sc,tint){ const k=rowsId(rows)+'|'+sc+'|'+(tint||'-');
+  let c=_spr.get(k); if(!c){ c=backeSprite(rows,sc,tint); _spr.set(k,c);} return c; }
+function sprite(rows,x,y,sc=1,tint=null,alpha=1){
+  const c=holeSprite(rows,sc,tint);
+  if(alpha!==1) ctx.globalAlpha=alpha;
+  ctx.drawImage(c,Math.round(x),Math.round(y));
+  if(alpha!==1) ctx.globalAlpha=1;
+}
+function spriteFlip(rows,x,y,sc=1,tint=null){
+  const c=holeSprite(rows,sc,tint);
+  ctx.save(); ctx.translate(Math.round(x)+c.width,Math.round(y)); ctx.scale(-1,1);
+  ctx.drawImage(c,0,0); ctx.restore();
+}
+function outline(rows,x,y,sc=1,a=.7){
+  const k=rowsId(rows)+'|'+sc; let c=_out.get(k);
+  if(!c){ const s=holeSprite(rows,sc,'#000'); const [cc,xx]=leinwand(s.width+2*sc,s.height+2*sc);
+    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc); xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
+    c=cc; _out.set(k,c); }
+  ctx.globalAlpha=a; ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc); ctx.globalAlpha=1;
+}
+function textTo(g,str,x,y,col,s){
+  g.fillStyle=col; str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){ const gl=GLYPH[str[i]]||GLYPH['?'];
+    for(let r=0;r<5;r++) for(let c=0;c<3;c++)
+      if(gl[r][c]==='1') g.fillRect(x+(i*4+c)*s,y+r*s,s,s); } }
+function text(str,x,y,col,s=1){
+  str=String(str).toUpperCase();
+  for(let i=0;i<str.length;i++){ const ch=str[i]; if(ch===' ') continue;
+    const k=ch+col+s; let c=_gly.get(k);
+    if(!c){ const [cc,xx]=leinwand(3*s,5*s); textTo(xx,ch,0,0,col,s); c=cc; _gly.set(k,c); }
+    ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y)); } }
+const textW=(s0,s=1)=>String(s0).length*4*s-s;
+const textC=(s0,y,col,s=1)=>text(s0,Math.round((W-textW(s0,s))/2),y,col,s);
+function textGlow(str,x,y,col,s=1){
+  str=String(str).toUpperCase(); const k=str+'|'+col+'|'+s;
+  let c=_txt.get(k);
+  if(!c){ const pad=s,[cc,xx]=leinwand(textW(str,s)+2*pad,5*s+2*pad);
+    xx.globalAlpha=.25;
+    textTo(xx,str,pad-s,pad,col,s); textTo(xx,str,pad+s,pad,col,s);
+    textTo(xx,str,pad,pad-s,col,s); textTo(xx,str,pad,pad+s,col,s);
+    xx.globalAlpha=1; textTo(xx,str,pad,pad,col,s);
+    c=cc; if(_txt.size>300) _txt.clear(); _txt.set(k,c); }
+  ctx.drawImage(c,Math.round(x)-s,Math.round(y)-s); }
+const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,s);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ==========================================================================
+   SPRITES
+   ========================================================================== */
+const KOPF=['..hhh..','.hsssh.','.sssss.','..sss..'];
+const geh=b=>[...KOPF,'..ttt..',...b];
+const SPR={
+  steh: geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
+  geh:[
+    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
+    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
+    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
+    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
+  ],
+  sprung:[...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
+  fall:  [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
+  suchen:[...KOPF,'..ttt..','.ttttts','k.ttt.s','..ttt..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
+  /* Festhalten: ein Arm geht hoch an die Stange */
+  halten:['..hhh..','.hsssh.','.sssss.','..sss..','..ttts.','.tttts.','k.ttt..','..ttt..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  /* Am Wanken: beide Arme raus, Beine breit */
+  wackeln:['..hhh..','.hsssh.','.sssss.','..sss..','s.ttt.s','stttttS','..ttt..','..ttt..',
+           '..ppp..','.pp.pp.','.p...p.','.p...p.','kk...kk'],
+  /* Hingefallen */
+  liegt: ['.........','.........','.........','..hhh....','.hsssh...','.sssss...',
+          'sttttttts','..ppppp..','..kk..kk.'],
+
+  /* DER KONTROLLEUR - Uniform, Muetze, Geraet in der Hand */
+  kontrolleur:['..VVV..','.VVVVV.','.Vsssv.','..sss..','..UUU..','.UUUUU.','sUUUUUs','..UUU..',
+               '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  kontrolleurPrueft:['..VVV....','.VVVVV...','.Vsssv...','..sss....','..UUU.ss.','.UUUUUuu.',
+                     'sUUUUUuu.','..UUU....','..ppp....','..p.p....','..p.p....','.pp.pp...','.kk..kk..'],
+
+  /* DER LOTSE - Kapuze, kennt jede Nachtlinie auswendig */
+  lotse:['..AAA..','.AAAAA.','.AsssA.','..sss..','..AAA..','.AAAAA.','sAAAAAs','..AAA..',
+         '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  lotseSitzt:['..AAA....','.AAAAA...','.AsssA...','..sss....','.AAAAA...','sAAAAAs..',
+              '.AAApppp.','.ppppppp.','..kk...kk'],
+
+  /* Einrichtung. Der Sitz ist von der Seite gesehen: Lehne links,
+     Sitzflaeche nach rechts, Fuesse drunter. */
+  sitz:  ['.FFF.......','.FFFF......','.FFFF......','.FFFF......','.FFFF......','.FFFF......',
+          '.FFFFFFFFF.','.FFFFFFFFF.','.DD......D.','..D......D.','..D......D.','..D......D.'],
+  griff: ['.DD.','D..D','D..D','.DD.'],
+  entwerter:['ggggg','g...g','g.r.g','g...g','ggggg','..d..','..d..','..d..'],
+  schein:['wwwwww','w.dd.w','w.dd.w','w....w','wwwwww'],
+  scheinOk:['wwwwww','w.dd.w','wrrrrw','w.rr.w','wwwwww'],
+  fahrer:['..hhh..','.hsssh.','.sssss.','..UUU..','.UUUUU.','sUUUUUs','..UUU..'],
+};
+
+/* ==========================================================================
+   DIE FAHRGAESTE
+
+   Dieselben Posen wie bei Moritz in der Wohnung. X ist das Oberteil und
+   wird beim Backen durch einen Farbbuchstaben ersetzt.
+   ========================================================================== */
+const POSE = {
+  steht: ['..hhh..','.hsssh.','.sssss.','..sss..','..XXX..','.XXXXX.','sXXXXXs','..XXX..',
+          '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  sitzt: ['..hhh....','.hsssh...','.sssss...','..sss....','.XXXXX...','sXXXXXs..','.XXXpppp.',
+          '.ppppppp.','..kk...kk'],
+  pennt: ['.........','..hhh....','.hsssh...','.sssss...','.XXXXX...','sXXXXXs..','.XXXpppp.',
+          '.ppppppp.','..kk...kk'],
+  handy: ['..hhh....','.hsssh...','.sssss...','..sss....','.XXXXXc..','sXXXXXs..','.XXXpppp.',
+          '.ppppppp.','..kk...kk'],
+};
+const faerbe=(rows,ch)=>rows.map(r=>r.split('X').join(ch));
+
+/* ==========================================================================
+   AUDIO
+
+   Wie in Level 2 laeuft alles ueber einen Bus, damit der Restpegel aus dem
+   Vorgluehen den Klang faerben kann. Dazu kommt hier der Motor: ein
+   Dauerton, dessen Hoehe an der Geschwindigkeit haengt.
+   ========================================================================== */
+let AC=null, muted=false;
+let BUS=null, TROCKEN=null, NASS=null, ZERRER=null, TIEFPASS=null;
+let MOTOR=null, MOTORG=null;
+let _zerrStufe=-1;
+const _kurven=new Map();
+function zerrKurve(k){
+  let c=_kurven.get(k); if(c) return c;
+  const n=1024; c=new Float32Array(n);
+  for(let i=0;i<n;i++){ const x=i*2/n-1; c[i]=k<=0?x:(1+k)*x/(1+k*Math.abs(x)); }
+  _kurven.set(k,c); return c;
+}
+function ensureAudio(){ if(AC) return AC;
+  try{
+    AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05;
+    BUS=AC.createGain(); TROCKEN=AC.createGain(); NASS=AC.createGain();
+    ZERRER=AC.createWaveShaper(); TIEFPASS=AC.createBiquadFilter();
+    ZERRER.curve=zerrKurve(0); ZERRER.oversample='2x';
+    TIEFPASS.type='lowpass'; TIEFPASS.frequency.value=TUNE.dumpfAb;
+    TROCKEN.gain.value=1; NASS.gain.value=0;
+    BUS.connect(TROCKEN); TROCKEN.connect(AC.destination);
+    BUS.connect(ZERRER); ZERRER.connect(TIEFPASS); TIEFPASS.connect(NASS); NASS.connect(AC.destination);
+    /* Der Motor laeuft durch, geregelt wird nur die Lautstaerke. Ihn pro
+       Fahrtabschnitt neu zu starten gab hoerbare Knackser. */
+    MOTOR=AC.createOscillator(); MOTORG=AC.createGain();
+    MOTOR.type='sawtooth'; MOTOR.frequency.value=38; MOTORG.gain.value=0;
+    MOTOR.connect(MOTORG); MOTORG.connect(BUS); MOTOR.start();
+  } catch(e){ AC=null; BUS=null; }
+  return AC; }
+const ausgang=()=>BUS||AC.destination;
+const pegelAnteil=()=>(S.modus==='spiel')
+  ? Math.max(0,Math.min(1,S.pegel/TUNE.pegelMax)) : 0;
+function audioPegel(){
+  if(!AC||!BUS) return;
+  const p=pegelAnteil();
+  const k=p<=TUNE.zerrAb/100?0:(p-TUNE.zerrAb/100)/(1-TUNE.zerrAb/100);
+  const jetzt=AC.currentTime;
+  NASS.gain.setTargetAtTime(k*TUNE.zerrAnteil,jetzt,.25);
+  TROCKEN.gain.setTargetAtTime(1-k*.35,jetzt,.25);
+  TIEFPASS.frequency.setTargetAtTime(TUNE.dumpfAb-k*(TUNE.dumpfAb-TUNE.dumpfBis),jetzt,.3);
+  const stufe=Math.round(k*8);
+  if(stufe!==_zerrStufe){ _zerrStufe=stufe; ZERRER.curve=zerrKurve(stufe*TUNE.zerrTiefe/8); }
+}
+/* Motorgeraeusch: Hoehe und Lautstaerke haengen an der Geschwindigkeit. */
+function motor(){
+  if(!MOTOR) return;
+  const faehrt=S.modus==='spiel'||S.modus==='cutscene';
+  const v=Math.max(0,Math.min(1,S.busV/TUNE.busVmax));
+  const laut=(muted||!faehrt)?0:.010+v*.016;
+  MOTOR.frequency.setTargetAtTime(36+v*44,AC.currentTime,.25);
+  MOTORG.gain.setTargetAtTime(laut,AC.currentTime,.25);
+}
+function ton(f,when,dur,type='square',vol=.05){
+  if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,when);
+  g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  o.connect(g); g.connect(ausgang()); o.start(when); o.stop(when+dur+.02); }
+const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
+function glissando(f1,f2,dur,type='square',vol=.05){
+  ensureAudio(); if(!AC||muted) return;
+  const t0=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
+  o.type=type; o.frequency.setValueAtTime(f1,t0); o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t0+dur);
+  g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g); g.connect(ausgang()); o.start(t0); o.stop(t0+dur+.02); }
+function rauschen(dur=.25,vol=.08){
+  ensureAudio(); if(!AC||muted) return;
+  const n=Math.floor(AC.sampleRate*dur), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=AC.createBufferSource(), g=AC.createGain();
+  s.buffer=buf; g.gain.value=vol; s.connect(g); g.connect(ausgang()); s.start(); }
+const SFX={
+  schritt:()=>piep(90+Math.random()*20,.03,'triangle',.014),
+  sprung: ()=>piep(410,.06,'square',.03),
+  landen: ()=>piep(150,.05,'triangle',.026),
+  reden:  ()=>piep(500+Math.random()*180,.04,'square',.024),
+  fund:   ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.15),170); },
+  nichts: ()=>piep(210,.09,'sine',.03),
+  stempel:()=>{ rauschen(.06,.09); piep(1200,.05,'square',.05); setTimeout(()=>piep(700,.09),70); },
+  erledigt:()=>{ piep(660,.08); setTimeout(()=>piep(990,.12),85); },
+  klingel:()=>{ piep(1320,.09,'sine',.05); setTimeout(()=>piep(1760,.16,'sine',.05),90); },
+  blinker:()=>piep(1000,.04,'square',.03),
+  zischen:()=>rauschen(.4,.05),
+  sturz:  ()=>{ rauschen(.22,.12); glissando(260,70,.3,'square',.06); },
+  warn:   ()=>piep(760,.07,'square',.05),
+  hupe:   ()=>{ glissando(300,290,.5,'sawtooth',.07); setTimeout(()=>glissando(240,235,.4,'sawtooth',.06),120); },
+  erwischt:()=>{ rauschen(.3,.1); glissando(400,80,.5,'sawtooth',.07); },
+  sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
+};
+/* Musik: leiser als bei Moritz. Im Bus laeuft nur das Blechscheppern aus
+   irgendeinem Kopfhoerer zwei Reihen weiter. */
+const BASS=[82,0,0,82, 0,110,0,0, 73,0,0,73, 0,98,0,110];
+const MUS={step:0,next:0};
+function musik(){
+  if(!AC||muted||S.modus==='pause') return;
+  const laeuft=S.modus==='spiel';
+  const st=60/122/4;
+  while(MUS.next<AC.currentTime+.12){
+    const i=MUS.step%BASS.length, f=BASS[i];
+    if(f&&laeuft) ton(f,MUS.next,st*.8,'triangle',.02);
+    if(laeuft&&i%8===4) ton(1400+Math.random()*200,MUS.next,.02,'square',.006);
+    MUS.next+=st; MUS.step++;
+  }
+}
+
+/* ==========================================================================
+   AUFBAU
+   ========================================================================== */
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+let W=320; const H=180, BODEN=145;
+/* Die Hoehen des Innenraums. Das Fensterband liegt bewusst tief - so
+   stehen die Koepfe davor und nicht darunter, und der Bus sieht aus wie
+   ein Bus und nicht wie eine Halle. Ueber den Fenstern fuellen Laengs-
+   stange, Haltegriffe und Werbestreifen die Luft. */
+const DECKE=24, REGAL=44, FENSTER_O=72, FENSTER_U=126;
+const IS_TOUCH=navigator.maxTouchPoints>0||'ontouchstart' in window||/[?&]touch=1/.test(location.search);
+if(IS_TOUCH) document.documentElement.classList.add('touch');
+const imVollbild=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+function anpassen(){
+  const rand=(imVollbild()||IS_TOUCH)?0:46;
+  const vw=innerWidth-rand, vh=innerHeight-rand;
+  W=Math.max(320,Math.min(432,Math.round(H*(vw/vh)/2)*2));
+  cv.width=W; ctx.imageSmoothingEnabled=false;
+  const roh=Math.min(vw/W,vh/H);
+  const s=roh<3?Math.max(.5,Math.floor(roh*4)/4):Math.floor(roh);
+  cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
+}
+addEventListener('resize',anpassen);
+addEventListener('orientationchange',()=>setTimeout(anpassen,120));
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>setTimeout(anpassen,60)));
+anpassen();
+function vollbild(){
+  const root=document.getElementById('cab');
+  if(imVollbild()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
+  const req=root.requestFullscreen||root.webkitRequestFullscreen; if(!req) return;
+  Promise.resolve(req.call(root)).then(()=>{
+    if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
+  }).catch(()=>{});
+}
+document.getElementById('fs').addEventListener('click',e=>{e.preventDefault();vollbild();});
+
+/* ==========================================================================
+   DER BUS
+
+   Vorne ist rechts. Der Fahrer sitzt am rechten Ende, die Strasse zieht
+   nach links durchs Fenster. Beim Bremsen schiebt es dich also nach rechts,
+   beim Anfahren nach links.
+   ========================================================================== */
+const LEVEL_B=640;
+const VORN=LEVEL_B-20, HINTEN=16;
+
+/* Haltestangen. Bewusst so gelegt, dass keine im Griff eines Sitzes steht -
+   sonst koennte man sich festhalten und gleichzeitig suchen, und das Level
+   haette keine Entscheidung mehr. */
+const STANGEN=[70,120,175,235,300,360,420,480,540,595];
+/* Sitzreihen. Wer besetzt ist, entscheidet jede Runde der Zufall. */
+const SITZE=[100,150,205,265,330,390,450,505,560];
+/* Tueren: hinten, Mitte, vorn */
+const TUEREN=[40,280,585];
+/* Entwerter. Nicht an einer Stange, damit man dafuer loslassen muss. */
+const ENTWERTER=[318,615];
+
+const HALTE=['BUSBAHNHOF','MARKTPLATZ','ALTE POST','STADTPARK','RINGSTRASSE','HAFENSTRASSE'];
+/* Fahrtdauer je Abschnitt, ohne Anfahren und Bremsen */
+const FAHRPLAN=[14,18,22,20,22];
+
+/* Wer hier zusteigt. Rollennamen wie DER SCHLAEFER und DER TELEFONIERER in
+   Level 2 - die echten Namen kommen vom Nick (siehe TODO). */
+const LOTSE={ x:34, name:'DER LOTSE' };
+const LOTSE_ZEILEN=[
+  'EY. GUT DASS DU DA BIST.',
+  'GLEICH KOMMEN DIE KONTROLLEURE.',
+  'ICH FAHR DIE LINIE SEIT DREI JAHREN.',
+];
+const LOTSE_TIPP=[
+  'IRGENDWER HAT NEN SCHEIN LIEGENLASSEN.',
+  'GUCK BEI DEN FREIEN SITZEN.',
+];
+const LOTSE_DANACH=[
+  'UND ENTWERTEN NICHT VERGESSEN.',
+  'OHNE STEMPEL BIST DU SCHWARZ.',
+];
+
+const AUFGABEN=[
+  { id:'schein',    text:'FAHRSCHEIN FINDEN' },
+  { id:'entwertet', text:'FAHRSCHEIN ENTWERTEN' },
+  { id:'angekommen',text:'BIS ZUR HAFENSTRASSE' },
+];
+
+const CREW_KEY='nachtschicht.crew';
+const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
+const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
+  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
+/* Der Pegel wird aus Level 2 mitgebracht - das Vorgluehen hoert ja nicht
+   auf, nur weil man in den Bus steigt. Wer direkt hier anfaengt, faehrt
+   nuechtern. */
+const PEGEL_KEY='nachtschicht.pegel';
+const ladePegel=()=>{ const v=parseFloat(localStorage.getItem(PEGEL_KEY)); return isFinite(v)?Math.max(0,Math.min(100,v)):0; };
+const BEST_KEY='nachtschicht.stuerze3';
+const ladeBest=()=>{ const v=parseInt(localStorage.getItem(BEST_KEY),10); return isFinite(v)?v:null; };
+const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+
+/* ==========================================================================
+   ZUSTAND
+   ========================================================================== */
+let S={};
+function neuesSpiel(){
+  S={
+    modus:'titel', t:0, zeit:0,
+    x:60, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
+    kamX:0, rutsch:0,
+    pegel:ladePegel(),
+    phase:'halt', phaseT:0, halt:0, busV:0, busA:0, strecke:0,
+    kurveT:0, kurveWarn:0, kurveRichtung:0, naechsteKurve:0, notT:0, notWarn:0, notGemacht:false,
+    wanken:0, sturzT:0, stuerze:0, haelt:false, stange:null,
+    inventar:{}, erledigt:{}, durchsucht:{},
+    suchT:0, suchZiel:null,
+    reden:null, redeZeile:0, redeText:[],
+    lotseWach:false, tippGehabt:false,
+    kontrolleure:[], kontrolleureDa:false, geprueft:false, schwarz:false, gemacht:[],
+    meldung:'', meldungT:0, hinweis:'', hinweisT:0,
+    ruettel:0, blitz:0, tuerAuf:true,
+    szene:0, szeneT:0, skipT:0,
+    gewonnen:false, grund:'', neueBest:false,
+  };
+  /* Wer sitzt wo. Immer mindestens vier freie Sitze, damit das Suchen
+     ueberhaupt eine Suche ist und nicht sofort trifft. */
+  const misch=[...SITZE].sort(()=>Math.random()-0.5);
+  const besetzt=misch.slice(0,SITZE.length-4);
+  S.fahrgaeste=besetzt.map((x,i)=>({
+    x, pose:pick(['sitzt','sitzt','pennt','handy']),
+    farbe:['G','O','R','Y','C','W','N','Z'][i%8],
+  }));
+  for(const f of S.fahrgaeste) f.rows=faerbe(POSE[f.pose],f.farbe);
+  S.frei=SITZE.filter(x=>!besetzt.includes(x));
+  S.scheinBei=pick(S.frei);
+  S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
+}
+neuesSpiel();
+
+/* ==========================================================================
+   EINGABE
+   ========================================================================== */
+const keys={};
+let linksAn=false, rechtsAn=false, sprungAn=false, aktionGehalten=false;
+let sprungPuffer=[], aktionPuffer=[];
+
+function druckSprung(){
+  ensureAudio();
+  if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='intro'){ S.szeneT+=99; return; }
+  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='pause'){ S.modus='spiel'; return; }
+  if(S.modus==='cutscene') return;
+  sprungPuffer.push(S.t); sprungAn=true;
+}
+function druckAktion(){
+  ensureAudio();
+  if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='intro'){ S.szeneT+=99; return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='cutscene'){ S.szeneT+=99; return; }
+  aktionPuffer.push(S.t);
+}
+addEventListener('keydown',e=>{
+  if(keys[e.code]) return; keys[e.code]=true;
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
+  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
+  if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
+  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
+  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
+  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
+    e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
+    e.preventDefault(); location.href='level2.html'; }
+  if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
+});
+addEventListener('keyup',e=>{ keys[e.code]=false;
+  if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
+  if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
+  if(e.code==='Space') sprungAn=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=false; });
+const el=id=>document.getElementById(id);
+const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
+bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
+bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
+bind('tjump',['touchstart','mousedown'],druckSprung);
+bind('tjump',['touchend','mouseup','touchcancel'],()=>sprungAn=false);
+bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
+bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
+if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); removeEventListener('touchstart',einmal); },{once:true});
+
+/* ==========================================================================
+   INTRO
+   ========================================================================== */
+const INTRO=[
+  { d:2.4, txt:'22:14. DER NACHTBUS.' },
+  { d:2.6, txt:'SECHS HALTE BIS ZUR HAFENSTRASSE.' },
+  { d:2.6, txt:'MORITZ UND MAX FERDI SIND SCHON VORGEFAHREN.' },
+  { d:2.6, txt:'DU HAST KEINEN FAHRSCHEIN.' },
+  { d:2.4, txt:'UND DER BUS FAEHRT WIE ER WILL.' },
+];
+function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+function starteLevel(){ S.modus='spiel';
+  zeigeHinweis('AN EINER STANGE STEHEN BLEIBEN HAELT DICH FEST',4);
+  SFX.zischen(); setTimeout(()=>SFX.klingel(),300); }
+function intro(dt){ S.szeneT+=dt;
+  if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
+    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
+
+const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
+const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
+const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
+
+/* ==========================================================================
+   DER FAHRPLAN
+
+   Ein Abschnitt ist: anfahren - fahrt - bremsen - halt. Waehrend der Fahrt
+   kommen Kurven, auf dem letzten Stueck einmal die Vollbremsung.
+   ========================================================================== */
+function ansage(){
+  const naechster=HALTE[Math.min(S.halt+1,HALTE.length-1)];
+  meldung('NAECHSTER HALT: '+naechster,2.6); SFX.klingel();
+}
+function angekommen(){
+  S.halt++;
+  S.tuerAuf=true; SFX.zischen();
+  if(S.halt>=HALTE.length-1){ ziel(); return; }
+  meldung(HALTE[S.halt],2);
+  if(S.halt===1&&!S.lotseWach){ S.lotseWach=true;
+    zeigeHinweis('HINTEN IST JEMAND WACH GEWORDEN',3); }
+  if(S.halt===TUNE.kontrollAb) kontrolleureRein();
+}
+function bus(dt){
+  S.phaseT+=dt;
+  const abschnitt=Math.min(S.halt,FAHRPLAN.length-1);
+
+  if(S.phase==='halt'){
+    S.busA=0; S.busV=0;
+    if(S.phaseT>=TUNE.haltDauer){
+      S.tuerAuf=false; SFX.zischen();
+      kontrolleureRaus();
+      S.phase='anfahren'; S.phaseT=0;
+      S.naechsteKurve=TUNE.kurveAlle*.6;
+    }
+  } else if(S.phase==='anfahren'){
+    S.busA=TUNE.busAn;
+    if(S.phaseT>=TUNE.anfahrDauer){ S.phase='fahrt'; S.phaseT=0; }
+  } else if(S.phase==='fahrt'){
+    S.busA=0;
+    const dauer=FAHRPLAN[abschnitt];
+    /* Die Vollbremsung auf dem letzten Stueck. Einmal, angekuendigt durch
+       die Hupe - danach kann jeder erzaehlen, er haette gestanden. */
+    if(abschnitt===FAHRPLAN.length-1&&!S.notGemacht&&S.phaseT>=dauer*.45&&S.notWarn<=0&&S.notT<=0){
+      S.notWarn=.7; SFX.hupe();
+    }
+    if(S.notWarn>0){ S.notWarn-=dt; if(S.notWarn<=0){ S.notT=TUNE.notDauer; S.notGemacht=true; } }
+    else if(S.notT>0){ S.notT-=dt; S.busA=-TUNE.busNot;
+      if(S.notT<=0) meldung(S.sturzT>0?'JEDER GUCKT':'STEHT WIE NE EINS',1.8); }
+    /* Kurven */
+    else if(S.kurveT>0){ S.kurveT-=dt; S.busA=S.kurveRichtung*TUNE.busKurve; }
+    else if(S.kurveWarn>0){ S.kurveWarn-=dt; if(S.kurveWarn<=0) S.kurveT=TUNE.kurveDauer; }
+    else if(S.phaseT>=S.naechsteKurve&&S.phaseT<dauer-2.2){
+      S.naechsteKurve=S.phaseT+TUNE.kurveAlle;
+      S.kurveRichtung=Math.random()<.5?-1:1; S.kurveWarn=TUNE.kurveWarnung; SFX.blinker();
+    }
+    if(S.phaseT>=dauer){ S.phase='bremsen'; S.phaseT=0; S.kurveT=0; S.kurveWarn=0; ansage(); }
+  } else { /* bremsen */
+    S.busA=-TUNE.busBrems;
+    if(S.phaseT>=TUNE.bremsDauer){ S.phase='halt'; S.phaseT=0; angekommen(); }
+  }
+
+  /* Geschwindigkeit nur fuer die Optik draussen und den Motor */
+  if(S.phase!=='halt'){
+    const a=(S.phase==='anfahren')?TUNE.busAn:(S.phase==='bremsen')?-TUNE.busBrems:(S.notT>0?-TUNE.busNot*.5:0);
+    S.busV=Math.max(0,Math.min(TUNE.busVmax,S.busV+a*dt));
+    if(S.phase==='fahrt'&&S.notT<=0&&S.busV<TUNE.busVmax) S.busV=Math.min(TUNE.busVmax,S.busV+30*dt);
+  }
+  S.strecke+=S.busV*dt;
+}
+
+/* ==========================================================================
+   STEHEN BLEIBEN
+   ========================================================================== */
+function balance(dt){
+  /* Festhalten geht nur im Stehen, am Boden, neben einer Stange - und nur,
+     wenn du nicht gerade daran vorbeifliegst. Nach einer Vollbremsung
+     rutschst du erst mal, da greift keiner mehr zu. */
+  S.stange=null;
+  for(const sx of STANGEN) if(Math.abs(sx-S.x)<TUNE.stangeNah){ S.stange=sx; break; }
+  S.haelt = S.stange!==null && S.amBoden && !linksAn && !rechtsAn
+            && S.suchT<=0 && S.sturzT<=0 && Math.abs(S.rutsch)<TUNE.haltTempo;
+
+  /* Der Schub. Eigenes Rutschen mit Daempfung, siehe Regler oben.
+     Das Minus ist wichtig: vorne ist rechts, also wirft es dich beim
+     Anfahren nach hinten und beim Bremsen nach vorn - nicht andersrum. */
+  S.rutsch -= S.busA*TUNE.schub*dt;
+  const daempfung = S.sturzT>0?TUNE.rutschHalt*.5
+                  : S.haelt?TUNE.rutschHalt
+                  : S.amBoden?TUNE.rutschBoden : TUNE.rutschLuft;
+  S.rutsch *= Math.max(0,1-daempfung*dt);
+  S.rutsch = Math.abs(S.rutsch)<=TUNE.rutschStop*dt
+    ? 0 : S.rutsch-Math.sign(S.rutsch)*TUNE.rutschStop*dt;
+  S.x += S.rutsch*dt;
+  if(S.haelt) S.x += (S.stange-S.x)*Math.min(1,7*dt);
+  S.x = Math.max(HINTEN,Math.min(VORN,S.x));
+
+  /* Wanken. Der Restpegel macht es schlimmer - deshalb faehrt man
+     nuechterner besser Bus. */
+  if(S.sturzT>0){ S.sturzT-=dt; if(S.sturzT<=0){ S.wanken=0; meldung('WIEDER OBEN',1); } return; }
+  const kraft=Math.abs(S.busA)*(1+pegelAnteil()*TUNE.wankPegel);
+  if(!S.amBoden)      S.wanken += kraft*TUNE.wankLuft*dt;
+  else if(!S.haelt)   S.wanken += (kraft*TUNE.wankProA-TUNE.wankErholung*TUNE.wankFrei)*dt;
+  else                S.wanken -= TUNE.wankErholung*dt;
+  S.wanken=Math.max(0,S.wanken);
+  if(S.wanken>=100) hinfallen();
+}
+function hinfallen(){
+  S.wanken=100; S.sturzT=TUNE.sturzZeit; S.stuerze++;
+  S.vx=0; S.rutsch*=.4; S.ruettel=6; SFX.sturz();
+  meldung(pick(['HINGEFALLEN','LANG HIN','DAS SAHEN ALLE']),1.6);
+  /* Krach. Wer gerade prueft, guckt hoch und kommt direkt. */
+  for(const k of S.kontrolleure){
+    if(k.zustand==='raus'||k.zustand==='fertig') continue;
+    if(Math.abs(k.x-S.x)<90){ k.zustand='jagd'; k.t=0; }
+  }
+}
+
+/* ==========================================================================
+   DIE KONTROLLEURE
+   ========================================================================== */
+function kontrolleureRein(){
+  S.kontrolleureDa=true;
+  /* Einer steigt vorne ein, einer hinten, und jeder arbeitet seine
+     Haelfte bis zur Mitte ab. Du stehst dazwischen.
+
+     Wichtig ist, dass jeder nur bis zur Mitte geht: was einer hinter
+     sich hat, bleibt frei. Damit gibt es ein erreichbares Ziel - einmal
+     an einem vorbei, und die Haelfte hinter ihm gehoert dir. Als beide
+     noch den ganzen Bus abgelaufen sind, musste man zweimal in
+     entgegengesetzte Richtungen vorbei, und das war nicht mehr zu
+     schaffen, sondern nur noch Glueck. */
+  const mitte=Math.round(LEVEL_B/2);
+  S.kontrolleure=[
+    { x:VORN,   richtung:-1, heim:-1, ende:mitte, zustand:'gehen', t:0, ziel:null },
+    { x:HINTEN, richtung: 1, heim: 1, ende:mitte, zustand:'gehen', t:0, ziel:null },
+  ];
+  SFX.warn(); meldung('FAHRSCHEINE BITTE',2.4);
+  zeigeHinweis('WENN SIE PRUEFEN, SEHEN SIE DICH NICHT',3.5);
+}
+function kontrolleureRaus(){
+  if(!S.kontrolleureDa) return;
+  if(S.kontrolleure.every(k=>k.zustand==='fertig'||k.zustand==='raus')){
+    S.kontrolleure=[]; S.kontrolleureDa=false;
+    if(!S.erledigt.entwertet){ S.schwarz=true; meldung('DURCHGEKOMMEN. SCHWARZ.',2.4); }
+  }
+}
+const kontTempo=k=>TUNE.kontTempo*(1+S.stuerze*TUNE.sturzZuschlag)*(k.zustand==='jagd'?TUNE.jagdTempo/TUNE.kontTempo:1);
+/* Der naechste besetzte Sitz in Laufrichtung, der noch nicht dran war.
+   Die Liste ist gemeinsam: die beiden teilen sich den Bus auf, statt
+   dieselben Leute zweimal zu fragen. */
+function naechsterSitz(k){
+  let best=null;
+  for(const f of S.fahrgaeste){
+    if(S.gemacht.includes(f.x)) continue;
+    const d=(f.x-k.x)*k.richtung;
+    if(d<=0) continue;                                  // schon vorbei
+    if((f.x-k.ende)*k.richtung>0) continue;             // nicht mehr seine Haelfte
+    if(best===null||d<(best.x-k.x)*k.richtung) best=f;
+  }
+  return best;
+}
+function erwischt(){
+  S.modus='ende'; S.gewonnen=false;
+  S.grund='SCHWARZFAHREN. RAUS AN DER NAECHSTEN.';
+  SFX.erwischt();
+}
+function kontrolle(dt){
+  for(const k of S.kontrolleure){
+    k.t+=dt;
+    if(k.zustand==='pruefen'){
+      if(k.t>=TUNE.pruefZeit){ k.zustand='weiter'; k.t=0; }
+      continue;
+    }
+    if(k.zustand==='weiter'){
+      /* Kurze Gnade: wer gerade im Vorbeigehen ist, wird nicht bestraft,
+         weil der Balken genau jetzt vollgelaufen ist. */
+      if(k.t>=TUNE.weiterGnade){ k.zustand='gehen'; k.t=0; }
+      continue;
+    }
+    if(k.zustand==='fertig'||k.zustand==='raus') continue;
+
+    /* Laufen */
+    k.x += k.richtung*kontTempo(k)*dt;
+
+    /* Bist du dran? */
+    const nah=Math.abs(k.x-S.x)<TUNE.fangNah;
+    if(nah&&S.sturzT<=0&&S.erledigt.entwertet&&!k.dichGehabt){
+      k.dichGehabt=true; k.zustand='pruefen'; k.t=0; k.ziel='du';
+      S.geprueft=true; SFX.erledigt(); meldung('ALLES GUT. WEITER.',2);
+      continue;
+    }
+    if(nah&&!S.erledigt.entwertet){ erwischt(); return; }
+
+    if(k.zustand==='jagd'){
+      /* Nach dem Sturz laufen sie direkt auf dich zu. Danach wieder in ihre
+         eigene Richtung - sonst laufen sie fuer den Rest der Fahrt falsch
+         herum oder sind sofort am Ende ihrer Haelfte. */
+      k.richtung=Math.sign(S.x-k.x)||k.richtung;
+      if(k.t>2.6){ k.zustand='gehen'; k.richtung=k.heim; }
+      continue;
+    }
+
+    /* Naechsten Fahrgast pruefen */
+    const f=naechsterSitz(k);
+    if(f&&Math.abs(f.x+4-k.x)<10){
+      S.gemacht.push(f.x); k.zustand='pruefen'; k.t=0; k.ziel=f.x;
+      continue;
+    }
+    /* Mitte erreicht und nichts mehr zu pruefen: Feierabend. Ab hier ist
+       er harmlos, und die Haelfte hinter ihm bleibt es auch. */
+    if((k.x-k.ende)*k.richtung>=0){ k.x=k.ende; k.zustand='fertig'; k.t=0; }
+    k.x=Math.max(HINTEN,Math.min(VORN,k.x));
+  }
+}
+
+/* ==========================================================================
+   AKTUALISIEREN
+   ========================================================================== */
+function bewegung(dt){
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  if(richtung) S.blick=richtung;
+  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
+  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
+  const kontrolleAn = S.amBoden?1:TUNE.luftKontrolle;
+  if(richtung){
+    S.vx+=richtung*TUNE.beschleunigung*kontrolleAn*dt;
+    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+  } else {
+    const brems=TUNE.bremsung*kontrolleAn*dt;
+    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+  }
+  S.x+=S.vx*dt;
+  if(S.x<HINTEN||S.x>VORN) S.vx=0;
+  S.x=Math.max(HINTEN,Math.min(VORN,S.x));
+
+  if(S.amBoden&&Math.abs(S.vx)>12){
+    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+    const n=Math.floor(S.gehPhase);
+    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+  }
+  while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
+      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+}
+
+function update(dt){
+  S.t+=dt; musik(); audioPegel(); motor();
+  S.ruettel=Math.max(0,S.ruettel-dt*16);
+  S.blitz=Math.max(0,S.blitz-dt*2.2);
+  if(S.hinweisT>0) S.hinweisT-=dt;
+  if(S.meldungT>0) S.meldungT-=dt;
+  if(S.modus==='pause'||S.modus==='titel') return;
+  if(S.modus==='intro'){ intro(dt); return; }
+  if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
+  if(S.modus==='ende') return;
+
+  S.zeit+=dt;
+  bus(dt);
+  if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+
+  /* --- Gespraech laeuft --- */
+  if(S.reden){
+    while(aktionPuffer.length){ aktionPuffer.shift(); naechsteZeile(); }
+    balance(dt); kamera(dt); return;
+  }
+
+  /* Am Boden liegen: du kannst nichts, ausser warten. */
+  if(S.sturzT>0){ aktionPuffer.length=0; sprungPuffer.length=0;
+    balance(dt); if(S.kontrolleureDa) kontrolle(dt); kamera(dt); return; }
+
+  bewegung(dt);
+  balance(dt);
+  if(S.kontrolleureDa) kontrolle(dt);
+  if(S.modus!=='spiel') return;
+
+  /* --- Suchen laeuft --- */
+  if(S.suchT>0){
+    S.suchT-=dt;
+    if(S.suchT<=0) suchErgebnis();
+    kamera(dt); return;
+  }
+
+  /* --- Aktion --- */
+  while(aktionPuffer.length){
+    aktionPuffer.shift();
+    const ziel=vorDerNase();
+    if(!ziel){ SFX.nichts(); continue; }
+    if(ziel.art==='lotse') redeMitLotse();
+    else if(ziel.art==='entwerter') entwerten();
+    else if(ziel.art==='besetzt'){ meldung('DA SITZT WER',1); SFX.nichts(); }
+    else durchsuchen(ziel.x-4);
+  }
+  kamera(dt);
+}
+
+/* Worauf ein Druck auf E gerade wirken wuerde. Das Naehere gewinnt -
+   dieselbe Regel wie bei Moritz. Die Anzeige benutzt dieselbe Funktion,
+   sonst blinken drei Sachen gleichzeitig und nur eine reagiert. */
+function vorDerNase(){
+  let ziel=null, dZiel=1e9;
+  const pruefe=(art,x)=>{ const d=Math.abs(x-S.x);
+    if(d<TUNE.reichweite&&d<dZiel){ ziel={art,x}; dZiel=d; } };
+  if(S.lotseWach) pruefe('lotse',LOTSE.x);
+  for(const e of ENTWERTER) pruefe('entwerter',e);
+  for(const x of S.frei) pruefe('sitz',x+4);
+  for(const f of S.fahrgaeste) pruefe('besetzt',f.x+4);
+  return ziel;
+}
+
+/* ---- Sitze durchsuchen ---- */
+function durchsuchen(x){
+  if(S.inventar.schein){ meldung('HAST SCHON EINEN',1); SFX.nichts(); return; }
+  if(S.durchsucht[x]){ meldung('SCHON NACHGESEHEN',1); SFX.nichts(); return; }
+  S.suchT=TUNE.suchDauer; S.suchZiel=x; rauschen(.12,.03);
+}
+function suchErgebnis(){
+  const x=S.suchZiel; S.suchZiel=null; S.durchsucht[x]=true;
+  if(x===S.scheinBei){
+    S.inventar.schein=true; S.erledigt.schein=true; S.blitz=.6; SFX.fund();
+    meldung('EIN FAHRSCHEIN. UNGESTEMPELT.',2.2);
+    zeigeHinweis('AB ZUM ENTWERTER',3);
+    return;
+  }
+  SFX.nichts(); meldung(pick(['NICHTS','NUR KRUEMEL','KAUGUMMI']),1);
+}
+/* ---- Entwerten ---- */
+function entwerten(){
+  if(S.erledigt.entwertet){ meldung('SCHON GESTEMPELT',1); SFX.nichts(); return; }
+  if(!S.inventar.schein){ meldung('DU HAST NICHTS ZUM ENTWERTEN',1.4); SFX.nichts(); return; }
+  S.erledigt.entwertet=true; S.blitz=.5; SFX.stempel();
+  meldung('GESTEMPELT',1.8);
+  zeigeHinweis(S.kontrolleureDa?'JETZT KANN DER KOMMEN':'JETZT KANN KOMMEN WER WILL',3);
+}
+/* ---- Der Lotse ---- */
+function redeMitLotse(){
+  S.redeZeile=0;
+  if(!S.tippGehabt){
+    S.tippGehabt=true;
+    S.redeText=[...LOTSE_ZEILEN,...LOTSE_TIPP,...LOTSE_DANACH];
+  } else if(!S.erledigt.entwertet){
+    S.redeText=['STEMPEL DEN SCHEIN.','SONST BRINGT ER NICHTS.'];
+  } else {
+    S.redeText=['SAUBER.','DANN LASS UNS TANZEN GEHEN.'];
+  }
+  S.reden=LOTSE; SFX.reden();
+}
+function naechsteZeile(){
+  S.redeZeile++;
+  if(S.redeZeile>=S.redeText.length){ S.reden=null; return; }
+  SFX.reden();
+}
+
+/* ---- Kamera ---- */
+function kamera(dt){
+  const z=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2+S.blick*TUNE.blickVoraus));
+  S.kamX+=(z-S.kamX)*Math.min(1,TUNE.kameraTraegheit*dt);
+}
+
+/* ==========================================================================
+   CUTSCENE
+   ========================================================================== */
+const SZENEN=[
+  { d:1.2, txt:'' },
+  { d:2.4, txt:'HAFENSTRASSE. TUER AUF.' },
+  { d:2.4, txt:'LOTSE: NA SIEHSTE.' },
+  { d:2.2, txt:'DU: KNAPP.' },
+  { d:2.6, txt:'LOTSE: DAS WAR NOCH GAR NICHTS.' },
+  { d:1.2, txt:'' },
+  { d:2.6, txt:'ER KENNT JEDE NACHTLINIE AUSWENDIG.' },
+  { d:2.6, txt:'UND JEDEN FAHRER MIT VORNAMEN.' },
+  { d:2.0, txt:'' },
+  { d:2.8, txt:'DER LOTSE IST JETZT DABEI' },
+  { d:2.8, txt:'MIT IHM HAELTST DU EINEN SCHLAG MEHR AUS' },
+  { d:2.4, txt:'LEVEL 3 GESCHAFFT' },
+];
+function ziel(){
+  S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
+  S.erledigt.angekommen=true; S.kontrolleure=[]; S.kontrolleureDa=false;
+  S.busV=0; SFX.zischen(); setTimeout(()=>SFX.sieg(),400);
+}
+function levelGeschafft(){
+  speichereCrew('DER LOTSE');
+  /* Der Restpegel faehrt mit ins naechste Level. */
+  try{ localStorage.setItem(PEGEL_KEY,String(Math.round(S.pegel))); }catch(e){}
+  const best=ladeBest();
+  if(best===null||S.stuerze<best){ S.neueBest=true;
+    try{ localStorage.setItem(BEST_KEY,String(S.stuerze)); }catch(e){} }
+}
+function cutscene(dt){
+  if(aktionGehalten){ S.skipT+=dt;
+    if(S.skipT>0.7){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); return; }
+  } else S.skipT=Math.max(0,S.skipT-dt*2);
+  S.szeneT+=dt;
+  if(S.szeneT>=SZENEN[S.szene].d){
+    S.szene++; S.szeneT=0;
+    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
+  }
+}
+
+/* ==========================================================================
+   ZEICHNEN
+   ========================================================================== */
+function draw(dt){
+  ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
+  if(S.modus==='titel'){ titelbild(); return; }
+  if(S.modus==='intro'){ zeichneIntro(); return; }
+
+  ctx.save();
+  /* Der Bus schaukelt. Beim Bremsen und in der Kurve deutlich mehr. */
+  const schaukel=Math.abs(S.busA)/TUNE.busBrems;
+  const rx=(Math.random()-.5)*S.ruettel + Math.sin(S.t*3.1)*schaukel*1.4;
+  const ry=(Math.random()-.5)*S.ruettel + Math.cos(S.t*4.7)*schaukel*.9;
+  ctx.translate(Math.round(rx),Math.round(ry));
+  zeichneBus();
+  ctx.restore();
+
+  hud();
+  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  bildschirme();
+}
+
+/* Die Strasse draussen. Ein Band aus Haeusern und Laternen, das mit der
+   gefahrenen Strecke nach links zieht. */
+function zeichneDraussen(y0,y1){
+  const h=y1-y0;
+  ctx.fillStyle='#080d16'; ctx.fillRect(0,y0,W,h);
+  /* Himmel ueber der Stadt, ein paar Sterne */
+  ctx.fillStyle='#131f2e'; ctx.fillRect(0,y0,W,Math.round(h*.35));
+  for(let i=0;i<16;i++){ ctx.fillStyle=i%3===0?'#ffffff33':'#ffffff18';
+    ctx.fillRect((i*53)%W,y0+2+(i*7)%Math.round(h*.3),1,1); }
+  /* Haeuserzeile, langsam */
+  const s1=Math.round((S.strecke*.45)%72);
+  for(let i=-1;i<W/36+2;i++){
+    const x=i*36-s1, hh=16+((i*37)%4)*7;
+    ctx.fillStyle='#0f1a26'; ctx.fillRect(x,y1-hh,32,hh);
+    ctx.fillStyle='#ffd44726';
+    for(let f=0;f<3;f++) for(let g=0;g<2;g++)
+      if(((i*7+f*13+g*5)%5)<2) ctx.fillRect(x+5+f*9,y1-hh+4+g*7,4,4);
+  }
+  /* Bordstein und Laternen, schnell */
+  ctx.fillStyle='#16222e'; ctx.fillRect(0,y1-6,W,6);
+  const s2=Math.round((S.strecke*1.25)%64);
+  for(let i=-1;i<W/32+2;i++){
+    const x=i*64-s2;
+    ctx.fillStyle='#25333f'; ctx.fillRect(x,y0+Math.round(h*.25),1,h);
+    ctx.fillStyle='#ffd44788'; ctx.fillRect(x-1,y0+Math.round(h*.25),3,2);
+    ctx.globalAlpha=.06; ctx.fillStyle='#ffd447';
+    ctx.fillRect(x-6,y0+Math.round(h*.25),13,h); ctx.globalAlpha=1;
+  }
+}
+
+const SITZ_Y=()=>BODEN-SPR.sitz.length;         // Oberkante der Lehne
+const SITZER_Y=rows=>BODEN-rows.length-8;       // Kopf schaut ueber die Lehne
+
+function zeichneBus(){
+  const kx=Math.round(S.kamX);
+
+  /* Die Strasse liegt im Bildschirmraum, nicht in der Welt: sie ist weit
+     weg, sie verschiebt sich nicht, nur weil du im Bus nach vorn gehst. */
+  zeichneDraussen(FENSTER_O,FENSTER_U);
+
+  ctx.save(); ctx.translate(-kx,0);
+
+  /* Decke, Gepaeckablage, Wand ueber und unter den Fenstern. Das
+     Fensterband selbst bleibt frei - da liegt schon die Strasse. */
+  ctx.fillStyle='#16222e'; ctx.fillRect(0,0,LEVEL_B,DECKE);
+  ctx.fillStyle='#1a2836'; ctx.fillRect(0,DECKE,LEVEL_B,FENSTER_O-DECKE);
+  ctx.fillStyle='#1d2c3a'; ctx.fillRect(0,FENSTER_U,LEVEL_B,BODEN-FENSTER_U);
+  ctx.fillStyle='#0d1620';
+  ctx.fillRect(0,DECKE-1,LEVEL_B,1); ctx.fillRect(0,FENSTER_O-2,LEVEL_B,2);
+  ctx.fillRect(0,FENSTER_U,LEVEL_B,2);
+
+  /* Deckenlampen */
+  for(let x=30;x<LEVEL_B;x+=90){
+    ctx.fillStyle='#3d4f60'; ctx.fillRect(x,10,26,4);
+    ctx.fillStyle='#ffe9b0'; ctx.fillRect(x+1,11,24,2);
+    ctx.globalAlpha=.07; ctx.fillStyle='#ffe9b0'; ctx.fillRect(x-6,14,38,16); ctx.globalAlpha=1;
+  }
+  /* Laengsstange unter der Decke mit Haltegriffen - fuellt die Luft ueber
+     den Koepfen und sagt sofort, wo man ist. */
+  ctx.fillStyle='#4a5f70'; ctx.fillRect(0,REGAL,LEVEL_B,2);
+  ctx.fillStyle='#6f8798'; ctx.fillRect(0,REGAL,LEVEL_B,1);
+  for(let x=18;x<LEVEL_B;x+=34){
+    ctx.fillStyle='#3d4f60'; ctx.fillRect(x,REGAL+2,1,3);
+    sprite(SPR.griff,x-1,REGAL+5);
+  }
+  /* Werbestreifen ueber den Fenstern */
+  for(let x=12;x<LEVEL_B;x+=84){
+    ctx.fillStyle='#22323f'; ctx.fillRect(x,FENSTER_O-16,58,12);
+    ctx.fillStyle='#31465a';
+    for(let i=0;i<4;i++) ctx.fillRect(x+4,FENSTER_O-13+i*3,10+((x/84+i)%4)*10,1);
+  }
+
+  /* Boden */
+  ctx.fillStyle=P.boden; ctx.fillRect(0,BODEN,LEVEL_B,H-BODEN);
+  ctx.fillStyle=P.bodenKante; ctx.fillRect(0,BODEN,LEVEL_B,1);
+  ctx.fillStyle='#00000033';
+  for(let x=0;x<LEVEL_B;x+=12) ctx.fillRect(x,BODEN+7,6,1);
+
+  /* Tueren. Offen sieht man die Haltestelle. */
+  for(const tx of TUEREN){
+    if(S.tuerAuf){
+      ctx.fillStyle='#070d14'; ctx.fillRect(tx-9,DECKE+6,18,BODEN-DECKE-6);
+      ctx.fillStyle='#1b2a38'; ctx.fillRect(tx-9,BODEN-16,18,16);
+      ctx.fillStyle='#ffd44722'; ctx.fillRect(tx-7,DECKE+8,14,40);
+    } else {
+      ctx.fillStyle='#243646'; ctx.fillRect(tx-9,DECKE+6,18,BODEN-DECKE-6);
+      ctx.fillStyle='#0b1219'; ctx.fillRect(tx-1,DECKE+6,2,BODEN-DECKE-6);
+      ctx.fillStyle='#0e1a26'; ctx.fillRect(tx-7,FENSTER_O,14,FENSTER_U-FENSTER_O);
+    }
+    ctx.fillStyle=S.tuerAuf?P.gold:'#31465a';
+    ctx.fillRect(tx-9,DECKE+6,1,BODEN-DECKE-6); ctx.fillRect(tx+8,DECKE+6,1,BODEN-DECKE-6);
+  }
+
+  /* Fensterstege */
+  ctx.fillStyle='#1a2836';
+  for(let x=0;x<LEVEL_B;x+=52) ctx.fillRect(x,FENSTER_O,3,FENSTER_U-FENSTER_O);
+
+  /* Sitze */
+  for(const x of SITZE){
+    const rows=SPR.sitz; outline(rows,x,SITZ_Y(),1,.4); sprite(rows,x,SITZ_Y());
+  }
+
+  /* Haltestangen - vor den Fenstern, hinter den Leuten. Die, an der du
+     gerade haengst, leuchtet. Wenn es schiebt und du frei stehst, blinkt
+     die naechste erreichbare. */
+  for(const sx of STANGEN){
+    const dran=S.haelt&&S.stange===sx;
+    const ruf=!S.haelt&&Math.abs(S.busA)>1&&Math.abs(sx-S.x)<TUNE.stangeNah*2.6;
+    ctx.fillStyle=dran?'#4e93b8':'#3f5364'; ctx.fillRect(sx,REGAL,2,BODEN-REGAL);
+    ctx.fillStyle=dran?'#8fd0f0':'#5f7789'; ctx.fillRect(sx,REGAL,1,BODEN-REGAL);
+    if(ruf&&Math.floor(S.t*5)%2===0){ ctx.fillStyle=P.gold; ctx.fillRect(sx-2,BODEN-4,6,2); }
+  }
+
+  /* Was gerade auf E reagieren wuerde - genau eins, nie drei auf einmal */
+  const ziel=(S.modus==='spiel'&&!S.reden&&S.sturzT<=0)?vorDerNase():null;
+  const blinkt=Math.floor(S.t*4)%2===0;
+
+  /* Entwerter */
+  for(const e of ENTWERTER){
+    const rows=SPR.entwerter;
+    outline(rows,e,BODEN-34,1,.5); sprite(rows,e,BODEN-34);
+    if(ziel&&ziel.art==='entwerter'&&ziel.x===e&&blinkt)
+      text('E',e+1,BODEN-43,S.erledigt.entwertet?P.dunkel:P.gold);
+  }
+
+  /* Fahrer, ganz vorn */
+  ctx.fillStyle='#243646'; ctx.fillRect(LEVEL_B-24,FENSTER_U-6,24,BODEN-FENSTER_U+6);
+  sprite(SPR.fahrer,LEVEL_B-18,BODEN-28);
+  ctx.fillStyle='#2a3a4a'; ctx.fillRect(LEVEL_B-24,BODEN-12,24,12);
+
+  /* Fahrgaeste. Drei Pixel nach rechts, damit sie auf dem Sitz sitzen
+     und nicht in der Lehne. */
+  for(const f of S.fahrgaeste){
+    const rows=f.rows, y=SITZER_Y(rows);
+    outline(rows,f.x+3,y,1,.35); sprite(rows,f.x+3,y,1,null,.92);
+  }
+
+  /* Freier Sitz zum Nachsehen */
+  if(ziel&&ziel.art==='sitz'&&blinkt&&!S.inventar.schein){
+    const t=S.durchsucht[ziel.x-4]?'OK':'E';
+    text(t,ziel.x-textW(t)/2,SITZ_Y()-9,S.durchsucht[ziel.x-4]?P.dunkel:P.gold);
+  }
+
+  /* Der Lotse */
+  {
+    const rows=S.lotseWach?SPR.lotse:SPR.lotseSitzt;
+    const y=S.lotseWach?BODEN-rows.length:SITZER_Y(rows);
+    outline(rows,LOTSE.x,y,1,.5); sprite(rows,LOTSE.x,y);
+    if(S.lotseWach){
+      text(LOTSE.name,LOTSE.x+3-textW(LOTSE.name)/2,y-16,S.tippGehabt?P.dim:P.gruen);
+      if(ziel&&ziel.art==='lotse'&&blinkt) text('E',LOTSE.x+2,y-9,P.gold);
+    }
+  }
+
+  /* Kontrolleure */
+  for(const k of S.kontrolleure){
+    const prueft=k.zustand==='pruefen';
+    const rows=prueft?SPR.kontrolleurPrueft:SPR.kontrolleur;
+    const y=BODEN-rows.length;
+    outline(rows,k.x,y,1,.6);
+    if(k.richtung<0) spriteFlip(rows,k.x,y); else sprite(rows,k.x,y);
+    if(prueft){
+      /* Der Balken sagt, wie lange dein Fenster noch offen ist. */
+      const bw=16, f=1-k.t/TUNE.pruefZeit;
+      ctx.fillStyle='#000a'; ctx.fillRect(k.x-4,y-8,bw+2,4);
+      ctx.fillStyle=P.gruen; ctx.fillRect(k.x-3,y-7,Math.round(bw*f),2);
+    } else if(k.zustand==='jagd'){
+      if(Math.floor(S.t*10)%2===0) text('!',k.x+3,y-9,P.rot);
+    } else if(k.zustand==='gehen'){
+      if(Math.floor(S.t*3)%2===0) text('*',k.x+2,y-9,P.neon2);
+    }
+  }
+
+  /* Spieler */
+  let rows;
+  if(S.sturzT>0)          rows=SPR.liegt;
+  else if(S.suchT>0)      rows=SPR.suchen;
+  else if(!S.amBoden)     rows=S.vy<0?SPR.sprung:SPR.fall;
+  else if(S.haelt)        rows=SPR.halten;
+  else if(S.wanken>55)    rows=SPR.wackeln;
+  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+  else                    rows=SPR.steh;
+  const py=S.y-rows.length;
+  outline(rows,S.x-3,py,1,.6);
+  if(S.blick<0) spriteFlip(rows,S.x-3,py); else sprite(rows,S.x-3,py);
+  ctx.globalAlpha=.28; ctx.fillStyle='#000';
+  ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
+
+  ctx.restore();
+
+  /* Vignette */
+  ctx.globalAlpha=.55;
+  ctx.drawImage(verlauf('vig',W,H,g=>{
+    const gr=g.createRadialGradient(W/2,H*.55,46,W/2,H*.55,W*.62);
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
+    g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  ctx.globalAlpha=1;
+}
+
+/* ---- HUD ---- */
+function hud(){
+  /* Der Innenraum ist oben voller Kleinkram - Stangen, Griffe, Werbung.
+     Ohne dunkle Unterlage verschwindet die Schrift darin. */
+  ctx.fillStyle='#00000088'; ctx.fillRect(0,0,W,20);
+  ctx.fillStyle='#00000066'; ctx.fillRect(0,24,116,26);
+
+  /* Die Linie: sechs Halte als Punkte, darunter der naechste Name */
+  const px=6, py=6;
+  text('N8',px,py,P.neon);
+  for(let i=0;i<HALTE.length;i++){
+    const x=px+13+i*7;
+    ctx.fillStyle=i<S.halt?P.dunkel:i===S.halt?P.gold:'#2a3a48';
+    ctx.fillRect(x,py+1,i===S.halt?4:3,3);
+    if(i<HALTE.length-1){ ctx.fillStyle='#2a3a48'; ctx.fillRect(x+4,py+2,3,1); }
+  }
+  const halt=S.phase==='halt';
+  text((halt?'':'> ')+HALTE[halt?S.halt:Math.min(S.halt+1,HALTE.length-1)],px,py+8,halt?P.gold:P.dim);
+
+  /* Der Wankbalken. Das wichtigste Stueck HUD in diesem Level, deshalb
+     oben in der Mitte und nicht unten im Gewusel. */
+  const bw=56, bx=Math.round((W-bw)/2), by=6;
+  const w=Math.max(0,Math.min(100,S.wanken))/100;
+  ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,8);
+  ctx.fillStyle='#22303f'; ctx.fillRect(bx,by,bw,4);
+  ctx.fillStyle=S.sturzT>0?P.rot:w<.5?P.gruen:w<.8?P.gold:P.rot;
+  ctx.fillRect(bx,by,Math.round(bw*w),4);
+  const lab=S.sturzT>0?'AM BODEN':S.haelt?'FESTHALTEN':'FREI';
+  text(lab,bx+Math.round((bw-textW(lab))/2),by+6,S.haelt?P.gruen:w>.6?P.rot:P.dunkel);
+
+  /* Was der Bus als naechstes vorhat */
+  let warn='', wf=P.gold;
+  if(S.notWarn>0){ warn='!!!  FESTHALTEN  !!!'; wf=P.rot; }
+  else if(S.notT>0){ warn='VOLLBREMSUNG'; wf=P.rot; }
+  /* Der Pfeil zeigt, wohin es dich wirft - also gegen den Schub des Busses */
+  else if(S.kurveWarn>0) warn=S.kurveRichtung<0?'KURVE  >>>':'KURVE  <<<';
+  else if(S.kurveT>0) warn=S.kurveRichtung<0?'>>>':'<<<';
+  else if(S.phase==='bremsen'){ warn='BREMST'; wf=P.neon2; }
+  else if(S.phase==='anfahren'){ warn='FAEHRT AN'; wf=P.neon2; }
+  if(warn&&Math.floor(S.t*8)%2===0) textC(warn,by+14,wf);
+
+  /* Aufgaben */
+  let y=28;
+  for(const a of AUFGABEN){
+    const ok=!!S.erledigt[a.id];
+    text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
+    text(a.text,14,y,ok?P.dunkel:P.weiss);
+    y+=8;
+  }
+
+  /* Pegel, falls noch was uebrig ist */
+  if(S.pegel>1){
+    const pw=30, pxx=W-pw-6;
+    ctx.fillStyle='#000a'; ctx.fillRect(pxx-2,5,pw+4,8);
+    ctx.fillStyle='#22303f'; ctx.fillRect(pxx,7,pw,4);
+    ctx.fillStyle=S.pegel<35?P.neon2:S.pegel<70?P.gold:P.rot;
+    ctx.fillRect(pxx,7,Math.round(pw*S.pegel/100),4);
+    text('REST',pxx+pw-textW('REST'),14,P.dunkel);
+  }
+
+  /* Fahrschein und Stuerze */
+  if(S.inventar.schein) sprite(S.erledigt.entwertet?SPR.scheinOk:SPR.schein,W-14,22);
+  if(S.stuerze>0) text('STUERZE '+S.stuerze,6,H-8,P.dunkel);
+
+  if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
+    textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
+  if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
+    textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+
+  /* Gespraech */
+  if(S.reden){
+    ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-44,W,44);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,H-44,W,1);
+    text(S.reden.name,8,H-38,P.neon2);
+    textC(S.redeText[S.redeZeile]||'',H-24,P.weiss);
+    if(Math.floor(S.t*2)%2===0) text('E',W-12,H-12,P.dunkel);
+  }
+}
+
+/* ---- Bildschirme ---- */
+function titelbild(){
+  ctx.fillStyle='#04060c'; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<44;i++){ ctx.fillStyle=i%6===0?'#22303f':'#0e1620';
+    ctx.fillRect((i*83)%W,(i*47)%H,1,1); }
+  textGlowC('DER NACHTBUS',22,P.neon,3);
+  textC('LEVEL 3 - LINIE N8',44,P.dim);
+  const zeilen=['SECHS HALTE BIS ZUR HAFENSTRASSE','DER BODEN FAEHRT MIT','UND DU HAST KEINEN SCHEIN'];
+  zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
+  const st=[['A D','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, SUCHEN, ENTWERTEN'],
+            ['STEHEN','AN EINER STANGE HAELTST DU DICH FEST']];
+  st.forEach((z,i)=>{ text(z[0],42,106+i*8,P.gold); text(z[1],86,106+i*8,P.dim); });
+  const crew=ladeCrew();
+  if(crew.length) textC('DABEI: '+crew.join(', '),144,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  const a='TASTE 1  SCHULE   TASTE 2  BEI MORITZ';
+  text(a,(W-textW(a))/2,H-7,P.dunkel);
+}
+function zeichneIntro(){
+  ctx.fillStyle='#05080f'; ctx.fillRect(0,0,W,H);
+  const m=Math.round(W/2);
+  /* Bus von aussen, an der Haltestelle */
+  ctx.fillStyle='#0a1018'; ctx.fillRect(0,120,W,H-120);
+  ctx.fillStyle='#1d2c3a'; ctx.fillRect(m-90,58,180,62);
+  ctx.fillStyle='#0d1620'; ctx.fillRect(m-90,58,180,2);
+  ctx.fillStyle='#101a26';
+  for(let i=0;i<5;i++) ctx.fillRect(m-84+i*35,66,30,22);
+  ctx.fillStyle='#ffd44733';
+  for(let i=0;i<5;i++) ctx.fillRect(m-84+i*35,66,30,22);
+  ctx.fillStyle=P.neon; text('N8  HAFENSTRASSE',m-84,92,P.neon);
+  ctx.fillStyle='#243646'; ctx.fillRect(m-90,112,180,8);
+  ctx.fillStyle='#0a0f16';
+  ctx.fillRect(m-70,118,16,8); ctx.fillRect(m+54,118,16,8);
+  /* Laternenlicht */
+  ctx.globalAlpha=.16+Math.sin(S.t*2)*.03;
+  ctx.drawImage(verlauf('introlicht',200,120,g=>{
+    const gr=g.createRadialGradient(100,10,4,100,10,100);
+    gr.addColorStop(0,'rgba(255,212,71,1)'); gr.addColorStop(1,'rgba(255,212,71,0)');
+    g.fillStyle=gr; g.fillRect(0,0,200,120); }),m-100,20);
+  ctx.globalAlpha=1;
+  sprite(SPR.steh,m-108,120-13);
+  ctx.drawImage(verlauf('introvig',W,H,g=>{
+    const gr=g.createRadialGradient(m,80,40,m,80,W*.6);
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.82)');
+    g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-38,W,38);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
+  if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
+  if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+}
+function bildschirme(){
+  if(S.modus==='pause'){
+    ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
+    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+  }
+  if(S.modus==='cutscene'){
+    ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
+    const s=SZENEN[S.szene];
+    if(s&&s.txt) textC(s.txt,H-26,P.weiss);
+    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+  }
+  if(S.modus==='ende'){
+    ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
+    if(S.gewonnen){
+      textGlowC('LEVEL 3 GESCHAFFT',30,P.gold,2);
+      textC(S.schwarz?'SCHWARZ DURCHGEKOMMEN. NICHT NACHMACHEN.'
+                    :'MIT SCHEIN UND STEMPEL. VORBILDLICH.',52,P.weiss);
+      textC('STUERZE  '+S.stuerze,68,S.neueBest?P.gold:P.dim);
+      if(S.neueBest) textC('SO WENIG WIE NIE',78,P.gold);
+      if(S.stuerze===0) textC('KEIN EINZIGES MAL HINGEFALLEN',88,P.gruen);
+      const crew=ladeCrew();
+      if(crew.length) textC('DABEI: '+crew.join(', '),104,P.neon2);
+      if(S.pegel>1) textC('RESTPEGEL '+Math.round(S.pegel)+' NIMMST DU MIT',116,P.dim);
+      textC('LEVEL 4 FOLGT: DIE SCHLANGE',128,P.dunkel);
+      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZUM ANFANG',140,P.dunkel);
+    } else {
+      textGlowC('ERWISCHT',48,P.rot,3);
+      textC(S.grund||'',74,P.weiss);
+      textC('STUERZE  '+S.stuerze,90,P.dim);
+    }
+    if(Math.floor(S.t*2)%2===0) textC('LEERTASTE FUER NEUSTART',H-18,P.gold);
+  }
+}
+
+/* ==========================================================================
+   SCHLEIFE
+   ========================================================================== */
+let letzte=performance.now();
+function bild(jetzt){
+  const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
+  update(dt); draw(dt);
+  requestAnimationFrame(bild);
+}
+requestAnimationFrame(bild);
+</script>
+</body>
+</html>

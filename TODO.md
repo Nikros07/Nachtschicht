@@ -1,6 +1,7 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 bis 3 sind spielbar und durchspielbar und hängen aneinander.
+Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
@@ -22,7 +23,7 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 ## Die anderen Level
 
-Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
+Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
@@ -43,9 +44,19 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       Kampfsystem aus `runner.html` drin ist
 - [ ] Die Statisten reagieren nicht darauf, wenn man durch sie durchläuft
 
+- [x] **Level 3 — Der Nachtbus.** ✅ Fahrender Boden mit Wanken und
+      Haltestangen, zwei Kontrolleure mit Prüf-Fenstern, Fahrschein und
+      Entwerter, Vollbremsung zum Schluss. Der Lotse schaltet frei.
+
+**Offen in Level 3:**
+
+- [ ] Aussteigen und an der nächsten Tür wieder rein — als dritter Weg an den
+      Kontrolleuren vorbei. Rausgeworfen, weil erst der Kern stehen sollte
+- [ ] Die Fahrgäste reagieren nicht, wenn man vor ihnen hinfällt
+- [ ] Musik pro Streckenabschnitt statt einer Schleife
+
 **Die restlichen Level:**
 
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -67,10 +78,16 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
-- [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
+Drei stehen: **Max Ferdi** (+15 % Tempo, Level 1), **Moritz** (besser bei den
+Chayas, Level 2), **Der Lotse** (ein Herz extra, Level 3). Die Fähigkeiten
+wirken über Level hinweg — wer den Lotsen hat und Level 2 nochmal spielt, geht
+mit vier Herzen in den Kampf.
+
+- [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen — drei sind da
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
-- [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
+- [x] Fähigkeiten festlegen — drei sind fest, vier fehlen (Doppelsprung,
+      härterer Konter, mehr Ausdauer …)
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
@@ -97,9 +114,19 @@ erfinden.
 
 ## Technik
 
+- [ ] **Der gemeinsame Motor gehört ausgelagert.** Font, Bild-Cache, Sprites,
+      Audio-Bus, Leinwand-Aufbau und Touch-Steuerung stehen jetzt dreimal fast
+      wortgleich in `index.html`, `level2.html` und `level3.html` — rund 400
+      Zeilen pro Datei. Vor Level 4 einmal in eine `motor.js` ziehen, sonst
+      wird jede Änderung am Font viermal gemacht. Kein Build-Schritt nötig,
+      ein `<script src>` reicht auch auf GitHub Pages
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] Spielstand speichern — Crew, Restpegel und Bestzeiten liegen im
+      `localStorage` und wandern zwischen den Leveln
+- [ ] Welche Level frei sind, wird noch nicht gespeichert: alle drei sind
+      immer anwählbar
+- [x] Übergänge zwischen den Leveln — Levelleiste unter dem Bild, Tasten 1/2/3
+      auf dem Titelbild, und der Siegbildschirm führt ins nächste Level
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -142,3 +169,11 @@ erfinden.
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2: Wohnung, vier Aufgaben, Pegel, der Kracher mit drei Mustern**
+- [x] Statisten in der Wohnung, die von selbst vor sich hin quatschen
+- [x] Audio-Bus mit Zerre und Tiefpass — der Pegel färbt den Ton
+- [x] **Level 3: Nachtbus mit fahrendem Boden, Wanken und Haltestangen**
+- [x] Kontrolleure, die nur sehen, wenn sie laufen — Prüfen ist dein Fenster
+- [x] Fahrschein finden und entwerten, oder schwarz vorbeikommen
+- [x] Vollbremsung als Schlusspunkt, Hupe als Vorwarnung
+- [x] Crew, Restpegel und Bestzeiten wandern zwischen den Leveln
