@@ -292,7 +292,9 @@ const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,
 KEY={ k:'#07060d', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'#f2f0ff',
       g:'#ffd447', n:'#ff3d8b', c:'#42d9ff', r:'#ff4d4d', d:'#484263', b:'#6b4a2a',
       o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
-      z:'#5a4632', u:'#8c94ad', q:'#2e3350', j:'#3d2f22' };
+      z:'#5a4632', u:'#8c94ad', q:'#2e3350', j:'#3d2f22',
+      /* fuer die Einrichtung: Leder, Turnmatte, Kunststoff, Kreide, Papier */
+      L:'#6d4a3a', M:'#3f6b7a', K:'#c9c2ad', A:'#d8d2c0', X:'#4a5570' };
 
 const KOPF=['..hhh..','.hsssh.','.sssss.','..sss..'];
 const geh = beine => [...KOPF,'..ttt..',...beine];
@@ -333,6 +335,26 @@ const SPR = {
   tafel:  ['dddddddddd','dqqqqqqqqd','dq.q..qq.d','dqqqqqqqqd','dq..qq..qd','dqqqqqqqqd','dddddddddd'],
   pflanze:['..ggg..','.ggggg.','g.ggg.g','..ggg..','...z...','..zzz..','.zzzzz.'],
   kiste:  ['oooooo','o....o','o.oo.o','o....o','oooooo'],
+
+  /* Mehr Moebelarten, damit die zehn Raeume nicht dieselben vier Kisten
+     in anderer Reihenfolge sind. Jede Art gehoert zu einem Raum:
+     Werkbank und Leiter zum Hausmeister, Bock und Bank in die Turnhalle,
+     Kopierer ins Sekretariat, Schulbank und Projektor in die Klassen,
+     Abzug in die Chemie, Karteikasten in die Bibliothek, Sofa und
+     Kaffeetisch ins Lehrerzimmer. */
+  werkbank:['zzzzzzzzzzzz','z.gg..gg...z','zzzzzzzzzzzz','d....d.....d','d..zzzz....d','d..z..z....d','d....z.....d','d..........d'],
+  leiter: ['z....z','zzzzzz','z....z','z....z','zzzzzz','z....z','z....z','zzzzzz','z....z','z....z','zzzzzz','z....z'],
+  bock:   ['.LLLLLLLL.','LLLLLLLLLL','LLLLLLLLLL','.d......d.','.d......d.','d........d','d........d','d........d'],
+  bank:   ['zzzzzzzzzz','zzzzzzzzzz','.d......d.','.d......d.','.d......d.'],
+  matte:  ['..MMMMMMMM..','.MMMMMMMMMM.','MMMMMMMMMMMM','MMMMMMMMMMMM'],
+  kopierer:['uuuuuuuu','u.AAAA.u','uuuuuuuu','u......u','u.qqqq.u','u......u','uuuuuuuu','u......u','uuuuuuuu','dddddddd'],
+  schulbank:['..zzzzzz','..z....z','..dd..dd','Xz..d..d','Xz..d..d','Xz..d..d','dd..d..d'],
+  projektor:['..qqqq..','.qqqqqq.','qq.ww.qq','.qqqqqq.','...dd...','..dddd..','.d....d.'],
+  abzug:  ['uuuuuuuuu','u.AAAAA.u','u.AAAAA.u','u.AAAAA.u','uuuuuuuuu','u.t...t.u','u.......u','uuuuuuuuu','d.......d','d.......d'],
+  karteikasten:['zzzzzzzz','zAAAAAAz','zzzzzzzz','zAAAAAAz','zzzzzzzz','zAAAAAAz','zzzzzzzz','.d....d.'],
+  sofa:   ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','.dd......dd.'],
+  kaffeetisch:['zzzzzzzz','.d....d.','.d....d.','.d....d.'],
+  buecherstapel:['.bbbb.','bbbbbb','.oooo.','oooooo','.zzzz.','zzzzzz'],
   /* Tuerblatt muss gefuellt sein - sonst sieht man durch die Tuer die Wand */
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
@@ -459,18 +481,26 @@ const STIL = {
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
 };
 
+/* Jeder Raum kriegt seine eigene Einrichtung. Vorher waren es zehnmal
+   dieselben vier Arten in anderer Reihenfolge - man merkte am Moebel
+   nicht, wo man ist. Die Tafel steht jetzt beim Hausmeister an der Wand
+   (in den Klassenzimmern haengt ohnehin schon eine als Wanddeko, ein
+   zweites Exemplar davor war doppelt gemoppelt). */
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['werkbank','eimer','tafel','leiter'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['bock','matte','bank'] },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','kopierer','pflanze'] },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['schulbank','schulbank','spind'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['schulbank','tisch','projektor'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['abzug','tisch','kiste','regal'] },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['schulbank','pflanze','kiste'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','karteikasten','tisch','buecherstapel'] },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['sofa','kaffeetisch','spind'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['schulbank','projektor'] },
 ];
+/* Was nicht auf dem Boden steht, sondern an der Wand haengt - Zahl ist
+   der Abstand ueber dem Boden. */
+const MOEBEL_HOCH = { projektor:20 };
 const AUSGANG = { e:0, x:648 };
 
 /* Nachrichten haengen jetzt an dem, was du TUST, nicht an der Uhr.
@@ -1028,8 +1058,13 @@ function imRaum(dt){
 
   const r=RAEUME[S.raum];
   const plaetze=moebelPlaetze(r);
-  let nah=-1;
-  plaetze.forEach((p,i)=>{ if(Math.abs(p.x+8-S.raumX)<14) nah=i; });
+  /* Das Naehere gewinnt. Vorher gewann das letzte in der Liste - bei
+     breiten Moebeln nebeneinander greift man sonst am falschen vorbei. */
+  let nah=-1, dNah=1e9;
+  plaetze.forEach((p,i)=>{
+    const d=Math.abs(moebelMitte(p)-S.raumX);
+    if(d<moebelBreite(p.typ)/2+8&&d<dNah){ nah=i; dNah=d; }
+  });
   const anTuerRaus = S.raumX<=links+2;
 
   if(S.suchT>0){
@@ -1139,10 +1174,70 @@ function raumDeko(st,deckeY,bodenY){
       ctx.fillStyle='#8c94ad'; ctx.fillRect(W-78,deckeY+34,14,10);
       break;
   }
+  /* Kleinkram auf dem Boden. Liegt links und rechts neben der
+     Moebelreihe, damit es nichts verdeckt - kostet nichts und macht aus
+     einem leeren Streifen Boden einen benutzten Raum. */
+  const lx=38, rx=W-58;
+  switch(st.deko){
+    case 'rohre':                                   // Kabelrolle und Farbeimer
+      ctx.fillStyle='#3a3020'; ctx.fillRect(lx,bodenY-7,10,7);
+      ctx.fillStyle='#5a4a2c'; ctx.fillRect(lx+2,bodenY-5,6,3);
+      ctx.fillStyle='#7a6a44'; ctx.fillRect(rx+6,bodenY-6,7,6);
+      ctx.fillStyle='#c9c2ad'; ctx.fillRect(rx+7,bodenY-6,5,1);
+      break;
+    case 'sprossen':                                // Ball und zwei Huetchen
+      ctx.fillStyle='#c9702f'; ctx.fillRect(lx+2,bodenY-6,6,6);
+      ctx.fillStyle='#e08a44'; ctx.fillRect(lx+3,bodenY-5,2,2);
+      ctx.fillStyle='#c9552f';
+      ctx.fillRect(rx+4,bodenY-5,6,1); ctx.fillRect(rx+5,bodenY-4,4,4);
+      ctx.fillRect(rx+11,bodenY-3,4,3);
+      break;
+    case 'akten':                                   // verstreute Blaetter
+      ctx.fillStyle='#d8d2c0';
+      [[0,0],[6,-1],[13,1],[19,0]].forEach(([dx,dy])=>ctx.fillRect(lx+dx,bodenY-2+dy,5,2));
+      ctx.fillRect(rx+8,bodenY-2,6,2);
+      break;
+    case 'tafel':                                   // Kreide und ein Papierflieger
+      ctx.fillStyle='#e8e2d0';
+      ctx.fillRect(lx+2,bodenY-2,4,2); ctx.fillRect(lx+8,bodenY-1,3,1);
+      ctx.fillStyle='#c9c2ad';
+      ctx.fillRect(rx+6,bodenY-3,8,1); ctx.fillRect(rx+9,bodenY-2,5,2);
+      break;
+    case 'labor':                                   // Scherben und ein Lappen
+      ctx.fillStyle='#6fe0b0';
+      [[0,-2],[4,-1],[9,-2],[14,-1]].forEach(([dx,dy])=>ctx.fillRect(lx+dx,bodenY+dy,2,2));
+      ctx.fillStyle='#4a5570'; ctx.fillRect(rx+6,bodenY-3,10,3);
+      break;
+    case 'buecher':                                 // Stapel und ein offenes Buch
+      ['#8a3d3d','#3d5a8a','#7a6a2a'].forEach((c,i)=>{
+        ctx.fillStyle=c; ctx.fillRect(lx,bodenY-3-i*3,11,3); });
+      ctx.fillStyle='#d8d2c0'; ctx.fillRect(rx+4,bodenY-2,12,2);
+      ctx.fillStyle='#6b4a2a'; ctx.fillRect(rx+9,bodenY-3,2,3);
+      break;
+    case 'pinnwand':                                // Tasse und ein Stapel Klausuren
+      ctx.fillStyle='#8c94ad'; ctx.fillRect(lx+2,bodenY-5,5,5);
+      ctx.fillStyle='#5a6478'; ctx.fillRect(lx+7,bodenY-4,2,2);
+      ctx.fillStyle='#d8d2c0';
+      for(let i=0;i<3;i++) ctx.fillRect(rx+6-i,bodenY-2-i*2,12,2);
+      break;
+  }
+
   /* Raumschild ueber der Tuer */
   ctx.fillStyle='#00000066'; ctx.fillRect(24,deckeY+50,44,9);
   text(RAEUME[S.raum].name.slice(0,9),26,deckeY+52,st.schild);
 }
+
+/* Breite eines Moebels in Pixeln. Die Arten sind jetzt unterschiedlich
+   breit, also darf weder die Reichweite noch die Beschriftung weiter 16
+   annehmen. Einmal ausgemessen, dann gemerkt. */
+const _mbreite=new Map();
+function moebelBreite(typ){
+  let b=_mbreite.get(typ);
+  if(b===undefined){ const rows=SPR[typ]||SPR.kiste; b=0;
+    for(const z of rows) if(z.length>b) b=z.length; _mbreite.set(typ,b); }
+  return b;
+}
+const moebelMitte=p=>p.x+moebelBreite(p.typ)/2;
 
 function moebelPlaetze(r){
   const n=r.moebel.length;
@@ -1771,15 +1866,16 @@ function zeichneRaum(){
   const plaetze=moebelPlaetze(r);
   plaetze.forEach((p,i)=>{
     const rows=SPR[p.typ]||SPR.kiste;
-    const hoehe=rows.length;
-    const y=bodenY-hoehe;
+    const bw=moebelBreite(p.typ);
+    const y=bodenY-rows.length-(MOEBEL_HOCH[p.typ]||0);
     outline(rows,p.x,y,1,.5);
     sprite(rows,p.x,y);
+    const mitte=p.x+bw/2;
     const durchsucht=S.durchsucht.has(S.raum+':'+i);
-    if(durchsucht){ text('OK',p.x+8-textW('OK')/2,y-8,P.dunkel); }
+    if(durchsucht){ text('OK',mitte-textW('OK')/2,y-8,P.dunkel); }
     else if(S.nahesMoebel===i){
-      if(Math.floor(S.t*4)%2===0) text('E',p.x+8-1,y-9,P.gold);
-      ctx.globalAlpha=.5; ctx.fillStyle=P.gold; ctx.fillRect(p.x,bodenY-1,16,1); ctx.globalAlpha=1;
+      if(Math.floor(S.t*4)%2===0) text('E',mitte-1,y-9,P.gold);
+      ctx.globalAlpha=.5; ctx.fillStyle=P.gold; ctx.fillRect(p.x,bodenY-1,bw,1); ctx.globalAlpha=1;
     }
   });
 

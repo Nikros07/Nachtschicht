@@ -16,8 +16,10 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 **Offen geblieben (bewusst):**
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
-- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
-- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
+- [ ] Handy-Steuerung auf einem echten Gerät testen (emuliert läuft sie in
+      allen drei Leveln: Tasten sichtbar, groß genug, Laufen reagiert)
+- [x] Mehr Abwechslung in den Möbelarten selbst — 20 Arten statt 7, jeder
+      Raum hat seine eigene Einrichtung, dazu Kleinkram auf dem Boden
 
 ---
 
@@ -135,7 +137,8 @@ erfinden.
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [x] Mehr Abwechslung in den Räumen — die Möbel wiederholen sich nicht mehr,
+      jeder der zehn Räume hat eine eigene Einrichtung und eigenen Kleinkram
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
@@ -169,6 +172,7 @@ erfinden.
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Zwanzig Möbelarten in Level 1, jeder Raum eigen eingerichtet
 - [x] **Level 2: Wohnung, vier Aufgaben, Pegel, der Kracher mit drei Mustern**
 - [x] Statisten in der Wohnung, die von selbst vor sich hin quatschen
 - [x] Audio-Bus mit Zerre und Tiefpass — der Pegel färbt den Ton
