@@ -31,11 +31,17 @@ Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 
 ### Noch offen
 
-**Level 2**
+**Level 2** — die drei offenen Punkte sind erledigt:
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Sechs Leute stehen jetzt in Wohnzimmer, Küche und Moritz' Zimmer rum,
+  schwanken im Takt und haben nichts zu sagen
+- [x] Der Kracher hat drei Angriffsmuster: rot kontern, gelb ausweichen, blau
+  drüberspringen. Wer ausweicht, kriegt ein Fenster zum Zuschlagen
+- [x] Musik wird lauter, schneller und ab der Hälfte verstimmt, je höher der
+  Pegel steht
+
+- [ ] Die Leute im Hintergrund reagieren auf nichts — kein Jubel, wenn alle
+  bereit sind, keine Reaktion auf den Kampf im Flur
 
 **Level 3**
 
@@ -89,7 +95,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+- [x] **Fehlschläge bestrafen** — in Level 2 umgesetzt: ein Schlag ins Leere
+  kostet 0,55 s, und jeder weitere Druck setzt die Zeit neu. Dauerfeuer auf `E`
+  gewinnt den Kampf jetzt nicht mehr. Muss beim Zusammenführen mitwandern
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase

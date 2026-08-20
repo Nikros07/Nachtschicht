@@ -192,12 +192,26 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+Man hört ihn auch: die Musik wird lauter, zieht leicht an und klingt ab der
+Hälfte verstimmt. Der Pegel **fährt in Level 3 mit** und baut sich dort langsam
+ab.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Er hat drei Angriffe, und
+über ihm zeigt Dir ein Balken in der passenden Farbe, welcher gerade kommt:
+
+| Farbe | Was er macht | Was Du machst |
+|:--|:--|:--|
+| **Rot** `!` | Er holt langsam aus | `E` **während** er ausholt — das ist ein Konter |
+| **Gelb** `!!` | Kurzer Haken, zu schnell zum Kontern | Weg da. Bist Du weit genug, steht er offen |
+| **Blau** `>>` | Er nimmt Anlauf und rennt los | Drüberspringen. Er läuft in die Wand |
+
+Wer ausweicht, kriegt danach ein Fenster: solange ein grünes `E` über ihm steht,
+sitzt jeder Schlag. **Aber Vorsicht mit `E`.** Ein Schlag ins Leere kostet Dich
+gut eine halbe Sekunde, und jeder weitere Druck setzt die Zeit neu — wer
+hämmert, kommt gar nicht mehr raus. Dreimal treffen, dann liegt er.
 
 ### Moritz
 
