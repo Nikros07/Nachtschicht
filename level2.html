@@ -593,6 +593,7 @@ function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
 function levelGeschafft(){
   STAND.crewDazu('MORITZ');
   STAND.durch(NR);                     // macht Level 3 auf
+  STAND.pegelSetzen(S.pegel);          // im Bus bist du noch nicht nuechtern
   S.neueBestzeit=STAND.bestSetzen(NR,S.zeit);
   levelleiste();                       // der Haken in der Leiste, sofort
 }

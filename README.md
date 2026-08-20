@@ -207,6 +207,61 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+22:00. Die Bahn ist längst weg, es fährt nur noch der Nachtbus. **Sechs
+Haltestellen** bis zum Club. Einen Fahrschein hat natürlich keiner.
+
+**Kein Schleichen und kein Reden.** Hier geht es um Timing auf einem Boden, der
+sich bewegt.
+
+### Drei Sachen greifen ineinander
+
+**Der Bus bremst, wann er will.** Kurz vorher blinkt **FESTHALTEN** auf und die
+nächste Haltestange leuchtet auf. Wer dann mit `Leertaste` an einer Stange hängt,
+steht sicher. Wer nicht, liegt gut eine Sekunde auf dem Gang — und in der
+Sekunde kann viel passieren.
+
+**Zwei in Blau gehen durch den Bus.** Sie steigen an einer Haltestelle ein,
+gehen einmal komplett durch und steigen an der nächsten wieder aus — dann kommen
+die nächsten zwei, von der anderen Seite. Bei jedem Fahrgast bleiben sie stehen.
+Solange einer einen Fahrschein in der Hand hält, schwebt ein **`?`** über ihm:
+das ist der Moment, in dem man an ihm vorbeikommt.
+
+**Der Bus hält.** Nur dann gehen die Türen auf, und nur dann kommt man über den
+Bürgersteig an ihnen vorbei. Raus mit `E`, draußen entlanglaufen, zwei Türen
+weiter wieder rein. Der Balken unten zeigt, wie lange die Türen noch offen sind
+— wer zu spät kommt, verliert ein Herz.
+
+### Steuerung
+
+| Taste | Aktion |
+|:--|:--|
+| `A` `D` oder `←` `→` | Laufen |
+| **`Leertaste`** | An der Stange festhalten (gedrückt halten) |
+| **`E`** | Tür benutzen · Fahrschein aufheben · reden |
+
+### Nebenbei
+
+Irgendwo im Bus liegt ein **Fahrschein**. Von wann auch immer — aber er rettet
+Dich genau einmal. Ganz hinten steht jemand, der diese Linie jedes Wochenende
+fährt; mit `E` erzählt er Dir, wie das hier läuft.
+
+**Der Pegel aus Level 2 fährt mit.** Er baut sich langsam ab, aber solange er
+oben ist, schwankt das Bild — und wer zu voll ist, liegt nach einer Bremsung
+deutlich länger.
+
+**Mit Max Ferdi** läufst Du 15 % schneller — an der Tür zählt jede Zehntel.
+**Mit Moritz** dauern die Kontrollen länger, weil er die zwei vollquatscht.
+
+### Am Club
+
+Die letzte Haltestelle ist die einzige, an der Du **raus musst**. Wer sitzen
+bleibt, fährt am Club vorbei. Gezählt wird am Ende nicht die Zeit — die Fahrt
+ist immer gleich lang — sondern **wie oft sie Dich drangekriegt haben**.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -219,8 +274,29 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
+Jede Level-Datei fängt mit einem Block namens `TUNE` an. Dort liegt das komplette
 Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
+
+### Wie die Dateien zusammenhängen
+
+| Datei | Was drinsteht |
+|:--|:--|
+| `engine.js` | Der gemeinsame Kern: Bitmap-Font, Bild-Cache, Sprite- und Text-Helfer, die gemeinsamen Spielerbilder, Ton-Grundlagen, Bildschirm und Vollbild, der Spielstand und die Liste der Level |
+| `gehaeuse.css` | Der Automat drumherum: Rahmen, CRT-Schleier, Touch-Tasten, Levelleiste |
+| `index.html` · `level2.html` · `level3.html` | Je ein Level: Regler, Welt, Zustand, Musik, Geräusche, Zeichnen |
+| `runner.html` | Der alte Endlos-Modus, unverändert |
+
+`engine.js` ist ein ganz normales `<script>`, kein Modul: was dort oben mit
+`const`/`let` steht, sieht die Level-Datei danach direkt. Ein Level darf davon
+also nichts noch einmal deklarieren.
+
+**Ein neues Level anlegen** heißt: eine Zeile in `LEVELS` in `engine.js`
+eintragen. Danach taucht es in beiden Leisten auf, und der Übergang aus dem
+Level davor findet es von allein.
+
+**Der Spielstand** liegt unter einem einzigen Schlüssel `nachtschicht.stand`:
+wer dabei ist, welche Level offen sind, welche geschafft, die Bestwerte und der
+Pegel. Zugriff nur über `STAND` in `engine.js`.
 
 | Regler | Bewirkt |
 |:--|:--|
@@ -255,6 +331,7 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
+- Gemeinsamer Kern in `engine.js`, Gehäuse in `gehaeuse.css` — jedes Level bringt nur noch mit, was es selbst ausmacht
 - Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
 
 ## Woran es sich orientiert
@@ -265,5 +342,5 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 bis 3 sind fertig und durchspielbar. Level 4 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).

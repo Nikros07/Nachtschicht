@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>NACHTSCHICHT - DER NACHTBUS</title>
+<meta name="description" content="Level 3 - Der Nachtbus. Sechs Haltestellen, zwei Kontrolleure, ein wackliger Boden.">
+<link rel="stylesheet" href="gehaeuse.css">
+<!-- Im Bus ist alles kalt und gruenstichig - Leuchtstoffroehren eben. -->
+<style>:root{ --schimmer:#0d1a22; --glanz:rgba(120,255,220,.07); }</style>
+</head>
+<body>
+<div id="cab">
+  <div id="marquee">D E R &nbsp; N A C H T B U S</div>
+  <div id="screen">
+    <canvas id="c" width="320" height="180"></canvas>
+    <div id="crt"></div>
+    <div id="touch">
+      <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
+      <div class="btn" id="tjump">HALT</div><div class="btn" id="thit">E</div>
+    </div>
+  </div>
+  <button id="fs">VOLLBILD</button>
+  <!-- Die Leiste fuellt engine.js aus LEVELS. data-level sagt, wo wir sind. -->
+  <div id="levelbar" data-level="3"></div>
+  <div id="base"><span>LEVEL 3 - DER NACHTBUS</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
+</div>
+<div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
+
+<script src="engine.js"></script>
+<script>
+/* ============================================================================
+   NACHTSCHICHT - LEVEL 3: DER NACHTBUS
+
+   Level 1 war Verstecken, Level 2 war Reden. Hier geht es um Timing auf
+   einem Boden, der sich bewegt.
+
+   Drei Sachen greifen ineinander:
+     - Der Bus faehrt und bremst. Wer nicht an der Stange haengt, liegt.
+     - Zwei Kontrolleure gehen von vorn nach hinten durch. Sie sperren
+       nichts ab, aber wer ihnen zu nah kommt, wird kontrolliert.
+     - Alle paar Sekunden haelt der Bus. Nur dann gehen die Tueren auf,
+       und nur dann kommt man ueber den Buergersteig an ihnen vorbei.
+
+   Ohne die Tueren wuerde man hinten in der Ecke enden. Ohne die Bremsen
+   waere das Vorbeischleichen zu einfach. Beides zusammen ergibt das
+   Spiel: du wartest auf die Luecke, und die Luecke ist immer knapp.
+
+   Font, Bild-Cache, Sprite-Helfer, Ton, Bildschirm und Spielstand stehen in
+   engine.js. Hier steht nur, was diesen Bus ausmacht.
+
+   >>> ALLE REGLER STEHEN HIER OBEN. <<<
+   ========================================================================== */
+const TUNE = {
+  /* (1) BEWEGUNG - kein Springen. Im Bus springt niemand. */
+  gehTempo:       100,
+  beschleunigung: 820,
+  bremsung:      1150,
+
+  /* (2) KAMERA */
+  kameraTraegheit: 6.5,
+  blickVoraus:    24,
+
+  /* (3) DER FAHRPLAN - der Takt des ganzen Levels */
+  halte:            6,    // so viele Haltestellen bis zum Club
+  fahrtDauer:      16,    // Sekunden zwischen zwei Halten
+  haltDauer:        7.2,  // so lange steht der Bus
+  tuerAuf:          0.5,  // wie lange die Tuer zum Aufgehen braucht
+  tuerZuWarnung:    1.6,  // ab hier blinkt die Tuer
+
+  /* (4) DAS RUCKELN - der Kern des Levels */
+  ruckProFahrt:     3,    // so oft wird pro Fahrt gebremst oder beschleunigt
+  ruckWarnung:      1.05, // Vorwarnzeit, bevor es einen reisst
+  ruckWucht:       34,    // so weit rutscht man
+  sturzDauer:       1.25, // so lange liegt man
+  stangeReichweite: 11,   // wie nah man an der Stange stehen muss
+
+  /* (5) DIE KONTROLLEURE */
+  kontrollTempo:   24,    // Tempo beim Durchgehen
+  kontrollRueck:   54,    // Tempo zurueck nach vorn - da halten sie nicht an
+  kontrollPause:    1.25, // so lange halten sie sich bei jedem Fahrgast auf
+  moritzBremse:     1.45, // mit Moritz dauert jede Pause laenger - er quatscht
+  fangDistanz:     10,
+  kontrollAbstand: 92,    // so weit gehen die beiden auseinander - dazwischen
+                          // ist die Luecke, durch die man kommt
+  erstAbHalt:       2,    // die ersten zwei Fahrten gehoeren dem Ruckeln
+
+  /* (6) DER PEGEL - kommt aus Level 2 mit und baut sich langsam ab */
+  pegelAbbau:       1.5,  // pro Sekunde
+  wackelAb:        45,    // ab hier schwankt das Bild
+  sturzAufschlag:  55,    // ab hier liegt man laenger
+
+  /* (7) SPIELER */
+  leben:            3,
+  reichweite:      13,    // fuer Tuer, Fahrschein und Reden
+
+  /* (8) DIE UHR - laeuft pro Haltestelle, nicht in Echtzeit */
+  startMinute:  22*60,
+  proHalt:          6,    // Minuten je Haltestelle
+};
+
+/* Im Bus ist alles gruenstichig. Der Rest der Palette kommt aus engine.js. */
+Object.assign(P,{ boden:'#1b2430', bodenKante:'#3a5464' });
+/* Vier Farben, die es nur hier gibt. */
+Object.assign(KEY,{
+  X:'#1e2a5a',   // Uniform der Kontrolleure
+  Y:'#ffe066',   // Abzeichen und Warnstreifen
+  G:'#9fb0c8',   // Chrom der Haltestangen
+  L:'#3c4a5e',   // Bussitze und Verkleidung
+});
+
+/* ==========================================================================
+   SPRITES
+   Kopf, Rumpf und Gangbilder kommen aus engine.js.
+   ========================================================================== */
+const SPR = {
+  ...SPIELER,
+
+  /* Festhalten - ein Arm nach oben an die Stange. */
+  halten:[...KOPF,'..ttt.s','..ttt.s','k.ttt..','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  /* Und wenn es einen doch reisst. */
+  sturz: ['.........','..hhh....','.hsssh...','.sssss...','.tttttppp','ktttttppk','..kk..kk.'],
+
+  /* Die zwei in Blau. Muetze, Abzeichen, sehr aufrecht. */
+  kontrolleur:   ['..XXX..','.XsssX.','.sssss.','..sss..','..XXX..','.XXXXX.','k.XYX.k','..XXX..',
+                  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  kontrolleurGeh:['..XXX..','.XsssX.','.sssss.','..sss..','..XXX..','XXXXX..','k.XYX.k','..XXX..',
+                  '..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk'],
+
+  /* Fahrgaeste - drei Sorten, damit der Bus nicht wie geklont aussieht. */
+  gast1:['..hhh..','.hsssh.','.sssss.','..sss..','..ddd..','.ddddd.','k.ddd.k','..ddd..',
+         '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  gast2:['..aaa..','.asssa.','.sssss.','..sss..','..vvv..','.vvvvv.','k.vvv.k','..vvv..',
+         '..qqq..','..q.q..','..q.q..','.qq.qq.','.kk..kk'],
+  gast3:['..uuu..','.usssu.','.sssss.','..sss..','..ccc..','.ccccc.','k.ccc.k','..ccc..',
+         '..eee..','..e.e..','..e.e..','.ee.ee.','.kk..kk'],
+  sitzer:['..hhh..','.hsssh.','.sssss.','..ddd..','.ddddd.','.dddddd','..pppp.','..k..k.'],
+
+  /* DER LANGE - faehrt diese Linie jedes Wochenende. Einen Kopf groesser. */
+  lange:['..hhh..','.hsssh.','.sssss.','..sss..','..sss..','..nnn..','.nnnnn.','k.nnn.k',
+         '.nnnnn.','..nnn..','..ppp..','..p.p..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+
+  /* Einrichtung */
+  sitz:  ['LLLLLLL','LvLLLvL','LLLLLLL','LvLLLvL','LLLLLLL','.d...d.','.d...d.'],
+  griff: ['.G.','.G.','.G.','GGG','G.G','GGG'],
+  schein:['wwwwww','w.kk.w','wwwwww','w.kk.w','wwwwww'],
+  /* Haltestellenschild - das H im Kreis auf dem Mast. */
+  schild:['.ggggg.','gg...gg','g.g.g.g','g.ggg.g','g.g.g.g','gg...gg','.ggggg.',
+          '...z...','...z...','...z...','...z...','...z...','...z...','...z...'],
+  muell: ['.LLLLL.','LLLLLLL','L.....L','L.....L','L.....L','LLLLLLL'],
+};
+
+/* ==========================================================================
+   AUDIO
+   Die Grundlagen (piep, glissando, rauschen) stehen in engine.js.
+   ========================================================================== */
+const SFX={
+  schritt: ()=>piep(88+Math.random()*18,.03,'triangle',.016),
+  tuer:    ()=>{ glissando(180,420,.22,'sine',.05); rauschen(.12,.03); },
+  tuerZu:  ()=>{ glissando(420,170,.22,'sine',.05); rauschen(.12,.03); },
+  warnung: ()=>piep(520,.09,'square',.035),
+  bremse:  ()=>{ glissando(140,60,.45,'sawtooth',.06); rauschen(.3,.06); },
+  sturz:   ()=>{ rauschen(.2,.12); glissando(220,60,.25,'square',.07); },
+  fund:    ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.16),170); },
+  nichts:  ()=>piep(210,.09,'sine',.03),
+  erwischt:()=>{ glissando(380,90,.4,'sawtooth',.07); rauschen(.28,.07); },
+  reden:   ()=>piep(430+Math.random()*90,.05,'square',.028),
+  halt:    ()=>{ piep(660,.07); setTimeout(()=>piep(880,.11),90); },
+  sieg:    ()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>piep(f,.16),i*120)); },
+};
+
+/* Der Motor liegt als Dauerton drunter, der Bass geht drueber.
+   Wenn die Kontrolleure durchgehen, zieht das Tempo an. */
+const BASS     =[73,0,73,0, 98,0,73,0, 65,0,65,0, 87,0,98,110];
+const BASS_ENG =[110,110,0,98, 110,0,87,0, 98,98,0,87, 98,0,131,147];
+const MUS={step:0,next:0};
+tonBereit=()=>{ MUS.next=AC.currentTime+.05; };
+function musik(){
+  if(!AC||muted||S.modus==='pause') return;
+  const eng=S.kk.some(k=>Math.abs(k.x-S.x)<110);
+  const bpm=eng?124:86, st=60/bpm/4, linie=eng?BASS_ENG:BASS;
+  while(MUS.next<AC.currentTime+.12){
+    const i=MUS.step%linie.length, f=linie[i];
+    if(f) ton(f,MUS.next,st*.9,'square',eng?.028:.018);
+    /* Motorbrummen - nur waehrend der Fahrt, im Halt ist er aus. */
+    if(S.modus==='spiel'&&S.phase==='fahrt'&&i%4===0)
+      ton(41,MUS.next,st*3.6,'sawtooth',.014);
+    MUS.next+=st; MUS.step++;
+  }
+}
+
+/* ==========================================================================
+   DER BUS
+   Ein Gelenkbus im Querschnitt. Links die Fahrerkabine, dann zwei Haelften
+   mit dem Gelenk in der Mitte, drei Tueren.
+   ========================================================================== */
+const LEVEL_B  = 640;          // Buslaenge
+const BUSBODEN = 112;          // der Boden, auf dem man im Bus steht
+const STEIG    = 156;          // Strasse und Buergersteig davor
+const KABINE   = 46;           // so weit reicht die Fahrerkabine
+const GELENK   = 324;          // Mitte des Faltenbalgs
+
+const TUEREN  = [78, 300, 528];
+const RAEDER  = [140, 372, 596];
+const STANGEN = [104, 168, 232, 268, 356, 420, 484, 560, 604];
+/* Sitzbaenke: von, bis. Dazwischen ist Stehplatz. */
+const BAENKE  = [[120,190],[236,292],[366,436],[544,600]];
+
+/* Die Fahrgaeste. Jeder kostet die Kontrolleure eine Pause - je mehr Leute,
+   desto langsamer kommen sie durch. */
+const GAESTE = [
+  { x:126, art:'sitzer' }, { x:150, art:'gast1'  }, { x:176, art:'sitzer' },
+  { x:212, art:'gast2'  }, { x:250, art:'sitzer' }, { x:284, art:'gast3'  },
+  { x:344, art:'gast1'  }, { x:388, art:'sitzer' }, { x:424, art:'sitzer' },
+  { x:462, art:'gast2'  }, { x:506, art:'gast3'  }, { x:566, art:'sitzer' },
+];
+/* Wo der Fahrschein liegen kann. Einer davon pro Runde. */
+const SCHEIN_ORTE = [140, 208, 262, 340, 404, 470, 522, 588];
+/* Der Lange steht ganz hinten und geht da auch nicht weg. */
+const LANGE_X = 618;
+
+/* Der Name ist ein Platzhalter. Die echten Namen und Eigenheiten kommen
+   vom Nick - hier muss dann genau eine Zeile geaendert werden. */
+const JUNGE = 'DER LANGE';
+
+const HALTE = ['BUSBAHNHOF','KREISEL','SUEDRING','ALTE POST','BRUECKE','HAFENSTRASSE','CLUB'];
+
+/* ==========================================================================
+   ZUSTAND
+   ========================================================================== */
+let S={};
+function neuesSpiel(){
+  S={
+    modus:'titel', t:0, zeit:0,
+    x:562, y:BUSBODEN, vx:0, blick:-1, gehPhase:0, schritte:0,
+    kamX:0, hp:TUNE.leben,
+    /* Aus Level 2 mitgebracht. Wer nuechtern kommt, hat es leichter. */
+    pegel:STAND.pegel(),
+
+    draussen:false,
+    halt:0, phase:'fahrt', phaseT:0, tuer:0,
+    /* Wie schnell der Bus gerade rollt (0..1) und wie weit er gekommen ist.
+       Daran haengt alles, was draussen vorbeizieht. */
+    tempo:0, strecke:0,
+
+    ruckWarn:0, ruckAn:0, ruckRichtung:1, ruckVersatz:0, ruckRest:0,
+    gestuerzt:0, haltend:false,
+
+    kk:[], kRichtung:1, kFertig:false, welle:0, wellenTausch:false, kontrollen:0, schein:false,
+
+    reden:null, redeZeile:0,
+    meldung:'', meldungT:0, hinweis:'', hinweisT:0,
+    ruettel:0, blitz:0,
+    szene:0, szeneT:0, skipT:0,
+    gewonnen:false, faenger:'', neueBestzeit:false,
+  };
+  S.scheinBei = pick(SCHEIN_ORTE);
+  S.kamX = klemm(S.x-W/2, 0, LEVEL_B-W);
+  planeRuckler();
+}
+/* Die Ruckler der laufenden Fahrt vorher wuerfeln, damit sie sich nicht
+   in der letzten Sekunde noch haeufen. */
+function planeRuckler(){
+  S.ruckPlan=[];
+  const teil=TUNE.fahrtDauer/(TUNE.ruckProFahrt+1);
+  for(let i=1;i<=TUNE.ruckProFahrt;i++)
+    S.ruckPlan.push(teil*i + (Math.random()-.5)*teil*.5);
+}
+neuesSpiel();
+
+/* Dieses Level im Spielstand. */
+const NR=3;
+const tempoBonus=()=>STAND.crew().includes('MAX FERDI')?1.15:1;
+/* Moritz quatscht die Kontrolleure voll - sie brauchen laenger. */
+const kontrollPause=()=>TUNE.kontrollPause*(STAND.crew().includes('MORITZ')?TUNE.moritzBremse:1);
+
+/* ==========================================================================
+   EINGABE
+   ========================================================================== */
+const keys={};
+let linksAn=false, rechtsAn=false, haltenAn=false, aktionGehalten=false;
+let aktionPuffer=[];
+
+function druckHalten(){
+  ensureAudio();
+  if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='intro'){ S.szeneT+=99; return; }
+  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='pause'){ S.modus='spiel'; return; }
+  haltenAn=true;
+}
+function druckAktion(){
+  ensureAudio();
+  if(S.modus==='titel'){ starte(); return; }
+  if(S.modus==='intro'){ S.szeneT+=99; return; }
+  if(S.modus==='ende'){
+    if(S.gewonnen&&naechstesLevel(NR)) zumLevel(NR+1); else neuesSpiel();
+    return;
+  }
+  if(S.modus==='cutscene'){ S.szeneT+=99; return; }
+  aktionPuffer.push(S.t);
+}
+addEventListener('keydown',e=>{
+  if(keys[e.code]) return; keys[e.code]=true;
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
+  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(e.code==='Space'){ e.preventDefault(); druckHalten(); }
+  if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
+  /* M (Ton) und F (Vollbild) haengen in engine.js - die gehoeren dem
+     Automaten, nicht dem Level. */
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-9]$/.test(e.code)){
+    const nr=+e.code.slice(-1); if(levelInfo(nr)){ e.preventDefault(); zumLevel(nr); } }
+  if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
+});
+addEventListener('keyup',e=>{ keys[e.code]=false;
+  if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
+  if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
+  if(e.code==='Space') haltenAn=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=haltenAn=aktionGehalten=false; });
+bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
+bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
+bind('tjump',['touchstart','mousedown'],druckHalten);
+bind('tjump',['touchend','mouseup','touchcancel'],()=>haltenAn=false);
+bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
+bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
+
+/* ==========================================================================
+   INTRO
+   ========================================================================== */
+const INTRO=[
+  { d:2.6, txt:'22:00. IHR SEID DRAUSSEN.' },
+  { d:2.6, txt:'DIE BAHN IST WEG. LAENGST.' },
+  { d:2.8, txt:'ES FAEHRT NUR NOCH DER NACHTBUS.' },
+  { d:2.8, txt:'SECHS HALTESTELLEN BIS ZUM CLUB.' },
+  { d:3.0, txt:'FAHRSCHEIN HAT NATUERLICH KEINER.' },
+];
+function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+function starteLevel(){ S.modus='spiel'; S.phase='fahrt'; S.phaseT=0;
+  zeigeHinweis('LEER HAELT DICH AN DER STANGE FEST',3.4); SFX.halt(); }
+function intro(dt){
+  S.szeneT+=dt;
+  if(S.szeneT>=INTRO[S.szene].d){
+    S.szene++; S.szeneT=0;
+    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03);
+  }
+}
+function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
+function meldung(t,d=1.4){ S.meldung=t; S.meldungT=d; }
+
+/* ==========================================================================
+   AKTUALISIEREN
+   ========================================================================== */
+function update(dt){
+  S.t+=dt; musik();
+  S.ruettel=Math.max(0,S.ruettel-dt*16);
+  S.blitz=Math.max(0,S.blitz-dt*2.2);
+  if(S.hinweisT>0) S.hinweisT-=dt;
+  if(S.meldungT>0) S.meldungT-=dt;
+  if(S.modus==='pause'||S.modus==='titel') return;
+  if(S.modus==='intro'){ intro(dt); return; }
+  if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
+  if(S.modus==='ende') return;
+
+  S.zeit+=dt;
+  if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+
+  /* Der Bus bremst und beschleunigt weich - sonst wirkt jeder Halt wie
+     ein harter Schnitt im Bild. */
+  const zielTempo = S.phase==='fahrt' ? Math.min(1,S.phaseT/1.8) : Math.max(0,1-S.phaseT/1.1);
+  S.tempo += (zielTempo-S.tempo)*Math.min(1,dt*4);
+  S.strecke += S.tempo*170*dt;
+
+  fahrplan(dt);
+  ruckeln(dt);
+  kontrolleure(dt);
+
+  /* --- Gespraech laeuft --- */
+  if(S.reden){
+    while(aktionPuffer.length){ aktionPuffer.shift(); naechsteZeile(); }
+    kamera(dt); return;
+  }
+
+  /* --- Am Boden liegen --- */
+  if(S.gestuerzt>0){
+    S.gestuerzt-=dt; S.vx*=.86; S.x+=S.vx*dt; grenzen();
+    aktionPuffer.length=0;
+    kamera(dt); return;
+  }
+
+  /* --- Festhalten. Geht nur drinnen und nur an einer Stange. --- */
+  const stange=naechsteStange();
+  S.haltend = !S.draussen && haltenAn && stange!==null;
+
+  /* --- Bewegung --- */
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  if(richtung) S.blick=richtung;
+  if(S.haltend){
+    /* Wer haengt, laeuft nicht - und wird an die Stange gezogen. */
+    S.vx=0; S.x+=(stange-S.x)*Math.min(1,dt*9);
+  } else {
+    const hoechst=TUNE.gehTempo*tempoBonus();
+    if(richtung){
+      S.vx+=richtung*TUNE.beschleunigung*dt;
+      if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+    } else {
+      const brems=TUNE.bremsung*dt;
+      S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+    }
+    S.x+=S.vx*dt;
+    if(Math.abs(S.vx)>12){
+      S.gehPhase+=Math.abs(S.vx)*dt*.09;
+      const n=Math.floor(S.gehPhase);
+      if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+    }
+  }
+  grenzen();
+
+  /* --- Aktion --- */
+  while(aktionPuffer.length){ aktionPuffer.shift(); aktion(); }
+  kamera(dt);
+}
+
+function grenzen(){
+  /* Draussen reicht der Buergersteig nur so weit wie der Bus. */
+  const links = S.draussen?34:(KABINE+8);
+  const rechts= LEVEL_B-(S.draussen?34:16);
+  if(S.x<links){ S.x=links; S.vx=0; }
+  if(S.x>rechts){ S.x=rechts; S.vx=0; }
+}
+function naechsteStange(){
+  let beste=null, d0=TUNE.stangeReichweite;
+  for(const st of STANGEN){ const d=Math.abs(st-S.x); if(d<d0){ d0=d; beste=st; } }
+  return beste;
+}
+const tuerBei=x=>{ for(const t of TUEREN) if(Math.abs(t-x)<TUNE.reichweite) return t; return null; };
+
+/* ---- Der Fahrplan: fahren, halten, fahren ---- */
+function fahrplan(dt){
+  S.phaseT+=dt;
+  if(S.phase==='fahrt'){
+    S.tuer=0;
+    if(S.phaseT>=TUNE.fahrtDauer){
+      S.phase='halt'; S.phaseT=0; S.halt++;
+      S.ruckWarn=0; S.ruckAn=0;
+      SFX.halt();
+      const letzte = S.halt>=TUNE.halte;
+      zeigeHinweis(letzte?'CLUB - RAUS HIER!':HALTE[Math.min(S.halt,HALTE.length-1)],
+                   letzte?4:2.2);
+      S.wellenTausch=false;
+    }
+    return;
+  }
+  /* --- Halt --- */
+  const rest=TUNE.haltDauer-S.phaseT;
+  const auf=Math.min(S.phaseT/TUNE.tuerAuf, 1, Math.max(0,rest/TUNE.tuerAuf));
+  if(S.tuer<=0&&auf>0) SFX.tuer();
+  S.tuer=auf;
+  wellenWechsel();
+  if(rest<=0){
+    /* Tueren zu. Jetzt zaehlt, wo man steht. */
+    SFX.tuerZu();
+    if(S.halt>=TUNE.halte){
+      if(S.draussen){ starteCutscene(); return; }
+      /* Am Club sitzen geblieben - das war es dann. */
+      S.modus='ende'; S.gewonnen=false;
+      S.faenger='DU BIST AM CLUB VORBEIGEFAHREN'; SFX.erwischt(); return;
+    }
+    if(S.draussen){
+      /* Draussen stehen geblieben. Der Fahrer macht die hintere Tuer
+         noch mal auf - das kostet aber. */
+      S.draussen=false; S.y=BUSBODEN; S.x=TUEREN[2]; S.vx=0;
+      verliereHerz('GERADE NOCH REINGEKOMMEN');
+      if(S.modus!=='spiel') return;
+    }
+    S.phase='fahrt'; S.phaseT=0; S.tuer=0; planeRuckler();
+  }
+}
+
+/* Wer durch ist, steigt aus, sobald die Tuer offen ist - und die
+   naechsten zwei steigen an derselben Haltestelle gleich wieder ein, von
+   der anderen Seite.
+
+   Der Wechsel haengt bewusst an der offenen Tuer und nicht am Beginn des
+   Halts: eine Welle wird oft erst mitten im Halt fertig, und dann waeren
+   sie eine Haltestelle zu spaet ausgestiegen. Die zweite Welle haette es
+   dann nicht mehr bis ans andere Ende geschafft - und genau dort haette
+   man sich hinstellen und das Level aussitzen koennen. */
+function wellenWechsel(){
+  if(S.tuer<=.6||S.wellenTausch) return;
+  const raus = S.kk.length&&S.kFertig;
+  if(raus){ S.kk=[]; S.kFertig=false; }
+  if(!S.kk.length&&S.halt>=TUNE.erstAbHalt&&S.halt<TUNE.halte){
+    S.wellenTausch=true; kontrolleureRein(raus);
+  } else if(raus){
+    S.wellenTausch=true; meldung('DIE ZWEI STEIGEN AUS',2.2); SFX.halt();
+  }
+}
+
+/* ---- Das Ruckeln ---- */
+function ruckeln(dt){
+  /* Der Versatz laeuft immer aus, egal in welcher Phase. */
+  S.ruckVersatz*=Math.max(0,1-dt*6);
+  if(S.phase!=='fahrt'){ S.ruckRest=0; return; }
+
+  if(S.ruckWarn>0){
+    S.ruckWarn-=dt;
+    if(S.ruckWarn<=0) ruckSchlaegtEin();
+    return;
+  }
+  if(S.ruckPlan.length&&S.phaseT>=S.ruckPlan[0]-TUNE.ruckWarnung){
+    S.ruckPlan.shift();
+    S.ruckWarn=TUNE.ruckWarnung;
+    S.ruckRichtung=Math.random()<.6?-1:1;   // bremsen wirft nach vorn
+    SFX.warnung();
+  }
+}
+function ruckSchlaegtEin(){
+  S.ruettel=1; S.ruckVersatz=S.ruckRichtung*7; SFX.bremse();
+  if(S.draussen) return;                    // draussen steht man fest
+  if(S.haltend){ meldung('GUT FESTGEHALTEN',.9); return; }
+  /* Wer nicht haengt, liegt. Mit Pegel laenger. */
+  const zaeh = S.pegel>TUNE.sturzAufschlag ? 1.5 : 1;
+  S.gestuerzt=TUNE.sturzDauer*zaeh;
+  S.vx=S.ruckRichtung*TUNE.ruckWucht*2;
+  SFX.sturz(); meldung('HINGEFALLEN',1.1);
+}
+
+/* ---- Die Kontrolleure ---- */
+function kontrolleureRein(ablose){
+  S.welle++;
+  /* Die erste Welle kommt von vorn - das ist das Naheliegende. Danach
+     wechselt die Richtung, sonst waere nach einmal Lernen fuer immer klar,
+     in welcher Ecke man sicher steht. */
+  const r = S.welle%2 ? 1 : -1;
+  S.kRichtung=r;
+  /* Sie fangen ganz am Ende an, nicht an der Tuer, durch die sie
+     eingestiegen sind. Sonst bliebe das Stueck hinter ihrem Startpunkt
+     die ganze Welle lang unberuehrt - und genau da haette man sich
+     hingestellt. */
+  const start = r>0 ? KABINE+2 : LEVEL_B-24;
+  /* Der zweite laesst dem ersten Vorsprung, statt neben ihm zu laufen.
+     Standen sie dicht beieinander, waren sie zusammen breiter als jede
+     Luecke - dann war Timing sinnlos. */
+  S.kk=[
+    { x:start, warte:1.2, geprueft:[], blick:r, tempo:1   },
+    { x:start, warte:1.2+TUNE.kontrollAbstand/TUNE.kontrollTempo, geprueft:[], blick:r, tempo:.92 },
+  ];
+  S.kFertig=false;
+  meldung(ablose ? (r>0?'DIE NAECHSTEN ZWEI STEIGEN VORNE EIN':'DIE NAECHSTEN ZWEI STEIGEN HINTEN EIN')
+                 : (r>0?'ZWEI IN BLAU STEIGEN VORNE EIN'      :'ZWEI IN BLAU STEIGEN HINTEN EIN'), 2.4);
+  zeigeHinweis(S.welle===1?'LASS SIE NICHT AN DICH RAN':'DIESMAL VON DER ANDEREN SEITE',3);
+  SFX.warnung();
+}
+/* Die zwei gehen als Paar in eine Richtung durch den Bus und steigen an
+   der naechsten Haltestelle wieder aus.
+
+   Zwei Sackgassen sind dabei schon geloescht worden: liefen sie einzeln
+   hin und her, nahmen sie einen irgendwann in der Mitte in die Zange, und
+   waehrend der Fahrt gibt es keine Tuer, durch die man da rauskommt.
+   Liefen sie danach ewig hin und zurueck, wurde jede Ecke frueher oder
+   spaeter zur Falle. Als Welle mit fester Richtung ist immer klar, wo
+   Platz ist - und irgendwann sind sie einfach weg. */
+function kontrolleure(dt){
+  if(!S.kk.length) return;
+  const r=S.kRichtung;
+  for(const k of S.kk){
+    if(k.warte>0) k.warte-=dt;
+    else {
+      k.x=klemm(k.x+TUNE.kontrollTempo*k.tempo*r*dt, KABINE+2, LEVEL_B-24);
+      k.blick=r;
+      for(let i=0;i<GAESTE.length;i++){
+        if(k.geprueft[i]) continue;
+        if(Math.abs(GAESTE[i].x-k.x)<6){ k.geprueft[i]=1; k.warte=kontrollPause(); break; }
+      }
+    }
+    /* Wer gerade einen Fahrschein in der Hand haelt, guckt nicht auf den
+       Gang. Genau da kommt man vorbei - das Fragezeichen ueber ihm sagt,
+       wann es soweit ist. Ohne diese Luecke waere der Bus eine Roehre, in
+       der man nur verlieren kann. */
+    if(!S.draussen&&k.warte<=0&&Math.abs(k.x-S.x)<TUNE.fangDistanz) erwischt(k);
+  }
+  /* Durch? Dann warten sie an der Tuer auf die naechste Haltestelle. */
+  if(!S.kFertig){
+    const vorn = r>0 ? Math.max(...S.kk.map(k=>k.x)) : Math.min(...S.kk.map(k=>k.x));
+    if(r>0 ? vorn>=LEVEL_B-24 : vorn<=KABINE+2){
+      S.kFertig=true;
+      meldung('SIE SIND DURCH - AN DER NAECHSTEN STEIGEN SIE AUS',2.6);
+    }
+  }
+}
+function erwischt(k){
+  S.kontrollen++;
+  /* Sie schieben sich an einem vorbei, sonst erwischt einen derselbe
+     Kontrolleur im naechsten Bild gleich noch mal. */
+  k.x=S.x+(S.kRichtung>0?26:-26); k.warte=1.6;
+  if(S.schein){
+    S.schein=false; S.blitz=.5; SFX.nichts();
+    meldung('DER IST VON GESTERN - GEHT GERADE NOCH DURCH',2.4);
+    return;
+  }
+  S.gestuerzt=Math.max(S.gestuerzt,1.1);
+  verliereHerz('FAHRSCHEIN BITTE');
+}
+function verliereHerz(grund){
+  S.hp--; S.ruettel=1; S.blitz=.7; SFX.erwischt();
+  meldung(grund,1.8);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger=grund; }
+}
+
+/* ---- Aktion: Tuer, Fahrschein, Reden ---- */
+function aktion(){
+  /* Erst die Tuer - sie ist das Wichtigste und immer knapp. */
+  const t=tuerBei(S.x);
+  if(t!==null&&S.tuer>.6&&!blockiert(t)){
+    S.draussen=!S.draussen;
+    S.y=S.draussen?STEIG:BUSBODEN;
+    S.x=t; S.vx=0; S.haltend=false;
+    SFX.tuer(); S.blitz=.25;
+    meldung(S.draussen?'RAUS':'REIN',.8);
+    return;
+  }
+  if(t!==null&&S.tuer>.6&&blockiert(t)){
+    meldung('DA STEHT EINER VON DENEN',1.2); SFX.nichts(); return;
+  }
+  if(!S.draussen&&!S.schein&&Math.abs(S.scheinBei-S.x)<TUNE.reichweite){
+    S.schein=true; S.blitz=.6; SFX.fund();
+    meldung('EIN FAHRSCHEIN. VON WANN AUCH IMMER.',2.2);
+    zeigeHinweis('DER RETTET DICH EINMAL',2.6); return;
+  }
+  if(!S.draussen&&Math.abs(LANGE_X-S.x)<TUNE.reichweite+4){ redeMitDemLangen(); return; }
+  if(t!==null){ meldung('DIE TUER IST ZU',1); SFX.nichts(); return; }
+  SFX.nichts();
+}
+/* Eine Tuer, an der ein Kontrolleur steht, benutzt man nicht. */
+const blockiert = t => S.kk.some(k=>Math.abs(k.x-t)<20);
+
+const LANGE_ZEILEN=[
+  ['DU','ALTER, DU AUCH HIER'],
+  [JUNGE,'JEDES WOCHENENDE, MEIN FREUND'],
+  [JUNGE,'DIE BREMSEN HOERST DU VORHER'],
+  [JUNGE,'STANGE GREIFEN. DANN PASSIERT NIX'],
+  ['DU','UND DIE ZWEI IN BLAU?'],
+  [JUNGE,'AN DENEN KOMMST DU NUR DRAUSSEN VORBEI'],
+  [JUNGE,'TUER AUF, RAUS, ZWEI TUEREN WEITER WIEDER REIN'],
+];
+function redeMitDemLangen(){ S.reden=LANGE_ZEILEN; S.redeZeile=0; SFX.reden(); }
+function naechsteZeile(){
+  S.redeZeile++;
+  if(S.redeZeile>=S.reden.length){ S.reden=null; return; }
+  SFX.reden();
+}
+
+function kamera(dt){
+  const ziel=klemm(S.x-W/2+S.blick*TUNE.blickVoraus, 0, LEVEL_B-W);
+  S.kamX+=(ziel-S.kamX)*Math.min(1,dt*TUNE.kameraTraegheit);
+}
+
+/* ==========================================================================
+   CUTSCENE - vor dem Club
+   ========================================================================== */
+const SZENEN=[
+  { d:2.4, txt:'DER BUS FAEHRT WEITER. IHR NICHT.' },
+  { d:2.6, txt:'VOR EUCH: DIE SCHLANGE.' },
+  { d:2.8, txt:JUNGE+' STEIGT MIT AUS.' },
+  { d:2.8, txt:'"ICH KENN DEN AN DER TUER." - "SICHER."' },
+  { d:2.6, txt:null },     // wird mit dem Namen gefuellt
+];
+function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
+  levelGeschafft(); SFX.sieg(); }
+function szenenText(i){
+  return SZENEN[i].txt!==null ? SZENEN[i].txt : JUNGE+' IST DABEI';
+}
+function levelGeschafft(){
+  STAND.crewDazu(JUNGE);
+  STAND.durch(NR);
+  STAND.pegelSetzen(S.pegel);
+  /* Gezaehlt wird hier nicht die Zeit - die Fahrt ist immer gleich lang.
+     Was zaehlt, ist wie oft sie dich drangekriegt haben. */
+  S.neueBestzeit=STAND.bestSetzen(NR,S.kontrollen);
+  levelleiste();
+}
+function cutscene(dt){
+  if(aktionGehalten){ S.skipT+=dt; if(S.skipT>.7){ S.modus='ende'; S.gewonnen=true; return; } }
+  else S.skipT=0;
+  S.szeneT+=dt;
+  if(S.szeneT>=SZENEN[S.szene].d){
+    S.szene++; S.szeneT=0;
+    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; }
+  }
+}
+
+/* ==========================================================================
+   ZEICHNEN
+   ========================================================================== */
+function draw(dt){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle='#05080c'; ctx.fillRect(0,0,W,H);
+  if(S.modus==='titel'){ titelbild(); nachbrenner(); return; }
+  if(S.modus==='intro'){ zeichneIntro(); nachbrenner(); return; }
+  if(S.modus==='cutscene'){ zeichneCutscene(); bildschirme(); nachbrenner(); return; }
+
+  /* Ruettelt der Bus, ruettelt das Bild mit. Der Pegel legt noch was drauf. */
+  const wack = S.pegel>TUNE.wackelAb ? Math.sin(S.t*2.4)*(S.pegel-TUNE.wackelAb)*.05 : 0;
+  const rx = S.ruettel>0 ? (Math.random()-.5)*S.ruettel*4 : 0;
+  const ry = S.ruettel>0 ? (Math.random()-.5)*S.ruettel*3 : 0;
+  ctx.save();
+  ctx.translate(Math.round(rx+wack), Math.round(ry));
+
+  const k=Math.round(S.kamX);
+  zeichneStadt(k);
+  zeichneBus(k);
+  zeichneSteig(k);
+  zeichneLeute(k);
+  zeichneSpieler(k);
+  ctx.restore();
+
+  hud();
+  bildschirme();
+  nachbrenner();
+}
+function nachbrenner(){
+  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.22).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+}
+
+/* ---- Die Stadt hinter den Fenstern ----
+   Drei Ebenen mit verschiedenem Tempo. Das ist das ganze Gefuehl von
+   "der Bus faehrt" - drinnen bewegt sich sonst nichts. */
+function zeichneStadt(){
+  ctx.drawImage(verlauf('himmel',1,50,g=>{
+    const gr=g.createLinearGradient(0,0,0,50);
+    gr.addColorStop(0,'#0d1424'); gr.addColorStop(.55,'#1a1b30'); gr.addColorStop(1,'#2e2242');
+    g.fillStyle=gr; g.fillRect(0,0,1,50); }),0,26,W,50);
+  const lauf=S.strecke;
+  const rollen=(schritt,tempo,breite)=>{
+    const spanne=W+breite*2;
+    return i=>((i*schritt-lauf*tempo)%spanne+spanne)%spanne-breite;
+  };
+  /* Hintere Reihe - weit weg, kaum Bewegung */
+  const r1=rollen(79,.20,60);
+  for(let i=0;i<20;i++){ const bx=r1(i), bh=18+((i*29)%28);
+    ctx.fillStyle='#1c2338'; ctx.fillRect(Math.round(bx),76-bh,26,bh); }
+  /* Vordere Reihe - dunkler, schneller, ein paar Fenster brennen noch */
+  const r2=rollen(61,.48,50);
+  for(let i=0;i<22;i++){ const bx=r2(i), bh=12+((i*37)%22);
+    ctx.fillStyle='#0f1522'; ctx.fillRect(Math.round(bx),76-bh,20,bh);
+    ctx.fillStyle='#1a2334'; ctx.fillRect(Math.round(bx),76-bh,20,1);
+    for(let f=0;f<4;f++){ if((i*7+f*5)%4) continue;
+      ctx.fillStyle=(i+f)%3?'#c8a24a':'#6f9a55';
+      ctx.fillRect(Math.round(bx)+3+f*5,76-bh+4,2,2); } }
+  /* Laternen ganz vorn - die ziehen richtig durch */
+  const r3=rollen(104,1.15,70);
+  for(let i=0;i<12;i++){ const lx=Math.round(r3(i));
+    ctx.fillStyle='#33405a'; ctx.fillRect(lx,32,1,44);
+    ctx.fillStyle='#ffe08a'; ctx.fillRect(lx-1,30,3,2);
+    ctx.globalAlpha=.13; ctx.fillStyle='#ffe08a'; ctx.fillRect(lx-4,30,9,12); ctx.globalAlpha=1; }
+}
+
+/* ---- Der Bus ---- */
+function zeichneBus(k){
+  const v = Math.round(S.ruckVersatz);   // beim Ruckeln kippt der Innenraum
+
+  /* --- Decke, Roehren, Werbeleiste --- */
+  ctx.fillStyle='#202c3a'; ctx.fillRect(0,14,W,12);
+  ctx.fillStyle='#2f4054'; ctx.fillRect(0,25,W,1);
+  for(let x=-((k%64)+64)%64;x<W;x+=64){
+    ctx.fillStyle='#e8f2ff'; ctx.fillRect(x+10,16,28,2);
+    ctx.globalAlpha=.07; ctx.fillStyle='#cfe3ff'; ctx.fillRect(x+3,18,42,30); ctx.globalAlpha=1;
+  }
+
+  /* --- Fensterband --- */
+  ctx.fillStyle='#33465a'; ctx.fillRect(0,26,W,4);
+  ctx.fillStyle='#2b3a4c'; ctx.fillRect(0,76,W,6);
+  ctx.fillStyle='#3f5771'; ctx.fillRect(0,76,W,1);
+  for(let i=0;i<16;i++){ const px=Math.round(i*52-k);
+    if(px<-6||px>W) continue;
+    ctx.fillStyle='#33465a'; ctx.fillRect(px,26,3,56);
+    ctx.fillStyle='#48607c'; ctx.fillRect(px,26,1,56); }
+  /* Spiegelung auf der Scheibe - eine schraege Bahn, sonst wirkt es wie ein Loch */
+  ctx.globalAlpha=.05; ctx.fillStyle='#cfe3ff';
+  for(let i=0;i<W+50;i+=50) ctx.fillRect(i-((k*.4)%50),30,14,46);
+  ctx.globalAlpha=1;
+
+  /* --- Innenwand unter den Fenstern --- */
+  ctx.fillStyle='#26364a'; ctx.fillRect(0,82,W,BUSBODEN-82);
+  ctx.fillStyle='#1c2939'; ctx.fillRect(0,BUSBODEN-6,W,6);
+  /* Haltestangen laengs an der Wand */
+  ctx.fillStyle='#6d7f96'; ctx.fillRect(0,86,W,1);
+
+  /* --- Sitzbaenke --- */
+  for(const [a,b] of BAENKE){
+    if(b-k<-8||a-k>W) continue;
+    /* Sockel */
+    ctx.fillStyle='#1e2a38'; ctx.fillRect(Math.round(a-k),BUSBODEN-8,b-a,8);
+    for(let x=a;x<b;x+=8){ const px=Math.round(x-k+v*.3);
+      if(px<-8||px>W) continue; sprite(SPR.sitz,px,BUSBODEN-14); }
+    /* Armlehne links und rechts */
+    ctx.fillStyle='#9fb0c8';
+    ctx.fillRect(Math.round(a-k),BUSBODEN-15,1,9);
+    ctx.fillRect(Math.round(b-k)-1,BUSBODEN-15,1,9);
+  }
+
+  /* --- Haltestangen und Griffe --- */
+  for(const st of STANGEN){ const px=Math.round(st-k+v*.3);
+    if(px<-4||px>W) continue;
+    ctx.fillStyle='#b9c8dc'; ctx.fillRect(px,26,2,BUSBODEN-26);
+    ctx.fillStyle='#6c7c93'; ctx.fillRect(px+2,26,1,BUSBODEN-26);
+    sprite(SPR.griff,px-1,32);
+  }
+
+  /* --- Der Faltenbalg in der Mitte - hier knickt der Bus --- */
+  const gx=Math.round(GELENK-k);
+  if(gx>-24&&gx<W+24){
+    for(let i=0;i<8;i++){
+      ctx.fillStyle=i%2?'#141d2a':'#28374a';
+      ctx.fillRect(gx-16+i*4,26,4,BUSBODEN-26);
+    }
+    ctx.fillStyle='#3f5771'; ctx.fillRect(gx-17,26,1,BUSBODEN-26); ctx.fillRect(gx+16,26,1,BUSBODEN-26);
+  }
+
+  /* --- Fahrerkabine --- */
+  const kx=Math.round(KABINE-k);
+  if(kx>-60){
+    ctx.fillStyle='#141d29'; ctx.fillRect(0,26,Math.max(0,kx),BUSBODEN-26);
+    ctx.fillStyle='#3f5771'; ctx.fillRect(kx-3,26,3,BUSBODEN-26);
+    ctx.fillStyle='#2f4054'; ctx.fillRect(kx-28,BUSBODEN-26,22,12);
+    ctx.fillStyle='#5a7ea0'; ctx.fillRect(kx-28,BUSBODEN-26,22,1);
+    sprite(SPR.gast1,kx-26,BUSBODEN-39);
+  }
+
+  /* --- Der Boden --- */
+  ctx.fillStyle=P.boden; ctx.fillRect(0,BUSBODEN,W,26);
+  ctx.fillStyle=P.bodenKante; ctx.fillRect(0,BUSBODEN,W,1);
+  /* Riffelblech, damit der Boden nicht wie eine Flaeche liegt */
+  ctx.fillStyle='#121a24';
+  for(let x=-((k%6)+6)%6;x<W;x+=6) ctx.fillRect(x,BUSBODEN+2,1,3);
+
+  /* --- Aussenhaut unter dem Boden, mit Zierstreifen und Liniennummer --- */
+  ctx.fillStyle='#1b2733'; ctx.fillRect(0,BUSBODEN+6,W,STEIG-BUSBODEN-2);
+  ctx.fillStyle='#c8324a'; ctx.fillRect(0,BUSBODEN+10,W,2);
+  ctx.fillStyle='#0f1620'; ctx.fillRect(0,BUSBODEN+12,W,1);
+  { const nx=Math.round(196-k);
+    if(nx>-30&&nx<W) text('N7  CLUBLINIE',nx,BUSBODEN+16,'#54687e'); }
+
+  /* --- Tueren --- */
+  for(const t of TUEREN){
+    const px=Math.round(t-k);
+    if(px<-20||px>W+20) continue;
+    const auf=Math.round(S.tuer*7);
+    ctx.fillStyle='#0b1219'; ctx.fillRect(px-9,82,18,BUSBODEN-82+8);
+    ctx.fillStyle='#2f4054';
+    ctx.fillRect(px-9,82,9-auf,BUSBODEN-82); ctx.fillRect(px+auf,82,9-auf,BUSBODEN-82);
+    ctx.fillStyle='#6d8aa8';
+    ctx.fillRect(px-9,82,1,BUSBODEN-82); ctx.fillRect(px+8,82,1,BUSBODEN-82);
+    ctx.fillRect(px-9-auf+8,82,1,BUSBODEN-82);
+    ctx.fillStyle='#3f5771'; ctx.fillRect(px-10,80,20,2);
+    if(S.tuer>.6){
+      /* Licht faellt raus auf den Steig */
+      ctx.globalAlpha=.18; ctx.fillStyle='#cfe3ff';
+      ctx.fillRect(px-8,BUSBODEN,16,STEIG-BUSBODEN+10); ctx.globalAlpha=1;
+      const rest=TUNE.haltDauer-S.phaseT;
+      if(rest<TUNE.tuerZuWarnung&&Math.floor(S.t*8)%2===0){
+        ctx.fillStyle=P.rot; ctx.fillRect(px-10,78,20,2);
+      }
+    }
+  }
+
+  /* --- Der Fahrschein liegt auf dem Boden --- */
+  if(!S.schein){
+    const px=Math.round(S.scheinBei-k);
+    if(px>-8&&px<W){
+      if(Math.floor(S.t*3)%2===0){ ctx.globalAlpha=.45; ctx.fillStyle='#fff';
+        ctx.fillRect(px-3,BUSBODEN-7,11,7); ctx.globalAlpha=1; }
+      sprite(SPR.schein,px,BUSBODEN-6);
+    }
+  }
+}
+
+/* ---- Strasse und Buergersteig vor dem Bus ---- */
+function zeichneSteig(k){
+  /* Raeder haengen unter dem Wagenkasten und stehen auf der Strasse.
+     Sie liegen bewusst zwischen den Tueren - vor einer Tuer haette man
+     draussen sonst ein schwarzes Rad im Ruecken. */
+  for(const rx of RAEDER){ const px=Math.round(rx-k);
+    if(px<-30||px>W) continue;
+    const y=BUSBODEN+16, h=STEIG-y;
+    ctx.fillStyle='#080c12'; ctx.fillRect(px+2,y,20,h);        // Reifen
+    ctx.fillStyle='#0e141c'; ctx.fillRect(px,y+3,24,h-6);      // breite Mitte
+    ctx.fillStyle='#2a3a4a'; ctx.fillRect(px+8,y+h/2-3,8,6);   // Felge
+    ctx.fillStyle='#4a6076'; ctx.fillRect(px+11,y+h/2-1,2,2);  // Nabe
+    /* Radkasten im Blech darueber */
+    ctx.fillStyle='#141d29'; ctx.fillRect(px+1,BUSBODEN+12,22,5);
+  }
+  if(S.phase==='halt'&&S.tempo<.25){
+    /* Steht der Bus, steht auch alles davor. */
+    ctx.fillStyle='#1c2532'; ctx.fillRect(0,STEIG,W,H-STEIG);
+    ctx.fillStyle='#33455a'; ctx.fillRect(0,STEIG,W,1);
+    for(let x=-((k%22)+22)%22;x<W;x+=22){ ctx.fillStyle='#121a24'; ctx.fillRect(x,STEIG+1,1,H-STEIG); }
+    for(const t of TUEREN){ const px=Math.round(t-k);
+      if(px<-10||px>W) continue; sprite(SPR.schild,px+18,STEIG-21); }
+    const mx=Math.round(TUEREN[1]-k-40); if(mx>-8&&mx<W) sprite(SPR.muell,mx,STEIG-6);
+  } else {
+    /* Waehrend der Fahrt rauscht der Asphalt durch. Je schneller der Bus,
+       desto laenger die Striche. */
+    ctx.fillStyle='#12181f'; ctx.fillRect(0,STEIG,W,H-STEIG);
+    ctx.fillStyle='#1e2833'; ctx.fillRect(0,STEIG,W,1);
+    const lauf=S.strecke*3.2, lang=4+Math.round(S.tempo*16);
+    for(let i=0;i<34;i++){
+      const spanne=W+70;
+      const px=((i*38-lauf)%spanne+spanne)%spanne-35;
+      const y=STEIG+3+((i*13)%16);
+      ctx.fillStyle=i%4===0?'#2c3947':'#191f28';
+      ctx.fillRect(Math.round(px),y,i%4===0?lang:Math.max(2,lang>>1),1);
+    }
+  }
+}
+
+/* ---- Fahrgaeste, Kontrolleure, der Lange ---- */
+function zeichneLeute(k){
+  const v=S.ruckVersatz;
+  for(const g of GAESTE){
+    const px=g.x-k+v*.5; if(px<-14||px>W) continue;
+    const rows=SPR[g.art];
+    const y=BUSBODEN-rows.length + (g.art==='sitzer'?-6:0);
+    /* Stehende schwanken mit dem Bus mit. */
+    const s=g.art==='sitzer'?0:Math.sin(S.t*1.6+g.x)*.8+v*.3;
+    outline(rows,px+s,y,1,.45); sprite(rows,px+s,y);
+  }
+  /* Der Lange */
+  {
+    const px=LANGE_X-k+v*.5;
+    if(px>-14&&px<W){
+      const rows=SPR.lange, y=BUSBODEN-rows.length;
+      outline(rows,px,y,1,.6); sprite(rows,px,y);
+      if(!S.reden&&Math.abs(LANGE_X-S.x)<TUNE.reichweite+4&&!S.draussen)
+        text('E',Math.round(px)+2,y-8,P.gold);
+      const lx=klemm(Math.round(px)-Math.round((textW(JUNGE)-7)/2),2,W-textW(JUNGE)-2);
+      text(JUNGE,lx,y-16,P.neon);
+    }
+  }
+  /* Die zwei in Blau */
+  for(const kk of S.kk){
+    const px=kk.x-k+v*.5; if(px<-16||px>W) continue;
+    const geht=kk.warte<=0;
+    const rows=geht?SPR.kontrolleurGeh:SPR.kontrolleur;
+    const y=BUSBODEN-rows.length;
+    /* Wer nah dran ist, kriegt einen roten Schein - die Warnung muss
+       auch dann ankommen, wenn man gerade woanders hinguckt. */
+    const nah=Math.abs(kk.x-S.x)<40&&!S.draussen;
+    if(nah){ ctx.globalAlpha=.10+Math.sin(S.t*9)*.05; ctx.fillStyle=P.rot;
+      ctx.fillRect(Math.round(px)-18,80,38,BUSBODEN-80); ctx.globalAlpha=1; }
+    outline(rows,px,y,1,.7);
+    if(kk.blick<0) spriteFlip(rows,px,y); else sprite(rows,px,y);
+    if(kk.warte>0&&Math.floor(S.t*4)%2===0) text('?',Math.round(px)+3,y-7,P.gold);
+  }
+}
+
+/* ---- Du ---- */
+function zeichneSpieler(k){
+  const px=S.x-k, y=S.y;
+  let rows;
+  if(S.gestuerzt>0)      rows=SPR.sturz;
+  else if(S.haltend)     rows=SPR.halten;
+  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+  else                   rows=SPR.steh;
+  const oy=y-rows.length;
+  outline(rows,px-3,oy,1,.65);
+  if(S.blick<0&&rows!==SPR.sturz) spriteFlip(rows,px-3,oy); else sprite(rows,px-3,oy);
+
+  /* Vorwarnung: gleich reisst es dich. */
+  if(S.ruckWarn>0&&!S.draussen){
+    const an=Math.floor(S.t*10)%2===0;
+    if(an){
+      textGlowC('FESTHALTEN',BUSBODEN-46,P.rot,2);
+      const st=naechsteStange();
+      if(st!==null){ ctx.fillStyle=P.gold; ctx.fillRect(Math.round(st-k)-1,28,4,2); }
+    }
+  }
+  /* Steht man an einer Stange, ohne zu halten - zeig die Taste. */
+  else if(!S.draussen&&!S.haltend&&S.gestuerzt<=0&&naechsteStange()!==null
+          &&Math.floor(S.t*2)%2===0)
+    text('LEER',Math.round(px)-9,oy-8,P.dunkel);
+
+  /* An einer offenen Tuer: raus oder rein. */
+  const t=tuerBei(S.x);
+  if(t!==null&&S.tuer>.6&&S.gestuerzt<=0&&Math.floor(S.t*2)%2===0)
+    text(S.draussen?'E REIN':'E RAUS',Math.round(px)-10,oy-8,P.gruen);
+}
+
+/* ---- HUD ---- */
+function hud(){
+  /* Eigener dunkler Streifen. Ohne den liegt die Beschriftung genau auf
+     den Leuchtstoffroehren und ist nicht mehr zu lesen. */
+  ctx.fillStyle='#00000099'; ctx.fillRect(0,0,W,19);
+  ctx.fillStyle='#141c26'; ctx.fillRect(0,19,W,1);
+  /* Herzen */
+  for(let i=0;i<TUNE.leben;i++){
+    ctx.fillStyle=i<S.hp?P.rot:'#3a2030';
+    ctx.fillRect(6+i*9,6,3,2); ctx.fillRect(10+i*9,6,3,2);
+    ctx.fillRect(6+i*9,8,7,2); ctx.fillRect(7+i*9,10,5,1); ctx.fillRect(8+i*9,11,3,1);
+  }
+  /* Haltestellen als Kette - das ist der eigentliche Fortschritt */
+  const n=TUNE.halte, bx=Math.round(W/2-(n*10)/2);
+  for(let i=0;i<n;i++){
+    const da=i<S.halt;
+    ctx.fillStyle=da?P.gruen:(i===S.halt?P.gold:'#2a3444');
+    ctx.fillRect(bx+i*10,7,7,3);
+  }
+  const naechste=HALTE[Math.min(S.halt+ (S.phase==='halt'?0:1),HALTE.length-1)];
+  const lbl=(S.phase==='halt'?'HALT  ':'NAECHSTE  ')+naechste;
+  text(lbl,Math.round((W-textW(lbl))/2),13,S.halt>=TUNE.halte?P.gold:P.dim);
+
+  /* Uhr - laeuft pro Haltestelle */
+  const min=TUNE.startMinute+S.halt*TUNE.proHalt;
+  const uhr=String(Math.floor(min/60)%24).padStart(2,'0')+':'+String(Math.floor(min%60)).padStart(2,'0');
+  text(uhr,W-textW(uhr)-6,6,P.neon2);
+
+  /* Pegel - nur wenn ueberhaupt einer da ist */
+  if(S.pegel>1){
+    ctx.fillStyle='#241a2c'; ctx.fillRect(6,15,48,3);
+    ctx.fillStyle=S.pegel>TUNE.sturzAufschlag?P.rot:P.neon;
+    ctx.fillRect(6,15,Math.round(48*S.pegel/100),3);
+  }
+  /* Fahrschein in der Tasche */
+  if(S.schein){ sprite(SPR.schein,W-16,14); }
+
+  /* Der Countdown der Tuer - ohne den ist der Halt nicht lesbar */
+  if(S.phase==='halt'){
+    const rest=Math.max(0,TUNE.haltDauer-S.phaseT);
+    const b=Math.round(46*rest/TUNE.haltDauer);
+    ctx.fillStyle='#1a2430'; ctx.fillRect(Math.round(W/2-23),H-3,46,2);
+    ctx.fillStyle=rest<TUNE.tuerZuWarnung?P.rot:P.gruen;
+    ctx.fillRect(Math.round(W/2-23),H-3,b,2);
+  }
+
+  if(S.meldungT>0) textC(S.meldung,94,P.weiss);
+  if(S.hinweisT>0){ const b=textW(S.hinweis)+6;
+    ctx.fillStyle='#000000bb'; ctx.fillRect(Math.round((W-b)/2),H-11,b,7);
+    textC(S.hinweis,H-10,P.gold); }
+
+  /* Gespraech */
+  if(S.reden){
+    const z=S.reden[S.redeZeile];
+    ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-40,W,40);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
+    text(z[0],6,H-33,z[0]==='DU'?P.neon2:P.gold);
+    textC(z[1],H-22,P.weiss);
+    if(Math.floor(S.t*2)%2===0) text('E',W-12,H-10,P.dunkel);
+  }
+}
+
+/* ---- Bildschirme ---- */
+function titelbild(){
+  ctx.fillStyle='#05080c'; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<46;i++){ ctx.fillStyle=i%6===0?'#1e3040':'#101a22';
+    ctx.fillRect((i*71)%W,(i*59)%H,1,1); }
+  textGlowC('DER NACHTBUS',22,P.neon,3);
+  textC('LEVEL 3 - SECHS HALTESTELLEN',44,P.dim);
+  const zeilen=['ZWEI IN BLAU GEHEN DURCH DEN BUS','DER BODEN BREMST, WANN ER WILL','AM CLUB MUSST DU RAUS'];
+  zeilen.forEach((z,i)=>textC(z,64+i*10,i===2?P.gold:P.weiss));
+  const st=[['A D','LAUFEN'],['LEER','AN DER STANGE FESTHALTEN'],['E','TUER, FAHRSCHEIN, REDEN']];
+  st.forEach((z,i)=>{ text(z[0],56,104+i*9,P.gold); text(z[1],92,104+i*9,P.dim); });
+  const crew=STAND.crew();
+  if(crew.length) textC('DABEI: '+crew.join(', '),138,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-24,P.weiss,1);
+  textC('TASTE 1-'+LEVELS.length+' WAEHLT DAS LEVEL',H-14,P.dunkel);
+  zeichneLevelwahl(H-7,NR);
+}
+function zeichneIntro(){
+  ctx.fillStyle='#06090f'; ctx.fillRect(0,0,W,H);
+  const m=Math.round(W/2);
+  /* Nachts an der Haltestelle. Der Bus kommt gerade um die Ecke. */
+  ctx.fillStyle='#0c131c'; ctx.fillRect(0,40,W,92);
+  ctx.fillStyle='#141d28'; ctx.fillRect(0,132,W,H-132);
+  ctx.fillStyle='#242f3d'; ctx.fillRect(0,132,W,1);
+  for(let i=0;i<9;i++){ const bx=(i*47)%W;
+    ctx.fillStyle='#0f1721'; ctx.fillRect(bx,60+((i*13)%20),34,72); }
+  /* Scheinwerfer von rechts, wandert langsam rein */
+  const an=Math.min(1,S.szeneT/1.6);
+  ctx.globalAlpha=.10+an*.14;
+  ctx.drawImage(verlauf('scheinwerfer',180,110,g=>{
+    const gr=g.createRadialGradient(170,60,4,170,60,150);
+    gr.addColorStop(0,'rgba(255,235,180,1)'); gr.addColorStop(1,'rgba(255,235,180,0)');
+    g.fillStyle=gr; g.fillRect(0,0,180,110); }), W-170, 34);
+  ctx.globalAlpha=1;
+  sprite(SPR.schild,m+56,111);
+  sprite(SPR.steh,m-30,132-13);
+  sprite(SPR.gast1,m-14,132-13);
+  sprite(SPR.gast2,m+4,132-13);
+  ctx.drawImage(verlauf('introvig',W,H,g=>{
+    const gr=g.createRadialGradient(m,80,40,m,80,W*.6);
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.82)');
+    g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-38,W,38);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
+  if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
+  if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+}
+function zeichneCutscene(){
+  ctx.fillStyle='#07060d'; ctx.fillRect(0,0,W,H);
+  const m=Math.round(W/2);
+  /* Vor dem Club: Fassade, Leuchtschrift, die Schlange. */
+  ctx.fillStyle='#141020'; ctx.fillRect(0,30,W,102);
+  ctx.fillStyle='#1d1730'; ctx.fillRect(m-70,30,140,102);
+  const puls=Math.sin(S.t*4)*.5+.5;
+  ctx.globalAlpha=.2+puls*.25;
+  ctx.drawImage(verlauf('clubschein',200,120,g=>{
+    const gr=g.createRadialGradient(100,20,4,100,20,100);
+    gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
+    g.fillStyle=gr; g.fillRect(0,0,200,120); }),m-100,26);
+  ctx.globalAlpha=1;
+  textGlowC('CLUB',44,P.neon,2);
+  ctx.fillStyle='#0f0c18'; ctx.fillRect(m-16,86,32,46);
+  ctx.fillStyle='#241c38'; ctx.fillRect(m-14,88,28,44);
+  ctx.fillStyle='#191426'; ctx.fillRect(0,132,W,H-132);
+  ctx.fillStyle='#2d2444'; ctx.fillRect(0,132,W,1);
+  /* Die Schlange - kommt in Level 4 dran */
+  for(let i=0;i<7;i++){
+    const rows=[SPR.gast1,SPR.gast2,SPR.gast3][i%3];
+    sprite(rows,m+26+i*14,132-rows.length,1,'#1a2030');
+  }
+  /* Ihr, von links */
+  const rein=Math.min(1,S.szeneT/1.2);
+  sprite(SPR.steh, m-64+rein*6, 132-13);
+  if(S.szene>=2) sprite(SPR.lange, m-84+rein*6, 132-16);
+  ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
+  const s=SZENEN[S.szene];
+  if(s) textC(szenenText(S.szene),H-26,P.weiss);
+}
+function bildschirme(){
+  if(S.modus==='pause'){
+    ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
+    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+  }
+  if(S.modus==='cutscene'&&Math.floor(S.t*2)%2===0)
+    text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+  if(S.modus==='ende'){
+    ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
+    if(S.gewonnen){
+      textGlowC('LEVEL 3 GESCHAFFT',34,P.gold,2);
+      textC('IHR STEHT VOR DEM CLUB',56,P.weiss);
+      textC('KONTROLLEN  '+S.kontrollen,74,S.neueBestzeit?P.gold:P.dim);
+      if(S.neueBestzeit) textC('SO WENIG WIE NIE',84,P.gold);
+      else { const b=STAND.best(NR);
+        if(b!==null) textC('BESTE FAHRT  '+b,84,P.dunkel); }
+      textC('HERZEN UEBRIG  '+S.hp,96,P.dim);
+      const crew=STAND.crew();
+      if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
+      const n=naechstesLevel(NR);
+      if(n&&Math.floor(S.t*2)%2===0)
+        textGlowC('E  WEITER ZU LEVEL '+n.nr+' - '+n.kurz,130,P.gruen,1);
+      else if(!n&&Math.floor(S.t*2)%2===0)
+        textC('LEVEL 4 - DIE SCHLANGE - FOLGT',130,P.dunkel);
+    } else {
+      textGlowC('ENDSTATION',48,P.rot,3);
+      textC(S.faenger||'',74,P.weiss);
+      textC('HALTESTELLEN  '+S.halt+' VON '+TUNE.halte,92,P.dim);
+    }
+    if(Math.floor(S.t*2)%2===0) textC('LEERTASTE FUER NEUSTART',H-18,P.gold);
+  }
+}
+
+/* ==========================================================================
+   SCHLEIFE
+   ========================================================================== */
+let letzte=performance.now();
+function bild(jetzt){
+  const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
+  update(dt); draw(dt);
+  requestAnimationFrame(bild);
+}
+requestAnimationFrame(bild);
+</script>
+</body>
+</html>

@@ -218,11 +218,13 @@ function ladeStand(){
   let s=null;
   try{ s=JSON.parse(localStorage.getItem(STAND_KEY)); }catch(e){}
   if(!s||typeof s!=='object') s=alterStand();
+  const pegel=parseFloat(s.pegel);
   return {
     crew:      Array.isArray(s.crew)?s.crew:[],
     offen:     Array.isArray(s.offen)&&s.offen.length?s.offen:[1],
     geschafft: Array.isArray(s.geschafft)?s.geschafft:[],
     best:      (s.best&&typeof s.best==='object')?s.best:{},
+    pegel:     isFinite(pegel)?pegel:0,
   };
 }
 function sichereStand(s){ try{ localStorage.setItem(STAND_KEY,JSON.stringify(s)); }catch(e){} }
@@ -237,6 +239,10 @@ const STAND = {
   bestSetzen(nr,zeit){ const s=ladeStand(); const alt=parseFloat(s.best[nr]);
     if(isFinite(alt)&&alt<=zeit) return false;
     s.best[nr]=zeit; sichereStand(s); return true; },
+  /* Der Pegel laeuft ueber die Level hinweg weiter - man wird ja nicht
+     zwischen zwei Levels nuechtern. */
+  pegel(){ return ladeStand().pegel; },
+  pegelSetzen(v){ const s=ladeStand(); s.pegel=klemm(v,0,100); sichereStand(s); },
   offen(nr){ return ladeStand().offen.includes(nr); },
   geschafft(nr){ return ladeStand().geschafft.includes(nr); },
   /* Level durch: merken und das naechste aufmachen. */
