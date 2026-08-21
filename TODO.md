@@ -46,6 +46,11 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       kannst — das kommt mit dem Kampfsystem aus `runner.html`
 - [ ] Statisten haben nur eine Steh-Pose, das Wippen kommt aus dem Sinus
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+      *Wartet auf Dich:* Level 3 soll wie die anderen einen aus der Crew
+      bringen. Wer das ist und wie er drauf ist, steht nirgends — das kommt
+      vom Nick. Der Platz dafür ist da: `bringt:'…'` in `LEVELS`
+      (`spielstand.js`), dann macht der Rest sich von selbst.
+      Ebenfalls offen: welche Fähigkeit er gibt.
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -98,9 +103,24 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] **Levelliste in eine eigene Struktur** — `spielstand.js` kennt als
+      einzige Stelle alle Level. Ein neues Level ist eine Zeile in `LEVELS`;
+      Levelleiste, Levelwahl, Zahlentasten und der Weiter-Knopf richten sich
+      danach. Ungebaute Level stehen als gestrichelter Eintrag da
+- [x] **Spielstand speichern** — ein Schlüssel `nachtschicht.stand` mit
+      `{ frei, crew, zeiten }`. Alte Einzelschlüssel werden übernommen,
+      kaputte Daten geprüft und verworfen. `?alle=1` öffnet zum Testen alles
+- [x] **Übergänge zwischen den Leveln** — Level 1 versprach im Bild
+      „E WEITER ZU LEVEL 2", startete aber neu: der Fall stand unter dem
+      allgemeinen Ende-Fall und war nie erreichbar. Level 2 sprang stur
+      zurück nach Level 1. Beides geht jetzt über die Levelliste
+- [ ] Der **Inhalt** eines Levels ist weiter Code — Räume, Möbel und Leute
+      liegen zwar als Daten in der jeweiligen Datei, aber Zeichnen und Regeln
+      hängen daran. Ein Level ohne eine Zeile Code gibt es noch nicht
+- [ ] Der geteilte Unterbau (Font, Bild-Cache, Audio, Eingabe, Vollbild) liegt
+      dreimal fast gleich in `index.html`, `level2.html` und `runner.html`.
+      Vor Level 3 wäre das der richtige Zeitpunkt, ihn neben `spielstand.js`
+      zu legen
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -145,3 +165,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Vollständige Spielanleitung im README
 - [x] Wohnung voller Statisten, vier Angriffsmuster für den Kracher,
       Pegel greift in den Klang der Musik
+- [x] Gemeinsamer Spielstand, Levelliste an einer Stelle, Level schalten
+      sich der Reihe nach frei

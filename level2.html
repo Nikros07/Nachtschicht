@@ -46,14 +46,18 @@
   /* Levelauswahl als echte Links - funktioniert ohne Tastatur-Fokus
      und am Handy. */
   #levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
-  #levelbar a { flex:1; text-align:center; text-decoration:none;
+  #levelbar a, #levelbar span { flex:1; text-align:center; text-decoration:none;
     font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
     color:#8d86a8; background:rgba(255,255,255,.04);
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
-  #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  #levelbar .aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Gesperrt oder noch nicht gebaut: sichtbar, damit man weiss, dass es
+     weitergeht - aber kein Knopf, der ins Leere fuehrt. */
+  #levelbar .zu { color:#3d3758; border-style:dashed; border-color:#241e3c;
+    background:none; cursor:default; }
   html.touch #levelbar { padding:6px 8px; }
-  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  html.touch #levelbar a, html.touch #levelbar span { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
@@ -83,15 +87,15 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
-  </div>
+  <div id="levelbar"><!-- wird aus LEVELS gebaut, siehe spielstand.js --></div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="spielstand.js"></script>
 <script>
+const DIESES_LEVEL = 2;
+baueLevelleiste(DIESES_LEVEL);
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
 
@@ -583,13 +587,12 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Crew und Bestzeit liegen jetzt im gemeinsamen Spielstand, siehe
+   spielstand.js. Die alten Namen bleiben als duenne Huellen stehen. */
+const ladeCrew=()=>Spielstand.crew();
+const speichereCrew=n=>Spielstand.crewDazu(n);
+const ladeBest=()=>Spielstand.bestzeit(DIESES_LEVEL);
+const tempoBonus=()=>Spielstand.hatCrew('MAX FERDI')?1.15:1;
 
 /* ==========================================================================
    EINGABE
@@ -611,9 +614,17 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ weiterZumNaechsten(); return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
+}
+/* Weiter in die Nacht. Gibt es das naechste Level noch nicht, landet man auf
+   dem Titelbild - da steht die Leiste mit allem, was offen ist. Frueher ging
+   es von hier stur zurueck nach Level 1, was sich anfuehlte wie ein Rueckwaerts. */
+function weiterZumNaechsten(){
+  const n=Spielstand.naechstes(DIESES_LEVEL);
+  if(n){ location.href=n.datei; return; }
+  neuesSpiel();
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
@@ -623,8 +634,9 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-8]$/.test(e.code)){
+    e.preventDefault();
+    if(!wechsleZuLevel(parseInt(e.code.slice(-1),10),DIESES_LEVEL)) piep(170,.12,'sine',.045); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1057,10 +1069,10 @@ const SZENEN=[
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
 function levelGeschafft(){
-  speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  const l=Spielstand.level(DIESES_LEVEL);
+  if(l&&l.bringt) speichereCrew(l.bringt);
+  S.neueBestzeit=Spielstand.geschafft(DIESES_LEVEL,S.zeit);
+  baueLevelleiste(DIESES_LEVEL);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -1350,10 +1362,16 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  zeichneLevelwahl();
+}
+/* Levelwahl im Bild - im Vollbild ist die Leiste unter dem Bild weg, und
+   dann waere das hier der einzige Hinweis, dass die Nacht weitergeht. */
+function zeichneLevelwahl(){
+  const wahl=levelwahlZeilen(DIESES_LEVEL);
+  wahl.forEach((z,i)=>{
+    const y=H-5-(wahl.length-1-i)*6;
+    text(z.txt,(W-textW(z.txt))/2,y,z.hier?P.neon2:(z.offen?P.dunkel:'#2b2540'));
+  });
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
@@ -1405,8 +1423,11 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      const n=Spielstand.naechstes(DIESES_LEVEL);
+      const kommt=Spielstand.level(DIESES_LEVEL+1);
+      if(!n&&kommt) textC('LEVEL '+kommt.nr+' - '+kommt.name+'  FOLGT',124,P.dunkel);
+      if(Math.floor(S.t*2)%2===0)
+        textC(n?('E  WEITER  '+n.nr+' - '+n.name):'E  ZURUECK ZUM TITEL',136,P.dunkel);
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

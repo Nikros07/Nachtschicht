@@ -11,6 +11,22 @@ Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
 
 ---
 
+## Wie es weitergeht
+
+Die Nacht läuft der Reihe nach. Am Anfang ist nur **Level 1** offen; wer es
+schafft, macht das nächste auf. Unter dem Bild liegt eine Leiste mit allen
+Leveln — anklickbar, was offen ist, gestrichelt, was noch zu ist oder noch gar
+nicht existiert. Am Rechner geht auch die Zahlentaste.
+
+Gespeichert wird im Browser: welches Level offen ist, wer aus der Crew dabei
+ist, welche Bestzeiten stehen. Wer vorher schon gespielt hat, verliert nichts —
+der alte Stand wird beim ersten Start übernommen.
+
+Zum Ausprobieren: `?alle=1` an die Adresse hängen, dann sind alle gebauten Level
+offen, ohne dass der Spielstand angefasst wird.
+
+---
+
 # Spielanleitung
 
 ## Level 1 — Die Schule
@@ -146,6 +162,9 @@ Fenster, und ist Sportler. Ab dann läufst Du in jeder Runde **15 % schneller**.
 
 Die Cutscene lässt sich mit gedrücktem `E` überspringen. Freischaltung und
 Bestzeit zählen trotzdem.
+
+Auf dem Siegbild führt `E` direkt weiter ins nächste Level, `Leertaste` startet
+dieses hier nochmal.
 
 ---
 
@@ -287,9 +306,44 @@ Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 Die Wohnung liegt als Daten daneben: `ORTE`, `DINGE`, `LEUTE`, `AUFGABEN` und
 `STATISTEN`. Ein Statist ist eine Zeile — Platz, Sprite, Name, Sprüche.
 
+## Ein Level dazubauen
+
+`spielstand.js` ist die einzige Stelle, die alle Level kennt. Ganz oben steht
+die Liste:
+
+```js
+const LEVELS = [
+  { nr:1, datei:'index.html',  name:'DIE SCHULE',   uhr:'16:40', bringt:'MAX FERDI' },
+  { nr:2, datei:'level2.html', name:'BEI MORITZ',   uhr:'21:10', bringt:'MORITZ' },
+  { nr:3, datei:null,          name:'DER NACHTBUS', uhr:'22:00' },
+  …
+];
+```
+
+`datei: null` heißt „gibt es noch nicht" — das Level taucht dann als
+gestrichelter Eintrag auf, statt als toter Knopf. `bringt` ist der aus der Crew,
+den das Level freischaltet.
+
+Ein neues Level braucht drei Dinge:
+
+1. Die `datei` in `LEVELS` eintragen.
+2. `<script src="spielstand.js"></script>` vor das eigene Skript, darin
+   `const DIESES_LEVEL = <nr>;` und `baueLevelleiste(DIESES_LEVEL);`.
+3. Am Ende `Spielstand.geschafft(DIESES_LEVEL, S.zeit)` aufrufen — das schaltet
+   das nächste frei und gibt zurück, ob es eine neue Bestzeit war.
+
+Alles andere — Levelleiste, Levelwahl auf dem Titelbild, Zahlentasten,
+Weiter-Knopf auf dem Siegbild — richtet sich danach von selbst.
+
+Der Spielstand liegt unter einem einzigen Schlüssel (`nachtschicht.stand`) als
+`{ frei, crew, zeiten }`. Kaputte oder fremde Daten werden beim Laden geprüft
+und im Zweifel verworfen, statt das Spiel mitzunehmen.
+
 ## Lokal starten
 
-Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
+Doppelklick auf `index.html` reicht — `spielstand.js` liegt bewusst als
+klassisches Skript daneben und nicht als ES-Modul, weil der Browser Module
+unter `file://` blockieren würde. Wer lieber einen Server will:
 
 ```bash
 python -m http.server 5173
