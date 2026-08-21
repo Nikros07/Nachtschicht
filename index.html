@@ -328,7 +328,10 @@ const SPR = {
     '...qq.qq...','...qq.qq...','...pp.pp...','...pp.pp...','..kkk.kkk..',
   ],
 
-  /* Einrichtung */
+  /* Einrichtung. Zwanzig Arten fuer dreissig Plaetze - vorher waren es
+     sieben, und die Turnhalle stand voller Kisten wie jeder andere Raum.
+     Welche Art wo steht, ist reine Optik: gesucht wird ueber den Index,
+     der Typ entscheidet nur, wie es aussieht. */
   spind:  ['uuuuuu','u....u','u..k.u','u....u','uuuuuu','u....u','u..k.u','u....u','uuuuuu','dddddd'],
   tisch:  ['zzzzzzzz','z......z','dd....dd','d......d','d......d','d......d'],
   regal:  ['zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','ddddddd'],
@@ -336,6 +339,28 @@ const SPR = {
   tafel:  ['dddddddddd','dqqqqqqqqd','dq.q..qq.d','dqqqqqqqqd','dq..qq..qd','dqqqqqqqqd','dddddddddd'],
   pflanze:['..ggg..','.ggggg.','g.ggg.g','..ggg..','...z...','..zzz..','.zzzzz.'],
   kiste:  ['oooooo','o....o','o.oo.o','o....o','oooooo'],
+  /* Klassenzimmer */
+  stuhl:  ['zz....','zz....','zz....','zzzzzz','zz...z','.z...z','.z...z','.d...d'],
+  pult:   ['..zzzzzz.','.zzzzzzzz','.z......z','.z.zzzz.z','.z......z','.z......z','.z......z',
+           '.d......d','.d......d'],
+  globus: ['..ccc..','.ccccc.','ccgccgc','cgcccgc','.ccgcc.','..ccc..','...z...','...z...',
+           '..zzz..','.zzzzz.'],
+  /* Turnhalle */
+  bank:   ['zzzzzzzzzzzz','zzzzzzzzzzzz','.d........d.','.d........d.','.d........d.','.dd......dd.'],
+  matte:  ['.vvvvvvvv.','vvvvvvvvvv','vmmmmmmmmv','vvvvvvvvvv','.dddddddd.'],
+  /* Hausmeister */
+  leiter: ['..zz..','..zz..','.z..z.','.zzzz.','.z..z.','z....z','zzzzzz','z....z','z....z','d....d'],
+  werkbank:['..u..g..o..','zzzzzzzzzzz','zzzzzzzzzzz','d.........d','d.zzzzzzz.d','d.z.....z.d',
+            'd.zzzzzzz.d','d.........d'],
+  /* Buero, Lehrerzimmer, Chemie, Bibliothek */
+  kopierer:['.uuuuuuu.','.u.....u.','.ucccccu.','.u.....u.','.uuuuuuu.','.u.g...u.','.u.....u.',
+            '.uuuuuuu.','.u.....u.','.d.....d.'],
+  kaffee: ['.uuuu.','.u..u.','.ullu.','.u..u.','.uuuu.','.u..u.','.ubbu.','.uuuu.','.dddd.'],
+  schrank:['jjjjjjjj','j......j','j.g..g.j','j......j','jjjjjjjj','j......j','j.g..g.j','j......j',
+           'j......j','jjjjjjjj','dddddddd'],
+  becken: ['uuuuuuuu','u......u','u.cccc.u','u.cccc.u','uuuuuuuu','..u..u..','..u..u..','.dd..dd.'],
+  abfall: ['.w..w.','.dwwd.','dddddd','.d..d.','.d..d.','.d..d.','.dddd.'],
+  stapel: ['..vvvvv.','..vvvvv.','.ooooooo','.ooooooo','bbbbbbb.','bbbbbbb.','.dddddd.'],
   /* Tuerblatt muss gefuellt sein - sonst sieht man durch die Tuer die Wand */
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
@@ -464,19 +489,27 @@ const STIL = {
                 licht:'rgba(255,200,120,.12)', deko:'buecher', schild:'#d7a86e' },
   lehrer:     { wand:'#292233', kante:'#3d3350', boden:'#201a26', fenster:2,
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
+  /* Vier Klassenzimmer in genau einem Stil sahen aus wie ein Raum, den man
+     dreimal zu oft betritt. Gleiche Tafel an der Wand, andere Waende. */
+  klasseAlt:  { wand:'#2a2334', kante:'#40384f', boden:'#1c1720', fenster:1,
+                licht:'rgba(255,215,170,.11)', deko:'tafel',   schild:'#c9a9c0' },
+  klasseNeu:  { wand:'#1c2a34', kante:'#2e4451', boden:'#131c22', fenster:3,
+                licht:'rgba(190,225,255,.13)', deko:'tafel',   schild:'#8fd0d5' },
 };
 
+/* Die Zahl der Moebel pro Raum ist absichtlich unveraendert - dreissig
+   Suchplaetze, so viele wie vorher. Nur was dasteht, passt jetzt zum Raum. */
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['leiter','eimer','werkbank','kiste'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['bank','matte'] },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['kopierer','tisch','pflanze'] },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','stuhl','spind'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasseAlt',   moebel:['pult','tisch'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['becken','tisch','regal','abfall'] },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','stuhl','globus'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','stapel','tisch','regal'] },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['kaffee','tisch','schrank'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasseNeu',   moebel:['pult','stuhl'] },
 ];
 const AUSGANG = { e:0, x:648 };
 
@@ -1755,10 +1788,17 @@ function zeichneRaum(){
   ctx.fillStyle=st.wand;  ctx.fillRect(28,deckeY+2,W-56,bodenY-deckeY-2);
   ctx.fillStyle='#00000055'; ctx.fillRect(26,deckeY,W-52,2);
 
-  /* Fenster - Anzahl je Raum */
-  const nF=st.fenster;
+  /* Fenster - Anzahl je Raum.
+     In Tafelraeumen haengt die Tafel mittig an der Wand und deckte die
+     Fenster fast vollstaendig zu; sichtbar blieb ein blauer Streifen am
+     Rand. Dort gehen die Fenster deshalb abwechselnd nach links und rechts
+     an der Tafel vorbei nach aussen. */
+  const nF=st.fenster, nebenTafel=st.deko==='tafel';
   for(let i=0;i<nF;i++){
-    const fx=Math.round(W/2-(nF-1)*30-8+i*60);
+    const seite=i%2?1:-1, rang=Math.floor(i/2);
+    const fx=Math.round(nebenTafel
+      ? W/2+seite*(52+rang*36)-(seite<0?30:0)
+      : W/2-(nF-1)*30-8+i*60);
     ctx.fillStyle='#0d1730'; ctx.fillRect(fx,deckeY+12,30,24);
     ctx.fillStyle='#1d3a63'; ctx.fillRect(fx+1,deckeY+13,28,22);
     ctx.fillStyle='#2b5488'; ctx.fillRect(fx+1,deckeY+13,28,4);

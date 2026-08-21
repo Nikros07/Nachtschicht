@@ -89,6 +89,13 @@ Drinnen durchsuchst Du Möbel mit `E`. Die meisten sind leer, aber nicht alle:
 **Räume sind sicher.** Solange Du drin bist, kann Dich niemand sehen oder
 schnappen.
 
+**Jeder Raum sieht anders aus.** Neun Raumstile mit eigenen Wandfarben, Fenstern
+und Wanddeko, dazu zwanzig Möbelarten, die zum Raum passen: Leiter und Werkbank
+beim Hausmeister, Bank und Matte in der Turnhalle, Waschbecken in der Chemie,
+Kaffeemaschine im Lehrerzimmer, Bücherstapel in der Bibliothek. Auch die vier
+Klassenzimmer sind nicht dasselbe Zimmer — anderer Wandton, andere Fensterzahl,
+andere Einrichtung. Die Zahl der Suchplätze ist überall gleich geblieben: **30**.
+
 ---
 
 ## Wie Du nicht erwischt wirst
@@ -359,7 +366,7 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
-- Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+- Neun Raumstile mit eigenen Farben, Fenstern und Einrichtung, zwanzig Möbelarten
 
 ## Woran es sich orientiert
 

@@ -15,8 +15,16 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 **Offen geblieben (bewusst):**
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
-- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
-- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
+- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert) —
+      geht nur bei Dir, hier steht kein Gerät
+- [x] **Mehr Abwechslung in den Möbelarten selbst** — 20 Arten statt 7, jede
+      passend zum Raum. Die Turnhalle stand vorher voller Kisten wie jeder
+      andere Raum. Zahl der Suchplätze absichtlich unverändert bei 30, damit
+      sich an der Schwierigkeit nichts ändert
+- [x] Zwei zusätzliche Klassenzimmer-Stile — vier Räume in genau einem Stil
+      sahen aus wie derselbe Raum, den man dreimal zu oft betritt
+- [x] Fenster in Tafelräumen lagen hinter der Tafel; sichtbar blieb ein
+      blauer Streifen am Rand. Sie gehen jetzt seitlich an ihr vorbei
 
 ---
 
@@ -129,7 +137,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [x] Mehr Abwechslung in den Räumen — 20 Möbelarten, neun Raumstile
+      (siehe Level 1 oben). Offen bleibt Level 2: dort steht die Wohnung
+      noch auf zehn Möbeln, die sich in jeder Runde nur anders verteilen
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
@@ -167,3 +177,4 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
       Pegel greift in den Klang der Musik
 - [x] Gemeinsamer Spielstand, Levelliste an einer Stelle, Level schalten
       sich der Reihe nach frei
+- [x] Zwanzig Möbelarten und neun Raumstile in der Schule
