@@ -26,11 +26,25 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
+**Erledigt in Level 2:**
+
+- [x] Acht Statisten in der Wohnung, die nur rumstehen — einer redet auf einmal,
+      Pausen werden mit steigendem Pegel kürzer. Beim Druck auf `E` haben sie
+      die niedrigste Priorität, damit sie nie ein Möbel verdecken
+- [x] Der Kracher hat vier Angriffsmuster: Schwinger (kontern), tiefer Tritt
+      (springen), Finte (warten, dann kontern), Flasche (springen, Phase 2).
+      Konterfenster als goldenes Stück am Balken, Fehlschlag bestraft mit
+      halber Sekunde ohne Konter, ab der Hälfte Phase 2 mit höherem Tempo
+- [x] Musik reagiert auf den Pegel: lauter, verstimmt, schleppender Takt,
+      Übersteuerung und Tiefpass über einen eigenen Audio-Bus
+
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [ ] Der Kampf findet im Flur statt — die Statisten kriegen nichts davon mit.
+      Ein Ring aus Zuschauern wäre besser, braucht aber einen zweiten Kampfort
+- [ ] Blocken kann der Kracher nicht. Ergibt erst Sinn, wenn Du selbst angreifen
+      kannst — das kommt mit dem Kampfsystem aus `runner.html`
+- [ ] Statisten haben nur eine Steh-Pose, das Wippen kommt aus dem Sinus
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -70,9 +84,15 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      *(im Kracher von Level 2 als `whiffDauer` schon drin, muss beim
+      Zusammenführen mit übernommen werden)*
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      *(Level 2 nimmt bewusst die letzten 55 % — erster Kampf im Spiel.
+      Der Regler heißt dort `konterFenster`)*
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      *(Fernangriff und Phasenwechsel gibt es im Kracher schon als Vorlage:
+      Flaschenwurf mit Abstandnehmen, Phase 2 über `phase2Tempo`)*
 
 ---
 
@@ -123,3 +143,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Wohnung voller Statisten, vier Angriffsmuster für den Kracher,
+      Pegel greift in den Klang der Musik

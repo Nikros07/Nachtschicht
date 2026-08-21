@@ -180,6 +180,19 @@ werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 | **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
 | **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
 
+### Die anderen im Raum
+
+Die vier Jungs sind nicht die einzigen da. Über die Wohnung verteilt stehen
+noch acht Leute rum, die überhaupt nichts von Dir wollen: eine tanzt seit einer
+Stunde, zwei streiten sich im Wohnzimmer, einer kocht um halb zehn noch Nudeln,
+einer sitzt auf dem Küchenboden, einer zockt in Moritz' Zimmer noch eine Runde,
+und jemand wartet seit zehn Minuten aufs Bad.
+
+Immer nur einer redet auf einmal, und je höher Dein Pegel, desto kürzer werden
+die Pausen dazwischen — und desto weniger Inhalt haben die Sätze. Ansprechen
+kannst Du sie mit `E`, aber sie sagen genau einen Satz. Sie stehen bewusst
+nirgends im Weg: an einem Möbel gewinnt immer das Möbel.
+
 ### Der Pegel
 
 Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
@@ -192,12 +205,34 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst es auch.** Die Musik läuft über einen eigenen Weg, an dem der Pegel
+zieht: sie wird lauter, der Bass verstimmt sich, der Takt schleppt und eiert,
+und im oberen Drittel kommt Übersteuerung dazu, während ein Tiefpass alles
+zumacht. Bei Pegel 90 klingt das Vorglühen wie durch eine Wand. Geräusche —
+Schritte, Treffer, Warnungen — bleiben absichtlich klar.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel.
+
+Du hast genau zwei Antworten — `E` und **springen** — und er sagt vorher an,
+welche er sehen will. Der Balken über seinem Kopf ist die ganze Ansage:
+
+| Was er macht | Wie es aussieht | Was Du tust |
+|:--|:--|:--|
+| **Schwinger** | roter Balken mit goldenem Endstück | `E`, aber erst wenn der Balken im Gold ist |
+| **Tiefer Tritt** | blauer Balken, `SPRING` darüber | springen — `E` hilft hier nicht |
+| **Finte** | roter Balken, der zurückschnellt | nicht draufgehen. Danach kommt der echte Schlag, schnell |
+| **Flasche** | blauer Balken, erst in Phase 2 | springen, wenn sie ankommt |
+
+**Zu früh gedrückt ist ein Fehlschlag.** Dann hängt der Arm draußen, ein Konter
+geht eine halbe Sekunde lang nicht mehr — und der angesagte Schlag sitzt. Wer
+blind hämmert, verliert.
+
+Nach zwei Kontern kippt er in **Phase 2**: alles läuft schneller, und er fängt
+an, Flaschen zu werfen. Dafür geht er auf Abstand — aus Armlänge wäre eine
+Flasche nicht zu sehen. Viermal kontern, dann liegt er.
 
 ### Moritz
 
@@ -236,6 +271,21 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+`level2.html` hat einen eigenen `TUNE`-Block nach demselben Muster:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `proSchluck` · `pegelAbbau` | Wie schnell der Pegel steigt und fällt |
+| `mutAb` · `wackelnAb` · `langsamAb` · `blackoutBei` | Ab wann der Pegel was tut |
+| `windupSchwinger` · `windupTief` · `windupWurf` | Vorwarnzeit pro Angriffsmuster |
+| `windupFinte` · `finteStopp` · `windupFinte2` | Wie deutlich die Finte zu sehen ist |
+| `konterFenster` | Wie groß das goldene Stück am Balken ist |
+| `whiffDauer` | Wie teuer ein zu früher Druck ist |
+| `phase2Tempo` | Wie viel schneller die zweite Hälfte läuft |
+
+Die Wohnung liegt als Daten daneben: `ORTE`, `DINGE`, `LEUTE`, `AUFGABEN` und
+`STATISTEN`. Ein Statist ist eine Zeile — Platz, Sprite, Name, Sprüche.
 
 ## Lokal starten
 
