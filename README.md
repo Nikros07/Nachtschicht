@@ -356,20 +356,28 @@ In `level3.html` für `TUEREN`, `STANGEN`, `SITZE`, `HALTE`, `FAHRGAESTE` und
 
 ## Ein neues Level anlegen
 
-Jedes Level ist eine eigene HTML-Datei mit eigener Spiellogik. Was über Level
-hinweg gilt, steht in **`nacht.js`**: welche Level es gibt, wer aus der Crew
-dabei ist und was er kann, welches Level schon frei ist, die Bestzeiten und die
-Leiste unter dem Bildschirm.
+Jedes Level ist eine eigene HTML-Datei mit eigener Spiellogik. Daneben stehen
+zwei gemeinsame Dateien:
+
+| Datei | Was drin steht |
+|:--|:--|
+| **`nacht.js`** | Die Nacht: welche Level es gibt, wer aus der Crew dabei ist und was er kann, welches Level frei ist, Bestzeiten, Pegel, die Leiste unter dem Bildschirm |
+| **`kern.js`** | Der Unterbau: Schrift, Bild-Cache, Sprites, Text, Töne, Leinwand, Vollbild |
 
 Ein Level dazuzunehmen sind zwei Schritte:
 
 1. In `nacht.js` bei `LEVELS` die Zeile ergänzen (`datei` eintragen).
-2. Die Datei anlegen, `nacht.js` einbinden und `LEVEL_NR` setzen.
+2. Die Datei anlegen, beide Skripte einbinden, `kernStart({farben:{…}})`
+   aufrufen und `LEVEL_NR` setzen.
 
 Levelleiste, Tastenkürzel, Freischaltung und der Übergang vom Endbild ins
 nächste Level ergeben sich daraus von allein. Wer einen Jung mitbringt, trägt
 ihn bei `JUNGS` ein — mit seinem Bonus als Zahl, damit jedes Level ihn gleich
 auslegt.
+
+Was bewusst **nicht** geteilt wird: die Level-Inhalte und die Tastenbelegung.
+Räume mit Türen, eine Wohnung mit Aufgaben und ein fahrender Bus haben zu wenig
+gemeinsam, als dass ein einheitliches Format etwas sparen würde.
 
 ## Lokal starten
 
@@ -393,15 +401,30 @@ Anhängsel an der Adresse, die beim Entwickeln helfen:
 node werkzeug/smoke.mjs
 ```
 
-Startet beide Level in einem echten Browser, drückt Tasten und prüft, dass
+Startet alle drei Level in einem echten Browser, drückt Tasten und prüft, dass
 nichts kracht: Bewegung, Spielstand über den Levelwechsel hinweg, Übernahme
-alter Spielstände, und im Kampf, dass sauberes Kontern gewinnt und
-Durchhämmern Herzen kostet. Braucht Playwright (global reicht), sonst nichts —
-kein `npm install`, keine Abhängigkeit im Repo.
+alter Spielstände, im Kampf dass sauberes Kontern gewinnt und Durchhämmern
+Herzen kostet, im Bus das Festhalten, die Kontrolle mit und ohne Fahrschein,
+die Türen und beide Verlust-Enden.
+
+Für Umbauten, bei denen sich am Bild **nichts** ändern darf:
+
+```bash
+node werkzeug/bilder.mjs vorher     # vorher
+node werkzeug/bilder.mjs nachher    # danach - vergleicht Byte für Byte
+```
+
+Macht von jedem Level immer dieselben Bilder (Titel, Intro, Spiel, Kampf,
+Endbild) und sagt, welches sich verändert hat. Dafür werden Zufall und
+Bildschleife vorher festgenagelt.
+
+Beides braucht Playwright (global reicht), sonst nichts — kein `npm install`,
+keine Abhängigkeit im Repo.
 
 ## Technisch
 
 - 320 × 180 interne Auflösung, Breite wächst auf breiten Schirmen mit
+- Kein Build, kein Paketmanager, keine Abhängigkeit — Doppelklick reicht
 - Eigener 3×5-Bitmap-Font statt Browser-Schrift
 - Sprites, Konturen, Schrift und Farbverläufe werden einmal gebacken und danach
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
