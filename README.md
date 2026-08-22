@@ -192,18 +192,64 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+### Die Leute drumherum
+
+In der Wohnung stehen noch andere. Mit denen kannst Du nichts machen — sie
+reden, halten ihr Glas fest und wippen mit, je höher der Pegel steigt. Sie
+sind da, damit die Wohnung eine Wohnung ist und keine Aufgabenliste.
+
+Auch die Musik hängt am Pegel: nüchtern ein sauberer Basslauf, danach lauter,
+tiefer und schiefer. Ab der Hälfte kippt sie hörbar, ab dem Mutpegel liegt eine
+zweite Stimme drüber, die nicht stimmt.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Er holt sichtbar aus, über
+ihm läuft ein Balken. **Drück `E`, wenn der Balken den hellen Abschnitt am Ende
+erreicht** — dann wird er grün, und das ist Dein Konterfenster. Dreimal kontern,
+dann liegt er.
+
+**Er kann vier Sachen**, und sie kommen erst nach und nach dazu:
+
+| Was | Woran Du es siehst | Was Du tust |
+|:--|:--|:--|
+| **Schwerer Schlag** | roter Balken, langsam | fast das ganze Ausholen zählt — der Lernschlag |
+| **Schneller Schlag** | goldener Balken, kurz | nur das letzte Drittel zählt |
+| **Finte** | weißes `?`, schnelles Flackern | **nichts.** Wer drückt, fängt sich einen |
+| **Doppelschlag** | rotes `!!` | nach dem ersten kommt sofort ein zweiter, kürzerer |
+
+**Danebendrücken kostet.** Eine halbe Sekunde lang geht dann gar nichts, Du
+wirst blass, und sein Schlag sitzt. Durchhämmern funktioniert deshalb nicht —
+aber wer schon in der Erholung steckt, wird nicht noch einmal bestraft.
 
 ### Moritz
 
 Danach schließt sich Moritz an: dunkle Haare, etwas größer als Du, weiß-blaues
 Fußballtrikot, das er seit drei Tagen trägt. **Mit ihm läuft es besser mit den
 Chayas** — das wird im Club-Level wichtig.
+
+---
+
+---
+
+## Die Nacht geht weiter
+
+Jedes Level ist eine Stufe des Abends, und Du spielst sie in der Reihenfolge,
+in der der Abend passiert.
+
+- **Gewonnen heißt aufgeschlossen.** Wer Level 1 schafft, macht Level 2 auf.
+  Vorher steht Level 2 zwar in der Leiste unter dem Bildschirm, ist aber tot.
+- **`E` am Ende führt direkt weiter** ins nächste Level. `Leertaste` startet
+  dasselbe Level noch einmal.
+- **Die Jungs bleiben dabei.** Wen Du einmal freigespielt hast, den hast Du in
+  jedem Level — mit seiner Fähigkeit. Max Ferdi macht Dich überall 15 %
+  schneller.
+- **Bestzeiten** werden pro Level gemerkt.
+
+Das alles liegt im Browser, in einem einzigen Speicherstand. Kein Konto, keine
+Anmeldung — aber auch weg, wenn Du die Browserdaten löschst. Ältere Spielstände
+werden beim ersten Start übernommen.
 
 ---
 
@@ -236,6 +282,25 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+In `level2.html` gilt dasselbe für `ORTE`, `DINGE`, `LEUTE`, `STATISTEN`,
+`AUFGABEN` und `MUSTER` — letzteres sind die Angriffsmuster des Krachers.
+
+## Ein neues Level anlegen
+
+Jedes Level ist eine eigene HTML-Datei mit eigener Spiellogik. Was über Level
+hinweg gilt, steht in **`nacht.js`**: welche Level es gibt, wer aus der Crew
+dabei ist und was er kann, welches Level schon frei ist, die Bestzeiten und die
+Leiste unter dem Bildschirm.
+
+Ein Level dazuzunehmen sind zwei Schritte:
+
+1. In `nacht.js` bei `LEVELS` die Zeile ergänzen (`datei` eintragen).
+2. Die Datei anlegen, `nacht.js` einbinden und `LEVEL_NR` setzen.
+
+Levelleiste, Tastenkürzel, Freischaltung und der Übergang vom Endbild ins
+nächste Level ergeben sich daraus von allein. Wer einen Jung mitbringt, trägt
+ihn bei `JUNGS` ein — mit seinem Bonus als Zahl, damit jedes Level ihn gleich
+auslegt.
 
 ## Lokal starten
 
@@ -245,7 +310,25 @@ Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
 python -m http.server 5173
 ```
 
-Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+Anhängsel an der Adresse, die beim Entwickeln helfen:
+
+| Anhängsel | Wirkung |
+|:--|:--|
+| `?touch=1` | Handy-Steuerung am Rechner testen |
+| `?alles=1` | alle gebauten Level anklickbar, ohne den Spielstand zu ändern |
+| `?reset=1` | Spielstand löschen |
+
+## Testen
+
+```bash
+node werkzeug/smoke.mjs
+```
+
+Startet beide Level in einem echten Browser, drückt Tasten und prüft, dass
+nichts kracht: Bewegung, Spielstand über den Levelwechsel hinweg, Übernahme
+alter Spielstände, und im Kampf, dass sauberes Kontern gewinnt und
+Durchhämmern Herzen kostet. Braucht Playwright (global reicht), sonst nichts —
+kein `npm install`, keine Abhängigkeit im Repo.
 
 ## Technisch
 
@@ -265,5 +348,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar, der Übergang dazwischen
+steht. Level 3 bis 8 sowie das Freischalten der restlichen Crew stehen in
+[TODO.md](TODO.md).

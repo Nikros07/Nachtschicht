@@ -1,8 +1,12 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 (Die Schule) und Level 2 (Bei Moritz) sind spielbar und
+durchspielbar, der Übergang dazwischen steht. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
+
+**Als nächstes dran:** Level 3 — Der Nachtbus. Der Unterbau dafür steht
+(`nacht.js`, Freischaltung, Übergang), es fehlt das Level selbst.
 
 ---
 
@@ -26,11 +30,22 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**In Level 2 erledigt:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — sechs Statisten, reden,
+      wippen mit dem Pegel mit
+- [x] Der Kracher hat vier Angriffsmuster statt einem: schwer, schnell, Finte,
+      Doppelschlag. Kommen dazu, je öfter Du getroffen hast
+- [x] Musik lauter/verzerrter je höher der Pegel
+
+**Offen geblieben in Level 2:**
+
+- [ ] Die Statisten sind reine Kulisse. Wer sie ansprechen will, kann es nicht —
+      dafür bräuchte es eine zweite Reichweiten-Ebene, damit sie den Aufgaben
+      nicht das `E` wegnehmen
+- [ ] Der Kracher steht noch. Ein Gegner, der zurückweicht oder die Seite
+      wechselt, wäre der nächste Schritt — hängt am Kampfsystem unten
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -53,6 +68,8 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
+- [x] Liste der Jungs samt Fähigkeiten liegt zentral in `nacht.js` — Name,
+      Level, Bonus als Zahl. Bisher stehen Max Ferdi und Moritz drin
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
@@ -67,10 +84,19 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Der Kampf in Level 2 ist der erste Schritt: dort steckt jetzt das Grundgerüst
+aus Mustern, Konterfenster und Erholung. Es kennt aber nur *Kontern* — der
+Spieler kann nicht selbst angreifen. Alles, was mit eigenem Zuschlagen zu tun
+hat, wartet auf die Zusammenführung mit `runner.html`.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
-- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar.
+      *Wartet auf den eigenen Angriff: solange man nur kontert, hat eine
+      Deckung beim Gegner keine Wirkung, die man merken würde*
+- [x] **Fehlschläge bestrafen** — halbe Sekunde Erholung, in der nichts geht
+      (in Level 2; gilt bisher nur fürs Kontern)
+- [x] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      (in Level 2; beim ersten, schweren Schlag bewusst noch großzügig)
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -78,12 +104,23 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] **Spielstand speichern** — ein versionierter Stand in `nacht.js`: freies
+      Level, Crew, Bestzeiten. Alte Stände werden übernommen
+- [x] **Übergänge zwischen den Leveln** — `E` führt vom Endbild ins nächste
+      Level, aber nur wenn es gebaut ist. Vorher war das toter Code
+- [x] Levelleiste, Tastenkürzel und Freischaltung kommen aus der Level-Liste
+- [x] Rauchprobe im echten Browser: `node werkzeug/smoke.mjs`
+- [ ] **Level-Daten in eine eigene Struktur, damit neue Level ohne Code
+      entstehen** — halb. Die *Liste* der Level ist Daten, der *Inhalt* eines
+      Levels steht weiter als Code in seiner Datei. Der nächste Schritt wäre,
+      Räume, Möbel und Leute in ein gemeinsames Format zu ziehen; sinnvoll
+      erst, wenn Level 3 zeigt, was sich zwischen den Leveln wirklich wiederholt
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
+- [ ] Die Zeichen- und Audio-Hilfen (Font, Bild-Cache, Sprites, Töne) stehen in
+      jeder Level-Datei noch einmal. Erst zusammenziehen, wenn Level 3 zeigt,
+      welche davon wirklich für alle gleich sind
 
 ---
 
@@ -123,3 +160,6 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2: Die Wohnung, vier Aufgaben, Pegel, erster Kampf**
+- [x] Gemeinsamer Spielstand über alle Level (`nacht.js`)
+- [x] Statisten, vier Angriffsmuster, Musik am Pegel
