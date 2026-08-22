@@ -3,7 +3,8 @@
 *Party Game drunk.*
 
 Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Jedes
-Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
+Level ist eine Stufe des Abends: Schule, Vorglühen, Nachtbus. Kein Download,
+keine Installation, kein Konto.
 
 **▶ [Jetzt spielen](https://nikros07.github.io/Nachtschicht/)**
 
@@ -233,6 +234,69 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+---
+
+## Level 3 — Der Nachtbus
+
+22:00. Ihr seid drei Haltestellen zu früh eingestiegen, der Club ist erst die
+letzte. Max Ferdi hat ein Monatsticket. Du hast gar nichts.
+
+**Dein Ziel:** sechs Haltestellen überstehen und am Club **aussteigen**.
+
+### Der Boden fährt mit
+
+Neu und der Kern des Levels: wenn der Bus bremst oder anfährt, schiebt es Dich
+durch den Wagen. Wer dann nicht an einer Haltestange hängt, liegt.
+
+**`E` gedrückt halten** an einer Stange — dann hältst Du fest. Vor jedem
+Bremsen **klingelt es**; die Sekunden bis dahin sind Deine Zeit, eine Stange zu
+erreichen. Ein Sturz kostet kein Herz, aber er ist laut: wer in der Nähe ist,
+dreht sich um und kommt her.
+
+### Die Kontrolle
+
+Ab der zweiten Haltestelle sind **zwei Kontrolleure** im Wagen und gehen ihn ab.
+
+**Im Gang kommst Du an ihnen nicht vorbei.** Wer zwischen die beiden gerät, hat
+nur noch einen Ausweg: die Tür. Erwischt zu werden kostet ein Herz, und an der
+nächsten Haltestelle fliegst Du raus.
+
+Über dem Kopf eines Kontrolleurs läuft ein Balken, sobald er Dich ansieht —
+das ist Deine Reaktionszeit, kein Sofort-Alarm.
+
+### Die Türen
+
+Sie gehen **nur an der Haltestelle** auf, und sie gehen wieder zu.
+
+Raus, an der Kontrolle vorbei, an einer anderen Tür wieder rein — das ist der
+Trick. Aber: **wer beim Losfahren draußen steht, guckt dem Bus hinterher.**
+Kurz vorher piept es und die Türen blinken.
+
+### Der Fahrschein
+
+Unter den Sitzen liegt Kleingeld — durchsuchen mit `E`. **Zwei Euro**, dann
+zieht der Automat ganz vorne Dir einen Schein. Ab da nickt die Kontrolle nur
+noch und geht weiter. Wer es ohne versucht, muss die ganze Fahrt ausweichen.
+
+### Moritz
+
+An der dritten Haltestelle muss Moritz dringend raus. Hol ihn zurück, bevor die
+Türen zugehen — sonst kostet es ein Herz, und er kommt erst mit dem nächsten
+Bus nach.
+
+### Und am Club
+
+Umgekehrt zu allem davor: an der **letzten** Haltestelle musst Du **raus**.
+Wer sitzen bleibt, fährt vorbei.
+
+### Der Pegel
+
+Er kommt aus Level 2 mit — gedeckelt, und er baut sich über die Fahrt ab. Hier
+macht er nur eines: er wirft Dich leichter um. **Wer bei Moritz nüchtern
+rausgekommen ist, steht im Bus besser.**
+
+---
+
 ## Die Nacht geht weiter
 
 Jedes Level ist eine Stufe des Abends, und Du spielst sie in der Reihenfolge,
@@ -246,6 +310,9 @@ in der der Abend passiert.
   jedem Level — mit seiner Fähigkeit. Max Ferdi macht Dich überall 15 %
   schneller.
 - **Bestzeiten** werden pro Level gemerkt.
+- **Der Pegel geht mit.** Womit Du bei Moritz rausgehst, nimmst Du in den
+  Nachtbus mit — dort wirft er Dich leichter um. Nüchtern rauskommen zahlt sich
+  eine Stufe später aus.
 
 Das alles liegt im Browser, in einem einzigen Speicherstand. Kein Konto, keine
 Anmeldung — aber auch weg, wenn Du die Browserdaten löschst. Ältere Spielstände
@@ -284,6 +351,8 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 In `level2.html` gilt dasselbe für `ORTE`, `DINGE`, `LEUTE`, `STATISTEN`,
 `AUFGABEN` und `MUSTER` — letzteres sind die Angriffsmuster des Krachers.
+In `level3.html` für `TUEREN`, `STANGEN`, `SITZE`, `HALTE`, `FAHRGAESTE` und
+`CREW`: eine Haltestelle mehr ist ein Eintrag mehr in `HALTE`.
 
 ## Ein neues Level anlegen
 
@@ -348,6 +417,6 @@ kein `npm install`, keine Abhängigkeit im Repo.
 
 ## Stand
 
-Level 1 und Level 2 sind fertig und durchspielbar, der Übergang dazwischen
-steht. Level 3 bis 8 sowie das Freischalten der restlichen Crew stehen in
+Level 1 bis 3 sind fertig und durchspielbar, die Übergänge dazwischen stehen.
+Level 4 bis 8 sowie das Freischalten der restlichen Crew stehen in
 [TODO.md](TODO.md).

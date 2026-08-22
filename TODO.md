@@ -1,12 +1,15 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) und Level 2 (Bei Moritz) sind spielbar und
-durchspielbar, der Übergang dazwischen steht. Alles andere steht hier.
+Stand: Level 1 (Die Schule), Level 2 (Bei Moritz) und Level 3 (Der Nachtbus)
+sind spielbar und durchspielbar, die Übergänge dazwischen stehen. Alles andere
+steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
-**Als nächstes dran:** Level 3 — Der Nachtbus. Der Unterbau dafür steht
-(`nacht.js`, Freischaltung, Übergang), es fehlt das Level selbst.
+**Als nächstes dran:** Level 4 — Die Schlange, mit dem Türsteher als erstem
+echten Boss. Dafür sollte vorher das Kampfsystem aus `runner.html` in die
+Level-Struktur wandern (siehe unten) — ein Boss, den man nur kontern kann,
+wäre zu dünn.
 
 ---
 
@@ -26,7 +29,7 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 ## Die anderen Level
 
-Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
+Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
@@ -46,7 +49,21 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 - [ ] Der Kracher steht noch. Ein Gegner, der zurückweicht oder die Seite
       wechselt, wäre der nächste Schritt — hängt am Kampfsystem unten
 
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+- [x] **Level 3 — Der Nachtbus.** ✅ Fahrender Untergrund, Kontrolleure,
+      Türhopping an den Haltestellen, Fahrschein am Automaten, Ausstieg am Club
+
+**Offen in Level 3:**
+
+- [ ] **Kein neuer Jung.** Das Level hat einen Platz dafür — wer im Nachtbus
+      dazustößt und was er kann, kommt vom Nick. `nacht.js` braucht dafür nur
+      einen Eintrag bei `JUNGS` mit `level:3`
+- [ ] Die Fahrgäste steigen an den Haltestellen nicht wirklich ein und aus,
+      sie stehen die ganze Fahrt an derselben Stelle
+- [ ] Der Fahrer ist nicht zu sehen. Eine Fahrerkabine ganz vorne wäre der
+      nächste Schritt für die Optik
+- [ ] Ohne Fahrschein durchzukommen ist möglich, aber nie geprüft worden —
+      der Testbot löst das Level immer über den Automaten
+
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -70,6 +87,8 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 - [x] Liste der Jungs samt Fähigkeiten liegt zentral in `nacht.js` — Name,
       Level, Bonus als Zahl. Bisher stehen Max Ferdi und Moritz drin
+- [ ] Level 3 hat noch keinen. Die Namen kommen vom Nick, deshalb steht dort
+      bewusst kein erfundener drin
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
@@ -111,16 +130,23 @@ hat, wartet auf die Zusammenführung mit `runner.html`.
 - [x] Levelleiste, Tastenkürzel und Freischaltung kommen aus der Level-Liste
 - [x] Rauchprobe im echten Browser: `node werkzeug/smoke.mjs`
 - [ ] **Level-Daten in eine eigene Struktur, damit neue Level ohne Code
-      entstehen** — halb. Die *Liste* der Level ist Daten, der *Inhalt* eines
-      Levels steht weiter als Code in seiner Datei. Der nächste Schritt wäre,
-      Räume, Möbel und Leute in ein gemeinsames Format zu ziehen; sinnvoll
-      erst, wenn Level 3 zeigt, was sich zwischen den Leveln wirklich wiederholt
+      entstehen** — halb, und Level 3 hat gezeigt, warum. Die *Liste* der Level
+      ist Daten, der *Inhalt* nicht. Aber die Inhalte ähneln sich kaum: Räume
+      mit Türen, eine Wohnung mit Aufgaben und ein fahrender Bus haben fast
+      nichts gemeinsam. Ein gemeinsames Levelformat würde hier wenig sparen.
+      Was sich wirklich wiederholt, steht eine Zeile tiefer
 - [ ] Kampfsystem und Level-System zusammenführen
-- [ ] Musik pro Level statt einer Schleife
+- [x] Musik pro Level statt einer Schleife — jedes Level hat inzwischen seine
+      eigene: Schule, Vorglühen am Pegel, Motorpuls im Bus
+- [ ] Die Levelleiste unter dem Bildschirm wird mit acht Leveln zu eng.
+      Spätestens ab Level 5 braucht sie kürzere Namen oder zwei Reihen
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
-- [ ] Die Zeichen- und Audio-Hilfen (Font, Bild-Cache, Sprites, Töne) stehen in
-      jeder Level-Datei noch einmal. Erst zusammenziehen, wenn Level 3 zeigt,
-      welche davon wirklich für alle gleich sind
+- [ ] **Der Unterbau steht dreimal da.** Font, Bild-Cache, Sprite- und
+      Textausgabe, die Ton-Helfer, das Aufsetzen der Leinwand, Vollbild,
+      Touch-Tasten und die Eingabe sind in `index.html`, `level2.html` und
+      `level3.html` praktisch identisch — zusammen rund 300 Zeilen pro Datei.
+      Das ist der Teil, der in eine gemeinsame Datei gehört, nicht die
+      Level-Inhalte. Spätestens vor Level 4 machen
 
 ---
 
@@ -163,3 +189,5 @@ hat, wartet auf die Zusammenführung mit `runner.html`.
 - [x] **Level 2: Die Wohnung, vier Aufgaben, Pegel, erster Kampf**
 - [x] Gemeinsamer Spielstand über alle Level (`nacht.js`)
 - [x] Statisten, vier Angriffsmuster, Musik am Pegel
+- [x] **Level 3: Der Nachtbus mit fahrendem Boden, Kontrolle und Türhopping**
+- [x] Der Pegel geht von Level zu Level mit
