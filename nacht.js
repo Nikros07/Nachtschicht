@@ -24,7 +24,7 @@
 var LEVELS=[
   { nr:1, id:'schule',    titel:'DIE SCHULE',   datei:'index.html',  zeit:'16:40' },
   { nr:2, id:'moritz',    titel:'BEI MORITZ',   datei:'level2.html', zeit:'21:10' },
-  { nr:3, id:'bus',       titel:'DER NACHTBUS', datei:null,          zeit:'22:00' },
+  { nr:3, id:'bus',       titel:'DER NACHTBUS', datei:'level3.html', zeit:'22:00' },
   { nr:4, id:'schlange',  titel:'DIE SCHLANGE', datei:null,          zeit:'23:30' },
   { nr:5, id:'club',      titel:'CLUB',         datei:null,          zeit:'01:00' },
   { nr:6, id:'afterhour', titel:'AFTERHOUR',    datei:null,          zeit:'04:00' },
@@ -63,7 +63,7 @@ var KEY='nachtschicht.stand';
 var ALT_CREW='nachtschicht.crew';
 var ALT_BEST=['nachtschicht.bestzeit1','nachtschicht.bestzeit2'];
 
-var leer=function(){ return { v:1, crew:[], frei:1, best:{} }; };
+var leer=function(){ return { v:1, crew:[], frei:1, best:{}, pegel:0 }; };
 
 /* localStorage kann fehlen (privates Fenster, file:// in manchen Browsern).
    Das Spiel soll dann trotzdem laufen, nur eben ohne Gedaechtnis. */
@@ -81,6 +81,7 @@ function lesen(){
   if(roh.best&&typeof roh.best==='object'){
     for(var k in roh.best){ var v=parseFloat(roh.best[k]); if(isFinite(v)) st.best[k]=v; }
   }
+  var pg=parseFloat(roh.pegel); if(isFinite(pg)) st.pegel=Math.max(0,Math.min(100,pg));
   return st;
 }
 function schreiben(st){
@@ -172,6 +173,15 @@ function geschafft(nr,zeit){
   return { neueBestzeit:neu, best:isFinite(st.best[k])?st.best[k]:null,
            jung:j, naechstes:naechstes(nr) };
 }
+/* Der Pegel geht ueber das Level hinaus - wer bei Moritz zu tief ins Glas
+   schaut, steht im Nachtbus schlechter. Wie viel davon ankommt, entscheidet
+   das naechste Level; hier steht nur, womit du rausgegangen bist. */
+function merkePegel(v){
+  var st=lesen();
+  st.pegel=isFinite(v)?Math.max(0,Math.min(100,v)):0;
+  schreiben(st); return st.pegel;
+}
+function pegel(){ return lesen().pegel; }
 function zuruecksetzen(){ return schreiben(leer()); }
 
 /* Das Level nach diesem - egal ob schon gebaut. Wer wissen will, ob man
@@ -248,6 +258,7 @@ global.NACHT={
   stand:lesen, crew:crew, dabei:dabei, boni:boni, tempoFaktor:tempoFaktor,
   frei:frei, istFrei:istFrei, spielbar:spielbar, best:best,
   schaltFrei:schaltFrei, geschafft:geschafft, zuruecksetzen:zuruecksetzen,
+  merkePegel:merkePegel, pegel:pegel,
   naechstes:naechstes, gehZu:gehZu,
   leiste:leiste, levelZeilen:levelZeilen, tasteZuLevel:tasteZuLevel,
   alles:ALLES,

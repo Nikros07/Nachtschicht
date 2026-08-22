@@ -992,6 +992,9 @@ function levelGeschafft(){
   if(S.abgeschlossen) return;
   S.abgeschlossen=true;
   const e=NACHT.geschafft(LEVEL_NR,S.zeit);
+  /* Der Pegel geht mit in den Nachtbus. Wer hier nuechtern rauskommt, steht
+     dort sicherer auf den Beinen. */
+  NACHT.merkePegel(S.pegel);
   S.neueBestzeit=e.neueBestzeit;
   S.naechstes=e.naechstes;
 }

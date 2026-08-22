@@ -238,6 +238,180 @@ console.log('\nDER KRACHER');
   await seite.close();
 }
 
+/* ---- 6. Level 3 - Der Nachtbus ----
+   Die Fahrt selbst ist die Uhr des Levels, deshalb wird hier vorgespult:
+   S.phaseT hochsetzen bringt den Bus zur naechsten Haltestelle. Alles
+   andere laeuft normal. */
+console.log('\nLEVEL 3 - DER NACHTBUS');
+{
+  /* Ein frisch gestartetes Level 3, ohne Titel und Intro. */
+  const starteBus = async () => {
+    const [seite, meckern] = await oeffne(kontext, basis+'/level3.html?alles=1');
+    await seite.evaluate(()=>{ starte(); S.modus='spiel'; starteLevel(); });
+    await seite.waitForTimeout(200);
+    return [seite, meckern];
+  };
+  /* Bis zur naechsten Haltestelle vorspulen und dort ankommen. */
+  const zurHaltestelle = async seite => {
+    await seite.evaluate(()=>{ S.phaseT=TUNE.fahrtZeit+0.01; });
+    await seite.waitForTimeout(2400);
+  };
+
+  {
+    const [seite, meckern] = await starteBus();
+    pruefe(meckern.length===0, 'laedt und startet ohne Fehler'+(meckern.length?': '+meckern[0]:''));
+
+    /* An der Stange haelt man das Bremsen aus. */
+    await seite.evaluate(()=>{ S.x=STANGEN[1]; S.vx=0; });
+    await seite.keyboard.down('KeyE'); await seite.waitForTimeout(150);
+    pruefe(await seite.evaluate(()=>S.haelt), 'E an der Stange greift');
+    await zurHaltestelle(seite);
+    const fest = await seite.evaluate(()=>({liegt:S.liegt, x:Math.round(S.x), phase:S.phase}));
+    await seite.keyboard.up('KeyE');
+    pruefe(fest.liegt<=0, 'wer sich festhaelt, faellt beim Bremsen nicht (liegt='+fest.liegt.toFixed(2)+')');
+    pruefe(Math.abs(fest.x-await seite.evaluate(()=>STANGEN[1]))<6, 'und bleibt an seiner Stange');
+    pruefe(fest.phase==='haelt', 'der Bus haelt danach');
+    pruefe(await seite.evaluate(()=>S.tuerAuf)>0.9, 'die Tueren sind offen');
+    await seite.close();
+  }
+  {
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.x=300; S.phaseT=TUNE.fahrtZeit+0.01; });
+    await seite.waitForTimeout(1200);
+    pruefe(await seite.evaluate(()=>S.liegt)>0, 'ohne Festhalten wirft dich das Bremsen um');
+    await seite.close();
+  }
+  {
+    /* Kontrolle ohne Fahrschein: ein Herz und an der naechsten raus. */
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.halt=1; kontrolleSteigtEin();
+      S.x=200; S.kontrolleure[0].x=196; S.kontrolleure[0].richtung=1; });
+    await seite.waitForTimeout(1500);
+    const nach = await seite.evaluate(()=>({hp:S.hp, raus:S.raus}));
+    pruefe(nach.hp===2, 'Kontrolle ohne Fahrschein kostet ein Herz (hp='+nach.hp+')');
+    pruefe(nach.raus, 'und du fliegst an der naechsten Haltestelle raus');
+    await zurHaltestelle(seite);
+    pruefe(await seite.evaluate(()=>S.draussen), 'an der Haltestelle stehst du dann draussen');
+    await seite.close();
+  }
+  {
+    /* Mit Fahrschein ist dieselbe Kontrolle harmlos. */
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.inventar.fahrschein=true; S.halt=1; kontrolleSteigtEin();
+      S.x=200; S.kontrolleure[0].x=196; });
+    await seite.waitForTimeout(1500);
+    const nach = await seite.evaluate(()=>({hp:S.hp, raus:S.raus}));
+    pruefe(nach.hp===3&&!nach.raus, 'mit Fahrschein passiert bei der Kontrolle nichts');
+    await seite.close();
+  }
+  {
+    /* Am Kontrolleur kommt man im Gang nicht vorbei - daran haengt das Level. */
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.inventar.fahrschein=true; S.halt=1; kontrolleSteigtEin();
+      S.kontrolleure[0].x=180; S.kontrolleure[0].richtung=1;
+      S.kontrolleure[1].x=560; S.x=300; });
+    await seite.keyboard.down('KeyA'); await seite.waitForTimeout(1500); await seite.keyboard.up('KeyA');
+    const d = await seite.evaluate(()=>S.x-S.kontrolleure[0].x);
+    pruefe(d>0, 'du kommst an einem Kontrolleur nicht vorbei (Abstand='+d.toFixed(1)+')');
+    await seite.close();
+  }
+  {
+    /* Automat: erst zwei Euro, dann der Schein. */
+    const [seite] = await starteBus();
+    const r = await seite.evaluate(()=>{
+      S.x=AUTOMAT_X+3; benutze(); const ohne=S.meldung;
+      S.muenzen=TUNE.muenzenNoetig; benutze();
+      return { ohne, schein:!!S.inventar.fahrschein, rest:S.muenzen };
+    });
+    pruefe(/ZWEI EURO/.test(r.ohne), 'ohne Geld gibt der Automat nichts ("'+r.ohne+'")');
+    pruefe(r.schein&&r.rest===0, 'mit Geld kommt der Fahrschein und das Geld ist weg');
+    await seite.close();
+  }
+  {
+    /* Kleingeld liegt wirklich in Sitzen und laesst sich finden. */
+    const [seite] = await starteBus();
+    const r = await seite.evaluate(async ()=>{
+      const gefunden=[];
+      for(const sx of S.geldBei){ S.x=sx+3; benutze(); S.suchT=0; suchErgebnis(); gefunden.push(S.muenzen); }
+      return { versteckt:S.geldBei.length, muenzen:S.muenzen };
+    });
+    pruefe(r.versteckt===2&&r.muenzen===2, 'zwei Muenzen liegen in Sitzen und werden gefunden');
+    await seite.close();
+  }
+  {
+    /* Wer beim Losfahren draussen steht, guckt dem Bus hinterher. */
+    const [seite] = await starteBus();
+    await zurHaltestelle(seite);
+    await seite.evaluate(()=>{ S.x=TUEREN[1].x; steigeUm(true); });
+    await seite.waitForTimeout(420);
+    pruefe(await seite.evaluate(()=>S.draussen&&S.y===BODEN_A), 'durch die offene Tuer kommt man raus');
+    await seite.evaluate(()=>{ S.phaseT=TUNE.haltZeit+0.01; });
+    await seite.waitForTimeout(500);
+    const r = await seite.evaluate(()=>({modus:S.modus, gewonnen:S.gewonnen, faenger:S.faenger}));
+    pruefe(r.modus==='ende'&&!r.gewonnen&&/OHNE DICH/.test(r.faenger),
+      'wer draussen bleibt, verliert ("'+r.faenger+'")');
+    await seite.close();
+  }
+  {
+    /* Am Club drinnen sitzen bleiben ist auch verloren. */
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.halt=HALTE.length-1; });
+    await zurHaltestelle(seite);
+    await seite.evaluate(()=>{ S.phaseT=TUNE.haltZeit+0.01; });
+    await seite.waitForTimeout(500);
+    const r = await seite.evaluate(()=>({modus:S.modus, gewonnen:S.gewonnen, faenger:S.faenger}));
+    pruefe(r.modus==='ende'&&!r.gewonnen&&/LETZTE HALTESTELLE/.test(r.faenger),
+      'am Club sitzen bleiben heisst vorbeigefahren');
+    await seite.close();
+  }
+  {
+    /* Und der richtige Weg: am Club aussteigen. */
+    const [seite, meckern] = await starteBus();
+    await seite.evaluate(()=>{ S.halt=HALTE.length-1; });
+    await zurHaltestelle(seite);
+    await seite.evaluate(()=>{ S.x=TUEREN[1].x; steigeUm(true); });
+    await seite.waitForTimeout(420);
+    await seite.evaluate(()=>{ S.phaseT=TUNE.haltZeit+0.01; });
+    await seite.waitForTimeout(500);
+    pruefe(await seite.evaluate(()=>S.modus)==='cutscene', 'am Club aussteigen gewinnt das Level');
+    /* Cutscene ueberspringen und das Endbild pruefen */
+    await seite.evaluate(()=>{ S.szene=SZENEN.length-1; S.szeneT=99; });
+    await seite.waitForTimeout(400);
+    const r = await seite.evaluate(()=>({modus:S.modus, gewonnen:S.gewonnen,
+      best:NACHT.best(3), stand:NACHT.stand()}));
+    pruefe(r.modus==='ende'&&r.gewonnen, 'und fuehrt ins Endbild');
+    pruefe(r.best!==null, 'die Bestzeit fuer Level 3 steht im Spielstand');
+    pruefe(r.stand.frei>=4, 'Level 4 ist danach freigeschaltet (frei='+r.stand.frei+')');
+    pruefe(meckern.length===0, 'die ganze Fahrt ohne Fehler'+(meckern.length?': '+meckern[0]:''));
+    await seite.close();
+  }
+  {
+    /* Moritz steigt an der dritten aus und muss zurueckgeholt werden. */
+    const [seite] = await starteBus();
+    await seite.evaluate(()=>{ S.halt=2; });
+    await zurHaltestelle(seite);
+    pruefe(await seite.evaluate(()=>S.moritzDraussen), 'Moritz steht an der dritten Haltestelle draussen');
+    await seite.evaluate(()=>{ S.x=TUEREN[1].x; steigeUm(true); });
+    await seite.waitForTimeout(420);
+    await seite.evaluate(()=>{ S.x=S.moritzX; benutze(); });
+    await seite.waitForTimeout(200);
+    pruefe(await seite.evaluate(()=>!S.moritzDraussen&&!!S.erledigt.moritz), 'und laesst sich zurueckholen');
+    await seite.close();
+  }
+  {
+    /* Der Pegel aus Level 2 kommt an - gedeckelt. */
+    const [seite] = await oeffne(kontext, basis+'/level3.html?alles=1');
+    const r = await seite.evaluate(()=>{
+      NACHT.merkePegel(100); neuesSpiel(); const voll=S.pegel;
+      NACHT.merkePegel(0);   neuesSpiel(); const leer=S.pegel;
+      return { voll, leer, kappe:TUNE.pegelKappe };
+    });
+    pruefe(r.voll>0&&r.voll<=r.kappe, 'der Pegel aus Level 2 kommt gedeckelt an ('+r.voll+')');
+    pruefe(r.leer===0, 'wer nuechtern rauskam, faengt nuechtern an');
+    await seite.close();
+  }
+}
+
 } finally {
   await browser.close();
   srv.close();
