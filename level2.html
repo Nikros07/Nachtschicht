@@ -52,8 +52,14 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Noch nicht freigespielt bzw. noch nicht gebaut: sichtbar, aber tot. */
+  #levelbar .zu, #levelbar .bald { flex:1; text-align:center;
+    font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+    color:#3b3552; background:rgba(255,255,255,.02);
+    border:1px dashed #251f3d; border-radius:5px; cursor:default; user-select:none; }
   html.touch #levelbar { padding:6px 8px; }
-  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  html.touch #levelbar a, html.touch #levelbar .zu, html.touch #levelbar .bald {
+    padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
@@ -83,14 +89,13 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
-  </div>
+  <!-- Fuellt nacht.js aus der Level-Liste. -->
+  <div id="levelbar"></div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="nacht.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -134,12 +139,27 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
+  /* (6) DER KRACHER AM ENDE
+     Drei Muster, die nacheinander dazukommen. Der erste Kampf im Spiel soll
+     etwas beibringen, nicht sofort bestrafen - deshalb faengt er langsam an
+     und wird erst haerter, wenn du den ersten Konter gelandet hast. */
   gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  gegnerWindup:     0.75,  // Vorwarnzeit beim langsamen Schlag
+  gegnerWindupKurz: 0.42,  // ... beim schnellen
+  gegnerFinte:      0.55,  // so lange holt er aus, wenn er nur tut als ob
+  konterFenster:    0.34,  // letztes Drittel des Ausholens zaehlt als Konter
+  konterFensterErst:0.75,  // beim ersten Muster das ganze Ausholen - Lernphase
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
+  erholung:         0.5,   // Strafe fuers Danebenhauen: so lange geht nichts
   leben:            3,
+
+  /* (7) MUSIK - laeuft mit dem Pegel mit */
+  musikLaut:       0.026,  // Grundlautstaerke des Basslaufs
+  musikLautPegel:  0.030,  // Aufschlag bei vollem Pegel
+  musikVerstimmt:  0.050,  // so weit sacken die Toene bei vollem Pegel ab
+  musikWabern:     0.035,  // ... und so stark schwanken sie dabei
+  musikSchleppt:   0.080,  // so sehr schleppt das Tempo bei vollem Pegel
 };
 
 const P = {
@@ -189,7 +209,9 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
   j:'#3d2f22', u:'#8c94ad', q:'#2e3350', z:'#5a4632',
   /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
+  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
+  /* Shirts und Haare der Statisten - damit nicht viermal dieselbe Figur steht */
+  S:'#c0553c', G:'#4f6fb8', Y:'#b89432', L:'#7a4a9c', N:'#4a3524' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -302,6 +324,20 @@ const SPR={
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
 };
 
+/* Aus einer Figur mehrere machen: Zeichen tauschen statt Sprites abschreiben. */
+const umfaerben=(rows,paare)=>rows.map(r=>{
+  let o=''; for(const ch of r) o+=(paare[ch]||ch); return o; });
+/* Wer was in der Hand haelt, haelt es da, wo sonst die Hand ist. */
+const mitBecher=rows=>{ const o=rows.slice(), i=o.indexOf('k.ttt.k');
+  if(i>=0){ o[i]='k.ttt.c'; o[i+1]='..ttt.c'; } return o; };
+/* Vier Statisten - nur einmal gebacken, nicht pro Bild. */
+SPR.stat=[
+  umfaerben(SPR.steh,{t:'S'}),
+  umfaerben(mitBecher(SPR.steh),{t:'G',h:'N'}),
+  umfaerben(SPR.steh,{t:'Y',h:'N'}),
+  umfaerben(mitBecher(SPR.steh),{t:'L'}),
+];
+
 /* ==========================================================================
    AUDIO
    ========================================================================== */
@@ -341,29 +377,44 @@ const SFX={
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* Musik: das Vorgluehen laeuft im Hintergrund - und kippt mit dem Pegel.
+   Nuechtern ist es ein sauberer Basslauf. Je mehr du trinkst, desto lauter,
+   desto schiefer und desto mehr schleppt es: die Toene sacken ab und
+   schwanken, die Rechteckwelle wird zur Saegezahnwelle, ueber der Haelfte
+   legt sich eine zweite, absichtlich falsche Stimme drueber. Das ist
+   dasselbe Signal wie das Wackeln im Bild, nur fuers Ohr. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const spielt=S.modus==='spiel'||S.modus==='kampf';
+  const p=spielt?Math.min(1,S.pegel/TUNE.pegelMax):0;
+  /* schleppt: bei vollem Pegel laeuft alles etwas zaeher */
+  const st=(60/128/4)*(1+TUNE.musikSchleppt*p);
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
-      if(i%4===2) rauschenKurz(MUS.next);
+    const laut=spielt?TUNE.musikLaut+TUNE.musikLautPegel*p:.014;
+    /* verstimmt: gleichmaessig tiefer, dazu ein langsames Wabern */
+    const schief=1-TUNE.musikVerstimmt*p+Math.sin(MUS.step*.37)*TUNE.musikWabern*p;
+    const welle=S.pegel>TUNE.wackelnAb?'sawtooth':'square';
+    if(f){
+      ton(f*schief,MUS.next,st*.85,welle,laut);
+      /* ab dem Mutpegel eine zweite Stimme, die nicht ganz stimmt */
+      if(S.pegel>TUNE.mutAb) ton(f*schief*1.48,MUS.next,st*.6,welle,laut*.35);
+    }
+    if(spielt){
+      if(i%4===0) ton(55*(1-TUNE.musikVerstimmt*p*.5),MUS.next,.09,'sine',.05+.03*p);
+      if(i%4===2||(S.pegel>TUNE.wackelnAb&&i%2===0)) rauschenKurz(MUS.next,.012+.014*p);
     }
     MUS.next+=st; MUS.step++;
   }
 }
-function rauschenKurz(when){
+function rauschenKurz(when,vol=.012){
   if(!AC||muted) return;
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=vol; s.connect(g); g.connect(AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -397,6 +448,8 @@ function vollbild(){
   }).catch(()=>{});
 }
 document.getElementById('fs').addEventListener('click',e=>{e.preventDefault();vollbild();});
+/* Levelleiste unter dem Bildschirm: kommt aus der Level-Liste in nacht.js */
+NACHT.leiste(document.getElementById('levelbar'),2);
 
 /* ==========================================================================
    DIE WOHNUNG
@@ -445,6 +498,21 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Die Statisten. Leute, die nur rumstehen - man kann nicht mit ihnen reden,
+   und genau das ist der Punkt: eine Wohnung, in der ausschliesslich die vier
+   Leute stehen, die eine Aufgabe sind, wirkt wie eine Aufgabenliste und
+   nicht wie eine Party. Sie stehen bewusst mit Abstand zu Moebeln und
+   Aufgaben-Leuten, damit sie beim Suchen und Reden nicht im Weg sind.
+   Je hoeher der Pegel, desto mehr wippen sie mit. */
+const STATISTEN=[
+  { x:104, spr:0, blick: 1, sagt:['HAST DU FEUER','WER FAEHRT DENN'] },
+  { x:300, spr:1, blick:-1, sagt:['MACH MAL LAUTER','IST DAS DEIN GLAS'] },
+  { x:378, spr:2, blick: 1, sagt:['ALTER DAS LIED','WO IST MEIN HANDY'] },
+  { x:468, spr:3, blick:-1, sagt:['GIBT ES NOCH WAS','ICH KENN DEN DJ'] },
+  { x:578, spr:0, blick:-1, sagt:['GEHT IHR SCHON','EINER GEHT NOCH'] },
+  { x:862, spr:2, blick: 1, sagt:['DRAUSSEN IST KALT','WARTET MAL KURZ'] },
+];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -470,6 +538,8 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
+    erholung:0, gesehen:{}, abgeschlossen:false, neueBestzeit:false,
+    statistWer:-1, statistText:'', statistT:0, statistPause:2.5,
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -486,13 +556,12 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Spielstand, Crew und Freischaltung liegen in nacht.js - fuer alle Level
+   gemeinsam. */
+const LEVEL_NR=2;
+const ladeCrew=()=>NACHT.crew();
+const ladeBest=()=>NACHT.best(LEVEL_NR);
+const tempoBonus=()=>NACHT.tempoFaktor();
 
 /* ==========================================================================
    EINGABE
@@ -514,7 +583,11 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  /* Gewonnen: weiter in die naechste Stufe der Nacht, solange die gebaut
+     ist. Sonst bleibt E hier und die Leertaste startet neu. */
+  if(S.modus==='ende'&&S.gewonnen&&NACHT.spielbar(LEVEL_NR+1)){
+    NACHT.gehZu(LEVEL_NR+1); return; }
+  if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -526,8 +599,10 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'){
+    const ziel=NACHT.tasteZuLevel(e.code);
+    if(ziel&&ziel!==LEVEL_NR){ e.preventDefault(); NACHT.gehZu(ziel); }
+  }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -571,6 +646,16 @@ function pruefeBlackout(){
   S.faenger='BLACKOUT. AUF MORITZ SOFA.'; SFX.aua();
   return true;
 }
+/* Die Statisten reden nebenbei - aber immer nur einer. Mehrere Blasen
+   gleichzeitig, und man sucht seine eigene Aufgabe zwischen dem Geplapper. */
+function statisten(dt){
+  if(S.statistT>0){ S.statistT-=dt; if(S.statistT<=0) S.statistWer=-1; return; }
+  S.statistPause-=dt;
+  if(S.statistPause>0) return;
+  const i=Math.floor(Math.random()*STATISTEN.length);
+  S.statistWer=i; S.statistText=pick(STATISTEN[i].sagt);
+  S.statistT=2.4; S.statistPause=3.5+Math.random()*4.5;
+}
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
@@ -598,6 +683,7 @@ function update(dt){
   /* Pegel baut sich sehr langsam ab */
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+  statisten(dt);
 
   if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
 
@@ -744,46 +830,139 @@ function kamera(dt){
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
    ========================================================================== */
+/* Der Kracher hat vier Arten auszuholen. Eine reichte nicht: wer den Takt
+   einmal raushatte, konnte den Rest des Kampfs blind mitzaehlen.
+
+   fenster ist der Anteil des Ausholens, in dem E als Konter zaehlt - immer
+   das ENDE der Bewegung. Beim schweren Schlag ist es fast das ganze
+   Ausholen, damit der erste Kampf im Spiel etwas beibringt; danach wird es
+   das letzte Drittel. Die Finte hat gar kein Fenster: da ist Nichtstun die
+   richtige Antwort. */
+const MUSTER={
+  schwer: { dauer:()=>TUNE.gegnerWindup,     fenster:()=>TUNE.konterFensterErst,
+            ruf:'!',  farbe:()=>P.rot,   sagt:'' },
+  schnell:{ dauer:()=>TUNE.gegnerWindupKurz, fenster:()=>TUNE.konterFenster,
+            ruf:'!',  farbe:()=>P.gold,  sagt:'SCHNELLER - SPAETER DRUECKEN' },
+  finte:  { dauer:()=>TUNE.gegnerFinte,      fenster:()=>0,
+            ruf:'?',  farbe:()=>P.weiss, sagt:'' },
+  doppel: { dauer:()=>TUNE.gegnerWindup*.8,  fenster:()=>TUNE.konterFenster,
+            ruf:'!!', farbe:()=>P.rot,   sagt:'ZWEI HINTEREINANDER' },
+};
+/* Je oefter du getroffen hast, desto mehr kann er. */
+function musterPool(getroffen){
+  if(getroffen<=0) return ['schwer'];
+  if(getroffen===1) return ['schwer','schnell'];
+  return ['schnell','finte','doppel'];
+}
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
+  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0,
+             muster:'schwer', dauer:TUNE.gegnerWindup, letztes:'', zweiter:false,
+             reingefallen:false };
+  S.erholung=0; S.gesehen={};
   S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  zeigeHinweis('E AM ENDE DES AUSHOLENS - KONTERN',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
+}
+function holtAus(g,muster,kurz){
+  g.muster=muster; g.letztes=muster; g.zustand='wind'; g.t=0;
+  g.reingefallen=false;
+  g.dauer=MUSTER[muster].dauer()*(kurz?0.7:1);
+  SFX.warn();
+  /* Jedes neue Muster einmal ansagen - danach musst du es sehen. */
+  const sagt=MUSTER[muster].sagt;
+  if(sagt&&!S.gesehen[muster]){ S.gesehen[muster]=true; zeigeHinweis(sagt,2.2); }
+}
+/* Danebengehauen: kurze Erholung, in der nichts geht. Ohne das gewinnt man
+   den Kampf, indem man E einfach durchhaemmert.
+   Wer schon in der Erholung steckt, wird nicht noch einmal bestraft - sonst
+   sperrt sich ein nervoeser Spieler dauerhaft selbst aus und sieht nie,
+   warum nichts passiert. */
+function daneben(text){
+  if(S.erholung>0) return;
+  S.erholung=TUNE.erholung;
+  SFX.nichts(); meldung(text||'DANEBEN',1.1);
+}
+function trifftDich(){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  meldung('AUTSCH',1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; return true; }
+  return false;
 }
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
+  if(S.erholung>0) S.erholung=Math.max(0,S.erholung-dt);
+  /* Ein Druck pro Bild reicht - der Rest fliegt raus, damit sich nichts
+     aufstaut und spaeter von allein losgeht. */
+  const drueckt=aktionPuffer.length>0; aktionPuffer.length=0;
   const dist=S.x-g.x;
+
   if(g.zustand==='komm'){
     g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+    if(drueckt) daneben('ER IST NOCH GAR NICHT DA');
+    if(Math.abs(dist)<22){ g.zweiter=false; holtAus(g,pickMuster(g)); }
+    return;
+  }
+
+  if(g.zustand==='wind'){
+    const f=MUSTER[g.muster].fenster();
+    const offen = f>0 && g.t >= g.dauer*(1-f);
+    if(drueckt&&S.erholung<=0){
+      if(offen){
+        g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
+        S.ruettel=5; S.blitz=.5; SFX.klatsch();
+        meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
+        return;
+      }
+      /* Zu frueh - oder in die Finte gelaufen. */
+      g.reingefallen=true;
+      daneben(g.muster==='finte'?'DA WAR NICHTS':'ZU FRUEH');
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
+    if(g.t>=g.dauer){
+      if(g.muster==='finte'){
+        /* Die Finte trifft nur den, der drauf reingefallen ist. */
+        g.zustand='schlag'; g.t=0;
+        if(g.reingefallen){ if(trifftDich()) return; }
+        else meldung('ER HAT NUR GETAN ALS OB',1.4);
+      } else {
+        g.zustand='schlag'; g.t=0;
+        if(trifftDich()) return;
+      }
+    }
+    return;
+  }
+
+  if(g.zustand==='schlag'){
+    if(drueckt) daneben();
+    if(g.t>=TUNE.gegnerSchlag){
+      /* Der Doppelschlag holt sofort noch einmal aus - kuerzer. */
+      if(g.muster==='doppel'&&!g.zweiter){ g.zweiter=true; holtAus(g,'doppel',true); return; }
+      g.zustand='pause'; g.t=0;
+    }
+    return;
+  }
+
+  if(g.zustand==='getroffen'){
     g.x-=Math.sign(dist)*90*dt;
+    if(drueckt) daneben('ER LIEGT SCHON');
     if(g.t>=0.5){
       if(g.hp<=0){ starteCutscene(); return; }
       g.zustand='pause'; g.t=0;
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+    return;
   }
+
+  if(g.zustand==='pause'){
+    if(drueckt) daneben();
+    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
+  }
+}
+/* Naechstes Muster - moeglichst nicht zweimal dasselbe hintereinander. */
+function pickMuster(g){
+  const pool=musterPool(g.getroffen);
+  if(pool.length===1) return pool[0];
+  const andere=pool.filter(m=>m!==g.letztes);
+  return pick(andere.length?andere:pool);
 }
 
 /* ==========================================================================
@@ -806,11 +985,15 @@ const SZENEN=[
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
+/* nacht.js schreibt Bestzeit und Crew und macht das naechste Level auf.
+   Nur einmal pro Runde - der zweite Aufruf wuerde die eben geschriebene
+   Bestzeit gegen sich selbst vergleichen. */
 function levelGeschafft(){
-  speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(S.abgeschlossen) return;
+  S.abgeschlossen=true;
+  const e=NACHT.geschafft(LEVEL_NR,S.zeit);
+  S.neueBestzeit=e.neueBestzeit;
+  S.naechstes=e.naechstes;
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -895,6 +1078,21 @@ function zeichneWohnung(){
     }
   }
 
+  /* Statisten - stehen vor den Aufgaben-Leuten im Raum, aber hinter allem,
+     was man anfassen kann. Etwas blasser, damit klar bleibt, wer wichtig ist. */
+  for(let i=0;i<STATISTEN.length;i++){
+    const st=STATISTEN[i], rows=SPR.stat[st.spr];
+    const p=S.pegel/TUNE.pegelMax;
+    const hoch=Math.round(Math.abs(Math.sin(S.t*(2.6+i*.31)*(1+p)+i))*(0.4+p*2.2));
+    const y=BODEN-rows.length-hoch;
+    ctx.globalAlpha=.82;
+    outline(rows,st.x-3,y,1,.4);
+    if(st.blick<0) spriteFlip(rows,st.x-3,y); else sprite(rows,st.x-3,y);
+    ctx.globalAlpha=1;
+    if(S.statistWer===i&&S.statistT>0)
+      text(S.statistText,st.x+3-textW(S.statistText)/2,y-9,P.dim);
+  }
+
   /* Leute */
   for(const l of LEUTE){
     const rows=SPR[l.spr]||SPR.steh;
@@ -918,10 +1116,22 @@ function zeichneWohnung(){
     outline(rows,g.x,BODEN-rows.length,1,.6);
     sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
     if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+      /* Der Balken laeuft jetzt VOLL statt leer, und das Konterfenster
+         steht als heller Abschnitt am Ende drin. So sieht man, worauf man
+         wartet, statt es zu erraten. Bei der Finte ist der Abschnitt leer -
+         wer genau hinschaut, sieht es kommen. */
+      const M=MUSTER[g.muster], farbe=M.farbe(), f=M.fenster();
+      const p=Math.min(1,g.t/g.dauer), offen=f>0&&p>=1-f;
+      const takt=g.muster==='finte'?20:10;
+      if(Math.floor(S.t*takt)%2===0) text(M.ruf,g.x+3,BODEN-rows.length-9,farbe);
+      const bw=18, bx=g.x-2, by=BODEN-rows.length-5;
+      ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,4);
+      if(f>0){ ctx.fillStyle='#ffffff2e';
+        ctx.fillRect(bx+Math.round(bw*(1-f)),by,Math.round(bw*f),2); }
+      ctx.fillStyle=offen?P.gruen:farbe;
+      ctx.fillRect(bx,by,Math.round(bw*p),2);
+      if(offen&&Math.floor(S.t*16)%2===0){
+        ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*(1-f)),by-1,1,4); }
     }
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
@@ -937,7 +1147,10 @@ function zeichneWohnung(){
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
+  /* Waehrend der Erholung bist du blass - du siehst, dass gerade nichts geht. */
+  if(S.erholung>0) ctx.globalAlpha=.5;
   if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  ctx.globalAlpha=1;
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
@@ -1024,11 +1237,20 @@ function titelbild(){
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  levelAuswahl();
+}
+/* Levelauswahl unten am Titelbild, aus der Level-Liste in nacht.js. Die
+   eigene Zeile blinkt und ersetzt die fruehere Aufforderung LEERTASTE. */
+function levelAuswahl(){
+  const zeilen=NACHT.levelZeilen(LEVEL_NR,3);
+  const y0=H-11-(zeilen.length-1)*6;
+  zeilen.forEach((z,i)=>{
+    const s=(z.taste?z.taste.padEnd(10,' '):'          ')+z.text;
+    const x=Math.round((W-textW(s))/2), y=y0+i*6;
+    if(z.zustand==='aktuell'){
+      if(Math.floor(S.t*1.6)%2===0) textGlow(s,x,y,P.weiss,1); else text(s,x,y,P.dim);
+    } else text(s,x,y,z.zustand==='frei'?P.neon2:P.dunkel);
+  });
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
@@ -1080,8 +1302,13 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      const n=NACHT.naechstes(LEVEL_NR);
+      if(n&&n.datei){
+        if(Math.floor(S.t*2)%2===0)
+          textGlowC('E  WEITER - LEVEL '+n.nr+' - '+n.titel,126,P.gruen,1);
+      } else if(n){
+        textC('LEVEL '+n.nr+' - '+n.titel+' FOLGT',126,P.dunkel);
+      }
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
