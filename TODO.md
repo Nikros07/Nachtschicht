@@ -141,12 +141,14 @@ hat, wartet auf die Zusammenführung mit `runner.html`.
 - [ ] Die Levelleiste unter dem Bildschirm wird mit acht Leveln zu eng.
       Spätestens ab Level 5 braucht sie kürzere Namen oder zwei Reihen
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
-- [ ] **Der Unterbau steht dreimal da.** Font, Bild-Cache, Sprite- und
-      Textausgabe, die Ton-Helfer, das Aufsetzen der Leinwand, Vollbild,
-      Touch-Tasten und die Eingabe sind in `index.html`, `level2.html` und
-      `level3.html` praktisch identisch — zusammen rund 300 Zeilen pro Datei.
-      Das ist der Teil, der in eine gemeinsame Datei gehört, nicht die
-      Level-Inhalte. Spätestens vor Level 4 machen
+- [x] **Der Unterbau steht jetzt einmal da** (`kern.js`): Schrift, Bild-Cache,
+      Sprites, Text, Töne, Leinwand und Vollbild. Rund 130 Zeilen weniger je
+      Level-Datei; ein Level bringt nur noch seine eigene Farbtafel mit.
+      Geprüft mit `node werkzeug/bilder.mjs` — kein einziges Pixel hat sich
+      dabei verändert
+- [ ] Die Eingabe (Tasten, Touch-Knöpfe) steht weiter in jeder Datei. Sie ist
+      pro Level verschieden genug, dass eine gemeinsame Fassung mehr Regler
+      als Ersparnis brächte — noch mal ansehen, wenn Level 4 steht
 
 ---
 
