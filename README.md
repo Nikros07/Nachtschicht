@@ -267,6 +267,12 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+Die Möbel eines Raums stehen in seiner `moebel`-Liste. Was mehrfach vorkommt,
+kriegt über `VARIANTEN` verschiedene Ausführungen — drei Regale in der
+Bibliothek sind drei verschiedene Regale, jede Runde dieselben. Breite und
+Höhe kommen aus dem Sprite, ein neues Möbelstück braucht also nur eine Zeile
+in `SPR` und einen Eintrag in einer `moebel`-Liste.
+
 `level2.html` ist genauso gebaut. Dort sind zusätzlich interessant:
 
 | Regler | Bewirkt |
@@ -329,7 +335,9 @@ python -m http.server 5173
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
-- Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+- Sieben Raumstile mit eigenen Farben, Fenstern und Wandausstattung, dazu
+  Möbel, die zum Raum gehören — Bock und Matte in der Turnhalle, Abzug in der
+  Chemie, Karre und Leiter beim Hausmeister
 
 ## Woran es sich orientiert
 

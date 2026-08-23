@@ -336,6 +336,41 @@ const SPR = {
   tafel:  ['dddddddddd','dqqqqqqqqd','dq.q..qq.d','dqqqqqqqqd','dq..qq..qd','dqqqqqqqqd','dddddddddd'],
   pflanze:['..ggg..','.ggggg.','g.ggg.g','..ggg..','...z...','..zzz..','.zzzzz.'],
   kiste:  ['oooooo','o....o','o.oo.o','o....o','oooooo'],
+
+  /* --- Mehr Moebelarten. Zehn Raeume mit denselben vier Stuecken sehen
+     auch mit anderer Wandfarbe gleich aus. Jedes Stueck gehoert zu einem
+     Raumtyp: Bock und Matte in die Turnhalle, Abzug in die Chemie,
+     Kopierer ins Sekretariat, Karre und Leiter zum Hausmeister. --- */
+  pult:   ['zzzzzzzzzzzz','z..........z','jjjjjjjjjjjj','j..........j','j..jjjj....j',
+           'j..........j','j..........j','jj........jj'],
+  tischStuhl:['zzzzzzzz..jj','z......z..jj','dd....dd.zzz','d......d.z.z','d......d.j.j','d......d.j.j'],
+  regalBuecher:['zzzzzzz','zvlvblz','zzzzzzz','zbvllvz','zzzzzzz','zlbvblz','zzzzzzz','ddddddd'],
+  regalKisten: ['zzzzzzz','zoo.ooz','zzzzzzz','zo.oo.z','zzzzzzz','zooo..z','zzzzzzz','ddddddd'],
+  kisten: ['.oooooo.','.o....o.','.o.oo.o.','.oooooo.','oooooo..','o....o..','o.oo.o..','oooooo..'],
+  karton: ['bbbbbbb','b..b..b','bbbbbbb','b..b..b','b..b..b','bbbbbbb'],
+  abzug:  ['uuuuuuuuuuuu','u..........u','u.qqqqqqqq.u','u.q.t..c.q.u','u.q.t..c.q.u',
+           'u.qqqqqqqq.u','uuuuuuuuuuuu','u...uu...u.u','u........u.u','uuuuuuuuuuuu'],
+  flaschen:['.t...c...','.t...c...','ttt.ccc..','ttt.ccc..','ttt.ccc..','zzzzzzzzz','jjjjjjjjj'],
+  matte:  ['vvvvvvvv','vmmmmmmv','vmmmmmmv','vmmmmmmv','vmmmmmmv','vmmmmmmv','vmmmmmmv',
+           'vmmmmmmv','vmmmmmmv','vmmmmmmv','vmmmmmmv','vmmmmmmv','vvvvvvvv','dddddddd'],
+  /* Heller als Holz: der Turnhallenboden ist selbst braun, ein brauner
+     Bock darauf ist nicht zu sehen. */
+  bock:   ['.oooooooooo.','oooooooooooo','ollllllllllo','.oooooooooo.','...u....u...',
+           '...u....u...','..u......u..','..u......u..','.u........u.','.u........u.','dddddddddddd'],
+  kopierer:['..uuuuuu..','..u....u..','.uuuuuuuu.','.u.wwwww.u','.uuuuuuuu.','.u..gr...u',
+            '.uuuuuuuu.','.u......u.','.u.uuuu.u.','.u......u.','.uuuuuuuu.','.dd....dd.'],
+  karre:  ['.......uu.','......u..u','uuuuuuu..u','u.....u..u','u.ooo.u..u','u.ooo.u..u',
+           'uuuuuuu..u','.k...k...k','.kk.kk..kk'],
+  leiter: ['u.....u','u.....u','uuuuuuu','u.....u','u.....u','uuuuuuu','u.....u','u.....u',
+           'uuuuuuu','u.....u','u.....u','uuuuuuu','u.....u','u.....u','uuuuuuu','u.....u'],
+  muell:  ['dddddd','.d..d.','.duud.','.duud.','.duud.','.duud.','.duud.','..dd..'],
+  lesetisch:['..vl..bl....','zzzzzzzzzzzz','z..........z','jj........jj','j..........j',
+             'j..........j','j..........j','j..........j'],
+  garderobe:['uuuuuuuuu','....u....','..v.u.b..','.vvvuvbb.','.vvvuvbb.','.vvv.vbb.',
+             '.vvv.vbb.','..v...b..','....u....','....u....','....u....','....u....',
+             '...uuu...','..ddddd..'],
+  sofa:   ['.vvvvvvvvvvvv.','vvvvvvvvvvvvvv','vmmmmmmmmmmmmv','vm..........mv','vm..........mv',
+           'vm..........mv','.jj........jj.'],
   /* Tuerblatt muss gefuellt sein - sonst sieht man durch die Tuer die Wand */
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
@@ -462,18 +497,30 @@ const STIL = {
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
 };
 
+/* Jeder Raum bekommt Moebel, die zu ihm gehoeren. Vorher standen ueberall
+   dieselben vier Stuecke und nur die Wandfarbe war anders. */
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['karre','leiter','regal','eimer'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['bock','matte','kiste'] },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['kopierer','tisch','regal','pflanze'] },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['pult','tisch','spind'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch','karton'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['abzug','flaschen','tisch','regal'] },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['pult','tisch','pflanze'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regalBuecher','regal','lesetisch','regalBuecher'] },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['sofa','tisch','garderobe','spind'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','pult','muell'] },
 ];
+
+/* Und was mehrfach vorkommt, sieht nicht ueberall gleich aus. Welche
+   Ausfuehrung ein Raum bekommt, haengt am Raum: jede Runde dieselbe, aber
+   von Raum zu Raum eine andere. Drei Regale in der Bibliothek sind so drei
+   verschiedene Regale. */
+const VARIANTEN = {
+  regal: ['regal','regalBuecher','regalKisten'],
+  tisch: ['tisch','tischStuhl','pult'],
+  kiste: ['kiste','kisten','karton'],
+};
 const AUSGANG = { e:0, x:648 };
 
 /* Nachrichten haengen jetzt an dem, was du TUST, nicht an der Uhr.
@@ -1035,7 +1082,7 @@ function imRaum(dt){
   const r=RAEUME[S.raum];
   const plaetze=moebelPlaetze(r);
   let nah=-1;
-  plaetze.forEach((p,i)=>{ if(Math.abs(p.x+8-S.raumX)<14) nah=i; });
+  plaetze.forEach((p,i)=>{ if(Math.abs(p.x+p.b/2-S.raumX)<p.b/2+7) nah=i; });
   const anTuerRaus = S.raumX<=links+2;
 
   if(S.suchT>0){
@@ -1157,8 +1204,14 @@ function moebelPlaetze(r){
      die Moebel in jedem der zehn Raeume exakt gleich. */
   const saat=RAEUME.indexOf(r)+1;
   return r.moebel.map((m,i)=>{
+    const v=VARIANTEN[m];
+    const typ=v?v[(saat*31+i*17)%v.length]:m;
+    const rows=SPR[typ]||SPR.kiste;
+    /* Die Breite kommt aus dem Sprite. Vorher war ueberall 16 angenommen -
+       das ging, solange alles gleich breit war. Ein Bock ist es nicht. */
+    let breite=0; for(const z of rows) if(z.length>breite) breite=z.length;
     const versatz=((saat*37+i*61)%23)-11;
-    return { typ:m, x:Math.round(start+i*abstand+versatz) };
+    return { typ, b:breite, x:Math.round(start+i*abstand+versatz) };
   });
 }
 
@@ -1780,11 +1833,12 @@ function zeichneRaum(){
     const y=bodenY-hoehe;
     outline(rows,p.x,y,1,.5);
     sprite(rows,p.x,y);
+    const mitte=p.x+p.b/2;
     const durchsucht=S.durchsucht.has(S.raum+':'+i);
-    if(durchsucht){ text('OK',p.x+8-textW('OK')/2,y-8,P.dunkel); }
+    if(durchsucht){ text('OK',mitte-textW('OK')/2,y-8,P.dunkel); }
     else if(S.nahesMoebel===i){
-      if(Math.floor(S.t*4)%2===0) text('E',p.x+8-1,y-9,P.gold);
-      ctx.globalAlpha=.5; ctx.fillStyle=P.gold; ctx.fillRect(p.x,bodenY-1,16,1); ctx.globalAlpha=1;
+      if(Math.floor(S.t*4)%2===0) text('E',mitte-1,y-9,P.gold);
+      ctx.globalAlpha=.5; ctx.fillStyle=P.gold; ctx.fillRect(p.x,bodenY-1,p.b,1); ctx.globalAlpha=1;
     }
   });
 

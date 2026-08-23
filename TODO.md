@@ -16,7 +16,11 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
 - [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
-- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
+      — **geht nur bei Dir.** Emuliert (`?touch=1`) läuft es, aber ob die
+      Tasten unter dem Daumen liegen, sagt kein Emulator
+- [x] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position) — siebzehn
+      neue Möbel, jedes Stück gehört zu einem Raumtyp, und was mehrfach
+      vorkommt, gibt es in mehreren Ausführungen
 
 ---
 
@@ -108,7 +112,10 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [x] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+      (Bock und Matte in die Turnhalle, Abzug in die Chemie, Kopierer ins
+      Sekretariat, Karre und Leiter zum Hausmeister, Sofa und Garderobe ins
+      Lehrerzimmer)
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
@@ -148,5 +155,7 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
       unblockbarer Tritt. Springen und Kontern sind jetzt zwei verschiedene
       Antworten, und Tastenhämmern verliert
 - [x] **Level 2: Musik hängt am Pegel** — lauter, verzerrt, dumpf, verstimmt
+- [x] **Level 1: Siebzehn neue Möbelarten**, passend zum jeweiligen Raum —
+      35 Suchplätze statt 30, und drei Regale sehen nicht mehr gleich aus
 - [x] **Spielstand und Levelauswahl in `stand.js`** — ein Speicherplatz für
       Crew, geschaffte Level und Bestzeiten; die Levelleiste baut sich daraus
