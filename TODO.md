@@ -28,9 +28,14 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre) — sechs
+      Statisten mit Leerlauf, Gemurmel und eigenen Sprüchen; im Kampf gehen
+      sie aus dem Weg
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — drei Muster,
+      Konterfenster nur im letzten Teil, Fehlschläge kosten Erholung
+- [x] Musik lauter/verzerrter je höher der Pegel — Verzerrer und Tiefpass am
+      Pegel, dazu Verstimmung und Takt-Eiern
+- [ ] Der Kracher könnte einen Wurf vertragen (Flasche), sobald es Bosse gibt
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -69,8 +74,11 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Fehlschläge bestrafen** — im Kracher-Kampf erledigt: zu früh gedrückt
+      heißt eine halbe Sekunde nichts geht. Muss beim Zusammenführen mit
+      `runner.html` mitwandern
+- [x] **Konterfenster verkleinern** — im Kracher-Kampf auf die letzten 45 %
+      des Ausholens (`TUNE.konterFenster`). Ebenfalls noch zu übernehmen
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -123,3 +131,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2: Sechs Statisten** mit Leerlauf im Takt, Gemurmel und
+      Sprüchen, die sich mit dem Pegel ändern
+- [x] **Level 2: Der Kracher hat drei Muster** — gerader Schlag, Doppelschlag,
+      unblockbarer Tritt. Springen und Kontern sind jetzt zwei verschiedene
+      Antworten, und Tastenhämmern verliert
+- [x] **Level 2: Musik hängt am Pegel** — lauter, verzerrt, dumpf, verstimmt

@@ -134,11 +134,24 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* (6) DER KRACHER AM ENDE - drei Muster, nicht mehr nur eins */
+  gegnerTreffer:    3,     // so oft musst du ihn erwischen
+  gegnerWindup:     0.85,  // gerader Schlag: Vorwarnzeit
+  gegnerWindupKurz: 0.55,  // Doppelschlag: der zweite kommt schneller
+  konterFenster:    0.45,  // nur im letzten Teil des Ausholens kontert E
+  konterZuFrueh:    0.5,   // Erholung, wenn du zu frueh drueckst
+  trittWindup:      0.6,   // der tiefe Tritt - nicht konterbar
+  trittDauer:       0.3,
+  trittWeite:       34,    // wie weit der Tritt reicht
+  trittLunge:      120,    // wie weit er dabei nachsetzt
+  trittGnade:       0.18,  // so lange nach der Landung zaehlst du noch als oben
+  erschoepftDauer:  1.0,   // nach einem ausgewichenen Tritt liegt er offen
   gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  gegnerPause:      1.0,
+  gegnerTempo:     70,     // wie schnell er auf dich zulaeuft
+  phasenTempo:      0.18,  // pro kassiertem Treffer wird er so viel schneller
+  arenaVon:        56,     // im Kampf kommst du nicht weiter als bis hier
+  arenaBis:       190,
   leben:            3,
 };
 
@@ -283,6 +296,12 @@ const SPR={
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* Tief geduckt, Bein lang - das ist der Tritt, der nicht zu kontern ist */
+  kracherTritt:['.........','..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....',
+                '.vvvvv...','vvvvvvv..','k.vvv....','..mmm....','..mmmmmmm','.mm....kk','.kk......'],
+  /* Nach einem Tritt ins Leere kniet er - das ist Dein Fenster */
+  kracherKnie:['.........','.........','..ddd....','.dkkkd...','.dsssd...','..ksk....',
+               '..sss....','.vvvvv...','vvvvvvv..','k.vvv....','..mmmm...','.mm.mmkk.','.kk...kk.'],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -302,18 +321,67 @@ const SPR={
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
 };
 
+/* --------------------------------------------------------------------------
+   DIE STATISTEN
+   Leute, die nur rumstehen. Sie machen nichts fuer den Fortschritt - genau
+   das ist der Punkt. Eine Wohnung mit vier Leuten ist ein Auftrag, eine mit
+   zehn ist ein Vorgluehen.
+   Alle bauen auf demselben Koerper auf: Haarfarbe, Oberteil, und was die
+   rechte Hand haelt. Das reicht, um sie auseinanderzuhalten, und kostet
+   keine dreissig Zeilen Pixel pro Person.
+   -------------------------------------------------------------------------- */
+const gast=(haar,shirt,hand='k')=>[
+  '..'+haar.repeat(3)+'..',
+  '.'+haar+'sss'+haar+'.',
+  '.sssss.',
+  '..sss..',
+  '..'+shirt.repeat(3)+'..',
+  '.'+shirt.repeat(5)+'.',
+  'k.'+shirt.repeat(3)+'.'+hand,
+  '..'+shirt.repeat(3)+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+/* Dieselbe Person, aber die Hand oben - fuer den Schluck und das Winken. */
+const gastHoch=(haar,shirt,hand='k')=>[
+  '..'+haar.repeat(3)+'..',
+  '.'+haar+'sss'+haar+'.',
+  '.sssss'+hand,
+  '..sss.'+hand,
+  '..'+shirt.repeat(3)+'..',
+  '.'+shirt.repeat(5)+'.',
+  'k.'+shirt.repeat(3)+'..',
+  '..'+shirt.repeat(3)+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+Object.assign(SPR,{
+  gastBox:    gast('o','n'),      gastBoxHoch:    gastHoch('o','n'),
+  gastBecher: gast('l','c','l'),  gastBecherHoch: gastHoch('l','c','l'),
+  gastHandy:  gast('h','r','c'),  gastHandyHoch:  gastHoch('h','r','c'),
+  gastSchuhe: gast('b','g'),      gastSchuheHoch: gastHoch('b','g'),
+  gastJacke:  gast('H','j'),      gastJackeHoch:  gastHoch('H','j'),
+  gastBad:    gast('d','u'),      gastBadHoch:    gastHoch('d','u'),
+});
+
 /* ==========================================================================
    AUDIO
    ========================================================================== */
 let AC=null, muted=false;
+/* Die Musik laeuft nicht direkt in die Boxen, sondern ueber einen eigenen Weg:
+   erst ein Verzerrer, dann ein Tiefpass. Beide haengen am Pegel. Die
+   Spielgeraeusche gehen weiterhin direkt raus - Ansagen muessen klar bleiben,
+   auch wenn Dir die Musik schon im Kopf matscht. */
+let MASTER=null, VERZERRER=null, TIEFPASS=null;
 function ensureAudio(){ if(AC) return AC;
-  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
+  try{ AC=new (window.AudioContext||window.webkitAudioContext)();
+    MASTER=AC.createGain(); VERZERRER=AC.createWaveShaper(); TIEFPASS=AC.createBiquadFilter();
+    TIEFPASS.type='lowpass'; TIEFPASS.frequency.value=20000;
+    VERZERRER.curve=verzerrKurve(0); VERZERRER.oversample='2x';
+    MASTER.connect(VERZERRER); VERZERRER.connect(TIEFPASS); TIEFPASS.connect(AC.destination);
+    MUS.next=AC.currentTime+.05; }
   catch(e){ AC=null; } return AC; }
-function ton(f,when,dur,type='square',vol=.05){
+function ton(f,when,dur,type='square',vol=.05,ziel=null){
   if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(f,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-  o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02); }
+  o.connect(g); g.connect(ziel||AC.destination); o.start(when); o.stop(when+dur+.02); }
 const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
 function glissando(f1,f2,dur,type='square',vol=.05){
   ensureAudio(); if(!AC||muted) return;
@@ -337,22 +405,69 @@ const SFX={
   schluck:()=>{ glissando(300,160,.22,'sine',.05); rauschen(.1,.03); },
   erledigt:()=>{ piep(660,.08); setTimeout(()=>piep(990,.12),85); },
   warn:   ()=>piep(880,.07,'square',.05),
+  tief:   ()=>{ glissando(190,85,.26,'sawtooth',.06); rauschen(.1,.05); },
+  daneben:()=>{ piep(140,.13,'square',.035); },
   klatsch:()=>{ rauschen(.09,.13); glissando(220,60,.14,'square',.07); },
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+
+/* --------------------------------------------------------------------------
+   MUSIK - Vorgluehen laeuft. Je hoeher der Pegel, desto lauter und kaputter.
+   Drei Sachen passieren gleichzeitig, und keine davon allein reicht:
+     laut      - mehr Ausschlag
+     verzerrt  - der WaveShaper drueckt die Wellen platt
+     dumpf     - der Tiefpass nimmt die Hoehen weg
+   Dazu verstimmt sich der Bass und der Takt faengt an zu eiern. Erst
+   zusammen klingt es nach "Dir wird das gerade zu viel" statt nach
+   "jemand hat am Lautstaerkeregler gedreht".
+   -------------------------------------------------------------------------- */
+function verzerrKurve(k){
+  const n=256, c=new Float32Array(n);
+  for(let i=0;i<n;i++){ const x=i*2/n-1; c[i]=(1+k)*x/(1+k*Math.abs(x)); }
+  return c;
+}
+let _kurveK=-1, _tiefpassHz=-1, _masterVol=-1;
+function setzeKlangfarbe(p){
+  if(!VERZERRER) return;
+  /* Die Kurve nur in Stufen neu rechnen - sonst 256 Werte pro Bild. */
+  const k=Math.round(p*20/2)*2;
+  if(k!==_kurveK){ _kurveK=k; VERZERRER.curve=verzerrKurve(k); }
+  /* Hoehen erst spaet wegnehmen, dafuer dann deutlich. */
+  const hz=20000-p*p*18400;
+  if(Math.abs(hz-_tiefpassHz)>60){ _tiefpassHz=hz;
+    TIEFPASS.frequency.setTargetAtTime(hz,AC.currentTime,.12); }
+  /* Der Verzerrer macht von sich aus lauter - ein Stueck gegenhalten,
+     sonst uebersteuert es bei hohem Pegel nur noch. */
+  const vol=1-p*.3;
+  if(Math.abs(vol-_masterVol)>.02){ _masterVol=vol;
+    MASTER.gain.setTargetAtTime(vol,AC.currentTime,.12); }
+}
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const p=Math.min(1,S.pegel/100);
+  setzeKlangfarbe(p);
+  /* Der Takt eiert ab der Haelfte - langsam schneller, langsam langsamer. */
+  const eiern=p>.5?Math.sin(S.t*.9)*(p-.5)*.22:0;
+  const st=60/128/4*(1+eiern);
+  /* War der Tab weg, liegt der Zeiger weit hinten. Ohne das hier holt die
+     Schleife hunderte Toene auf einmal nach. */
+  if(MUS.next<AC.currentTime-.5) MUS.next=AC.currentTime;
+  const spielt=S.modus==='spiel'||S.modus==='kampf';
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+    const laut=spielt?.026+p*.03:.014;
+    if(f){
+      /* Verstimmt: die Toene sitzen nicht mehr sauber. */
+      const zieh=p>.4?1+Math.sin(MUS.step*1.3)*(p-.4)*.09:1;
+      ton(f*zieh,MUS.next,st*.85,'square',laut,MASTER);
+      /* Ab zwei Dritteln liegt eine zweite, dreckige Stimme drunter. */
+      if(p>.66) ton(f*zieh*.5,MUS.next,st*.9,'sawtooth',laut*(p-.66)*1.8,MASTER);
+    }
+    if(spielt){
+      if(i%4===0) ton(55,MUS.next,.09,'sine',.05,MASTER);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -363,7 +478,7 @@ function rauschenKurz(when){
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(MASTER||AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -445,6 +560,41 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Die Statisten. Kein Ziel, keine Bedingung, kein Haken in der Liste.
+   Die Plaetze sind mit Absicht gewaehlt: jeder steht mindestens 20 Pixel von
+   jedem Moebel und jeder Aufgabenperson weg. Bei TUNE.reichweite = 15 gewinnt
+   sonst der Statist, und das Moebel dahinter waere nicht mehr zu benutzen -
+   genau der Fehler, an dem der Ausweis im Bett schon einmal haengen blieb.
+   art bestimmt nur den Leerlauf, nicht die Spielregeln. */
+const STATISTEN=[
+  { x:110, name:'DER MIT DEN SCHUHEN', spr:'gastSchuhe', art:'warten',
+    zeilen:['ICH ZIEH NUR SCHNELL DIE SCHUHE AN','SAG ICH SEIT NER HALBEN STUNDE'],
+    voll:'DU HAST DIE AUCH FALSCHRUM AN' },
+  { x:290, name:'DER AN DER BOX', spr:'gastBox', art:'wippen',
+    zeilen:['DIE ANLAGE IST VON MEIM BRUDER','NICHT SO LAUT SAGT ER','JA JA'],
+    voll:'SOLL ICH LAUTER MACHEN' },
+  { x:380, name:'DER MIT DEM BECHER', spr:'gastBecher', art:'trinken',
+    zeilen:['PROST','WAS','PROST HAB ICH GESAGT'],
+    voll:'DU BIST SCHON GUT DABEI' },
+  { x:470, name:'JEMAND IN DER KUECHE', spr:'gastHandy', art:'handy',
+    zeilen:['KEIN NETZ HIER DRIN','EIN BALKEN','UND WEG'],
+    voll:'SCHREIB DU MAL. ICH SEH NICHTS.' },
+  { x:680, name:'DER MIT DER JACKE AN', spr:'gastJacke', art:'wippen',
+    zeilen:['ICH STEH HIER SEIT ELF','ELF UHR','NEIN. SEIT DEM ELFTEN.'],
+    voll:'GEHT LOS ODER LASST ES' },
+  { x:860, name:'DER VORM BAD', spr:'gastBad', art:'warten',
+    zeilen:['DA IST SEIT ZEHN MINUTEN JEMAND DRIN','ICH GLAUB DER SCHLAEFT'],
+    voll:'DU WILLST DA JETZT NICHT REIN' },
+];
+/* Gemurmel: laeuft von allein ueber den Koepfen, damit die Wohnung auch
+   dann lebt, wenn Du niemanden ansprichst. */
+const GEMURMEL=[
+  'HAT JEMAND FEUER','WEM GEHOERT DER BECHER','WER FAEHRT','LAEUFT BEI DIR',
+  'DREH MAL LAUTER','WO IST MEIN GLAS','GEHT DAS FENSTER AUF','ALTER',
+  'BIN GLEICH SOWEIT','WER HAT DAS AUFGELEGT','NOCH ZEHN MINUTEN',
+];
+const KAMPF_RUFE=['OHHH','WER IST DAS','LASS DEN','GEH DAZWISCHEN','NICHT IM FLUR'];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -460,7 +610,8 @@ let S={};
 function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
-    x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
+    x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, gelandet:-99,
+    blick:1, gehPhase:0, schritte:0,
     kamX:0, hp:TUNE.leben,
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
@@ -469,13 +620,16 @@ function neuesSpiel(){
     suchT:0, suchZiel:null,
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
-    gegner:null, gewonnen:false, faenger:'',
+    gegner:null, gewonnen:false, faenger:'', patzer:0,
+    murmelT:2.5, murmelZeig:0, murmler:null, murmelTxt:'',
   };
+  /* Jeder Statist bekommt eine eigene Phase, sonst wippen alle im Gleichschritt. */
+  STATISTEN.forEach((s,i)=>{ s.statist=true; s._ph=i*1.37; s._blick=i%2?1:-1; s._flucht=0; });
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
      gleichem Abstand gewinnt die Person. Ein Fund dort waere nicht
      erreichbar. */
-  const belegt=LEUTE.map(l=>l.x);
+  const belegt=[...LEUTE,...STATISTEN].map(l=>l.x);
   const versteckbar=DINGE.filter(d=>
     ['tisch','schrank','regal','bett','box','spuele'].includes(d.art) &&
     !belegt.some(px=>Math.abs(px-(d.x+6))<TUNE.reichweite));
@@ -599,7 +753,12 @@ function update(dt){
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
 
-  if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
+  gemurmel(dt);
+  statistenWeichen(dt);
+
+  /* Im Kampf laeuft und springt es weiter - der Tritt des Krachers ist nur
+     mit einem Sprung zu ueberstehen. Gesucht und geredet wird nicht mehr. */
+  if(S.modus==='kampf'){ bewegung(dt); kampf(dt); kamera(dt); return; }
 
   /* --- Gespraech laeuft --- */
   if(S.reden){
@@ -608,7 +767,40 @@ function update(dt){
     kamera(dt); return;
   }
 
-  /* --- Bewegung --- */
+  bewegung(dt);
+
+  /* --- Suchen laeuft --- */
+  if(S.suchT>0){
+    S.suchT-=dt;
+    if(S.suchT<=0) suchErgebnis();
+    kamera(dt); return;
+  }
+
+  /* --- Aktion --- */
+  while(aktionPuffer.length){
+    aktionPuffer.shift();
+    /* Das Naehere gewinnt. Haetten Personen immer Vorrang, waeren Moebel
+       direkt neben jemandem gar nicht erreichbar - genau so war das Bett
+       neben Moritz unbenutzbar und der Ausweis unauffindbar.
+       Die Statisten stehen hinten in der Liste: bei exakt gleichem Abstand
+       gewinnt, wer fuer den Fortschritt zaehlt. */
+    let person=null, dPerson=1e9;
+    for(const l of [...LEUTE,...STATISTEN]){ const d=Math.abs(l.x+(l._flucht||0)-S.x);
+      if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
+    let ding=null, dDing=1e9;
+    for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
+      if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
+    if(person&&(!ding||dPerson<=dDing)) rede(person);
+    else if(ding) benutze(ding);
+    else if(S.x<60&&alleFertig()) starteKampf();
+    else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
+  }
+  kamera(dt);
+}
+
+/* ---- Laufen, Springen, Fallen. Gilt im Level und im Kampf. ---- */
+function bewegung(dt){
+  const imKampf=S.modus==='kampf';
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
   const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
@@ -622,7 +814,11 @@ function update(dt){
     S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
   }
   S.x+=S.vx*dt;
-  S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
+  /* Im Kampf ist der Flur die Arena. Sonst koenntest Du einfach weglaufen -
+     und weil die Uhr weiterlaeuft, waere das kein Sieg, nur langweilig. */
+  const von=imKampf?TUNE.arenaVon:14, bis=imKampf?TUNE.arenaBis:LEVEL_B-14;
+  if(S.x<von){ S.x=von; if(S.vx<0) S.vx=0; }
+  if(S.x>bis){ S.x=bis; if(S.vx>0) S.vx=0; }
 
   if(S.amBoden&&Math.abs(S.vx)>12){
     S.gehPhase+=Math.abs(S.vx)*dt*.09;
@@ -637,34 +833,38 @@ function update(dt){
   }
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
   S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden){ SFX.landen(); S.gelandet=S.t; }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+}
 
-  /* --- Suchen laeuft --- */
-  if(S.suchT>0){
-    S.suchT-=dt;
-    if(S.suchT<=0) suchErgebnis();
-    kamera(dt); return;
-  }
+/* ---- Wo steht ein Statist gerade wirklich ---- */
+const statistX=s=>s.x+(s._flucht||0);
 
-  /* --- Aktion --- */
-  while(aktionPuffer.length){
-    aktionPuffer.shift();
-    /* Das Naehere gewinnt. Haetten Personen immer Vorrang, waeren Moebel
-       direkt neben jemandem gar nicht erreichbar - genau so war das Bett
-       neben Moritz unbenutzbar und der Ausweis unauffindbar. */
-    let person=null, dPerson=1e9;
-    for(const l of LEUTE){ const d=Math.abs(l.x-S.x);
-      if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
-    let ding=null, dDing=1e9;
-    for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
-      if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
-    if(person&&(!ding||dPerson<=dDing)) rede(person);
-    else if(ding) benutze(ding);
-    else if(S.x<60&&alleFertig()) starteKampf();
-    else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
+/* ---- Im Kampf gehen die Umstehenden aus dem Weg ----
+   Niemand bleibt zwischen zwei Leuten stehen, die sich schlagen. Ohne das
+   steht der aus dem Flur mitten in der Arena und man sieht nicht mehr, wer
+   von den drei Figuren der Kracher ist. */
+function statistenWeichen(dt){
+  for(const s of STATISTEN){
+    const imWeg=S.modus==='kampf'&&s.x<TUNE.arenaBis+20;
+    const ziel=imWeg?(TUNE.arenaBis+26)-s.x:0;
+    s._flucht+=(ziel-s._flucht)*Math.min(1,3.5*dt);
+    if(imWeg) s._blick=-1;               // sie schauen zu
   }
-  kamera(dt);
+}
+
+/* ---- Gemurmel: alle paar Sekunden sagt jemand irgendwas ins Nichts ---- */
+function gemurmel(dt){
+  S.murmelZeig=Math.max(0,S.murmelZeig-dt);
+  S.murmelT-=dt;
+  if(S.murmelT>0) return;
+  S.murmelT=S.modus==='kampf'?1.6+Math.random()*1.4:3.5+Math.random()*3.5;
+  /* Nur wer gerade im Bild ist - sonst redet jemand hinter drei Waenden. */
+  const sichtbar=STATISTEN.filter(s=>statistX(s)>S.kamX-10&&statistX(s)<S.kamX+W+10);
+  if(!sichtbar.length){ S.murmler=null; return; }
+  S.murmler=pick(sichtbar);
+  S.murmelTxt=pick(S.modus==='kampf'?KAMPF_RUFE:GEMURMEL);
+  S.murmelZeig=2.2;
 }
 
 /* ---- Dinge benutzen ---- */
@@ -711,6 +911,12 @@ function rede(p){
   S.reden=p; S.redeZeile=0; S.redeT=0; S.vx=0; SFX.reden();
   /* Bedingungen pruefen */
   p._zeilen = p.zeilen;
+  /* Statisten haben keine Bedingung - sie reden nur. Ab Mut haengen sie
+     einen Satz an, damit man merkt, dass sie einen anders wahrnehmen. */
+  if(p.statist){
+    p._zeilen = (S.pegel>=TUNE.mutAb&&p.voll)?[...p.zeilen,p.voll]:p.zeilen;
+    return;
+  }
   if(p.id==='moritz'&&S.inventar.ausweis&&!S.erledigt.ausweis){
     p._zeilen=['DU HAST IHN','ALTER DANKE',...p.danach];
     S.erledigt.ausweis=true; S.inventar.ausweis=false; SFX.erledigt();
@@ -743,47 +949,158 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
+
+   Vorher war es ein Muster: rot blinkt, E druecken, dreimal, fertig. Das
+   war nach zwei Runden kein Kampf mehr, sondern eine Taste.
+
+   Jetzt sind es drei, und sie fragen verschiedene Sachen:
+
+     SCHLAG   ein gerades Ausholen. E - aber nur im letzten Stueck der
+              Vorwarnung. Zu frueh gedrueckt heisst danebengehauen, und
+              danebengehauen kostet eine halbe Sekunde, in der Du nichts
+              machen kannst. Damit hoert das Dauerdruecken auf.
+     DOPPEL   zwei Schlaege hintereinander, der zweite schneller. Konterst
+              Du den ersten, bricht die Serie ab.
+     TRITT    tief und unblockbar. Gold statt rot, und darueber steht was zu
+              tun ist: SPRINGEN. Kontern geht hier nicht - wer es trotzdem
+              versucht, haut daneben. Geht er ins Leere, kniet er kurz, und
+              das ist Dein Fenster.
+
+   Welche Muster kommen, haengt an seinen Trefferpunkten: die erste Runde
+   ist nur der gerade Schlag, damit man ihn lernt. Und mit jedem Treffer,
+   den er kassiert, wird alles ein Stueck schneller.
    ========================================================================== */
+const MUSTER={
+  3:['schlag','schlag','tritt'],
+  2:['schlag','tritt','doppel'],
+  1:['doppel','tritt','schlag','doppel'],
+};
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  S.gegner={ x:26, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, dauer:0,
+             muster:'', letztes:'', rest:1, tempo:1, trittHit:false, ausgewichen:false };
+  S.x=Math.max(96,Math.min(150,S.x)); S.vx=0; S.patzer=0;
+  zeigeHinweis('ROT KONTERN MIT E - GOLD UEBERSPRINGEN',4.5);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+function kampfTempo(g){ return 1+(TUNE.gegnerTreffer-g.hp)*TUNE.phasenTempo; }
+function naechstesMuster(g){
+  const liste=MUSTER[Math.max(1,Math.min(3,g.hp))];
+  let m=pick(liste);
+  /* Nicht dreimal dasselbe hintereinander - sonst lernt man das Muster
+     statt die Muster. */
+  for(let i=0;i<4&&m===g.letztes;i++) m=pick(liste);
+  g.letztes=m; g.muster=m; g.t=0; g.tempo=kampfTempo(g);
+  if(m==='tritt'){ g.zustand='trittWind'; g.dauer=TUNE.trittWindup/g.tempo;
+    g.trittHit=false; g.ausgewichen=false; SFX.tief(); return; }
+  g.zustand='wind'; g.rest=(m==='doppel')?2:1;
+  g.dauer=(m==='doppel'?TUNE.gegnerWindupKurz:TUNE.gegnerWindup)/g.tempo;
+  SFX.warn();
+}
+/* Du erwischst ihn */
+function kracherTrifft(g,txt){
+  g.hp--; g.zustand='getroffen'; g.t=0;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch();
+  meldung(txt||pick(['SITZT','KONTER','DAS WAR ER']),1.2);
+}
+/* Er erwischt Dich */
+function kracherHaut(txt){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  meldung(txt||'AUTSCH',1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; return true; }
+  return false;
+}
+/* Danebengehauen. Kein Schaden, aber Du stehst kurz dumm da. */
+function daneben(txt){
+  S.patzer=TUNE.konterZuFrueh; S.ruettel=2; SFX.daneben(); meldung(txt,1.1);
+}
 function kampf(dt){
-  const g=S.gegner; g.t+=dt;
+  const g=S.gegner;
+  g.t+=dt;
+  if(S.patzer>0) S.patzer=Math.max(0,S.patzer-dt);
   const dist=S.x-g.x;
-  if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+
+  /* Ein Tastendruck pro Bild zaehlt, der Rest verfaellt. Sonst kann man
+     den Puffer vollhaemmern und trifft das Fenster mit Sicherheit. */
+  let druck=aktionPuffer.length>0;
+  aktionPuffer.length=0;
+  if(S.patzer>0) druck=false;
+
+  switch(g.zustand){
+    case 'komm':
+      g.x+=Math.sign(dist)*TUNE.gegnerTempo*kampfTempo(g)*dt;
+      if(Math.abs(dist)<24) naechstesMuster(g);
+      break;
+
+    case 'wind':
+      if(druck){
+        if(g.t>=g.dauer*(1-TUNE.konterFenster)) kracherTrifft(g);
+        else daneben('ZU FRUEH');
+      }
+      if(g.zustand==='wind'&&g.t>=g.dauer){
+        g.zustand='schlag'; g.t=0;
+        if(kracherHaut()) return;
+      }
+      break;
+
+    case 'schlag':
+      if(g.t>=TUNE.gegnerSchlag){
+        if(g.rest>1){ g.rest--; g.zustand='wind'; g.t=0;
+          g.dauer=TUNE.gegnerWindupKurz/g.tempo; SFX.warn(); }
+        else { g.zustand='pause'; g.t=0; }
+      }
+      break;
+
+    case 'trittWind':
+      if(druck) daneben('DAS KONTERST DU NICHT');
+      if(g.t>=g.dauer){ g.zustand='tritt'; g.t=0;
+        g.trittHit=false; g.ausgewichen=false; }
+      break;
+
+    case 'tritt': {
+      /* Er zieht mit dem Tritt nach - einfach zwei Schritte zurueckgehen
+         soll nicht so gut sein wie drueberspringen. */
+      g.x+=Math.sign(dist)*TUNE.trittLunge*dt;
+      /* Der erste Moment, in dem das Bein Dich erreicht, entscheidet alles.
+         Danach ist die Sache erledigt: wer drueber war, landet gefahrlos,
+         wer zu spaet springt, springt umsonst.
+         Die Gnadenfrist nach der Landung ist Absicht. Wer GOLD SPRINGEN
+         liest, drueckt sofort - und wer sofort drueckt, ist genau dann
+         wieder unten, wenn der Tritt kommt. Ohne die Frist bestraft das
+         Spiel ausgerechnet die richtige Reaktion, und das ist beim Zusehen
+         nicht von Pech zu unterscheiden. */
+      const oben=!S.amBoden||(S.t-S.gelandet)<TUNE.trittGnade;
+      if(!g.trittHit&&!g.ausgewichen&&Math.abs(dist)<TUNE.trittWeite){
+        if(oben) g.ausgewichen=true;
+        else { g.trittHit=true; if(kracherHaut('DER GING TIEF')) return; }
+      }
+      if(g.t>=TUNE.trittDauer){
+        if(!g.trittHit&&g.ausgewichen){
+          g.zustand='erschoepft'; g.t=0; meldung('AUSGEWICHEN - JETZT',1.2); SFX.warn();
+        } else { g.zustand='pause'; g.t=0; }
+      }
+      break;
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
-      if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
-    }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+
+    case 'erschoepft':
+      if(druck){ kracherTrifft(g,'VOLL DRAUF'); break; }
+      if(g.t>=TUNE.erschoepftDauer/g.tempo){ g.zustand='pause'; g.t=0; }
+      break;
+
+    case 'getroffen':
+      g.x-=Math.sign(dist)*90*dt;
+      if(g.t>=0.5){
+        if(g.hp<=0){ starteCutscene(); return; }
+        g.zustand='pause'; g.t=0;
+      }
+      break;
+
+    case 'pause':
+      if(g.t>=TUNE.gegnerPause/kampfTempo(g)){ g.zustand='komm'; g.t=0; }
+      break;
   }
+  /* Er soll nicht durch die Wohnungstuer rutschen oder Dich ueberholen. */
+  g.x=Math.max(12,Math.min(TUNE.arenaBis-10,g.x));
 }
 
 /* ==========================================================================
@@ -895,6 +1212,9 @@ function zeichneWohnung(){
     }
   }
 
+  /* Statisten - zuerst, damit sie hinter den Aufgabenleuten liegen */
+  zeichneStatisten();
+
   /* Leute */
   for(const l of LEUTE){
     const rows=SPR[l.spr]||SPR.steh;
@@ -910,23 +1230,50 @@ function zeichneWohnung(){
     }
   }
 
-  /* Der Kracher */
+  /* Der Kracher. Die Ansage steht ueber ihm, nicht im HUD - man schaut im
+     Kampf auf den Gegner, nicht an den Bildrand. */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
+    const rows = g.zustand==='schlag'?SPR.kracherAus
+               : g.zustand==='tritt'?SPR.kracherTritt
+               : g.zustand==='erschoepft'?SPR.kracherKnie
+               : SPR.kracher;
+    const oben=BODEN-rows.length;
+    const blinkt = (g.zustand==='wind'&&Math.floor(S.t*16)%2===0)
+                || (g.zustand==='erschoepft'&&Math.floor(S.t*8)%2===0);
+    outline(rows,g.x,oben,1,.6);
+    sprite(rows,g.x,oben,1,blinkt?'#ffffff':null);
+
+    /* Vorwarnbalken. Rot heisst kontern, Gold heisst weg da. */
+    const balken=(farbe,anteil)=>{
+      const bw=18;
+      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,oben-6,bw+2,4);
+      ctx.fillStyle=farbe;   ctx.fillRect(g.x-2,oben-5,Math.round(bw*anteil),2);
+    };
+    /* Die Ansage blinkt nicht weg. Sie pulst nur zwischen ihrer Farbe und
+       weiss - wer im Kampf hinschaut, soll sie jederzeit lesen koennen und
+       nicht auf den naechsten Blinkschlag warten muessen. */
+    const ansage=(txt,farbe)=>{
+      text(txt,g.x+3-textW(txt)/2,oben-14,Math.floor(S.t*8)%2===0?P.weiss:farbe);
+    };
     if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+      balken(P.rot,1-g.t/g.dauer);
+      /* Das offene Fenster wird hell - so sieht man, worauf man wartet. */
+      const offen=g.t>=g.dauer*(1-TUNE.konterFenster);
+      if(offen){ ctx.fillStyle=P.weiss;
+        ctx.fillRect(g.x-2+Math.round(18*(1-TUNE.konterFenster)),oben-7,1,4); }
+      ansage(g.muster==='doppel'?'!!':'!',P.rot);
+    } else if(g.zustand==='trittWind'){
+      balken(P.gold,1-g.t/g.dauer);
+      ansage('SPRINGEN',P.gold);
+    } else if(g.zustand==='erschoepft'){
+      balken(P.gruen,1-g.t/(TUNE.erschoepftDauer/g.tempo));
+      ansage('E',P.gruen);
     }
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
+    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*Math.max(0,g.hp)/TUNE.gegnerTreffer),4);
   }
 
   /* Spieler */
@@ -938,6 +1285,9 @@ function zeichneWohnung(){
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
   if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Danebengehauen - man muss sehen, warum gerade nichts geht */
+  if(S.patzer>0&&Math.floor(S.t*12)%2===0)
+    text('X',S.x-1,S.y-rows.length-8,P.dunkel);
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
@@ -951,6 +1301,63 @@ function zeichneWohnung(){
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
   ctx.globalAlpha=1;
+}
+
+/* --------------------------------------------------------------------------
+   STATISTEN ZEICHNEN
+   Der Leerlauf ist der ganze Trick. Ein Pixel Auf und Ab im Takt reicht,
+   damit jemand steht statt geparkt zu sein - und weil jeder eine andere
+   Phase hat, sieht es nach Leuten aus und nicht nach einer Reihe.
+   -------------------------------------------------------------------------- */
+function zeichneStatisten(){
+  const takt=S.t*13.4;                 // 128 BPM, dasselbe wie der Bass
+  const p=S.pegel/100;
+  for(const s of STATISTEN){
+    const sx=statistX(s);
+    if(sx<S.kamX-20||sx>S.kamX+W+20) continue;   // ausserhalb des Bildes
+    let spr=s.spr, hebt=false, hoch=0;
+    if(s.art==='wippen'){
+      hoch=Math.sin(takt+s._ph)>.4?-1:0;
+    } else if(s.art==='trinken'){
+      /* Alle paar Sekunden ein Schluck. */
+      const z=(S.t+s._ph*2)%5.2;
+      hebt=z<.9; hoch=Math.sin(takt*.5+s._ph)>.6?-1:0;
+    } else if(s.art==='handy'){
+      hoch=0;
+    } else if(s.art==='warten'&&S.modus!=='kampf'){
+      /* Gewicht von einem Bein aufs andere. */
+      const z=Math.sin(S.t*.7+s._ph);
+      s._blick=z>0?1:-1; hoch=Math.abs(z)>.95?-1:0;
+    }
+    /* Wer betrunken ist, sieht auch die anderen schwanken. */
+    if(p>.55) hoch+=Math.sin(S.t*2.3+s._ph*3)*(p-.55)*4;
+    if(hebt) spr=s.spr+'Hoch';
+    const rows=SPR[spr]||SPR[s.spr];
+    const y=Math.round(BODEN-rows.length+hoch);
+    const zx=Math.round(sx-3);
+    outline(rows,zx,y,1,.45);
+    if(s._blick<0) spriteFlip(rows,zx,y); else sprite(rows,zx,y);
+    /* Handy-Leuchten */
+    if(s.art==='handy'){
+      ctx.globalAlpha=.5+Math.sin(S.t*3+s._ph)*.2;
+      ctx.fillStyle=P.neon2; ctx.fillRect(zx+6,y+5,2,3);
+      ctx.globalAlpha=1;
+    }
+    /* Statisten stehen im Hintergrund und tragen deshalb keinen Namen -
+       erst wer nah genug dran ist, sieht wen er da vor sich hat. */
+    const nah=Math.abs(sx-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
+    if(nah){
+      text(s.name,sx+3-textW(s.name)/2,y-16,P.dunkel);
+      if(Math.floor(S.t*4)%2===0) text('E',sx+2,y-9,P.dim);
+    }
+    /* Gemurmel */
+    if(S.murmler===s&&S.murmelZeig>0){
+      ctx.globalAlpha=Math.min(1,S.murmelZeig*1.6);
+      text(S.murmelTxt,sx+3-textW(S.murmelTxt)/2,y-9,
+           S.modus==='kampf'?P.gold:'#ffffff77');
+      ctx.globalAlpha=1;
+    }
+  }
 }
 
 /* ---- HUD ---- */
@@ -978,15 +1385,21 @@ function hud(){
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
-  /* Aufgabenliste */
-  let y=22;
-  for(const a of AUFGABEN){
-    const ok=!!S.erledigt[a.id];
-    text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
-    text(a.text,14,y,ok?P.dunkel:P.weiss);
-    y+=8;
+  /* Aufgabenliste - im Kampf ist sie erledigt und nur noch im Weg */
+  if(S.modus!=='kampf'){
+    let y=22;
+    for(const a of AUFGABEN){
+      const ok=!!S.erledigt[a.id];
+      text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
+      text(a.text,14,y,ok?P.dunkel:P.weiss);
+      y+=8;
+    }
+    if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
+  } else {
+    text('DER KRACHER',6,22,P.rot);
+    text('ROT  E',6,32,P.dim);
+    text('GOLD SPRUNG',6,40,P.dim);
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;

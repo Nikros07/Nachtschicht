@@ -180,6 +180,16 @@ werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 | **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
 | **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
 
+### Die anderen im Raum
+
+Außer den vieren steht da noch eine Handvoll Leute rum, die nichts von Dir
+wollen. Der an der Box wippt mit, einer sucht seit zehn Minuten Netz, einer
+wartet vorm Bad. Du kannst sie mit `E` ansprechen — sie bringen Dich nicht
+weiter, aber sie reden. **Ab Mut reden sie anders mit Dir.**
+
+Zwischendurch sagt einer von ihnen irgendwas ins Nichts. Und wenn es zum Kampf
+kommt, gehen sie aus dem Weg und schauen zu.
+
 ### Der Pegel
 
 Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
@@ -192,12 +202,32 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst es auch.** Je höher der Pegel, desto lauter, verzerrter und dumpfer
+wird die Musik, der Bass verstimmt sich und der Takt fängt an zu eiern. Die
+Spielgeräusche bleiben klar — nur die Musik kippt.
+
+> Der Pegel baut sich langsam ab. Trink erst kurz bevor Du Mut brauchst,
+> sonst ist er auf dem Weg zum Balkon schon wieder weg.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er hat drei
+Angriffe. Über seinem Kopf steht immer, was gerade kommt:
+
+| Über ihm | Was er macht | Was Du machst |
+|:--|:--|:--|
+| **Roter Balken, `!`** | Er holt gerade aus | `E` — aber erst im **letzten Stück** des Balkens |
+| **Roter Balken, `!!`** | Zwei Schläge hintereinander | Kontere den ersten, dann bricht die Serie ab |
+| **Goldener Balken, `SPRINGEN`** | Tiefer Tritt, **nicht zu kontern** | **Springen.** Er zieht dabei nach — weglaufen reicht meist nicht |
+| **Grüner Balken, `E`** | Er ist ins Leere getreten und kniet | `E` — freier Treffer |
+
+**Zu früh gedrückt ist danebengehauen.** Dann steht ein `X` über Dir und eine
+halbe Sekunde lang geht gar nichts. Auf `E` hämmern funktioniert nicht mehr.
+
+Im Kampf kannst Du laufen und springen, aber nur im Flur — weglaufen geht
+nicht, und die Uhr läuft weiter. Dreimal treffen, dann liegt er. Mit jedem
+Treffer, den er kassiert, wird er schneller.
 
 ### Moritz
 
@@ -236,6 +266,24 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+`level2.html` ist genauso gebaut. Dort sind zusätzlich interessant:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `proSchluck` · `pegelAbbau` · `mutAb` | Wie schnell der Pegel steigt und wofür er reicht |
+| `wackelnAb` · `langsamAb` · `blackoutBei` | Was der Pegel mit Dir macht |
+| `konterFenster` | Wie viel vom Ausholen ein Konter ist (0.45 = letzte 45 %) |
+| `konterZuFrueh` | Wie lange Danebenhauen kostet |
+| `gegnerWindup` · `gegnerWindupKurz` · `trittWindup` | Vorwarnzeiten der drei Muster |
+| `trittWeite` · `trittLunge` · `trittGnade` | Reichweite des Tritts und wie großzügig der Sprung zählt |
+| `phasenTempo` | Wie viel schneller er pro kassiertem Treffer wird |
+| `arenaVon` · `arenaBis` | Wie groß der Flur im Kampf ist |
+
+Die Wohnung liegt als `ORTE`, `DINGE`, `LEUTE` und `STATISTEN` daneben, die
+Angriffsreihenfolge des Krachers als `MUSTER` — pro Trefferpunkt eine Liste,
+aus der zufällig gezogen wird. Wer ein Muster nur später auftauchen lassen
+will, schreibt es einfach nicht in die obere Liste.
 
 ## Lokal starten
 
