@@ -285,6 +285,29 @@ Angriffsreihenfolge des Krachers als `MUSTER` — pro Trefferpunkt eine Liste,
 aus der zufällig gezogen wird. Wer ein Muster nur später auftauchen lassen
 will, schreibt es einfach nicht in die obere Liste.
 
+## Spielstand und Levelauswahl
+
+Beides steht in **`stand.js`** — eine Datei für alle Level, eingebunden als
+ganz normales `<script>`, kein Build.
+
+```js
+const LEVELS = [
+  { nr:1, datei:'index.html',  name:'DIE SCHULE', junge:'MAX FERDI' },
+  { nr:2, datei:'level2.html', name:'BEI MORITZ', junge:'MORITZ' },
+];
+```
+
+**Ein neues Level ist eine Zeile hier.** Die Leiste unter dem Bildschirm, die
+Zifferntasten auf dem Titelbild, das „weiter zum nächsten" auf dem
+Endbildschirm und die Freischaltung ergeben sich daraus.
+
+Gespeichert wird unter einem Schlüssel (`nachtschicht.stand`): welche Jungs
+dabei sind, welche Level geschafft sind, welche Bestzeit sie haben. Alte
+Einzelschlüssel werden beim ersten Start übernommen — niemand fängt von vorn an.
+
+Ein Level ist frei, wenn das davor geschafft ist. Gesperrte stehen als `ZU` in
+der Leiste. **`?frei=1`** an der Adresse macht alles auf, zum Ausprobieren.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -293,7 +316,10 @@ Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
 python -m http.server 5173
 ```
 
-Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+| Anhängsel | Wozu |
+|:--|:--|
+| `?touch=1` | Handy-Steuerung am Rechner testen |
+| `?frei=1` | Alle Level freischalten |
 
 ## Technisch
 

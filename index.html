@@ -59,6 +59,11 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Noch gesperrt: sichtbar, aber kein Link */
+  #levelbar .zu { flex:1; text-align:center; font:700 9px/1 monospace; letter-spacing:1px;
+    padding:7px 4px; color:#3a3450; background:rgba(255,255,255,.02);
+    border:1px dashed #241e3c; border-radius:5px; cursor:not-allowed; }
+  html.touch #levelbar .zu { padding:11px 4px; font-size:11px; }
   html.touch #levelbar { padding:6px 8px; }
   html.touch #levelbar a { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
@@ -93,15 +98,14 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html" class="aktiv">1 &middot; DIE SCHULE</a>
-    <a href="level2.html">2 &middot; BEI MORITZ</a>
-  </div>
+  <div id="levelbar"></div>
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="stand.js"></script>
 <script>
+baueLevelleiste(1);
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
    Kein Endlos-Runner mehr. Ein gebautes Level mit Etagen, Raeumen und Zielen.
@@ -499,15 +503,13 @@ const NOTIZEN = [
   'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
 ];
 
-/* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit1';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+/* Spielstand: Crew, geschaffte Level und Bestzeiten liegen in stand.js.
+   Hier stehen nur noch die Abkuerzungen, die dieses Level braucht. */
+const DIES=1;
+const ladeCrew=()=>STAND.crew();
+const ladeBest=()=>STAND.bestzeit(DIES);
 /* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+const tempoBonus=()=>STAND.hatJungen('MAX FERDI')?1.15:1;
 
 /* Spinde im Gang - hier kannst du dich vor Lehrern verstecken. */
 const SPINDE = [
@@ -623,11 +625,14 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
+  /* Nach gewonnenem Level fuehrt E direkt ins naechste. Das muss vor dem
+     Neustart stehen - vorher hat der Neustart es abgefangen und das
+     "E  WEITER ZU LEVEL 2" auf dem Endbildschirm war eine Luege. */
+  if(S.modus==='ende'&&S.gewonnen){ const n=STAND.naechstes(DIES);
+    if(n){ location.href=n.datei; return; } }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
-  /* Nach gewonnenem Level fuehrt E direkt ins naechste */
-  if(S.modus==='ende'&&S.gewonnen){ location.href='level2.html'; return; }
   aktionPuffer.push(S.t);
 }
 /* ---- Intro ---- */
@@ -719,10 +724,14 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  /* Levelauswahl auf dem Titelbild. Ohne das kommt man nur zu Level 2,
-     wenn man Level 1 gewinnt - und sieht bis dahin nicht, dass es da ist. */
-  if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
-    e.preventDefault(); location.href='level2.html'; }
+  /* Levelauswahl auf dem Titelbild ueber die Zifferntasten - gesperrte
+     Level gehen nicht, dafuer gibt es ?frei=1 zum Ausprobieren. */
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-9]$/.test(e.code)){
+    e.preventDefault();
+    const l=levelNr(+e.code.slice(-1));
+    if(l&&l.nr!==DIES&&STAND.frei(l.nr)) location.href=l.datei;
+    else if(l&&l.nr!==DIES) piep(160,.1,'square',.04);
+  }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1302,10 +1311,9 @@ function starteCutscene(){
 }
 /* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
 function levelGeschafft(){
-  speichereCrew('MAX FERDI');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  STAND.nimmJungen('MAX FERDI');
+  S.neueBestzeit=STAND.schaffe(DIES,S.zeit);
+  baueLevelleiste(DIES);        // Level 2 ist jetzt offen, die Leiste soll es zeigen
 }
 
 function cutscene(dt){
@@ -1898,11 +1906,18 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt */
-  const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
-  const b='TASTE 2    LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  levelListe();
+}
+
+/* Levelliste im Bild - die Zeilen kommen aus stand.js, damit sie nicht in
+   jedem Level einzeln von Hand gepflegt werden muss. */
+function levelListe(){
+  const zeilen=levelZeilen(DIES);
+  const y0=H-5-(zeilen.length-1)*6;
+  zeilen.forEach((z,i)=>{
+    const t=z[0].padEnd(10,' ')+z[1];
+    text(t,(W-textW(t))/2,y0+i*6,z[2]?P.neon2:P.dunkel);
+  });
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1937,7 +1952,9 @@ function bildschirme(){
       textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,106,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
-      if(Math.floor(S.t*2)%2===0) textGlowC('E  WEITER ZU LEVEL 2',134,P.gruen,1);
+      const n=STAND.naechstes(DIES);
+      if(n&&Math.floor(S.t*2)%2===0)
+        textGlowC('E  WEITER ZU LEVEL '+n.nr+' - '+n.name,134,P.gruen,1);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);

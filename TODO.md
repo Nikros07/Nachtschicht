@@ -86,9 +86,20 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei) —
+      `stand.js`, ein Schlüssel für alles, alte Stände werden übernommen
+- [x] Übergänge zwischen den Leveln — Endbildschirm führt ins nächste Level,
+      Levelleiste und Zifferntasten kommen aus einer Liste, Gesperrtes ist zu
+      (`?frei=1` macht zum Ausprobieren alles auf)
+- [~] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
+      — die **Liste** der Level steht jetzt in `stand.js`, ein neues Level ist
+      dort eine Zeile. Der **Inhalt** eines Levels liegt weiter in seiner
+      eigenen Datei. Das ist Absicht, solange es zwei Level sind: Schule und
+      Wohnung teilen fast keine Mechanik. Erst ab Level 4 lohnt sich ein
+      gemeinsames Format — vorher weiß man nicht, was gemeinsam ist
+- [ ] Der Motor liegt doppelt in `index.html` und `level2.html` (Font,
+      Bild-Cache, Audio, Vollbild, Touch — rund 300 Zeilen). Beim nächsten
+      Level in eine `motor.js` ziehen, so wie jetzt `stand.js`
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -137,3 +148,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
       unblockbarer Tritt. Springen und Kontern sind jetzt zwei verschiedene
       Antworten, und Tastenhämmern verliert
 - [x] **Level 2: Musik hängt am Pegel** — lauter, verzerrt, dumpf, verstimmt
+- [x] **Spielstand und Levelauswahl in `stand.js`** — ein Speicherplatz für
+      Crew, geschaffte Level und Bestzeiten; die Levelleiste baut sich daraus
