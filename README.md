@@ -192,12 +192,38 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst es auch.** Je höher der Pegel, desto lauter und dreckiger wird die
+Box: das Rechteck wird zum Sägezahn, eine zweite Stimme läuft knapp daneben und
+schwebt, alles sackt eine Spur ab, und ab der Hälfte kommt auf jeden Schlag
+eine Hi-Hat. Wer mit Ton spielt, weiß ohne hinzuschauen, wo er steht.
+
+### Die anderen im Raum
+
+Es sind mehr Leute da als die vier, um die es geht. Die stehen rum, wiegen
+sich, halten einen Becher und reden Unsinn. Mit denen kannst Du nichts machen
+— sie sind der Grund, warum es sich nach Vorglühen anfühlt und nicht nach
+leerer Wohnung.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel. Über seinem Kopf läuft
+ein Balken, und **die Farbe sagt Dir, was zu tun ist**:
+
+| Über ihm | Was er macht | Was Du machst |
+|:--|:--|:--|
+| **Roter Balken** `!` | Er holt zum Schwinger aus | `E` — kontern |
+| **Goldener Balken** `?` | Er täuscht nur an | **Nichts.** Finger still |
+| **Blauer Balken** `^` | Er geht zurück und holt eine Flasche | **Springen** |
+
+Die Falle ist die Finte: Wer da draufhaut, schlägt ins Leere und steht eine
+halbe Sekunde **OFFEN** da — und genau dann kommt der echte Schwinger.
+
+Er fängt einfach an. Der erste Durchgang ist nur der Schwinger. Erst wenn Du
+ihn triffst, kommt die Finte dazu, und nach dem zweiten Treffer die Flasche —
+und er holt jedes Mal schneller aus. Dreimal kontern, dann liegt er.
+
+Im Kampf kannst Du Dich bewegen, aber nicht weglaufen: der Flur ist zu Ende.
 
 ### Moritz
 
