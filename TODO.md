@@ -26,11 +26,15 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** nichts mehr.
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — vier Rumsteher mit
+      Becher, eigenem Takt und Sprüchen
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — drei
+      Muster (Schwinger, Finte, Flasche), die phasenweise dazukommen
+- [x] Musik lauter/verzerrter je höher der Pegel — Sägezahn, zweite
+      Stimme daneben, alles sackt ab, dichtere Hi-Hats
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -53,13 +57,25 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
+> **Blockiert alles darunter: die Namen fehlen.**
+> Fähigkeiten, Sprites und Freischaltungen hängen daran, wer die Personen
+> überhaupt sind. Solange das nicht vom Nick kommt, lässt sich hier nichts
+> Sinnvolles bauen — erfundene Namen für echte Leute wären Unsinn und
+> müssten sowieso wieder raus.
+>
+> Die **Struktur** steht dagegen schon: `JUNGS` in `spielstand.js` ist die
+> eine Stelle, an der ein Junge und seine Fähigkeit definiert werden. Einen
+> Eintrag dazuschreiben reicht, der Rest zieht nach.
+
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
 - [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
-- [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
+- [ ] Gesichter als Pixel-Köpfe — `KOPF` in `engine.js` ist genau dieser Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
-- [ ] Namen und Eigenheiten: kommt vom Nick
+- [ ] Namen und Eigenheiten: **kommt vom Nick**
+- [x] Tabelle für Fähigkeiten statt if-Abfragen im Level (`JUNGS`)
+- [x] Freischaltungen überstehen einen Neustart und werden angezeigt
 
 ---
 
@@ -70,18 +86,36 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      — *Anfang steht:* die Finte in Level 2 macht Danebenhauen teuer
+      (`danebenDauer`). Fehlt noch als Regel für jeden Schlag, nicht nur
+      gegen die Finte
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
-- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere
+      Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      — *Anfang steht:* der Kracher wirft (`flasche`), holt pro Phase
+      schneller aus und legt pro Phase ein Muster nach
 
 ---
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
-- [ ] Kampfsystem und Level-System zusammenführen
+- [x] **Gemeinsame Engine** — Font, Bild-Cache, Zeichenhelfer, Ton, Leinwand
+      und Eingabe liegen einmal in `engine.js`, das Gehäuse in `shell.css`.
+      Ein Level ist nur noch das, was dieses Level ausmacht
+- [x] **Spielstand speichern** — ein Schlüssel in `spielstand.js`: welche
+      Level geschafft sind, welche frei, wer dabei ist, Bestzeiten. Alte
+      Einzelschlüssel werden übernommen
+- [x] **Übergänge zwischen den Leveln** — kommen aus dem Register `LEVELS`.
+      Levelleiste, Zifferntasten und "weiter zu" ziehen automatisch nach
+- [x] **Prüfungen** — `test/` lädt jede Seite in einem echten Browser
+- [ ] **Level-Daten in eine eigene Struktur** — halb erledigt. Register und
+      Engine stehen, aber Räume, Möbel und Personen stecken noch als Arrays
+      im jeweiligen HTML. Nächster Schritt wäre eine Datei pro Level, die
+      nur Daten enthält
+- [ ] Kampfsystem und Level-System zusammenführen — Level 2 hat einen
+      eigenen kleinen Kampf, `runner.html` hat den vollen. Beide sollten
+      derselbe sein
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
@@ -123,3 +157,24 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Engine, Gehäuse und Spielstand aus den Leveln herausgezogen
+- [x] Level werden nacheinander freigeschaltet, Spielstand überlebt Neustart
+- [x] Prüfskripte in `test/` — jede Seite in einem echten Browser
+
+---
+
+## Wo es hakt
+
+Damit die nächste Durchsicht nicht bei null anfängt:
+
+**Die Namen der Jungs fehlen.** Blockiert den ganzen Abschnitt „Die Jungs"
+und damit die Belohnung jedes neuen Levels. Level 3 lässt sich bauen, aber
+am Ende steht dann jemand ohne Namen. Kommt vom Nick.
+
+**Das Club-Minispiel hat noch keine Mechanik.** In der Liste steht, was es
+bewirken soll, aber nicht, was man tut. Timing? Auswahl? Rhythmus? Ohne die
+Entscheidung ist Level 5 nicht baubar.
+
+**Zwei Kampfsysteme.** `runner.html` hat das ausgewachsene, Level 2 einen
+kleinen eigenen. Bevor Level 4 (Türsteher) drankommt, sollten die eins sein
+— sonst gibt es ein drittes.

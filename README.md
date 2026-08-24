@@ -243,9 +243,30 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 # Für Entwickler
 
+## Wo was liegt
+
+| Datei | Was drin steht |
+|:--|:--|
+| `engine.js` | Font, Bild-Cache, Sprites, Text, Ton, Leinwand, Eingabe |
+| `shell.css` | Der Automat drumherum: CRT-Scheibe, Touch-Tasten, Levelleiste |
+| `spielstand.js` | Welche Level es gibt, was frei ist, wer dabei ist, Bestzeiten |
+| `index.html` | Level 1 — nur was dieses Level ausmacht |
+| `level2.html` | Level 2 — dito |
+| `runner.html` | Der alte Endlos-Modus, unangetastet |
+| `test/` | Prüfskripte, die jede Seite in einem echten Browser laden |
+
+**Ein neues Level** braucht: eine HTML-Datei, die `spielstand.js` und
+`engine.js` lädt, eine Zeile in `LEVELS` (in `spielstand.js`) — und sonst nur
+das eigene Level. Levelleiste, Freischaltung, Zifferntasten und „weiter zu
+Level X" ziehen von allein nach.
+
+**Zum Testen** hängt `?frei=1` an die Adresse: dann sind alle Level offen, ohne
+dass der echte Spielstand angefasst wird. `Stand.zuruecksetzen()` in der Konsole
+löscht ihn ganz.
+
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
+Ganz oben in jedem Level steht ein Block namens `TUNE`. Dort liegt das komplette
 Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 
 | Regler | Bewirkt |
@@ -271,7 +292,11 @@ Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
 python -m http.server 5173
 ```
 
-Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen,
+mit `?frei=1` sind alle Level offen.
+
+Die Prüfskripte in `test/` brauchen einmalig `npm i playwright` — Details in
+[test/README.md](test/README.md). Das Spiel selbst braucht davon nichts.
 
 ## Technisch
 
@@ -282,6 +307,7 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
 - Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+- Engine, Gehäuse und Spielstand liegen einmal da, nicht einmal pro Level
 
 ## Woran es sich orientiert
 
@@ -291,5 +317,9 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar. Level 2 wird erst frei, wenn
+Level 1 geschafft ist — der Spielstand liegt im Browser und überlebt einen
+Neustart.
+
+Level 3 bis 8 und das Freischalten der restlichen Crew stehen in
+[TODO.md](TODO.md), zusammen mit dem, was gerade hakt.
