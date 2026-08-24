@@ -36,6 +36,23 @@ const JUNGS = {
   'MORITZ':    { ab:2, kann:'BESSER BEI DEN CHAYAS', chaya:1  },
 };
 
+/* Wie die Jungs aussehen. Steht hier statt in einem Level, weil ab Level 2
+   jedes Level sie zeigen kann - und weil ihre Sprites spaeter durch echte
+   Pixel-Koepfe ersetzt werden sollen. Dann aendert sich genau diese Stelle.
+   Die Buchstaben sind der Zeichenschluessel KEY aus engine.js. */
+const JUNG_SPR = {
+  /* MAX FERDI - Sportler, hellblaues Shirt */
+  max:      ['..hhh..','.hsssh.','.sssss.','..sss..','..ccc..','.ccccc.','k.ccc.k','..ccc..',
+             '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  maxGeh:   ['..hhh..','.hsssh.','.sssss.','..sss..','..ccc..','ccccc..','k.ccc.k','..ccc..',
+             '..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk'],
+  /* MORITZ - dunkle Haare, groesser, weiss-blaues Fussballtrikot */
+  moritz:   ['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','.TTBTT.',
+             'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  moritzGeh:['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','TTBTT..',
+             'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk'],
+};
+
 /* ==========================================================================
    DER SPEICHER
    ========================================================================== */

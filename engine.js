@@ -76,7 +76,10 @@ function verlauf(key,w,h,mal){ let c=_grd.get(key);
 const KEY={ k:'#07060d', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'#f2f0ff',
       g:'#ffd447', n:'#ff3d8b', c:'#42d9ff', r:'#ff4d4d', d:'#484263', b:'#6b4a2a',
       o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
-      z:'#5a4632', u:'#8c94ad', q:'#2e3350', j:'#3d2f22' };
+      z:'#5a4632', u:'#8c94ad', q:'#2e3350', j:'#3d2f22',
+      /* Moritz: dunkle Haare, weiss-blaues Trikot. Steht hier und nicht im
+         Level, weil er ab Level 2 in jedem Level vorkommt. */
+      H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -134,6 +137,24 @@ const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,
 /* Ein Kopf ist ein Kopf, in jedem Level. Steht hier, weil spaeter die
    Gesichter der Jungs genau diesen Block ersetzen sollen. */
 const KOPF=['..hhh..','.hsssh.','.sssss.','..sss..'];
+/* Kopf plus Hals plus Beine - so entsteht eine Spielerhaltung. */
+const geh = beine => [...KOPF,'..ttt..',...beine];
+
+/* DU. In jedem Level derselbe Mensch, also auch dasselbe Sprite.
+   Ein Level, das eine eigene Haltung braucht - ducken, packen, kontern -
+   legt sie sich selbst dazu. */
+const HELD = {
+  steh: geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
+  geh:[
+    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
+    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
+    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
+    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
+  ],
+  sprung: [...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
+  fall:   [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
+  suchen: [...KOPF,'..ttt..','.ttttts','k.ttt.s','..ttt..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
+};
 
 /* Aus einer Liste eine Zeile ziehen. Wird ueberall gebraucht. */
 const pick = a => a[Math.floor(Math.random()*a.length)];

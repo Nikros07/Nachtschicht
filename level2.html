@@ -102,35 +102,17 @@ Object.assign(P,{ ink:'#08060f', dunkel:'#4a4363', boden:'#20182a', bodenKante:'
    Der Zeichenschluessel und die Helfer stehen in engine.js. Hier kommen
    nur die Farben dazu, die es woanders nicht gibt.
    ========================================================================== */
-Object.assign(KEY,{
-  k:'#08060f', d:'#4a4363',
-  /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
-});
-const geh=b=>[...KOPF,'..ttt..',...b];
+Object.assign(KEY,{ k:'#08060f', d:'#4a4363' });
 
 const SPR={
-  steh: geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
-  geh:[
-    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
-    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
-    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
-    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
-  ],
-  sprung:[...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
-  fall:  [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
-  suchen:[...KOPF,'..ttt..','.ttttts','k.ttt.s','..ttt..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
+  ...HELD,
+  /* Kontern gibt es nur hier - der Rest der Haltungen kommt aus HELD. */
   konter:['..hhh....','.hsssh...','.sssss...','..sss....','..ttt....','.ttttssss',
           'k.ttt....','..ttt....','..ppp....','..p.p....','..p.p....','.pp.pp...','.kk..kk..'],
 
-  /* MORITZ - dunkle Haare, groesser, weiss-blaues Fussballtrikot */
-  moritz:['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','.TTBTT.',
-          'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  moritzGeh:['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','TTBTT..',
-             'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk'],
-  /* MAX FERDI - aus Level 1, Sportler */
-  max:['..hhh..','.hsssh.','.sssss.','..sss..','..ccc..','.ccccc.','k.ccc.k','..ccc..',
-       '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  /* Die Jungs sehen ueberall gleich aus - ihre Sprites stehen bei ihnen
+     in spielstand.js. */
+  moritz:JUNG_SPR.moritz, moritzGeh:JUNG_SPR.moritzGeh, max:JUNG_SPR.max,
   /* Der Schlaefer auf dem Sofa */
   schlaefer:['..........','..hhh.....','.hsssh....','.sssss....','.vvvvvvvv.','.vvvvvvvv.',
              '..pppppp..','..kk..kk..'],

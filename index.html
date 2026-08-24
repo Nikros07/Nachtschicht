@@ -126,22 +126,13 @@ const TUNE = {
 /* ==========================================================================
    SPRITES
    ========================================================================== */
-/* KEY, KOPF und die Zeichenhelfer stehen in engine.js. */
-const geh = beine => [...KOPF,'..ttt..',...beine];
-
+/* KEY, KOPF, HELD und die Zeichenhelfer stehen in engine.js. Hier stehen
+   nur die Haltungen, die es NUR in der Schule gibt: Ducken (im Spind) und
+   Packen (die Cutscene am Ende). Der Rest kommt aus HELD. */
 const SPR = {
-  steh: geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
-  geh:[
-    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk']),
-    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk']),
-    geh(['.tttttt','k.ttt.k','..ttt..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
-    geh(['tttttt.','k.ttt.k','..ttt..','..ppp..','..ppp..','.p.pp..','p..pp..','.kk.kk.']),
-  ],
-  sprung: [...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
-  fall:   [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
+  ...HELD,
   ducken: ['.......','.......','.......','.......','.......','.......','.......','.hhh...',
            'hsssh..','.tttttt','ktttttk','.pppppp','.kk..kk'],
-  suchen: [...KOPF,'..ttt..','.ttttts','k.ttt.s','..ttt..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
   packen: ['..hhh....','.hsssh...','.sssss...','..sss....','..ttt....','.ttttssss',
            'k.ttt.ss.','..ttt....','..ppp....','..p.p....','..p.p....','.pp.pp...','.kk..kk..'],
 
