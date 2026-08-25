@@ -238,6 +238,45 @@ console.log('\n6) Der Kampf belohnt Timing statt Haemmern');
   await ctx.close();
 }
 
+/* ==========================================================================
+   7) Nichts verstellt etwas. In Level 2 gewinnt bei gleichem Abstand die
+   Person vor dem Moebel - dadurch war schon einmal das Bett neben Moritz
+   unerreichbar und der Ausweis damit unauffindbar. Seit die Wohnung voller
+   Statisten steht, kann das jedem Moebel passieren.
+   ========================================================================== */
+console.log('\n7) Jedes Moebel und jede Person bleibt erreichbar');
+{
+  const { ctx, page } = await seite('level2.html');
+  const r = await page.evaluate(()=>{
+    starte(); starteLevel();
+    const teste=(x)=>{
+      S.x=x; S.vx=0; S.reden=null; S.suchT=0; S.durchsucht={};
+      S.meldung=''; S.meldungT=0; S.inventar={};
+      aktionPuffer.push(S.t); update(1/60);
+      /* Manche Dinge starten eine Suche, andere wirken sofort - trinken,
+         Dose nehmen, in den Spiegel gucken. Beides zaehlt. */
+      if(S.reden) return 'person:'+S.reden.name;
+      if(S.suchT>0) return 'ding';
+      if(S.meldungT>0) return 'ding';
+      return 'nichts';
+    };
+    const weg=[];
+    for(const d of DINGE){
+      /* Das Sofa ist bewusst nicht erreichbar - dort liegt der Schlaefer. */
+      if(d.art==='sofa') continue;
+      if(![teste(d.x+6-8),teste(d.x+6+8)].includes('ding')) weg.push('MOEBEL '+d.art);
+    }
+    for(const l of LEUTE)
+      if(![teste(l.x-6),teste(l.x+6)].includes('person:'+l.name)) weg.push('PERSON '+l.name);
+    const statisten=STATISTEN.map(s0=>teste(s0.x));
+    return { weg, statisten };
+  });
+  pruefe('kein Moebel und keine Person verstellt', r.weg.length===0, r.weg.join(' | '));
+  pruefe('Statisten sind trotzdem ansprechbar',
+    r.statisten.every(t=>t==='person:JEMAND'), r.statisten.join(','));
+  await ctx.close();
+}
+
 await browser.close();
 srv.close();
 console.log(fehler ? `\n${fehler} Pruefung(en) fehlgeschlagen` : '\nalles gruen');
