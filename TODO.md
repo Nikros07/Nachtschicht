@@ -27,7 +27,8 @@ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei.
 **Offen in Level 2:**
 
 - [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
+- [x] Der Kracher hat jetzt drei Angriffsmuster, geht in Deckung und wird beim
+      letzten Treffer schneller
 - [ ] Musik lauter/verzerrter je höher der Pegel
 
 ---
@@ -114,13 +115,31 @@ wandern. Level 2 hat einen einfachen Konter-Kampf, mehr ist es noch nicht.
 > gebraucht werden — **DER TUERSTEHER** für Level 4 und **DIE SONNE** für
 > Level 8. Dazu **DIE MEUTE** und **DIE MUEDIGKEIT**.
 
-- [ ] Nahkampf, Konter, Combos übernehmen
-- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
-- [ ] **Ausdauer** — nicht unbegrenzt schlagen können
-- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
-- [ ] Der Kampf gehört in `nachtschicht.js`, sonst baut ihn Level 4 zum dritten Mal
+**Steht in `kampf.js`.** Ein Gegner ist ein Eintrag in `KAEMPFER` — Zahlen und
+Angriffsmuster, kein Code. Level 2 läuft schon darauf.
+
+- [x] Nahkampf und Kontern übernommen
+- [x] **Gegner blocken** — er ist nur in zwei Momenten angreifbar, im letzten
+      Drittel seines Ausholens und während seiner Erholung. Sonst prallst Du ab
+- [x] **Fehlschläge bestraft** — 0,6 s nach daneben, 0,8 s nach abgeprallt, und
+      in dieser Zeit kommt keine Ausdauer zurück
+- [x] **Konterfenster** auf das letzte Drittel (`KT.konterFenster = 0.34`)
+- [x] **Ausdauer** — vier Schläge, dann eine Sekunde gar nichts
+- [x] **Unblockbare Angriffe** (`nichtKonterbar`) — rot angesagt, nur Weggehen hilft
+- [x] **Boss-Phasen** (`phasen`) — ab einem Trefferstand kürzere Vorwarnung und
+      mehr Deckung
+- [x] **Fernangriffe** (`fern`) — sind angelegt, aber noch von keinem Gegner benutzt
+- [ ] **Combos** — im alten Endlos-Modus zählen sie Punkte. Im Duell braucht es
+      dafür erst eine Idee, was eine Combo dort überhaupt belohnen soll
+- [ ] **Arena verändert sich pro Phase** — das Ereignis `phase` liegt bereit,
+      was damit passiert, hängt an Level 4
+- [ ] Level 3 hat noch keinen Kampf. Muss es auch nicht — aber der Nachtbus
+      wäre eine Arena, in der der Boden ruckt
+- [ ] **Die Zahlen wollen gespielt werden.** Geprüft ist bislang nur, dass
+      Timing sich lohnt und Hämmern nicht (`test/smoke.mjs`, Abschnitt 6):
+      Hämmern kostet drei Herzen und braucht zwölf Sekunden, sauberes Kontern
+      keins und acht. Ob sich das *gut anfühlt*, kann nur einer sagen, der es
+      spielt — alle Regler stehen in `KT` oben in `kampf.js`
 
 ---
 
@@ -140,7 +159,8 @@ wandern. Level 2 hat einen einfachen Konter-Kampf, mehr ist es noch nicht.
       oben in jeder Datei (`RAEUME`, `ORTE`/`DINGE`/`LEUTE`, `SITZE`/`TUEREN`/
       `STANGEN`). Ein gemeinsames Format für alle drei gibt es noch nicht — dafür
       müsste erst klar sein, was Level 4 bis 8 überhaupt brauchen
-- [ ] Kampfsystem und Level-System zusammenführen
+- [x] **Kampfsystem und Level-System zusammengeführt** — `kampf.js`, Level 2
+      läuft darauf, Level 4 muss ihn nicht neu bauen
 - [ ] Musik pro Level statt einer Schleife — bislang hat jedes Level seine eigene
       Basslinie, aber der Aufbau ist überall derselbe
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen

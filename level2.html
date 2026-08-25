@@ -30,6 +30,7 @@
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
 <script src="nachtschicht.js"></script>
+<script src="kampf.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -73,11 +74,9 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
-  gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  /* (6) DER KRACHER AM ENDE
+     Der Kampf selbst steht in kampf.js - Ausdauer, Konterfenster und die
+     Angriffsmuster liegen dort in KT und KAEMPFER.kracher. */
   leben:            3,
 };
 
@@ -114,6 +113,9 @@ Object.assign(SPR,{
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* In Deckung: Arme hoch vors Gesicht. Man muss es auf einen Blick sehen. */
+  kracherDeckung:['..ddd..','.dkkkd.','ksssssk','.kksskk','..sss..','.vvvvv.','kvvvvvk',
+                  '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
 
   /* Einrichtung der Wohnung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -521,43 +523,57 @@ function kamera(dt){
    ========================================================================== */
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  S.x=Math.max(90,S.x); S.vx=0;
+  S.gegner=neuerKampf('kracher',{ x:Math.max(20,S.x-70), blick:1 });
+  zeigeHinweis('E WENN DER BALKEN GRUEN WIRD - DAS IST DER KONTER',4.5);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+/* Der Ablauf steckt in kampf.js. Hier steht nur noch, was Level 2 aus den
+   Ereignissen macht: Ton, Ruettler, Herzen, Sprueche. */
 function kampf(dt){
-  const g=S.gegner; g.t+=dt;
-  const dist=S.x-g.x;
-  if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  const K=S.gegner;
+
+  /* Ausweichen gehoert dazu - gegen den schweren Schlag ist Weggehen die
+     einzige Antwort. Waehrend Du selbst schlaegst, geht es nicht. */
+  if(kampfDarfLaufen(K)){
+    const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+    if(richtung){
+      S.blick=richtung;
+      S.vx+=richtung*TUNE.beschleunigung*dt;
+      const hoechst=TUNE.gehTempo*tempoBonus()*0.85;
+      if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+    } else {
+      const brems=TUNE.bremsung*dt;
+      S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+    }
+  } else S.vx*=.8;
+  S.x=Math.max(30,Math.min(LEVEL_B-30,S.x+S.vx*dt));
+  if(Math.abs(S.vx)>12) S.gehPhase+=Math.abs(S.vx)*dt*.09;
+
+  const schlag=aktionPuffer.length>0;
+  aktionPuffer.length=0;
+
+  for(const e of kampfSchritt(K,dt,S.x,{schlag})){
+    if(e.art==='konter'){
+      S.ruettel=6; S.blitz=.55; SFX.klatsch();
+      meldung(pick(['SITZT','KONTER','GENAU JETZT']),1.3);
+    }
+    else if(e.art==='treffer'){
+      S.ruettel=3.5; S.blitz=.3; SFX.klatsch();
+      meldung(e.frueh?'ZU FRUEH - ABER DRIN':'TREFFER',1.1);
+    }
+    else if(e.art==='abgeprallt'){ S.ruettel=2; SFX.nichts(); }
+    else if(e.art==='daneben'){ SFX.nichts(); }
+    else if(e.art==='leer'){ SFX.nichts(); }
+    else if(e.art==='holtAus'){ SFX.warn(); }
+    else if(e.art==='phase'){ S.blitz=.4; SFX.warn(); }
+    else if(e.art==='wehgetan'){
+      S.hp-=e.schaden; S.ruettel=6; S.blitz=.5; SFX.aua();
       meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false;
+                   S.faenger='ER HAT DICH RAUSGEWORFEN'; return; }
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
-      if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
-    }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+    else if(e.art==='aus'){ starteCutscene(); return; }
   }
 }
 
@@ -686,29 +702,13 @@ function zeichneWohnung(){
     }
   }
 
-  /* Der Kracher */
-  if(S.gegner){
-    const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
-    }
-    /* Lebensbalken */
-    const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
-  }
+  /* Der Kracher - Sprite, Ausholbalken, Trefferpunkte macht kampf.js */
+  if(S.gegner) kampfZeichnen(S.gegner,BODEN);
 
   /* Spieler */
   let rows;
   if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
+  else if(S.modus==='kampf'&&S.gegner&&S.gegner.schlagT>0) rows=SPR.konter;
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
@@ -731,6 +731,8 @@ function zeichneWohnung(){
 
 /* ---- HUD ---- */
 function hud(){
+  /* Ausdauerbalken und Kampfansagen - feste Bildschirmposition */
+  if(S.modus==='kampf') kampfHud(S.gegner);
   /* Herzen */
   for(let i=0;i<S.maxHp;i++){
     const x=6+i*7,y=6, voll=i<S.hp;

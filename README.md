@@ -196,9 +196,29 @@ auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel.
+
+**Er ist nicht die ganze Zeit angreifbar.** Solange er auf den Beinen steht, hat
+er die Hände oben — da prallst Du ab und stehst danach lange offen. Er macht
+sich selbst auf, und zwar genau zweimal:
+
+| Wann | Was passiert |
+|:--|:--|
+| **Im letzten Drittel seines Ausholens** | **KONTER** — doppelter Schaden. Der Balken über ihm zeigt das Fenster grün an |
+| **Während er sich vom Schlag erholt** | **Treffer** — einfacher Schaden. Über ihm steht dann `OFFEN` |
+| Zu früh, zu spät, gegen die Deckung, ins Leere | Abgeprallt. Du stehst eine dreiviertel Sekunde offen da |
+
+Zwei Konter reichen. Oder drei Treffer in seiner Erholung.
+
+**Ausdauer.** Jeder Schlag kostet, und während Du Dich von einem Fehlschlag
+erholst, holst Du keine Luft. Vier blinde Schläge, und Du stehst eine Sekunde
+nur da. Hämmern ist die schlechteste aller Taktiken.
+
+**Und einer geht gar nicht.** Manchmal holt er zu einem schweren Schlag aus —
+dann steht `NICHT KONTERBAR` in Rot über ihm. Den stoppt nichts. Die einzige
+Antwort ist, aus seiner Reichweite zu laufen.
+
+Beim letzten Treffer wird er sauer: kürzere Vorwarnung, öfter Deckung.
 
 ### Moritz
 
@@ -288,6 +308,7 @@ Sonne). Der liegt in **[runner.html](runner.html)**:
 | `nachtschicht.js` | Der gemeinsame Unterbau: Bildschirm, Schrift, Bild-Cache, Töne, Spielstand, Levelverzeichnis |
 | `nachtschicht.css` | Das Gehäuse: Rahmen, CRT-Scheibe, Touch-Tasten, Levelleiste |
 | `index.html` · `level2.html` · `level3.html` | Je ein Level, sonst nichts |
+| `kampf.js` | Der Nahkampf: Ausdauer, Kontern, Deckung, Angriffsmuster |
 | `runner.html` | Der alte Endlos-Modus, unverändert |
 | `test/smoke.mjs` | Optionaler Rauchtest im Browser |
 
@@ -318,6 +339,40 @@ Doppelklick vom Dateisystem, ganz ohne Server.
 
 Mehr nicht. Levelleiste, Zifferntasten-Auswahl, Freischaltung durch den
 Vorgänger, Bestzeit und Übergang hängen alle an dieser einen Zeile.
+
+## Der Kampf
+
+`kampf.js` hält den Nahkampf für alle Level. Ein Gegner ist ein Eintrag in
+`KAEMPFER` — Zahlen und Angriffsmuster, kein Code:
+
+```js
+tuersteher: {
+  name:'DER TUERSTEHER', hp:8, spr:'…',
+  tempo:60, reichweite:26, abstandHalten:15, deckungChance:0.35,
+  muster:[
+    { art:'schlag', wind:0.55, aktiv:0.18, erholung:0.9, gewicht:3 },
+    { art:'schwer', wind:0.8,  aktiv:0.24, erholung:1.3, gewicht:1,
+      nichtKonterbar:true, ansage:'NICHT KONTERBAR - WEG DA' },
+    { art:'wurf',   wind:0.6,  aktiv:0.15, erholung:1.0, gewicht:1, fern:true },
+  ],
+  phasen:[ { abHp:4, windFaktor:0.75, deckungChance:0.5, sagt:'ER MACHT ERNST' } ],
+},
+```
+
+Das Level treibt ihn mit drei Aufrufen:
+
+```js
+S.kampf = neuerKampf('tuersteher', { x:200, blick:1 });
+for(const e of kampfSchritt(S.kampf, dt, S.x, { schlag, ducken })) { … }
+kampfZeichnen(S.kampf, BODEN);  kampfHud(S.kampf);
+```
+
+`kampfSchritt` gibt Ereignisse zurück (`konter`, `treffer`, `abgeprallt`,
+`daneben`, `leer`, `wehgetan`, `holtAus`, `phase`, `aus`) — was daraus wird,
+also Ton, Rüttler und Herzen, entscheidet das Level. Der Kampf selbst kennt
+weder `S` noch `SFX`.
+
+Alle Regler stehen in `KT` ganz oben in der Datei.
 
 ## Spielstand
 
