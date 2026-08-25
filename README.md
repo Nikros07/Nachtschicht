@@ -39,6 +39,7 @@ der durchs ganze Gebäude wandert — und eine Uhr, die um **17:30** abläuft.
 | **`Q`** | Taschenlampe an/aus |
 | **`H`** | Handy stumm schalten |
 | `F` Vollbild · `P` Pause · `M` Ton aus | |
+| `1` `2` `3` … | Level wechseln (auf dem Titelbild und nach dem Levelende) |
 
 **Am Handy** im Querformat: Steuerkreuz links, Aktionstasten rechts. Die erste
 Berührung schaltet ins Vollbild.
@@ -207,6 +208,68 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+22:04. Ihr sitzt im Nachtbus zum Hafentor, sieben Haltestellen, und keiner von
+euch hat ein Ticket.
+
+**Der Bus ist der Gegner.** In Level 1 geht es darum, nicht gesehen zu werden,
+in Level 2 darum, eine Meute in Bewegung zu kriegen. Hier ist es Timing auf
+einem Boden, der sich bewegt.
+
+### Die Rucker
+
+Der Bus fährt an, er bremst, er nimmt Kurven — und jedes Mal zieht es Dich mit.
+**Angekündigt wird jeder Ruck**, es geht also nie um Reflexe, sondern darum, wie
+viel Du Dir zwischen zwei Ruckern vornimmst.
+
+| Was Du machst | Was beim Ruck passiert |
+|:--|:--|
+| **An einer Stange festhalten** (`E`) | Nichts. Du stehst. Aber Du kommst auch nicht weiter |
+| **Sitzen** (`E` auf einem freien Sitz) | Nichts |
+| **Stehenbleiben** | Du rutschst — nüchtern rund ein Fünftel des Busses, betrunken ein Drittel |
+| **Laufen** | Du liegst. Anderthalb Sekunden, und man hört es |
+
+Anfahren zieht Dich nach hinten und ist harmlos. **Bremsen und Kurven werfen Dich
+um.** Vor einer Kurve blinkt `KURVE`, vor dem Halt kommt die Ansage.
+
+### Die Kontrolleure
+
+Ab der dritten Haltestelle steigen zwei von ihnen **vorne** ein und arbeiten sich
+nach hinten durch. Bei jedem Fahrgast bleiben sie stehen — das ist Deine Zeit.
+
+Drei Wege, da durchzukommen:
+
+**Ticket lösen.** In den freien Sitzen liegt Kleingeld (`E` zum Durchsuchen). Drei
+Münzen, dann zum Automaten ganz vorne und **zweieinhalb Sekunden ruhig stehen** —
+ein Ruck bricht es ab.
+
+**Nach vorne.** Sie gehen nur in eine Richtung. Wer hinter ihnen steht, ist durch.
+
+**Aussteigen.** An einer offenen Tür (`E`) raus und durch eine andere wieder rein.
+Aber die Tür geht zu, und wer draußen steht, wenn der Bus losfährt, hat ihn
+verpasst — dann ist Schluss.
+
+Erwischt kostet ein Herz, danach redest Du Dich raus und sie fangen von vorne an.
+Beim letzten Herz fliegst Du an der nächsten Haltestelle raus.
+
+### Der Pegel
+
+Er kommt aus Level 2 mit — zwischen den Leveln nüchterst Du 15 Punkte aus. **Hier
+hilft er zum ersten Mal nicht:** je höher der Pegel, desto weiter rutschst Du bei
+jedem Ruck. In einem Sitz liegt trotzdem ein halbvolles Wegbier.
+
+Eine Sache kann er: **ab Pegel 35 drückst Du Dich einmal einfach an einem
+Kontrolleur vorbei.** Danach sind sie wach, und der Trick geht nicht nochmal.
+
+### Und am Ende
+
+Hafentor, Endstation. Der Club ist gleich da. Einer steigt mit aus, den keiner
+kennt, und kommt einfach mit — **der Bustyp**, ab dann hast Du in jedem Level
+**ein Herz mehr**.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -217,10 +280,71 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 # Für Entwickler
 
+## Wie das Projekt aufgebaut ist
+
+| Datei | Was drin steht |
+|:--|:--|
+| `nachtschicht.js` | Der gemeinsame Unterbau: Bildschirm, Schrift, Bild-Cache, Töne, Spielstand, Levelverzeichnis |
+| `nachtschicht.css` | Das Gehäuse: Rahmen, CRT-Scheibe, Touch-Tasten, Levelleiste |
+| `index.html` · `level2.html` · `level3.html` | Je ein Level, sonst nichts |
+| `runner.html` | Der alte Endlos-Modus, unverändert |
+| `test/smoke.mjs` | Optionaler Rauchtest im Browser |
+
+Jede Level-Datei bindet den Unterbau ein und legt nur noch drauf, was bei ihr
+anders ist:
+
+```html
+<link rel="stylesheet" href="nachtschicht.css">
+<script src="nachtschicht.js"></script>
+<script>
+  Object.assign(P,{ /* eigene Farben */ });
+  Object.assign(SPR,{ /* eigene Sprites */ });
+  const NR = 3;              // Nummer im Spielstand
+  levelStart(NR);            // baut die Levelleiste
+</script>
+```
+
+Bewusst klassische Skripte und kein Modul: so läuft das Spiel weiterhin per
+Doppelklick vom Dateisystem, ganz ohne Server.
+
+## Ein neues Level anlegen
+
+1. Level-Datei nach dem Muster von `level3.html` anlegen
+2. Eine Zeile in `LEVELS` in `nachtschicht.js`:
+   ```js
+   { nr:4, datei:'level4.html', kurz:'DIE SCHLANGE', uhr:'22:40', crew:'…' },
+   ```
+
+Mehr nicht. Levelleiste, Zifferntasten-Auswahl, Freischaltung durch den
+Vorgänger, Bestzeit und Übergang hängen alle an dieser einen Zeile.
+
+## Spielstand
+
+Alles liegt unter einem einzigen `localStorage`-Eintrag `nachtschicht.stand`:
+
+```js
+{ crew:['MAX FERDI'], levels:{ '1':{ ge:true, best:98.4 } }, pegel:44 }
+```
+
+Ein Level ist frei, wenn sein Vorgänger `ge` ist. Der Pegel wandert von Level zu
+Level mit und baut dazwischen 15 Punkte ab.
+
+## Die Fähigkeiten der Jungs
+
+`CREW` in `nachtschicht.js` hält fest, wer was kann — und zwar **levelübergreifend**:
+
+```js
+'MAX FERDI': { level:1, was:'+15% TEMPO', tempo:1.15 },
+```
+
+Ein Level fragt `tempoBonus()` oder `hatFaehigkeit('extraherz')` und muss nicht
+wissen, wer in der Crew ist.
+
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
-Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
+Ganz oben in jeder Level-Datei steht ein Block namens `TUNE`. Dort liegt das
+komplette Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen
+Zahlen.
 
 | Regler | Bewirkt |
 |:--|:--|
@@ -236,6 +360,19 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+## Testen
+
+Optional, das Spiel selbst braucht weiterhin keine Abhängigkeiten:
+
+```bash
+npm i -D playwright && npx playwright install chromium
+node test/smoke.mjs
+```
+
+Startet jedes Level in einem echten Browser und prüft, dass es läuft, dass alte
+Spielstände übernommen werden, dass ein Sieg das nächste Level freischaltet und
+dass ein kaputter Spielstand nichts umbringt.
 
 ## Lokal starten
 
@@ -265,5 +402,5 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 bis 3 sind fertig und durchspielbar. Level 4 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).

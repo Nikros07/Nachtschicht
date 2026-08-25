@@ -233,11 +233,14 @@ const AUFGABEN=[
    ZUSTAND
    ========================================================================== */
 let S={};
+/* Der Bustyp bringt ein Herz mit - eine Crew-Faehigkeit wirkt in jedem
+   Level, nicht nur in dem, wo man ihn getroffen hat. */
+const maxLeben = () => TUNE.leben + (hatFaehigkeit('extraherz')?1:0);
 function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
-    kamX:0, hp:TUNE.leben,
+    kamX:0, maxHp:maxLeben(), hp:maxLeben(),
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
@@ -582,6 +585,8 @@ function levelGeschafft(){
   /* merkeSieg haengt Moritz an die Crew, schaltet Level 3 frei und meldet
      zurueck, ob das eine neue Bestzeit war. */
   S.neueBestzeit = merkeSieg(NR,S.zeit);
+  /* Der Pegel faehrt mit in den Nachtbus. */
+  merkePegel(S.pegel);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -727,7 +732,7 @@ function zeichneWohnung(){
 /* ---- HUD ---- */
 function hud(){
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<S.maxHp;i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -793,13 +798,10 @@ function titelbild(){
   zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
   const st=[['A D','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, SUCHEN, TRINKEN']];
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
-  const crew=ladeCrew();
-  if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  const cz=crewZeile();
+  if(cz) textC('DABEI: '+cz,136,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-24,P.weiss,1);
+  zeichneLevelwahl(NR,H-8);
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);

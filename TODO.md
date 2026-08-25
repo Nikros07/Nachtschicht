@@ -1,6 +1,6 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 bis 3 sind spielbar und durchspielbar. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
@@ -20,23 +20,52 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 ---
 
-## Die anderen Level
+## Level 2 — Bei Moritz ✅ fertig
 
-Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
-
-- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
+Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei.
 
 **Offen in Level 2:**
 
 - [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
 - [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
 - [ ] Musik lauter/verzerrter je höher der Pegel
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+
+---
+
+## Level 3 — Der Nachtbus ✅ fertig
+
+Fahrender Untergrund, Kontrolleure, Timing — genau wie im Konzept.
+
+Der Bus ist der Gegner: anfahren, bremsen, Kurven. Jeder Ruck ist angekündigt,
+wer dabei läuft fällt hin, wer sich festhält kommt nicht weiter. Drei Wege an
+der Kontrolle vorbei (Ticket lösen, hinter ihnen bleiben, an der Haltestelle
+raus und wieder rein). Der Pegel aus Level 2 fährt mit und macht hier zum
+ersten Mal alles schlimmer.
+
+**Offen in Level 3:**
+
+- [ ] **Der Name des Dritten kommt vom Nick.** Im Code steht `DER BUSTYP` als
+      Platzhalter — an genau zwei Stellen: `CREW` und `LEVELS` in
+      `nachtschicht.js`, plus die Cutscene-Zeilen in `level3.html`
+- [ ] Kontrolleure könnten sich unterhalten, statt nur zu laufen
+- [ ] Ein zweiter Fahrgast, der auch schwarzfährt und nervös wird
+- [ ] Die Fahrgäste könnten bei einem Ruck mitrutschen
+
+---
+
+## Die anderen Level
+
+Jedes Level ist eine Stufe des Abends.
+
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
 - [ ] **Level 7 — Späti.** Ruhepause, Story, kein Kampf
 - [ ] **Level 8 — Heimweg.** Endgegner: die Sonne
+
+Ein neues Level ist eine Datei plus **eine Zeile** in `LEVELS` in
+`nachtschicht.js`. Levelleiste, Zifferntasten, Freischaltung, Bestzeit und der
+Übergang vom Vorgänger hängen alle daran.
 
 ---
 
@@ -46,6 +75,7 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 - [ ] Erfolg → Confidence-Boost: kurz unverwundbar, schneller, mehr Schaden
 - [ ] Misserfolg → geknickt: langsamer, weniger Reichweite, bis man sich fängt
 - [ ] Mechanik muss noch festgelegt werden (Timing? Auswahl? Rhythmus?)
+- [ ] Moritz' Fähigkeit `chayas` liegt schon in `CREW` bereit und wartet darauf
 
 ---
 
@@ -53,19 +83,26 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
+**Steht:** `CREW` in `nachtschicht.js` hält Namen und Fähigkeit, und die
+Fähigkeit wirkt in **jedem** Level, nicht nur in dem, wo man ihn getroffen hat.
+Ein Level fragt `tempoBonus()` oder `hatFaehigkeit('extraherz')`.
+
+- [x] Max Ferdi — +15 % Tempo (Level 1)
+- [x] Moritz — besser bei den Chayas (Level 2), wartet auf Level 5
+- [x] Der Bustyp — ein Herz mehr (Level 3), **Name ist ein Platzhalter**
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
-- [ ] Die anderen tauchen in je einem Level auf
-- [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
+- [ ] Weitere Fähigkeiten festlegen (Doppelsprung, härterer Konter, mehr Ausdauer …)
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
-- [ ] Namen und Eigenheiten: kommt vom Nick
+- [ ] **Namen und Eigenheiten: kommt vom Nick**
 
 ---
 
 ## Kampfsystem (aus dem alten Modus übernehmen und härter machen)
 
-Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
+Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur
+wandern. Level 2 hat einen einfachen Konter-Kampf, mehr ist es noch nicht.
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
@@ -73,16 +110,29 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+- [ ] Der Kampf gehört in `nachtschicht.js`, sonst baut ihn Level 4 zum dritten Mal
 
 ---
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] **Gemeinsamer Unterbau** — Bildschirm, Schrift, Bild-Cache, Töne liegen
+      einmal in `nachtschicht.js` statt in jeder Level-Datei
+- [x] **Spielstand speichern** — ein Eintrag `nachtschicht.stand` mit Crew,
+      geschafften Leveln und Bestzeiten; alte Einzelschlüssel werden übernommen
+- [x] **Übergänge zwischen den Leveln** — laufen über `LEVELS`, kein Level kennt
+      mehr den Dateinamen eines anderen
+- [x] **Freischaltung** — ein Level ist offen, wenn sein Vorgänger geschafft ist
+- [x] **Der Pegel wandert mit** von Level zu Level
+- [x] Rauchtest, der jedes Level im Browser startet (`test/smoke.mjs`)
+- [ ] **Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen.**
+      Halb erledigt: der *Motor* ist geteilt, die *Level-Daten* stehen als Tabellen
+      oben in jeder Datei (`RAEUME`, `ORTE`/`DINGE`/`LEUTE`, `SITZE`/`TUEREN`/
+      `STANGEN`). Ein gemeinsames Format für alle drei gibt es noch nicht — dafür
+      müsste erst klar sein, was Level 4 bis 8 überhaupt brauchen
 - [ ] Kampfsystem und Level-System zusammenführen
-- [ ] Musik pro Level statt einer Schleife
+- [ ] Musik pro Level statt einer Schleife — bislang hat jedes Level seine eigene
+      Basslinie, aber der Aufbau ist überall derselbe
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
 ---
@@ -123,3 +173,6 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2: Wohnung, vier Aufgaben, Pegel, erster Kampf, Moritz**
+- [x] **Level 3: Nachtbus, Fahrphysik, Kontrolleure, Ticket, der Bustyp**
+- [x] Levelauswahl als Leiste unter dem Bild und als Zahlenreihe im Titelbild

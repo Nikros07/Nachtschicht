@@ -51,6 +51,10 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ /* Anfuehrungszeichen: ohne sie wurde jede woertliche Rede zu ?TEXT? */
+ '"':'101,101,000,000,000', "'":'010,010,000,000,000',
+ '(':'001,010,010,010,001', ')':'100,010,010,010,100',
+ '%':'101,001,010,100,101', '=':'000,111,000,111,000',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -236,8 +240,9 @@ function vollbild(){
    `nr` ist der Schluessel im Spielstand und darf sich nie mehr aendern.
    ========================================================================== */
 const LEVELS = [
-  { nr:1, datei:'index.html',  kurz:'DIE SCHULE',   uhr:'16:40', crew:'MAX FERDI' },
-  { nr:2, datei:'level2.html', kurz:'BEI MORITZ',   uhr:'21:10', crew:'MORITZ'    },
+  { nr:1, datei:'index.html',  kurz:'DIE SCHULE',   uhr:'16:40', crew:'MAX FERDI'  },
+  { nr:2, datei:'level2.html', kurz:'BEI MORITZ',   uhr:'21:10', crew:'MORITZ'     },
+  { nr:3, datei:'level3.html', kurz:'DER NACHTBUS', uhr:'22:04', crew:'DER BUSTYP' },
 ];
 
 /* ==========================================================================
@@ -249,6 +254,7 @@ const LEVELS = [
 const CREW = {
   'MAX FERDI': { level:1, was:'+15% TEMPO',            tempo:1.15 },
   'MORITZ':    { level:2, was:'BESSER BEI DEN CHAYAS', chayas:true },
+  'DER BUSTYP':{ level:3, was:'EIN HERZ MEHR',         extraherz:true },
 };
 /* Tempo multipliziert sich, falls spaeter mehrere Laeufer dazukommen. */
 const tempoBonus   = () => ladeCrew().reduce((f,n)=>f*((CREW[n]&&CREW[n].tempo)||1),1);
@@ -319,6 +325,17 @@ function merkeSieg(nr,zeit){
   return neu;
 }
 
+/* Der Pegel begleitet dich durch die Nacht. Zwischen zwei Leveln vergeht
+   Zeit, also wirst du ein Stueck nuechterner - aber eben nicht ganz. */
+const PEGEL_ABBAU = 15;
+function merkePegel(v){
+  const st=ladeStand();
+  st.pegel=Math.max(0,Math.min(100,isFinite(v)?v:0));
+  schreibeStand();
+}
+const holePegel     = () => { const v=ladeStand().pegel; return isFinite(v)?v:0; };
+const pegelZumStart = () => Math.max(0, holePegel()-PEGEL_ABBAU);
+
 /* ==========================================================================
    UEBERGAENGE
    Wo es nach einem gewonnenen Level hingeht. Frueher stand das Ziel als
@@ -363,6 +380,36 @@ function baueLevelleiste(aktiv){
       bar.appendChild(a);
     }
   }
+}
+
+/* Die Levelwahl auf dem Titelbild - im Bild gezeichnet, nicht in HTML.
+   Im Vollbild und am Handy ist die Leiste unter dem Bild ausgeblendet, dort
+   ist das hier die einzige Stelle, an der man sieht, was es sonst noch gibt.
+   Eine Reihe Zahlen statt einer Liste mit Namen: das passt auch noch, wenn
+   alle acht Level da sind. */
+function zeichneLevelwahl(aktiv,y){
+  const abstand=13, kopf='TASTE';
+  let x=Math.round((W-(textW(kopf)+8+LEVELS.length*abstand-4))/2);
+  text(kopf,x,y,P.dunkel); x+=textW(kopf)+8;
+  for(const l of LEVELS){
+    text(String(l.nr),x,y,l.nr===aktiv?P.neon:istFrei(l.nr)?P.gold:'#2f2a45');
+    /* Gruener Strich unter allem, was schon durchgespielt ist */
+    if(istGeschafft(l.nr)){ ctx.fillStyle=P.gruen; ctx.fillRect(x,y+6,3,1); }
+    x+=abstand;
+  }
+}
+
+/* Was die Crew bislang mitbringt, als eine Zeile. Mit Faehigkeiten, solange
+   das in die Breite passt - sonst nur die Namen. Bei sieben Jungs waere die
+   volle Zeile dreimal so breit wie der Bildschirm. */
+function crewZeile(){
+  const c=ladeCrew(); if(!c.length) return '';
+  const platz=W-12-textW('DABEI: ');
+  const lang=c.map(n=>n+((CREW[n]&&CREW[n].was)?' '+CREW[n].was:'')).join('  ');
+  if(textW(lang)<=platz) return lang;
+  const kurz=c.join(', ');
+  if(textW(kurz)<=platz) return kurz;
+  return c.length+' JUNGS DABEI';
 }
 
 /* Zifferntasten springen ins Level - aber nur, solange nicht gespielt wird.

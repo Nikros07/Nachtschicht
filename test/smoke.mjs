@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SEITEN = ['index.html', 'level2.html', 'runner.html'];
+const SEITEN = ['index.html', 'level2.html', 'level3.html', 'runner.html'];
 const TYPEN = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css' };
 
 let fehler = 0;
@@ -116,8 +116,14 @@ console.log('\n3) Sieg schaltet das naechste Level frei');
   await page.evaluate(()=>localStorage.clear());
   await page.reload();
   pruefe('Level 2 ist vorher zu', (await page.evaluate(()=>istFrei(2)))===false);
-  pruefe('Leiste zeigt Level 2 als gesperrt',
-    (await page.evaluate(()=>[...document.querySelectorAll('#levelbar *')].map(e=>e.tagName).join())) === 'A,SPAN');
+  /* Erwartung aus LEVELS ableiten, nicht festschreiben - sonst muss dieser
+     Test bei jedem neuen Level nachgezogen werden. */
+  const leiste = await page.evaluate(()=>({
+    ist: [...document.querySelectorAll('#levelbar *')].map(e=>e.tagName),
+    soll: LEVELS.map(l=>(istFrei(l.nr)||l.nr===1)?'A':'SPAN'),
+  }));
+  pruefe('Leiste sperrt genau die Level, die noch zu sind',
+    leiste.ist.join()===leiste.soll.join(), leiste.ist.join()+' / '+leiste.soll.join());
 
   await page.evaluate(()=>{ S.zeit=99; S.gewonnen=true; S.modus='ende'; levelGeschafft(); });
   const st = await page.evaluate(()=>JSON.parse(localStorage.getItem('nachtschicht.stand')));
