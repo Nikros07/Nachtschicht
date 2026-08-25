@@ -273,7 +273,8 @@ kennt, und kommt einfach mit — **der Bustyp**, ab dann hast Du in jedem Level
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
-Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.html)**:
+Gegnertypen und vier Bossen (der Türsteher, die Meute, die Müdigkeit, die
+Sonne). Der liegt in **[runner.html](runner.html)**:
 [nikros07.github.io/Nachtschicht/runner.html](https://nikros07.github.io/Nachtschicht/runner.html)
 
 ---

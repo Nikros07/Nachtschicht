@@ -104,6 +104,16 @@ Ein Level fragt `tempoBonus()` oder `hatFaehigkeit('extraherz')`.
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur
 wandern. Level 2 hat einen einfachen Konter-Kampf, mehr ist es noch nicht.
 
+> **War fast weg.** Commit `64b4777` wollte `runner.html` unangetastet lassen
+> — die Commit-Nachricht sagt das ausdrücklich — hat die Datei aber mit einer
+> Kopie des damaligen Level 1 überschrieben. 1294 Zeilen Kampfsystem waren
+> damit aus dem Arbeitsverzeichnis verschwunden, nur noch in der Historie.
+> Aus `b5a76dd` zurückgeholt und geprüft: läuft, schlägt, zählt Combos.
+>
+> Praktisch dabei: zwei der vier Bosse dort sind genau die, die noch
+> gebraucht werden — **DER TUERSTEHER** für Level 4 und **DIE SONNE** für
+> Level 8. Dazu **DIE MEUTE** und **DIE MUEDIGKEIT**.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
