@@ -193,6 +193,10 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst es auch.** Die Musik wird nicht nur lauter — ab der Hälfte legt sich
+eine leicht verstimmte zweite Stimme über den Bass, und irgendwann kommt ein
+Offbeat dazu, der da nicht hingehört.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner

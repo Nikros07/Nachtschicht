@@ -24,12 +24,16 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei.
 
-**Offen in Level 2:**
+**Offen in Level 2:** — nichts mehr.
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [x] Der Kracher hat jetzt drei Angriffsmuster, geht in Deckung und wird beim
+- [x] Fünf Leute, die nur rumstehen, wippen und dummes Zeug reden. Blasser
+      gezeichnet als alles, was zählt, und so gestellt, dass sie kein
+      Möbelstück und keine wichtige Person verdecken
+- [x] Der Kracher hat drei Angriffsmuster, geht in Deckung und wird beim
       letzten Treffer schneller
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Musik lauter **und verzerrter** je höher der Pegel — ab Pegel 50 legt
+      sich eine verstimmte Sägezahnstimme über den Bass, ab 55 kommt ein
+      Offbeat dazu, der nicht hingehört, und das Rauschen wächst mit
 
 ---
 

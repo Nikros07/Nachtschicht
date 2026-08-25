@@ -125,6 +125,12 @@ Object.assign(SPR,{
   schrank:['zzzzzzzz','z......z','z..g.g.z','z......z','z......z','z..g.g.z','z......z','z......z','zzzzzzzz'],
   spiegel:['uuuuuuu','uwwwwwu','uwwwwwu','uwwwwwu','uwwwwwu','uuuuuuu'],
   box:   ['dddddd','d.gg.d','dg..gd','dg..gd','d.gg.d','dddddd','dddddd'],
+  /* Zwei Statisten-Posen. Der Farbtupfer beim Zeichnen macht sie
+     unterscheidbar - so braucht nicht jeder ein eigenes Sprite. */
+  statistA:['..hhh..','.hsssh.','.sssss.','..sss..','..ttt..','.ttttt.','k.ttt.k','..ttt..',
+            '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
+  statistB:['..hhh..','.hsssh.','.sssss.','..sss..','..ttt.g','.tttttg','..ttt.k','k.ttt..',
+            '..ppp..','..p.p..','.pp.pp.','.p...p.','.kk..kk'],
   jacke: ['.ddddd.','ddddddd','dd.d.dd','dd.d.dd','.dd.dd.','.d...d.'],
   ausweis:['ggggggg','g.....g','g.ss..g','g.ss..g','g.....g','ggggggg'],
   flasche:['..gg..','..gg..','.gggg.','.gwgg.','.gggg.','.gggg.','..gg..'],
@@ -154,23 +160,34 @@ const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
   const st=60/128/4;
+  /* Je hoeher der Pegel, desto lauter UND desto schmutziger. Lauter allein
+     klang nur naeher dran - das Verstimmen ist das, was kippt: eine zweite
+     Stimme leicht daneben, dazu mehr Rauschen und ein Sub, das mitwummert. */
+  const p = S.modus==='spiel' ? S.pegel/100 : 0;
+  const schief = 1 + p*0.045;              // bis zu drei Viertelton daneben
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
+    const laut=S.modus==='spiel'?.026+p*.02:.014;
+    if(f){
+      ton(f,MUS.next,st*.85,'square',laut);
+      /* Die verstimmte Doppelung kommt erst ab der Haelfte dazu */
+      if(p>0.5) ton(f*schief,MUS.next,st*.8,'sawtooth',laut*(p-0.5)*1.4);
+    }
     if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
-      if(i%4===2) rauschenKurz(MUS.next);
+      if(i%4===0) ton(55,MUS.next,.09+p*.06,'sine',.05+p*.03);
+      if(i%4===2) rauschenKurz(MUS.next,.012+p*.03);
+      /* Ab dem Wackeln schleicht sich ein Offbeat ein, der nicht hingehoert */
+      if(p>0.55&&i%8===5) ton(41,MUS.next,.07,'sawtooth',.03*p);
     }
     MUS.next+=st; MUS.step++;
   }
 }
-function rauschenKurz(when){
+function rauschenKurz(when,vol=.012){
   if(!AC||muted) return;
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=vol; s.connect(g); g.connect(AC.destination); s.start(when);
 }
 
 /* Der Boden der Wohnung - alles auf einer Ebene, keine Etagen. */
@@ -221,6 +238,22 @@ const LEUTE=[
     zeilen:['NEIN DU HOERST MIR NICHT ZU','...','SEKUNDE JA'],
     brauchtMut:true,
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
+];
+
+/* Leute, die nichts von dir wollen. Sie stehen rum, wippen, halten ihr Bier
+   und reden miteinander - eine Wohnung mit vier Leuten wirkt leer, und
+   "Vorgluehen" soll voll aussehen. Ansprechen kann man sie, mehr nicht. */
+const STATISTEN=[
+  { x:222, spr:'statistA', tint:'#2b6b52', wippt:1.0,
+    sprueche:['KENN ICH DICH','NEE OKAY','AUCH EGAL'] },
+  { x:296, spr:'statistB', tint:'#7a2d3d', wippt:1.6,
+    sprueche:['IST DAS DEIN LIED','MACH MAL LAUTER'] },
+  { x:382, spr:'statistA', tint:'#3d5a8c', wippt:0.7,
+    sprueche:['ICH WART AUF JEMAND','DER KOMMT GLEICH','SICHER'] },
+  { x:470, spr:'statistB', tint:'#a8681f', wippt:1.3,
+    sprueche:['HAT WER FEUER','NA GUT'] },
+  { x:676, spr:'statistA', tint:'#2e3350', wippt:0.9,
+    sprueche:['DAS BAD IST BESETZT','SEIT ZWANZIG MINUTEN'] },
 ];
 
 /* Was du finden musst */
@@ -433,6 +466,11 @@ function update(dt){
     let person=null, dPerson=1e9;
     for(const l of LEUTE){ const d=Math.abs(l.x-S.x);
       if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
+    /* Statisten zaehlen mit, verlieren aber jeden Gleichstand - sonst
+       verstellt ein Rumsteher jemanden, den man wirklich braucht. */
+    for(const st of STATISTEN){ const d=Math.abs(st.x-S.x);
+      if(d<TUNE.reichweite&&d<dPerson-0.001){
+        person={ id:'statist', name:'JEMAND', zeilen:st.sprueche }; dPerson=d; } }
     let ding=null, dDing=1e9;
     for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
       if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
@@ -685,6 +723,23 @@ function zeichneWohnung(){
       const t=S.durchsucht[d.art]?'OK':'E';
       text(t,d.x+6-textW(t)/2,y-9,S.durchsucht[d.art]?P.dunkel:P.gold);
     }
+  }
+
+  /* Statisten. Zuerst gezeichnet, also stehen sie hinter allem, was zaehlt -
+     und leicht durchscheinend, damit klar bleibt, wer wichtig ist. */
+  for(const st of STATISTEN){
+    const rows=SPR[st.spr];
+    /* Jeder wippt in seinem eigenen Takt, sonst sieht es aus wie ein Chor. */
+    const hoch=Math.abs(Math.sin(S.t*st.wippt*2.4+st.x))>0.72?1:0;
+    const y=BODEN-rows.length-hoch;
+    /* Deutlich blasser als alles, was zaehlt. Sonst sucht man zwischen
+       neun gleich hellen Figuren, welche davon man selbst ist. */
+    outline(rows,st.x-3,y,1,.28);
+    sprite(rows,st.x-3,y,1,null,.70);
+    ctx.globalAlpha=.3; ctx.fillStyle=st.tint;
+    ctx.fillRect(st.x-2,y+4,5,4); ctx.globalAlpha=1;
+    if(Math.abs(st.x-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden
+       &&Math.floor(S.t*4)%2===0) text('E',st.x+2,y-9,P.dunkel);
   }
 
   /* Leute */
