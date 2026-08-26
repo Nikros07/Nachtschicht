@@ -60,6 +60,13 @@ Beim Start sagt Dir das Intro, welche gerade läuft — sie wechselt jede Runde:
 Im Korridor siehst Du nur Türen. Was dahinter liegt, siehst Du erst, wenn Du
 reingehst — unbetretene Türen zeigen `? ? ?`.
 
+**Jeder Raum ist anders eingerichtet.** In der Turnhalle liegen Matte und Bock,
+im Hausmeisterraum stehen Werkbank und Leiter, in der Bibliothek Bücherstapel
+und Karteikasten, in der Chemie Abzug und Waschbecken, im Lehrerzimmer Sofa und
+Kaffeemaschine. Auch die drei Klassenzimmer unterscheiden sich — Pult, Tafel,
+Garderobe, Projektor in wechselnder Zusammenstellung. Du siehst an der
+Einrichtung, wo Du bist.
+
 Drinnen durchsuchst Du Möbel mit `E`. Die meisten sind leer, aber nicht alle:
 
 | Fund | Wirkung |
@@ -317,7 +324,8 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
   nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
 - Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
 - Timing läuft in Spielzeit statt Wanduhrzeit
-- Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+- Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung — 21 Möbelarten,
+  jede einem Stil zugeordnet
 
 ## Woran es sich orientiert
 

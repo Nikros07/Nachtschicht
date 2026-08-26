@@ -332,6 +332,32 @@ const SPR = {
   tafel:  ['dddddddddd','dqqqqqqqqd','dq.q..qq.d','dqqqqqqqqd','dq..qq..qd','dqqqqqqqqd','dddddddddd'],
   pflanze:['..ggg..','.ggggg.','g.ggg.g','..ggg..','...z...','..zzz..','.zzzzz.'],
   kiste:  ['oooooo','o....o','o.oo.o','o....o','oooooo'],
+
+  /* Einrichtung nach Raumart. Vorher standen in zehn Raeumen dieselben
+     sieben Sachen und nur an anderer Stelle - die Bibliothek sah aus wie
+     die Chemie. Jeder Stil hat jetzt eigene Moebel. */
+  /* Hausmeister */
+  werkbank:['zzzzzzzz','z.u.u..z','z.u.u..z','zzzzzzzz','jjjjjjjj','j.j..j.j','jjjjjjjj','j.j..j.j','jjjjjjjj'],
+  leiter: ['z.....z','zzzzzzz','z.....z','z.....z','zzzzzzz','z.....z','z.....z','zzzzzzz','z.....z','z.....z','zzzzzzz'],
+  /* Turnhalle */
+  matte:  ['.vvvvvvvvv.','vvvvvvvvvvv','vmmmmmmmmmv','.vvvvvvvvv.'],
+  bock:   ['.jjjjjjjj.','jjjjjjjjjj','jjjjjjjjjj','.z......z.','.z......z.','.z......z.','.z......z.','.z......z.','zz......zz'],
+  /* Sekretariat */
+  aktenschrank:['dddddddd','d......d','d..gg..d','d......d','dddddddd','d......d','d..gg..d','d......d','dddddddd','d......d','d..gg..d','dddddddd'],
+  kopierer:['.uuuuuuu.','.uwwwwwu.','.uuuuuuu.','ddddddddd','d.......d','d.ggggg.d','d.......d','ddddddddd','d..ddd..d','ddddddddd'],
+  /* Klassenzimmer */
+  pult:   ['zzzzzzzzzz','z........z','jjjjjjjjjj','j........j','j........j','j...jj...j','j........j','j........j'],
+  garderobe:['zzzzzzzz','.z....z.','.nnn.ccc','.nnn.ccc','.nnn.ccc','..n...c.','..n...c.'],
+  projektor:['..lll..','.uuuuu.','.u...u.','.uuuuu.','...d...','...d...','.ddddd.','.d...d.','.o...o.'],
+  /* Chemie */
+  abzug:  ['zzzzzzzzz','z.......z','z.ccccc.z','z.c...c.z','z.c...c.z','z.ccccc.z','zzzzzzzzz','z.......z','z..zzz..z','zzzzzzzzz'],
+  waschbecken:['...u...','...u...','.uuuuu.','uwwwwwu','uwwwwwu','.uuuuu.','...d...','...d...','..ddd..'],
+  /* Bibliothek */
+  buecherstapel:['..vvvv..','.gggggg.','..cccc..','.oooooo.','..nnnn..','.vvvvvv.','..bbbb..','.dddddd.'],
+  karteikasten:['jjjjjjjjj','j.j.j.j.j','jjjjjjjjj','j.j.j.j.j','jjjjjjjjj','j.j.j.j.j','jjjjjjjjj','.j.....j.'],
+  /* Lehrerzimmer */
+  kaffee: ['dddddd','d....d','d.ww.d','dddddd','d.bb.d','d.bb.d','dddddd','.d..d.'],
+  sofa:   ['.mmmmmmmm.','mmmmmmmmmm','mmmmmmmmmm','m........m','m........m','.jj....jj.'],
   /* Tuerblatt muss gefuellt sein - sonst sieht man durch die Tuer die Wand */
   tuer:   ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
            'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
@@ -458,17 +484,20 @@ const STIL = {
                 licht:'rgba(255,205,150,.12)', deko:'pinnwand',schild:'#e0708f' },
 };
 
+/* Die Moebel gehoeren zum Raumstil, nicht zur Fuellmenge. Wer die
+   Bibliothek betritt, soll an der Einrichtung sehen, wo er ist -
+   auch die drei Klassenzimmer sind untereinander verschieden. */
 const RAEUME = [
-  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['spind','eimer','regal','kiste'] },
-  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['kiste','kiste'] },
-  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','regal','pflanze'] },
-  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['tisch','tafel','spind'] },
-  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','tisch'] },
-  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['regal','tisch','kiste','regal'] },
-  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','pflanze'] },
-  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','regal','tisch','regal'] },
-  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['tisch','spind','pflanze'] },
-  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['tisch','tafel'] },
+  { e:0, x:120, name:'HAUSMEISTER',  stil:'hausmeister', moebel:['werkbank','eimer','leiter','regal'] },
+  { e:0, x:300, name:'TURNHALLE',    stil:'turnhalle',   moebel:['matte','bock','kiste'] },
+  { e:0, x:470, name:'SEKRETARIAT',  stil:'buero',       moebel:['tisch','aktenschrank','kopierer','pflanze'] },
+  { e:1, x:110, name:'RAUM 101',     stil:'klasse',      moebel:['pult','tafel','garderobe'] },
+  { e:1, x:270, name:'RAUM 102',     stil:'klasse',      moebel:['tisch','pult','projektor'] },
+  { e:1, x:430, name:'CHEMIE',       stil:'chemie',      moebel:['abzug','tisch','waschbecken','regal'] },
+  { e:1, x:590, name:'RAUM 103',     stil:'klasse',      moebel:['tafel','tisch','garderobe'] },
+  { e:2, x:130, name:'BIBLIOTHEK',   stil:'biblio',      moebel:['regal','buecherstapel','karteikasten','regal'] },
+  { e:2, x:330, name:'LEHRERZIMMER', stil:'lehrer',      moebel:['sofa','kaffee','tisch','pflanze'] },
+  { e:2, x:520, name:'RAUM 201',     stil:'klasse',      moebel:['pult','tafel','projektor'] },
 ];
 const AUSGANG = { e:0, x:648 };
 
@@ -1147,8 +1176,11 @@ function moebelPlaetze(r){
   /* Feste, aber pro Raum unterschiedliche Verschiebung. Vorher standen
      die Moebel in jedem der zehn Raeume exakt gleich. */
   const saat=RAEUME.indexOf(r)+1;
+  /* Bei vier Moebeln bleiben nur noch gut 50 Pixel Abstand. Die
+     Verschiebung muss mitschrumpfen, sonst stehen zwei ineinander. */
+  const enge=Math.min(1,abstand/53);
   return r.moebel.map((m,i)=>{
-    const versatz=((saat*37+i*61)%23)-11;
+    const versatz=(((saat*37+i*61)%23)-11)*enge;
     return { typ:m, x:Math.round(start+i*abstand+versatz) };
   });
 }

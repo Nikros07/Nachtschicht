@@ -15,8 +15,10 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 **Offen geblieben (bewusst):**
 
 - [ ] Zweiter Ausgang durchs Fenster — verworfen, brachte zu wenig
-- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert)
-- [ ] Mehr Abwechslung in den Möbelarten selbst (nicht nur Position)
+- [ ] Handy-Steuerung auf einem echten Gerät testen (bisher nur emuliert) —
+      **braucht Dich**, hier kommt niemand weiter ohne ein echtes Handy
+- [x] Mehr Abwechslung in den Möbelarten selbst — 14 neue Möbel, jedes einem
+      Raumstil zugeordnet. Kein Raum sieht mehr aus wie der nächste.
 
 ---
 
@@ -100,7 +102,7 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Optik
 
-- [ ] Mehr Abwechslung in den Räumen — aktuell wiederholen sich die Möbel
+- [x] Mehr Abwechslung in den Räumen — 14 neue Möbelarten, nach Raumstil verteilt
 - [ ] Wetter und Tageszeit pro Level
 - [ ] Übergangsbilder zwischen den Leveln
 - [ ] Mehr Animationsbilder für den Spieler
