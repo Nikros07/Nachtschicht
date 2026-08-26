@@ -252,6 +252,83 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+---
+
+## Level 3 — Der Nachtbus
+
+22:04. Ihr habt den Bus gerade noch gekriegt. Sechs Haltestellen bis zum Club.
+Moritz hat ein Ticket, Max Ferdi hat ein Ticket. Du hast Dein Geld bei Moritz
+gelassen.
+
+**Kein Schleichen, kein Überreden.** Hier ist der Boden selbst das Problem.
+
+### Der fahrende Untergrund
+
+Der Bus schwankt, rumpelt, bremst und fährt an. Wer nicht festhält, fliegt hin —
+und das ist laut.
+
+| Taste | Aktion |
+|:--|:--|
+| `A` `D` | Laufen |
+| **`Shift`** | **Festhalten** — an einer Stange, auf einem Sitz, an der Rückbank |
+| **`E`** | Reden · unter dem Sitz suchen · Fahrschein ziehen · Tür |
+
+Der Balken oben links ist Dein **Stand**. Er schlägt nach der Seite aus, in die
+es Dich zieht. Schlägt er ganz aus, liegst Du.
+
+- **Die Rückbank** ganz hinten hält von allein — da sitzt Du. Sicherer Ort.
+- **Im Gelenk** in der Mitte schwankt alles doppelt so stark, und es gibt nur
+  eine Stange. Dafür steht dort jemand, an dem man sich festhalten kann.
+- **Schlaglöcher** kündigen sich an: es rumpelt eine halbe Sekunde vorher.
+  Nüchtern fängst Du den Stoß im Stehen ab. Betrunken nicht mehr.
+- **Beim Bremsen und beim Anfahren** hilft nur Festhalten. Beides wird
+  angesagt.
+
+### Der Pegel kommt mit
+
+Was Du bei Moritz getrunken hast, stehst Du hier noch. Er baut langsam ab, aber
+solange er hoch ist, schwankst Du stärker **und hältst weniger aus**. Bei 100
+schläfst Du im Bus ein — das war's dann.
+
+### Der Fahrschein
+
+Unter den Sitzen liegt Kleingeld. **Drei Münzen**, dann kannst Du am Automaten
+ganz vorne einen Fahrschein ziehen. Beim Suchen kannst Du Dich nicht festhalten.
+
+### Die Kontrolleure
+
+| Haltestelle | Was passiert |
+|:--|:--|
+| **RATHAUS** | Einer steigt vorne ein und arbeitet sich nach hinten durch |
+| **SÜDPARK** | **Zwei** steigen ein, von beiden Türen |
+
+Im Fahrplan oben sind beide von Anfang an **rot markiert**. Du weißt also, wann
+es soweit ist.
+
+Ein Kontrolleur läuft **in eine Richtung** durch den Bus und bleibt am Ende
+stehen. Alles **vor seiner Tür** sieht er nie. Am Rathaus reicht es also, hinter
+ihn zu kommen — an der Haltestelle raus, außen vorbei, hinter ihm wieder rein.
+Dafür gehen die Türen an jeder Haltestelle ein paar Sekunden auf, und ein
+Balken zeigt Dir, wie lange noch. **Wer draußen steht, wenn sie zugehen, fährt
+nicht mit.**
+
+Am Südpark hilft das nicht mehr: von beiden Seiten bleibt nichts übrig. Bis
+dahin muss der Fahrschein stehen.
+
+Und: **hinfallen macht Lärm.** Wer in Hörweite ist, dreht um und kommt zurück —
+auch wenn er seine Runde schon durch hatte. Hinter ihm zu stehen hilft nur,
+solange Du leise bist.
+
+Jedes Erwischtwerden kostet ein Herz. Drei hast Du.
+
+### Am Ende
+
+An der Haltestelle **CLUB** gehst Du raus (`E` an einer Tür). Fährst Du dran
+vorbei, war's das. Draußen schließt sich **der Lange** an — der stand die ganze
+Fahrt im Gelenk, weil er das lustig findet, und er kennt den Türsteher.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -300,6 +377,30 @@ Welches Muster in welcher Phase vorkommt, steht als Liste in `MUSTER`, die
 Hinweise dazu in `PHASENHINWEIS`. Ein viertes Muster braucht einen Eintrag in
 `MUSTER`, einen Zustand in `kampf()` und einen Eintrag in `KAMPF_TELL` für
 Farbe und Zeichen — sonst nichts.
+
+`level3.html` genauso. Dort interessant:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `schwanken` · `schwankTakt` · `reibung` | Wie der Bus im Normalbetrieb pendelt |
+| `standFestigkeit` · `pegelStand` | Was Du aushältst, nüchtern und betrunken |
+| `schlaglochStoss` · `schlaglochWarnung` · `schlaglochAb`/`Bis` | Die Schlaglöcher |
+| `bremsKraft` · `anfahrKraft` · `gelenkFaktor` | Die harten Momente |
+| `griffweite` · `griffAbbau` · `umfallDauer` | Festhalten und Hinfallen |
+| `fahrtZeit` · `bremsZeit` · `anfahrZeit` · `tuerZeit` | Der Fahrplan |
+| `kontrolleurTempo` · `pruefweite` · `hoerweite` | Die Kontrolleure |
+| `preis` · `suchDauer` | Der Fahrschein |
+
+Der Bus steht als Daten da: `ABSCHNITTE`, `SITZE`, `STANGEN`, `TUEREN`,
+`AUTOMAT`, `LEUTE`, `MITFAHRER` — und `HALTESTELLEN`, wo auch drinsteht, an
+welcher Haltestelle wie viele Kontrolleure zusteigen:
+
+```js
+{ name:'SUEDPARK', kontrolle:['vorne','hinten'] }
+```
+
+Eine Haltestelle mehr ist eine Zeile mehr. `SICHER_BIS` sagt, bis wohin die
+Rückbank reicht — dort fällt niemand um.
 
 Die Wohnung selbst steht in `ORTE`, `DINGE`, `LEUTE` und `STATISTEN`. Statisten
 sind reine Daten: Position, Hemdfarbe, Haarfarbe, drei Zeilen nüchtern und zwei
@@ -374,5 +475,12 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1, 2 und 3 sind fertig und durchspielbar, und sie hängen über
+`fortschritt.js` zusammen: Level schalten sich der Reihe nach frei, die Crew
+wächst mit, und der Pegel aus Level 2 fährt im Bus mit.
+
+Level 4 bis 8 stehen in [TODO.md](TODO.md).
+
+> **Offen:** Der Junge aus Level 3 heißt aktuell **DER LANGE** — ein
+> Platzhalter. Name und Eigenheiten stehen in `level3.html` in genau einem
+> Eintrag in `LEUTE` und einmal in `fortschritt.js` (`gibt:`).

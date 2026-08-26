@@ -27,7 +27,7 @@
 const LEVEL = [
   { nr:1, datei:'index.html',  name:'DIE SCHULE',   gibt:'MAX FERDI' },
   { nr:2, datei:'level2.html', name:'BEI MORITZ',   gibt:'MORITZ'    },
-  { nr:3, datei:null,          name:'DER NACHTBUS', gibt:null        },
+  { nr:3, datei:'level3.html', name:'DER NACHTBUS', gibt:'DER LANGE' },
   { nr:4, datei:null,          name:'DIE SCHLANGE', gibt:null        },
   { nr:5, datei:null,          name:'CLUB',         gibt:null        },
   { nr:6, datei:null,          name:'AFTERHOUR',    gibt:null        },
@@ -111,6 +111,20 @@ function setzeBestzeit(nr, sekunden){
   return true;
 }
 
+/* ---- Der Pegel ----
+   Er begleitet die ganze Nacht: was Du bei Moritz getrunken hast, stehst
+   Du im Bus noch. Gespeichert wird beim Verlassen eines Levels, gelesen
+   beim Betreten des naechsten. Ein Neustart der Nacht setzt ihn zurueck. */
+const K_PEGEL = 'nachtschicht.pegel';
+function pegel(){
+  const v = parseFloat(localStorage.getItem(K_PEGEL));
+  return isFinite(v) ? Math.max(0,Math.min(100,v)) : 0;
+}
+function setzePegel(wert){
+  if(!isFinite(wert)) return;
+  try{ localStorage.setItem(K_PEGEL, String(Math.max(0,Math.min(100,wert)))); }catch(e){}
+}
+
 /* ---- Nachschlagen ---- */
 function levelNr(nr){ return LEVEL.find(l=>l.nr===nr)||null; }
 /* Das naechste spielbare Level nach nr - oder null, wenn da noch nichts ist. */
@@ -179,14 +193,14 @@ function stand(){
 
 /* Nur fuer den Notfall und zum Testen. */
 function zuruecksetzen(){
-  [K_CREW,K_GESCHAFFT].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  [K_CREW,K_GESCHAFFT,K_PEGEL].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
   LEVEL.forEach(l=>{ try{ localStorage.removeItem(K_BEST(l.nr)); }catch(e){} });
 }
 
 global.Fortschritt = {
   LEVEL, crew, hat, nimmAuf,
   geschafft, istGeschafft, frei, spielbar,
-  bestzeit, setzeBestzeit,
+  bestzeit, setzeBestzeit, pegel, setzePegel,
   levelNr, naechstes, auswahl, leiste, stand, zuruecksetzen,
 };
 })(window);

@@ -1,6 +1,6 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1, 2 und 3 sind spielbar und durchspielbar. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
@@ -24,11 +24,11 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 ## Die anderen Level
 
-Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
+Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 
-- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
+### Level 2 — Bei Moritz ✅ fertig
 
-**Offen in Level 2:**
+Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei.
 
 - [x] Mehr Leute in der Wohnung, die nur rumstehen — fünf Statisten, nicken zum
       Bass, ansprechbar, ab dem Mut-Pegel reden sie anders
@@ -38,7 +38,27 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       zweite Bassstimme schwebt, Tempo eiert
 - [x] Ende von Level 2 hängt nicht mehr fest an Level 1 — es führt ins nächste
       gebaute Level, sobald es eins gibt
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+
+### Level 3 — Der Nachtbus ✅ fertig
+
+Fahrender Untergrund mit Schwanken, Schlaglöchern, Bremsen und Festhalten.
+Kontrolleure mit fester Laufrichtung — und deshalb mit einem sicheren Bereich
+hinter ihnen. Türen an sechs Haltestellen als Timing-Fenster. Fahrschein aus
+Kleingeld unter den Sitzen. Der Pegel aus Level 2 fährt mit und macht das
+Stehen schwerer.
+
+**Offen geblieben:**
+
+- [ ] **Der neue Junge heißt „DER LANGE" — das ist ein Platzhalter.** Name und
+      Eigenheiten kommen vom Nick. Steht an genau zwei Stellen: `LEUTE` in
+      `level3.html` und `gibt:` in `fortschritt.js`
+- [ ] Seine Fähigkeit („über die Leute hinwegsehen") hat noch keine Wirkung —
+      sie ist fürs Club-Level gedacht
+- [ ] Die Mitfahrer könnten an Haltestellen ein- und aussteigen
+- [ ] Der Fahrer sagt die Haltestellen noch nicht an
+
+### Der Rest
+
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -60,7 +80,8 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkeit.
 
-- [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
+- [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen — drei sind
+      da (Max Ferdi, Moritz, Der Lange), einer davon nur unter Platzhalternamen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
 - [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
@@ -151,6 +172,14 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Fünf Statisten in Moritz' Wohnung
 - [x] Verzerrer in der Tonkette, gesteuert vom Pegel
 - [x] Musik holt nach einer Pause nicht mehr die verpasste Zeit nach
+- [x] **Level 3: der Bus als Untergrund** — Drift, Festhalten, Umfallen,
+      Schlaglöcher mit Vorwarnung
+- [x] Kontrolleure laufen in eine Richtung und bleiben stehen — dadurch gibt es
+      einen Bereich, in dem man sicher ist, und der Trick ist lernbar
+- [x] Türen an Haltestellen als Timing-Fenster, mit Countdown
+- [x] Fenster im Bus sind Löcher auf die vorbeiziehende Stadt, keine blauen
+      Rechtecke — daran sieht man, ob der Bus fährt
+- [x] Der Pegel wird zwischen Leveln gespeichert
 - [x] `fortschritt.js`: Level-Liste, Freischaltung, Crew und Bestzeiten an
       einer Stelle statt in jeder Level-Datei
 - [x] Levelauswahl zeigt gesperrte und geplante Level, statt alles anzubieten
