@@ -36,7 +36,8 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
       (Schwinger, Finte, Ansturm), vier Phasen, Fehlschläge werden bestraft
 - [x] Musik lauter/verzerrter je höher der Pegel — Verzerrer in der Tonkette,
       zweite Bassstimme schwebt, Tempo eiert
-- [ ] Ende von Level 2 hängt noch an Level 1 statt an Level 3
+- [x] Ende von Level 2 hängt nicht mehr fest an Level 1 — es führt ins nächste
+      gebaute Level, sobald es eins gibt
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -92,9 +93,17 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 ## Technik
 
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
-- [ ] Kampfsystem und Level-System zusammenführen
+  - [x] Die Level-**Liste** liegt in `fortschritt.js` — ein neues Level braucht
+        dort eine Zeile, keine Änderung in den anderen Dateien
+  - [ ] Der **Inhalt** eines Levels (Räume, Möbel, Leute) steckt weiter in der
+        jeweiligen Datei
+- [x] Spielstand speichern — Crew, geschaffte Level und Bestzeiten in
+      `fortschritt.js`. Level schalten sich der Reihe nach frei, alte
+      Spielstände werden übernommen
+- [x] Übergänge zwischen den Leveln — das Ende jedes Levels führt ins nächste
+      **gebaute**, ohne dass irgendwo ein Dateiname fest steht
+- [ ] Kampfsystem und Level-System zusammenführen — der Kracher-Kampf in Level 2
+      ist der erste Schritt, `runner.html` hängt noch daneben
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
 
@@ -142,3 +151,8 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Fünf Statisten in Moritz' Wohnung
 - [x] Verzerrer in der Tonkette, gesteuert vom Pegel
 - [x] Musik holt nach einer Pause nicht mehr die verpasste Zeit nach
+- [x] `fortschritt.js`: Level-Liste, Freischaltung, Crew und Bestzeiten an
+      einer Stelle statt in jeder Level-Datei
+- [x] Levelauswahl zeigt gesperrte und geplante Level, statt alles anzubieten
+- [x] „E WEITER ZU LEVEL 2" am Ende von Level 1 hat neu gestartet statt
+      weitergeführt — die Abfrage stand unter der allgemeinen Ende-Abfrage

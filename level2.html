@@ -52,8 +52,12 @@
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Gesperrt oder noch nicht gebaut: sichtbar, aber nicht anklickbar. */
+  #levelbar span.zu { flex:1; text-align:center; font:700 9px/1 monospace;
+    letter-spacing:1px; padding:7px 4px; color:#4a4363;
+    background:rgba(255,255,255,.02); border:1px dashed #241e3c; border-radius:5px; }
   html.touch #levelbar { padding:6px 8px; }
-  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  html.touch #levelbar a, html.touch #levelbar span.zu { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
@@ -83,14 +87,15 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
-  </div>
+  <div id="levelbar"></div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="fortschritt.js"></script>
+<script>
+Fortschritt.leiste(2);
+</script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -622,13 +627,18 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Crew, Freischaltung und Bestzeiten liegen in fortschritt.js. */
+const LEVEL_NR=2;
+const ladeCrew=()=>Fortschritt.crew();
+const speichereCrew=n=>Fortschritt.nimmAuf(n);
+const ladeBest=()=>Fortschritt.bestzeit(LEVEL_NR);
+const tempoBonus=()=>Fortschritt.hat('MAX FERDI')?1.15:1;
+/* Weiter ins naechste gebaute Level. false, wenn es noch keins gibt. */
+function weiter(){
+  const n=Fortschritt.naechstes(LEVEL_NR);
+  if(!n) return false;
+  location.href=n.datei; return true;
+}
 
 /* ==========================================================================
    EINGABE
@@ -650,7 +660,8 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  /* Gewonnen: weiter ins naechste Level, solange es eins gibt. */
+  if(S.modus==='ende'){ if(S.gewonnen&&weiter()) return; neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -662,8 +673,12 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+  /* Levelauswahl auf dem Titelbild - was wohin fuehrt, steht in fortschritt.js */
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-8]$/.test(e.code)){
+    const nr=parseInt(e.code.slice(-1),10);
+    if(Fortschritt.spielbar(nr)&&nr!==LEVEL_NR){
+      e.preventDefault(); location.href=Fortschritt.levelNr(nr).datei; }
+  }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1105,9 +1120,9 @@ function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; S.vertreten=0; SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  Fortschritt.geschafft(LEVEL_NR);
+  S.neueBestzeit=Fortschritt.setzeBestzeit(LEVEL_NR,S.zeit);
+  Fortschritt.leiste(LEVEL_NR);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -1381,11 +1396,26 @@ function titelbild(){
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  const levelOben=levelZeilen(LEVEL_NR);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',levelOben-9,P.weiss,1);
+}
+/* Levelauswahl unten auf dem Titelbild - aus fortschritt.js gebaut. */
+function levelZeilen(eigenes){
+  /* Von unten nach oben, damit das eigene Level immer sichtbar bleibt.
+     Zurueck kommt die oberste Zeile - darueber darf nichts mehr stehen. */
+  const alle=Fortschritt.auswahl(eigenes);
+  const liste=alle.slice(-Math.min(alle.length,3));
+  const oben=H-7-(liste.length-1)*6;
+  liste.forEach((l,i)=>{
+    const y=oben+i*6;
+    /* Das eigene Level ist nie gesperrt - man steht ja schon drin. */
+    const zu=!Fortschritt.spielbar(l.nr)&&l.nr!==eigenes;
+    const taste=zu?'GESPERRT ':(l.nr===eigenes?'LEERTASTE':('TASTE '+l.nr+'  '));
+    const txt=taste+' LEVEL '+l.nr+' - '+l.name;
+    const farbe=zu?'#2f2a45':(l.nr===eigenes?P.dunkel:P.neon2);
+    text(txt,(W-textW(txt))/2,y,farbe);
+  });
+  return oben;
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
@@ -1437,8 +1467,15 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      const n=Fortschritt.naechstes(LEVEL_NR);
+      if(n){
+        if(Math.floor(S.t*2)%2===0)
+          textC('E  WEITER ZU LEVEL '+n.nr+' - '+n.name,130,P.gruen);
+      } else {
+        const kommt=Fortschritt.levelNr(LEVEL_NR+1);
+        textC(kommt?('LEVEL '+kommt.nr+' - '+kommt.name+'  WIRD NOCH GEBAUT'):'',124,P.dunkel);
+        if(Math.floor(S.t*2)%2===0) textC('LEERTASTE  NOCHMAL',136,P.dunkel);
+      }
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

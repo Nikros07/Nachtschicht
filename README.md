@@ -306,9 +306,48 @@ sind reine Daten: Position, Hemdfarbe, Haarfarbe, drei Zeilen nüchtern und zwei
 ab dem Mut-Pegel. Sie dürfen nur nicht direkt vor einem Möbel stehen — bei
 gleichem Abstand gewinnt die Person, und das Möbel wäre nicht mehr erreichbar.
 
+## Fortschritt
+
+Alles, was über ein einzelnes Level hinausgeht, steht in **`fortschritt.js`** —
+welche Level es gibt, wer schon dabei ist, was freigeschaltet ist und welche
+Bestzeiten stehen. Jede Level-Datei bindet sie als normales `<script src>` ein.
+
+```js
+const LEVEL = [
+  { nr:1, datei:'index.html',  name:'DIE SCHULE',   gibt:'MAX FERDI' },
+  { nr:2, datei:'level2.html', name:'BEI MORITZ',   gibt:'MORITZ'    },
+  { nr:3, datei:null,          name:'DER NACHTBUS', gibt:null        },
+  …
+];
+```
+
+`datei: null` heißt: geplant, aber noch nicht gebaut. Solche Level stehen in der
+Auswahl als `BALD`, gesperrte als `ZU`. Ein neues Level braucht **eine Zeile
+hier** — die Leiste unter dem Bild, die Levelauswahl auf dem Titelbild und das
+„weiter zu Level N" am Ende bauen sich daraus.
+
+**Freigeschaltet** wird der Reihe nach: Level 1 ist immer offen, jedes weitere
+braucht das davor. Wer einen alten Spielstand hat, verliert nichts — steht der
+Junge eines Levels in der Crew, gilt das Level als geschafft.
+
+| Aufruf | Macht |
+|:--|:--|
+| `Fortschritt.crew()` · `.hat(name)` · `.nimmAuf(name)` | Wer dabei ist |
+| `Fortschritt.geschafft(nr)` · `.istGeschafft(nr)` | Level abhaken |
+| `Fortschritt.frei(nr)` · `.spielbar(nr)` | Freigeschaltet / auch gebaut |
+| `Fortschritt.bestzeit(nr)` · `.setzeBestzeit(nr,s)` | Bestzeiten, gibt `true` bei Rekord |
+| `Fortschritt.naechstes(nr)` | Das nächste gebaute Level oder `null` |
+| `Fortschritt.leiste(nr)` · `.auswahl(nr)` | Die Levelauswahl |
+| `Fortschritt.zuruecksetzen()` | Alles löschen |
+
+Gespeichert wird im `localStorage` unter `nachtschicht.crew`,
+`nachtschicht.geschafft` und `nachtschicht.bestzeitN`.
+
 ## Lokal starten
 
-Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
+Doppelklick auf `index.html` reicht — `fortschritt.js` liegt daneben und wird
+als klassisches Script geladen, das geht auch über `file://`. Wer lieber einen
+Server will:
 
 ```bash
 python -m http.server 5173
