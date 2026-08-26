@@ -180,6 +180,16 @@ werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 | **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
 | **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
 
+### Die anderen in der Wohnung
+
+Außer den vier Jungs steht noch Volk rum, das nichts mit Dir zu tun hat: einer
+im Wohnzimmer, der nicht mehr weiß woher er Dich kennt, die Nachbarin, der Typ
+dem die Box gehört, ein Philosoph in der Küche und jemand, der seit zwanzig
+Minuten vor dem Bad wartet. Sie nicken zum Bass und halten Dich nicht auf.
+
+Ansprechen kannst Du sie trotzdem mit `E` — und **ab dem Mut-Pegel reden sie
+anders mit Dir**. Nüchtern kriegst Du eine Abfuhr, betrunken einen Vortrag.
+
 ### Der Pegel
 
 Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
@@ -192,12 +202,40 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Und Du hörst es.** Je höher der Pegel, desto lauter steht die Anlage, desto
+mehr zerrt sie, desto mehr eiert das Tempo und desto weiter geht die zweite
+Bassstimme gegen die erste. Bei 100 klingt das Vorglühen wie es sich anfühlt.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und der bringt Dir in
+vier Runden drei Sachen bei. Gekämpft wird im Flur; laufen und springen geht,
+weglaufen nicht.
+
+| Was er macht | Woran Du es siehst | Was Du machst |
+|:--|:--|:--|
+| **Schwinger** | roter Balken, `!` | `E` im Konterfenster — der helle Teil des Balkens |
+| **Finte** | goldener Balken, `?` | **nichts.** Sie läuft ins Leere |
+| **Ansturm** | blauer Balken, `>>` | **springen.** Kontern geht nicht |
+
+**Runde 1** ist nur der Schwinger. **Ab Runde 2** kommt die Finte dazu, **ab
+Runde 3** der Ansturm. Gleichzeitig wird seine Vorwarnzeit kürzer und das
+Konterfenster enger — in der letzten Runde zählt nur noch die zweite Hälfte
+des Ausholens.
+
+**Danebenhauen kostet.** Wer auf Verdacht `E` drückt, vertritt sich und kann
+kurz nicht kontern — ein grauer Balken zeigt, wie lange. Genau darauf ist die
+Finte aus: Sie täuscht an, Du schlägst zu, und der Nachschlag kommt sofort und
+ist nicht mehr zu kontern. Draufhauen ist in diesem Kampf schlechter als
+nichts tun.
+
+**Der Ansturm** ist die andere Hälfte: Er geht sichtbar zurück, nimmt Anlauf
+und rennt los. Springst Du drüber, knallt er in die Wand und steht ein paar
+Sekunden offen da — dann kostet ihn ein `E` einen Treffer, ohne Kontern.
+Bleibst Du stehen, rennt er Dich um.
+
+Viermal treffen, dann liegt er.
 
 ### Moritz
 
@@ -236,6 +274,30 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+`level2.html` ist genauso aufgebaut. Dort interessant:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `proSchluck` · `mutAb` · `wackelnAb` · `langsamAb` | Wie schnell der Pegel steigt und was er anrichtet |
+| `verzerrungAb` · `verzerrungMax` · `lautBonus` · `schwankMax` | Wie hart der Pegel auf den Ton durchschlägt |
+| `gegnerTreffer` | Wie viele Runden der Kampf dauert — **das ist auch die Zahl der Phasen** |
+| `gegnerWindup` → `gegnerWindupMin` | Vorwarnzeit, erste bis letzte Phase |
+| `konterFenster` → `konterFensterMin` | Anteil des Ausholens, in dem `E` zählt |
+| `finteDauer` · `finteStrafe` | Wie lange die Finte läuft und wie kurz der Nachschlag ist |
+| `anlaufDauer` · `sturmTempo` · `sturmSprung` · `benommenDauer` | Der Ansturm |
+| `vertretenLang` · `vertretenKurz` | Was Danebenhauen kostet |
+| `arenaVon` · `arenaBis` | Wie groß der Flur im Kampf ist |
+
+Welches Muster in welcher Phase vorkommt, steht als Liste in `MUSTER`, die
+Hinweise dazu in `PHASENHINWEIS`. Ein viertes Muster braucht einen Eintrag in
+`MUSTER`, einen Zustand in `kampf()` und einen Eintrag in `KAMPF_TELL` für
+Farbe und Zeichen — sonst nichts.
+
+Die Wohnung selbst steht in `ORTE`, `DINGE`, `LEUTE` und `STATISTEN`. Statisten
+sind reine Daten: Position, Hemdfarbe, Haarfarbe, drei Zeilen nüchtern und zwei
+ab dem Mut-Pegel. Sie dürfen nur nicht direkt vor einem Möbel stehen — bei
+gleichem Abstand gewinnt die Person, und das Möbel wäre nicht mehr erreichbar.
 
 ## Lokal starten
 
