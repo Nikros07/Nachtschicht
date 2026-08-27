@@ -5,6 +5,8 @@
 Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Jedes
 Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
 
+**Fertig: Level 1 (Die Schule) · Level 2 (Bei Moritz) · Level 3 (Der Nachtbus)**
+
 **▶ [Jetzt spielen](https://nikros07.github.io/Nachtschicht/)**
 
 > Was noch fehlt, steht in [TODO.md](TODO.md).
@@ -234,6 +236,84 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+---
+
+## Level 3 — Der Nachtbus
+
+22:04. Nachtbus N7, Richtung Altstadt. Fünf Haltestellen, keiner von euch hat
+ein Ticket, und vorne steigt gerade jemand in Uniform ein.
+
+**Kein drittes Schleich-Level und kein zweites Überreden.** Hier ist der Boden
+das Problem: der Bus bremst, fährt an und fährt Kurven, und du stehst darin.
+
+| Taste | Aktion |
+|:--|:--|
+| `A` `D` | Laufen |
+| **`Shift`** | **Festhalten** — an einer Haltestange |
+| **`E`** | Reden · unter Sitze schauen · Tür · Versteck |
+| `Leertaste` | Springen |
+
+### Deine Aufgaben
+
+| Aufgabe | Wo |
+|:--|:--|
+| **Moritz vom Fahrer wegholen** | Ganz vorne. Er unterhält sich, statt sich zu kümmern |
+| **Den Langen wecken** | Ganz hinten. Er fährt seit zwei Stunden im Kreis |
+| **An der Altstadt aussteigen** | Letzte Haltestelle, an einer Tür, mit allen |
+
+### Der fahrende Untergrund
+
+Vor jedem Halt kommt der **Haltewunsch-Gong** und die Anzeige springt um. Das
+ist Deine Vorwarnung — **1,7 Sekunden**, um an eine Haltestange zu kommen und
+`Shift` zu drücken. Wer das verpasst, kippt nach vorne, rutscht ein Stück und
+liegt eine Sekunde flach.
+
+Das ist keine Kosmetik: **Hinfallen ist laut.** Wer in Hörweite ist, dreht sich
+um und sucht mit Vorsprung.
+
+Beim Anfahren zieht es Dich nach hinten, in Kurven zur Seite. Der Schub ist
+eine eigene Geschwindigkeit neben Deiner — Du kannst dagegen anlaufen, aber
+nicht einfach stehenbleiben.
+
+### Die Kontrolleure
+
+Einer ist von Anfang an da, ab der dritten Haltestelle steigt ein zweiter zu.
+Sie gehen den Bus ab und **prüfen jeden Fahrgast** — jeder Sitzende hält sie
+zweieinhalb Sekunden auf. Der volle Bus ist Dein Freund.
+
+Sie sehen nach vorne weit und im Rücken fast nichts. Vier Dinge helfen:
+
+| | |
+|:--|:--|
+| **Festhalten** | Wer sich festhält wie alle anderen, fällt halb so auf |
+| **Während sie prüfen** | Halbe Sichtweite. Genau daran kommst Du vorbei |
+| **Gelenk und Gepäckecke** | Zwei Verstecke, danach 7 Sekunden gesperrt |
+| **Raus an der Haltestelle** | Draußen sieht Dich keiner |
+| **Der Fahrschein** | Liegt unter einem Sitz. Rettet Dich **genau einmal** |
+
+Und: **jede Bremsung bringt sie aus dem Tritt.** Wenn Du Dich festhältst und
+sie nicht, hast Du anderthalb Sekunden geschenkt.
+
+### Die Türen
+
+An jedem Halt gehen sie für **acht Sekunden** auf (an Deiner Haltestelle für
+zwölf). `E` an einer Tür steigt aus, `E` steigt wieder ein. Draußen läuft eine
+Uhr mit — und wenn sie abläuft, fährt der Bus ohne Dich.
+
+Und wenn Du an der Altstadt nicht rauskommst, ist der nächste Halt nirgendwo.
+
+### Der Lange
+
+Danach schließt er sich an: zwei Köpfe größer als alle anderen und seit zwei
+Stunden im Kreis gefahren, weil er eingeschlafen ist. **Er gibt Dir ein Herz
+mehr** — in jedem Level, auch rückwirkend in Level 1 und 2.
+
+> Der Pegel aus Level 2 fährt mit. Wer dort auf 70 aufgehört hat, steigt hier
+> nicht nüchtern ein — und bei 100 schläfst Du ein. Im Nachtbus die
+> zuverlässigste Art, seine Haltestelle zu verpassen.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -264,6 +344,25 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+Dasselbe in den anderen Leveln: in `level2.html` liegen `DINGE`, `LEUTE`,
+`AUFGABEN`, `STATISTEN` und der Kampf als `MUSTER` und `PHASEN`; in
+`level3.html` `ABTEILE`, `TUEREN`, `STANGEN`, `SITZE`, `VERSTECKE`,
+`FAHRGAESTE` und `HALTE`. Eine Sitzreihe dazuschreiben reicht — die
+Kontrolleure laufen sie von selbst ab.
+
+## Was über Level hinweg gemerkt wird
+
+Drei Werte im `localStorage`, mehr braucht es nicht:
+
+| Schlüssel | Inhalt |
+|:--|:--|
+| `nachtschicht.crew` | Wer schon dabei ist. Fähigkeiten gelten ab dann überall |
+| `nachtschicht.pegel` | Der Pegel am Ende von Level 2, Startwert für Level 3 |
+| `nachtschicht.bestzeit1/2/3` | Bestzeit je Level |
+
+Die Fähigkeiten hängen an genau einer Stelle je Level: `tempoBonus()` für Max
+Ferdis 15 % und `maxLeben()` für das Extraherz vom Langen.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -292,5 +391,5 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 bis 3 sind fertig und durchspielbar. Level 4 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).
