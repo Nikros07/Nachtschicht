@@ -171,6 +171,10 @@ zwei Stunden rum und keiner macht Anstalten loszugehen. Also machst Du es.
 **Kein zweites Schleich-Level.** In Level 1 geht es darum, nicht gesehen zu
 werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 
+Und es ist wirklich eine Meute: außer den vier Leuten, um die es geht, stehen
+noch acht andere in der Wohnung rum, reden vor sich hin und kommen nirgendwo
+mit. Du kannst sie ansprechen. Sie sagen Dir nichts.
+
 ### Vier Aufgaben
 
 | Aufgabe | Wie |
@@ -192,12 +196,35 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+Die Anlage kippt mit. Ab einem Viertel fängt sie an zu zerren, der Bass
+verstimmt sich, die Höhen gehen weg und alles atmet. Nicht die Wohnung wird
+lauter — Du wirst schlechter.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er hat vier
+Angriffsmuster. Über seinem Kopf läuft ein Balken, und **die Farbe sagt Dir,
+was zu tun ist:**
+
+| Balken | Was er macht | Deine Antwort |
+|:--|:--|:--|
+| **Rot** `!` | Standardschlag, lange Vorwarnung | `E`, während er ausholt |
+| **Gelb** `!!` | Schneller Jab | Dasselbe, nur schneller |
+| **Blau** `?` | **Finte** — er bricht ab und kommt sofort nach | Finger weg |
+| **Weiß** `^` | Rundumschlag, nicht konterbar | **Springen** |
+
+Jedes Muster kommt beim ersten Mal allein und angekündigt, erst danach wird
+gemischt. **Viermal treffen, dann liegt er.** Im Kampf kannst Du springen, aber
+nicht laufen.
+
+Zwei Dinge kosten Dich Deine Deckung, ohne dass er Dich anfasst: ins Leere
+drücken und auf eine Finte reinfallen. Solange Du taumelst, kannst Du nicht
+kontern — und **jeder weitere Druck fängt die Starre von vorn an.** Dauerfeuer
+auf `E` verliert diesen Kampf zuverlässig.
+
+Geht der Rundumschlag unter Dir durch, dreht er sich ins Leere und steht kurz
+offen: grüner Balken, `E`, freier Treffer.
 
 ### Moritz
 

@@ -26,11 +26,12 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** nichts mehr — alle drei Punkte sind umgesetzt:
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Acht Statisten, die rumstehen, im Takt wippen und vor sich hin reden
+- [x] Der Kracher hat vier Angriffsmuster, die Balkenfarbe ist die Antwort
+- [x] Musik zerrt, verstimmt und dumpft mit steigendem Pegel
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,9 +68,15 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+> Der Kracher in Level 2 ist der Prototyp für das, was hier steht: Muster als
+> Daten (`MUSTER`), Phasen als Liste (`PHASEN`), Farbe des Balkens als Sprache,
+> Starre statt Schadensstrafe für Fehlschläge. Wer das große Kampfsystem baut,
+> fängt am besten dort an und nicht bei null.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+- [x] **Fehlschläge bestrafen** — Starre statt Herz, und jeder weitere Druck
+      setzt sie neu (in Level 2 umgesetzt, muss noch überall gelten)
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
