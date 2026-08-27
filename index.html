@@ -630,11 +630,14 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  /* Nach gewonnenem Level fuehrt E direkt ins naechste. Das muss VOR dem
+     allgemeinen Ende-Zweig stehen - stand es dahinter, hat E nach einem
+     gewonnenen Level neu gestartet, obwohl auf dem Bild
+     "E WEITER ZU LEVEL 2" blinkte. */
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='level2.html'; return; }
+    neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
-  /* Nach gewonnenem Level fuehrt E direkt ins naechste */
-  if(S.modus==='ende'&&S.gewonnen){ location.href='level2.html'; return; }
   aktionPuffer.push(S.t);
 }
 /* ---- Intro ---- */
