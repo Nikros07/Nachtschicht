@@ -28,9 +28,21 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — fünf Statisten mit
+      eigenem Verhalten, Zwischenrufen und je einem Satz auf `E`
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — hoher
+      Schlag, tiefer Schwinger, Doppelschlag; eins nach dem anderen
+      freigeschaltet, plus Erholung bei Fehlschlägen
+- [x] Musik lauter/verzerrter je höher der Pegel — eigener Musikkanal mit
+      Sättigung und Tiefpass, dazu Verstimmung und schlingernder Takt
+- [ ] Der Kracher blockt noch nicht — dafür fehlt eine Blockhaltung im Sprite
+- [ ] Springen kostet im Kampf nichts. Solange es keine Ausdauer gibt, ist
+      Dauerspringen gegen den Schwinger kostenlos
+- [ ] Die Statisten reagieren nicht auf den Pegel — bei 80 müssten sie
+      anders klingen als bei 0
+
+**Weiter geht es hier:**
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -70,7 +82,11 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      *(im Kracher fertig: `fehlschlagDauer`, und Weiterhämmern verlängert
+      sie. Muss beim Zusammenführen mit rüber.)*
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      *(im Kracher als `konterFenster`, steht bewusst auf 55 % statt 33 % —
+      der erste Kampf im Spiel soll noch gnädig sein. Für Bosse enger.)*
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -123,3 +139,6 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Level 2: Statisten, drei Angriffsmuster beim Kracher, Musik am Pegel**
+- [x] Musik holte nach Pause oder Tabwechsel alle verpassten Schläge auf
+      einmal nach — das knallte. In beiden Leveln behoben.

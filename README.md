@@ -192,12 +192,40 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Die Musik zieht mit.** Je höher der Pegel, desto lauter und dreckiger wird
+das Vorglühen — ab der Hälfte kippt der Bass ins Verzerrte, die Höhen gehen
+weg, und der Takt fängt an zu schlingern. Du hörst Deinen Pegel, bevor Du ihn
+ansiehst.
+
+### Der Rest der Wohnung
+
+Fünf Leute stehen nur rum: einer hat seit einer Stunde Schuhe an, einer nickt
+zum Bass, einer tanzt, einer steht an der Theke, einer wartet aufs Bad. Sie
+geben Dir nichts, brauchen nichts von Dir und stehen Dir nie im Weg — ein Möbel
+oder einer von den Jungs gewinnt immer gegen sie, wenn beides in Reichweite ist.
+Mit `E` kriegst Du trotzdem einen Satz. Von allein reden sie auch, und sobald
+alle bereit sind, reden sie nur noch vom Losgehen.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er hat mehr als eine
+Masche drauf. **Wo** der Balken läuft, sagt Dir, was kommt:
+
+| Ansage | Was kommt | Was Du machst |
+|:--|:--|:--|
+| **Roter Balken über dem Kopf** | Hoher Schlag | `E` — aber erst im letzten Drittel des Ausholens |
+| **Gelber Balken am Boden**, Strich fährt über den Boden | Tiefer Schwinger | **Springen.** Er fährt drunter durch und kippt vornüber |
+| **Rot — und gleich nochmal** | Doppelschlag | Zweimal kontern. Der zweite kommt schneller |
+
+Er fängt nur mit dem Schlag an. Der Schwinger kommt erst dazu, wenn Du ihn
+einmal erwischt hast, der Doppelschlag nach dem zweiten Mal — Du lernst also
+eins nach dem anderen. Und mit jedem Treffer holt er kürzer aus.
+
+**Draufhauen hilft nicht.** Zu früh gedrückt, ins Leere gedrückt oder in den
+Schwinger gedrückt heißt Erholung, und in der Erholung geht kein Konter. Wer
+weiterhämmert, verlängert sie immer weiter und kommt gar nicht mehr raus.
+Dreimal erwischen, dann liegt er.
 
 ### Moritz
 
@@ -236,6 +264,22 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+`level2.html` hat einen eigenen `TUNE`-Block nach demselben Muster. Dort liegen
+der Pegel (`proSchluck`, `mutAb`, `wackelnAb`, `langsamAb`), die Uhr und der
+Kampf:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `konterFenster` | Welcher Anteil des Ausholens als Konter zählt (0,55 = letzte 55 %) |
+| `fehlschlagDauer` | Wie lange ein Schlag ins Leere Dich lahmlegt |
+| `windupSchaerfe` | Wie stark er nach jedem Treffer nachlegt |
+| `gegnerWindup` · `gegnerWindupTief` · `gegnerWindupZwei` | Vorwarnzeit der drei Muster |
+| `sprungHoehe` | Ab welcher Höhe Du über dem Schwinger bist |
+
+Die Wohnung steht als Daten in `ORTE`, `DINGE` und `LEUTE`, die Leute im
+Hintergrund in `STATISTEN` — Position, Hemd- und Haarfarbe, Verhalten und
+Sprüche, mehr braucht einer nicht.
 
 ## Lokal starten
 

@@ -384,6 +384,10 @@ const BASS_JAGD=[147,147,0,175, 147,0,131,0, 117,117,0,131, 117,0,175,196];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
+  /* Nach Pause, Tabwechsel oder Standby steht MUS.next weit in der
+     Vergangenheit. Ohne diesen Sprung holt die Schleife alle verpassten
+     Schlaege auf einmal nach - das knallt. */
+  if(MUS.next<AC.currentTime) MUS.next=AC.currentTime+.02;
   const jagd = S.lehrerJagt;
   const bpm = jagd?126:74, st=60/bpm/4, linie=jagd?BASS_JAGD:BASS;
   while(MUS.next<AC.currentTime+.12){
