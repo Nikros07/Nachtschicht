@@ -94,6 +94,31 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
+> **Vor Level 3 zu entscheiden — Frage an den Nick.**
+>
+> Die Reihenfolge in dieser Liste sagt: erst die Level, dann die Technik.
+> Level 3 wäre nach dem bisherigen Muster `level3.html`, also die **vierte
+> Kopie** derselben 700 Zeilen Motor: Bitmap-Font, Bild-Cache, Audio,
+> Vollbild, Touch-Steuerung, Kamera, Sprungphysik. In allen vier Dateien
+> gleich, aber jede für sich gepflegt.
+>
+> Das ist keine Vermutung mehr. Der Musik-Fehler (nach Pause oder
+> Tabwechsel wurden alle verpassten Schläge auf einmal nachgeholt) steckte
+> in `index.html` **und** in `level2.html` und musste zweimal repariert
+> werden. Bei vier Dateien wird das viermal.
+>
+> Zwei Wege:
+>
+> 1. **Erst Level 3 bauen**, wie gehabt als eigene Datei. Schnell zum
+>    spielbaren Ergebnis, aber die Kopie Nummer vier ist dann da.
+> 2. **Erst den gemeinsamen Motor rausziehen** (Font, Bild-Cache, Audio,
+>    Eingabe, Vollbild) in eine `motor.js`, die alle Level einbinden. Kostet
+>    eine Runde ohne sichtbares Ergebnis, danach ist ein Level nur noch
+>    Daten plus Level-Logik — und genau das steht unten als erster Punkt.
+>
+> Das ist eine Richtungsentscheidung, keine technische Kleinigkeit. Sie
+> wartet auf den Nick.
+
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
 - [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
 - [ ] Übergänge zwischen den Leveln
