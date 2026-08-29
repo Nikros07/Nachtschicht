@@ -134,11 +134,12 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* (6) DER KRACHER AM ENDE - siehe Kampfteil weiter unten */
+  gegnerLeben:      4,     // Schaden, den er einsteckt (schwerer Konter zaehlt 2)
+  gegnerAnlauf:    70,     // wie schnell er auf dich zukommt
   gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  gegnerPause:      1.1,   // Grundpause zwischen zwei Angriffen
+  pausenStreuung:   0.2,   // +/- Anteil, damit die Pause kein Metronom ist
   leben:            3,
 };
 
@@ -750,47 +751,130 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
+
+   Vorher war das kein Kampf, sondern eine Taste: er hat ausgeholt, und
+   JEDES E waehrend des Ausholens war ein Konter. Wer stumpf gehaemmert
+   hat, hat nie einen Treffer kassiert und nie hingeschaut.
+
+   Zwei Regeln aendern das:
+
+   1. Ein Konter zaehlt nur im KONTERFENSTER - dem letzten Stueck des
+      Ausholens. Das Fenster ist nicht geraten, es steht sichtbar im
+      Balken ueber seinem Kopf (der helle Abschnitt rechts), und er
+      blinkt weiss, sobald es aufgeht.
+   2. Wer zu frueh drueckt, hat den Konter fuer DIESEN Angriff verspielt.
+      Danach hilft kein weiteres Druecken mehr - der Schlag kommt an.
+
+   Und er hat mehr als ein Muster:
+
+     SCHLAG  normal, breites Fenster. Damit lernt man es.
+     FINTE   holt aus und bricht ab, BEVOR das Fenster aufgeht - danach
+             kommt sofort ein schneller echter Schlag hinterher. Bestraft
+             Haemmern, nicht Geduld: wer nichts tut, dem passiert nichts.
+     SCHWER  lange Ansage, spaetes und schmales Fenster, dafuer zaehlt
+             der Konter doppelt. Gelber Balken statt rotem.
    ========================================================================== */
+const MUSTER={
+  schlag:{ dauer:0.85, fenster:0.34, schaden:1, farbe:'#ff4d4d', ruf:'!'  },
+  finte: { dauer:0.55, fenster:0,    schaden:0, farbe:'#ff4d4d', ruf:'!'  },
+  nach:  { dauer:0.45, fenster:0.45, schaden:1, farbe:'#ff4d4d', ruf:'!'  },
+  schwer:{ dauer:1.30, fenster:0.20, schaden:2, farbe:'#ffd447', ruf:'!!' },
+};
+/* Die ersten beiden Angriffe stehen fest, damit der Kampf sich selbst
+   erklaert: erst ein sauberer Schlag, dann die erste Finte. Danach
+   gewuerfelt, aber nie zweimal dasselbe hintereinander. */
+function naechstesMuster(g){
+  g.zug++;
+  if(g.zug===1) return 'schlag';
+  if(g.zug===2) return 'finte';
+  return pick(['schlag','finte','schwer'].filter(m=>m!==g.letztes));
+}
+function holeAus(g,m){
+  g.zustand='wind'; g.t=0; g.muster=m; g.verpatzt=false;
+  if(m!=='nach') g.letztes=m;      // 'nach' ist die Fortsetzung der Finte
+  SFX.warn();
+}
+/* Das Konterfenster ist offen, solange der Balken im hellen Teil steht. */
+const imFenster=g=>{
+  const M=MUSTER[g.muster];
+  return g.zustand==='wind' && !g.verpatzt && M.fenster>0 &&
+         g.t>=M.dauer*(1-M.fenster);
+};
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
+  S.gegner={ x:S.x-70, hp:TUNE.gegnerLeben, zustand:'komm', t:0,
+             muster:'schlag', letztes:'', zug:0, verpatzt:false, getroffen:0 };
   S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  zeigeHinweis('E ERST WENN DER BALKEN HELL WIRD',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
   const dist=S.x-g.x;
+  /* Immer den ganzen Puffer leeren, aber hoechstens einmal pro Bild
+     reagieren - sonst zaehlt ein Doppeldruck als zwei Konter. */
+  let gedrueckt=false;
+  while(aktionPuffer.length){ aktionPuffer.shift(); gedrueckt=true; }
+
   if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
+    g.x+=Math.sign(dist)*TUNE.gegnerAnlauf*dt;
+    if(Math.abs(dist)<22) holeAus(g,naechstesMuster(g));
+    return;
+  }
+  if(g.zustand==='wind'){
+    const M=MUSTER[g.muster];
+    if(gedrueckt&&!g.verpatzt){
+      if(imFenster(g)){
+        g.hp-=M.schaden; g.zustand='getroffen'; g.t=0; g.getroffen++;
+        S.ruettel=5; S.blitz=.5; SFX.klatsch();
+        meldung(M.schaden>1?'VOLL DRAUF':pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
+        return;
+      }
+      /* Zu frueh. Fuer diesen Angriff ist der Konter weg. */
+      g.verpatzt=true; S.ruettel=2; SFX.warn();
+      meldung(g.muster==='finte'?'DAS WAR NUR NE FINTE':'ZU FRUEH',1.2);
+    }
+    if(g.t>=M.dauer){
+      /* Die Finte trifft nicht - sie geht direkt in den echten Schlag ueber. */
+      if(g.muster==='finte'){ holeAus(g,'nach'); return; }
+      g.zustand='schlag'; g.t=0;
       S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
       meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+      if(S.hp<=0){ kampfVerloren(); return; }
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
+    return;
+  }
+  if(g.zustand==='schlag'){
+    if(g.t>=TUNE.gegnerSchlag) neuePause(g);
+    return;
+  }
+  if(g.zustand==='getroffen'){
     g.x-=Math.sign(dist)*90*dt;
     if(g.t>=0.5){
       if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
+      neuePause(g);
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+    return;
   }
+  if(g.zustand==='pause'&&g.t>=g.pause){ g.zustand='komm'; g.t=0; }
+}
+/* Der Kampf kostet Zeit, nicht den Abend. Er schubst dich zurueck in die
+   Wohnung, die Uhr laeuft weiter, und Du kommst noch mal an die Tuer.
+   Jetzt, wo der Kampf wirklich verlierbar ist, waere "ganzes Level neu"
+   die falsche Strafe: drei Minuten Suchen sind weg, weil der erste Kampf
+   im Spiel danebenging. Verlieren tut man am Ende trotzdem - an der Uhr. */
+function kampfVerloren(){
+  S.modus='spiel'; S.gegner=null;
+  S.x=118; S.vx=0; S.hp=TUNE.leben;
+  S.ruettel=8; S.blitz=.7;
+  meldung('ER SCHUBST DICH ZURUECK IN DIE WOHNUNG',2.4);
+  zeigeHinweis('NOCH MAL - E ERST WENN DER BALKEN HELL WIRD',4);
+}
+/* Gleich lange Pausen machen den Kampf zum Metronom - dann zaehlt man mit
+   statt hinzuschauen. */
+function neuePause(g){
+  g.zustand='pause'; g.t=0;
+  g.pause=TUNE.gegnerPause*(1+(Math.random()*2-1)*TUNE.pausenStreuung);
 }
 
 /* ==========================================================================
@@ -921,19 +1005,29 @@ function zeichneWohnung(){
   if(S.gegner){
     const g=S.gegner;
     const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
+    /* Er blinkt weiss, sobald das Konterfenster offen ist - das ist der
+       eigentliche Hinweis. Vorher hat er die ganze Zeit geblinkt und
+       damit gar nichts gesagt. */
+    const blinkt = imFenster(g)&&Math.floor(S.t*24)%2===0;
     outline(rows,g.x,BODEN-rows.length,1,.6);
     sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
     if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+      const M=MUSTER[g.muster], oben=BODEN-rows.length;
+      if(Math.floor(S.t*10)%2===0) text(M.ruf,g.x+3,oben-11,g.verpatzt?P.dunkel:M.farbe);
+      const bw=18, bx=g.x-2, by=oben-5;
+      ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,4);
+      /* Das Fenster steht als heller Abschnitt im Balken. Ohne die
+         Markierung waere das Timing geraten statt gelesen. */
+      if(M.fenster>0){ ctx.fillStyle='#ffffff33';
+        ctx.fillRect(bx+Math.round(bw*(1-M.fenster)),by,bw-Math.round(bw*(1-M.fenster)),2); }
+      const f=Math.min(1,g.t/M.dauer);
+      ctx.fillStyle=g.verpatzt?'#5a4a68':(imFenster(g)?P.weiss:M.farbe);
+      ctx.fillRect(bx,by,Math.round(bw*f),2);
     }
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
+    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*Math.max(0,g.hp)/TUNE.gegnerLeben),4);
   }
 
   /* Spieler */
