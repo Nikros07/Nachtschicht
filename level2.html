@@ -122,6 +122,7 @@ const TUNE = {
   pegelAbbau:       0.6,   // pro Sekunde, sehr langsam
   mutAb:           35,     // ab hier traust du dich Sachen
   wackelnAb:       55,     // ab hier faengt das Bild an zu schwanken
+  verzerrungAb:    30,     // ab hier faengt die Musik an zu klirren
   langsamAb:       70,     // ab hier wirst du spuerbar langsamer
   blackoutBei:    100,
 
@@ -310,11 +311,11 @@ let AC=null, muted=false;
 function ensureAudio(){ if(AC) return AC;
   try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
   catch(e){ AC=null; } return AC; }
-function ton(f,when,dur,type='square',vol=.05){
+function ton(f,when,dur,type='square',vol=.05,ziel=null){
   if(!AC||muted) return; const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(f,when);
   g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-  o.connect(g); g.connect(AC.destination); o.start(when); o.stop(when+dur+.02); }
+  o.connect(g); g.connect(ziel||AC.destination); o.start(when); o.stop(when+dur+.02); }
 const piep=(f,d=.07,t='square',v=.05)=>{ ensureAudio(); if(AC) ton(f,AC.currentTime,d,t,v); };
 function glissando(f1,f2,dur,type='square',vol=.05){
   ensureAudio(); if(!AC||muted) return;
@@ -342,18 +343,61 @@ const SFX={
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* ---- Musik ------------------------------------------------------------
+   Das Vorgluehen laeuft die ganze Zeit. Bis jetzt wurde es nur lauter, je
+   hoeher der Pegel steht - laut allein klingt aber nicht nach zu viel,
+   sondern nur nach zu laut. Jetzt geht sie auch kaputt: sie klirrt
+   (Saettigung), wird dumpf (die Hoehen gehen weg) und eiert leicht in der
+   Tonhoehe. Nach Deinem Kopf um halb zehn, nicht nach einem Lautstaerke-
+   regler.
+
+   Die Musik laeuft dafuer ueber einen eigenen Weg. Wuerde man die
+   Verzerrung an den Ausgang haengen, wuerden Schritte, Piepser und der
+   Kampf mitklirren - und ausgerechnet der Konterhinweis waere im Matsch. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
-const MUS={step:0,next:0};
+const MUS={step:0,next:0,verz:-1};
+let MUSBUS=null, MUSFORM=null, MUSFILTER=null;
+function musikWeg(){
+  if(MUSBUS||!AC) return MUSBUS;
+  MUSFORM=AC.createWaveShaper(); MUSFORM.oversample='2x';
+  MUSFILTER=AC.createBiquadFilter(); MUSFILTER.type='lowpass'; MUSFILTER.frequency.value=6000;
+  MUSBUS=AC.createGain(); MUSBUS.gain.value=1;
+  MUSBUS.connect(MUSFORM); MUSFORM.connect(MUSFILTER); MUSFILTER.connect(AC.destination);
+  setzeVerzerrung(0);
+  return MUSBUS;
+}
+/* 0 = sauber, 1 = am Anschlag. Uebliche Saettigungskurve: je hoeher k,
+   desto frueher klippt das Signal. Die Kurve wird nur neu gebaut, wenn
+   sie sich hoerbar geaendert hat - 1024 Werte pro Bild waeren Unfug. */
+function setzeVerzerrung(p){
+  if(!MUSFORM) return;
+  const stufe=Math.round(p*12);
+  if(stufe===MUS.verz) return;
+  MUS.verz=stufe;
+  const n=1024, k=(stufe/12)*80, c=new Float32Array(n);
+  for(let i=0;i<n;i++){ const x=i*2/n-1;
+    c[i] = k<.01 ? x : (1+k)*x/(1+k*Math.abs(x)); }
+  MUSFORM.curve=c;
+  MUSFILTER.frequency.setTargetAtTime(6000-(stufe/12)*4300,AC.currentTime,.4);
+}
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
+  const bus=musikWeg();
+  const p=Math.max(0,Math.min(1,(S.pegel-TUNE.verzerrungAb)/(100-TUNE.verzerrungAb)));
+  setzeVerzerrung(p);
   const st=60/128/4;
+  /* Ab der Haelfte kippt der Bass von eckig auf saegend - das ist der
+     Punkt, an dem auch das Bild anfaengt zu schwanken. */
+  const form=S.pegel>TUNE.wackelnAb?'sawtooth':'square';
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
     const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
+    /* Langsames Eiern in der Tonhoehe. Nicht viel - gerade so, dass es
+       nicht mehr sauber steht. */
+    const eiern=1+Math.sin(MUS.next*1.1)*p*.015;
+    if(f) ton(f*eiern,MUS.next,st*.85,form,laut,bus);
     if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+      if(i%4===0) ton(55,MUS.next,.09,'sine',.05,bus);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -364,7 +408,7 @@ function rauschenKurz(when){
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(musikWeg()||AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -446,6 +490,48 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* ---- Gaeste ------------------------------------------------------------
+   Leute, die nur rumstehen. Man kann nichts mit ihnen machen, und genau
+   das ist der Punkt: die Wohnung sah aus wie vier Leute in einer leeren
+   Bude, nicht wie Vorgluehen.
+
+   Sie stehen bewusst NICHT in LEUTE oder DINGE - damit kann E sie gar
+   nicht erst versehentlich erwischen und die Suche nach Jacke und Ausweis
+   bleibt genau so schwer wie vorher. Gezeichnet werden sie als dunkle
+   Silhouetten hinter den Moebeln, damit man die vier, die zaehlen, nicht
+   mit ihnen verwechselt.
+
+   Die Plaetze liegen in den Luecken zwischen den Moebeln - sonst steht
+   jemand im Kuehlschrank - und mindestens GAST_ABSTAND von jedem der
+   vier weg, sonst ueberschreibt eine Sprechblase deren Namensschild und
+   beides ist unlesbar. */
+const GAST_ABSTAND=48;
+const GAESTE=[
+  { x:200, spr:SPR.steh,    blick: 1, ton:'#3f3a5c' },
+  { x:306, spr:SPR.geh[2],  blick:-1, ton:'#4a3f52' },
+  { x:372, spr:SPR.steh,    blick: 1, ton:'#38455c' },
+  { x:466, spr:SPR.max,     blick:-1, ton:'#443d5e' },
+  { x:530, spr:SPR.geh[0],  blick:-1, ton:'#4a4363' },
+  { x:676, spr:SPR.telefon, blick: 1, ton:'#3a3550' },
+  { x:730, spr:SPR.steh,    blick:-1, ton:'#453a55' },
+  { x:790, spr:SPR.geh[2],  blick: 1, ton:'#3f3a5c' },
+];
+/* Halbe Gespraeche, die man im Vorbeigehen aufschnappt. Reine Kulisse -
+   nichts davon ist ein Hinweis. */
+const GEREDE=[
+  'UND DANN SAGT DER ZU MIR',
+  'HAT JEMAND EIN LADEKABEL',
+  'IST DAS DEIN GLAS ODER MEINS',
+  'ICH GEH GLEICH AUCH',
+  'WER VON EUCH FAEHRT',
+  'MACH MAL LAUTER',
+  'ICH KENN HIER NIEMANDEN',
+  'NUR NOCH EINS, DANN LOS',
+  'DAS IST MEIN LIED',
+  'DER BUS FAEHRT DOCH NOCH',
+  'WOHNT DER HIER ALLEINE',
+];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -466,6 +552,7 @@ function neuesSpiel(){
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
+    gastWer:-1, gastText:'', gastT:0, gastPause:2.5,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     suchT:0, suchZiel:null,
     ruettel:0, blitz:0,
@@ -579,6 +666,25 @@ function pruefeBlackout(){
   S.faenger='BLACKOUT. AUF MORITZ SOFA.'; SFX.aua();
   return true;
 }
+/* Alle paar Sekunden sagt einer der Gaeste etwas Halbes. Es spricht immer
+   nur einer - zwei Sprechblasen gleichzeitig lesen sich wie ein Hinweis,
+   und Hinweis ist hier nichts davon. Nur wer gerade im Bild steht, kommt
+   dran, sonst redet jemand hinter Dir und Du siehst es nie. */
+function gaeste(dt){
+  if(S.gastT>0){ S.gastT-=dt; if(S.gastT<=0) S.gastWer=-1; return; }
+  S.gastPause-=dt; if(S.gastPause>0) return;
+  const sichtbar=GAESTE.map((g,i)=>i).filter(i=>{
+    const bx=GAESTE[i].x-S.kamX;
+    if(bx<=10||bx>=W-10) return false;
+    /* Wer zu nah an einem der vier steht, haelt den Mund - sonst liegt
+       die Sprechblase auf dessen Namensschild. */
+    return !LEUTE.some(l=>Math.abs(l.x-GAESTE[i].x)<GAST_ABSTAND); });
+  S.gastPause=4+Math.random()*5;
+  if(!sichtbar.length) return;
+  S.gastWer=pick(sichtbar);
+  S.gastText=pick(GEREDE);
+  S.gastT=2.6;
+}
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
@@ -606,6 +712,7 @@ function update(dt){
   /* Pegel baut sich sehr langsam ab */
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+  gaeste(dt);
 
   if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
 
@@ -973,6 +1080,25 @@ function zeichneWohnung(){
   ctx.fillStyle='#2a3450';
   for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
   ctx.fillRect(890,BODEN-26,90,2);
+
+  /* Gaeste - vor der Wand, hinter den Moebeln. Als Silhouette, damit sie
+     Kulisse bleiben und nicht mit den vieren verwechselt werden, um die
+     es geht. Sie wippen leicht mit; je hoeher Dein Pegel, desto mehr
+     Bewegung ist in der Bude. */
+  const takt=3+(S.pegel/100)*3.5;
+  GAESTE.forEach((g,i)=>{
+    if(g.x-S.kamX<-20||g.x-S.kamX>W+20) return;      // ausserhalb: gar nicht erst zeichnen
+    const rows=g.spr;
+    const wippt=Math.sin(S.t*takt+i*1.9)>.72?1:0;
+    const y=BODEN-rows.length-wippt;
+    if(g.blick<0) spriteFlip(rows,g.x-3,y,1,g.ton); else sprite(rows,g.x-3,y,1,g.ton);
+    ctx.globalAlpha=.2; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(g.x-3),BODEN,7,1); ctx.globalAlpha=1;
+    /* Ueber der Zeile, in der die vier ihre Namen tragen - damit sich
+       nichts ueberlagert, wenn doch mal jemand nah steht. */
+    if(S.gastWer===i&&S.gastT>0)
+      text(S.gastText,g.x+3-textW(S.gastText)/2,y-22,'#6f6890');
+  });
 
   /* Dinge */
   for(const d of DINGE){
