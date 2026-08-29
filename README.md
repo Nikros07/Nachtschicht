@@ -192,12 +192,41 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Du hörst es auch.** Die Musik wird nicht nur lauter — sie fängt an zu klirren,
+wird dumpf, eiert in der Tonhöhe, und ab der Hälfte kippt der Bass von eckig auf
+sägend. Wie Deine Ohren um halb zehn.
+
+### Die anderen
+
+In der Wohnung stehen noch acht Leute herum, die nichts mit Dir zu tun haben.
+Man kann sie nicht ansprechen, sie wippen nur mit und reden halbe Sätze. Je
+höher Dein Pegel, desto mehr Bewegung ist in der Bude. **Die vier, um die es
+geht, tragen ihren Namen über dem Kopf** — die anderen sind nur dunkle
+Silhouetten.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel.
+
+Über seinem Kopf läuft ein Balken, während er ausholt. **Ganz rechts im Balken
+ist ein hellerer Abschnitt — das ist Dein Konterfenster.** Nur ein `E` dort
+zählt. Wenn es aufgeht, blinkt er außerdem weiß; darauf kannst Du warten.
+
+**Zu früh gedrückt heißt: dieser Angriff ist verloren.** Der Balken wird grau,
+weiteres Drücken hilft nicht mehr, der Schlag kommt an. Draufhauen funktioniert
+also nicht.
+
+Er hat drei Sachen drauf:
+
+| Was | Woran Du es siehst |
+|:--|:--|
+| **Schlag** | Roter Balken, breites Fenster. Der erste Angriff ist immer der |
+| **Finte** | Sieht aus wie ein Schlag, hat aber **kein** helles Fenster — er bricht ab und schlägt sofort schnell nach. Wer wartet, dem passiert nichts |
+| **Schwerer** | **Gelber** Balken, lange Ansage, spätes und schmales Fenster — dafür zählt der Konter doppelt |
+
+Verlierst Du, ist nicht der Abend vorbei: er schubst Dich zurück in die
+Wohnung, und Du kommst noch mal an die Tür. Die Uhr läuft aber weiter.
 
 ### Moritz
 
@@ -217,10 +246,55 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 # Für Entwickler
 
+## Wie die Dateien zusammenhängen
+
+| Datei | Was drin steht |
+|:--|:--|
+| `fortschritt.js` | Die **Levelliste**, die **Crew** mit ihren Fähigkeiten und der **Spielstand** (welches Level ist frei, welche Bestzeit). Für alle Level gemeinsam |
+| `motor.js` | Der **Motor**: eigene Schrift, Bild-Cache, Zeichenbefehle, Tonbausteine, Leinwand und Vollbild. Für alle Level gemeinsam |
+| `index.html` | Level 1 — Die Schule |
+| `level2.html` | Level 2 — Bei Moritz |
+| `runner.html` | Der alte Endlos-Brawler, unverändert |
+
+Die Reihenfolge in der Seite ist `fortschritt.js`, dann `motor.js`, dann das
+Level. Alles sind ganz normale Scripts, keine Module — damit ein Doppelklick auf
+`index.html` weiterhin reicht (Module scheitern über `file://` an CORS).
+
+## Ein Level dazubauen
+
+Ein neues Level ist **ein Eintrag** in `LEVEL` (ganz oben in `fortschritt.js`):
+
+```js
+{ nr:3, datei:'level3.html', name:'DER NACHTBUS', uhr:'22:00' },
+```
+
+Damit taucht es in der Leiste unter dem Bild auf, ist über die Zifferntaste auf
+dem Titelbild erreichbar, schaltet sich frei, sobald Level 2 geschafft ist, und
+das Ende von Level 2 führt automatisch dorthin. Keine andere Datei muss angefasst
+werden.
+
+Die Leveldatei selbst lädt `fortschritt.js` und `motor.js`, setzt `NR` auf ihre
+Nummer, ruft `Fortschritt.leiste(NR)` und meldet am Ende
+`Fortschritt.fertig(NR, zeit)`.
+
+## Spielstand
+
+Alles unter einem Schlüssel: `nachtschicht.stand`. Zum Zurücksetzen in der
+Browser-Konsole:
+
+```js
+Fortschritt.zuruecksetzen()
+```
+
+`?alle=1` an der Adresse macht alle Level frei, **ohne** den Spielstand
+anzufassen — praktisch zum Ausprobieren. Zusammen mit `?touch=1` kombinierbar,
+und beide überleben den Levelwechsel.
+
 ## Selbst dran drehen
 
 Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
 Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
+`level2.html` hat seinen eigenen `TUNE`-Block.
 
 | Regler | Bewirkt |
 |:--|:--|
@@ -265,5 +339,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar; sie schalten sich der Reihe
+nach frei. Level 3 bis 8 sowie das Freischalten der restlichen Crew stehen in
+[TODO.md](TODO.md).
