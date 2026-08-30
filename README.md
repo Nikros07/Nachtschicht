@@ -371,6 +371,12 @@ Der Spielstand liegt unter `nachtschicht.spielstand` im Browser. Ältere Stände
 aus der Zeit vor dieser Datei werden beim ersten Start übernommen. Ein von Hand
 verbogener Eintrag kippt nichts — was nicht passt, fällt beim Laden raus.
 
+**`level3.html` ist das Muster.** Es ist nach genau diesem Schema gebaut: eine
+Zeile in `LEVEL`, eine in `JUNGS`, und im Level selbst nur `NR`, `baueLeiste`
+und `geschafft`. Levelleiste, Zifferntasten, Freischaltung, Übergang und das
+Extraherz seines Jungen liefen danach überall, ohne dass Level 1 oder 2 davon
+etwas wissen mussten.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
