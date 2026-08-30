@@ -195,9 +195,27 @@ auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er hat drei Angriffe.
+Welcher kommt, steht über ihm: der Name, die Farbe des Balkens und die Taste,
+die Dich rettet.
+
+| Angriff | Balken | Antwort |
+|:--|:--|:--|
+| **Schwinger** | rot, langes Ausholen | `E` kontern |
+| **Tiefschlag** | gold, er geht in die Knie | **Springen** — danach steht er offen, dann `E` |
+| **Doppel** | pink, zweimal kurz hintereinander | zweimal kontern |
+
+Zwei Dinge machen daraus ein Timing statt eines Knopfes:
+
+**Ein Konter zählt nur im letzten Drittel des Ausholens.** Der Balken läuft
+leer, das grüne Stück am Ende ist Dein Fenster — Du musst es nicht raten.
+
+**Zu früh oder falsch geantwortet wird bestraft.** Der Schlag sitzt, und Du
+stehst danach eine knappe Sekunde daneben, ohne etwas tun zu können. Blindes
+Hämmern auf `E` kostet Dich also alle drei Herzen.
+
+Und er wird schneller: jeder Treffer, den er kassiert, kürzt sein Ausholen.
+Dreimal treffen, dann liegt er.
 
 ### Moritz
 

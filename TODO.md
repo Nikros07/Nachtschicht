@@ -29,8 +29,12 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 **Offen in Level 2:**
 
 - [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] **Der Kracher hat jetzt drei Angriffsmuster** — Schwinger (kontern),
+      Tiefschlag (drüberspringen, dann kontern) und Doppel (zweimal kontern);
+      Konterfenster nur im letzten Drittel, Fehlschläge werden bestraft, sein
+      Ausholen wird mit jedem Treffer kürzer
+- [ ] Musik lauter/verzerrter je höher der Pegel — lauter ist umgesetzt,
+      verzerrter fehlt noch
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -72,8 +76,10 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [x] **Fehlschläge bestrafen** — beim Kracher umgesetzt (Treffer plus 0,8 s
+      danebenstehen). Im übernommenen Kampfsystem noch offen.
+- [x] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens —
+      beim Kracher umgesetzt, sichtbar als grünes Stück am Balken
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
@@ -137,3 +143,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Spielstand löschen über die Levelleiste
 - [x] `E` auf dem Endbild von Level 1 führt wirklich weiter (lief vorher ins Leere)
 - [x] Prozentzeichen im Bitmap-Font (`+15% TEMPO` stand als `+15? TEMPO` da)
+- [x] Der Kracher mit drei Angriffsmustern, Konterfenster und Fehlschlagstrafe
+- [x] Im Kampf kann gesprungen werden (vorher stand die Physik still)

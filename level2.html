@@ -137,11 +137,17 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* (6) DER KRACHER AM ENDE - drei Angriffe, drei Antworten */
+  gegnerTreffer:    3,     // so oft musst du treffen
+  gegnerWindup:     0.78,  // SCHWINGER - langes Ausholen, E kontern
+  gegnerWindupTief: 0.62,  // TIEFSCHLAG - schneller, drueberspringen
+  gegnerWindupDopp: 0.46,  // DOPPELSCHLAG - zweimal kurz hintereinander
+  konterFenster:    0.26,  // nur das letzte Drittel des Ausholens zaehlt
+  gegnerSchneller:  0.88,  // pro kassiertem Treffer holt er so viel kuerzer aus
+  gegnerOffen:      0.7,   // nach einem Sprung ueber den Tiefschlag: E-Fenster
+  fehlschlagPause:  0.8,   // Strafe fuers zu fruehe oder falsche Draufhauen
   gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  gegnerPause:      1.0,
   leben:            3,
 };
 
@@ -288,6 +294,13 @@ const SPR={
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* Geht in die Knie und fegt unten durch - da hilft nur springen. */
+  kracherTief:['.........','.........','..ddd....','.dkkkd...','.dsssd...','..ksk....',
+               '..sss....','.vvvvv...','vvvvvvv..','..vvv....','..mmm....','.mm.mm...',
+               '.kk..kkss'],
+  /* Steht offen da, Arme unten - jetzt ist er dran. */
+  kracherOffen:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','.vvvvv.',
+                '..vvv..','..vvv..','..mmm..','.m...m.','.m...m.','kk...kk'],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -757,46 +770,160 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
+
+   Vorher gab es ein Muster: er holt aus, du drueckst E. Wer das einmal
+   begriffen hatte, konnte im Ausholen einfach haemmern - jeder Druck war
+   ein Konter, es gab keinen falschen Moment. Das ist kein Kampf, das ist
+   ein Knopf.
+
+   Jetzt drei Angriffe mit drei Antworten. Welcher kommt, sagt Dir die
+   Farbe des Balkens ueber ihm und die Taste daneben:
+
+     SCHWINGER   rot     langes Ausholen      -> E kontern
+     TIEFSCHLAG  gold    geht in die Knie     -> drueberspringen, dann E
+     DOPPEL      pink    zweimal kurz         -> zweimal kontern
+
+   Zwei Regeln machen aus dem Knopf ein Timing:
+
+   - Ein Konter zaehlt nur im letzten Drittel des Ausholens. Der Balken
+     zeigt das Fenster gruen an, Du musst es nicht raten.
+   - Zu frueh oder falsch geantwortet ist eine Strafe: der Schlag sitzt und
+     Du stehst danach kurz daneben.
+
+   Und er wird schneller: jeder kassierte Treffer kuerzt sein Ausholen.
    ========================================================================== */
+const MUSTER = {
+  schwinger:{ wind:'gegnerWindup',     taste:'E',   farbe:'rot',   teile:1, ruf:'SCHWINGER' },
+  tief:     { wind:'gegnerWindupTief', taste:'SPR', farbe:'gold',  teile:1, ruf:'TIEF' },
+  doppel:   { wind:'gegnerWindupDopp', taste:'E',   farbe:'neon',  teile:2, ruf:'DOPPEL' },
+};
+
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
+  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0,
+             muster:'schwinger', teil:1, letztes:'' };
   S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  zeigeHinweis('E KONTERN  -  SPRINGEN WENN ER TIEF GEHT',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+
+/* Sein Ausholen wird mit jedem Treffer kuerzer. Er wird also nicht nur
+   schwaecher, sondern auch schneller - sonst waere der letzte Treffer der
+   langweiligste. */
+const windupDauer = g => TUNE[MUSTER[g.muster].wind]*Math.pow(TUNE.gegnerSchneller,g.getroffen);
+/* Ab hier zaehlt ein Konter. Nie mehr als das halbe Ausholen, damit das
+   Fenster bei kurzen Mustern nicht ploetzlich der ganze Angriff ist. */
+const konterAb = g => { const d=windupDauer(g); return d-Math.min(TUNE.konterFenster,d*0.5); };
+
+/* Der erste Angriff ist immer der Schwinger: einmal in Ruhe lernen, wie
+   Kontern geht. Danach nie zweimal dasselbe hintereinander. */
+function naechstesMuster(g){
+  if(!g.letztes) return 'schwinger';
+  return pick(Object.keys(MUSTER).filter(m=>m!==g.letztes));
+}
+/* Ein Treffer fuer Dich. */
+function konterTreffer(g,spruch){
+  g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch();
+  meldung(spruch||pick(['SITZT','KONTER','DAS WAR ER']),1.2);
+}
+/* Ein Treffer fuer ihn. Gibt true zurueck, wenn danach Schluss ist. */
+function kassiere(spruch){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua(); meldung(spruch,1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; return true; }
+  return false;
+}
+/* Das Ausholen ist durch - jetzt entscheidet sich, ob es sitzt. */
+function schlagKommt(g){
+  if(g.muster==='tief'&&!S.amBoden){
+    g.zustand='offen'; g.t=0; SFX.warn();
+    meldung('DRUEBER - JETZT E',1.2);
+    return;
+  }
+  g.zustand='schlag'; g.t=0;
+  kassiere(g.muster==='tief'?'AN DIE BEINE':'AUTSCH');
+}
+
+/* Im Kampf laeuft nur die Senkrechte weiter: springen ja, weglaufen nein.
+   Ohne das waere der Tiefschlag nicht auszuweichen, mit vollem Laufen
+   koennte man sich aus dem Kampf stehlen. */
+function kampfPhysik(dt){
+  while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.amBoden){ S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
+  kampfPhysik(dt);
   const dist=S.x-g.x;
+
   if(g.zustand==='komm'){
     g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+    if(Math.abs(dist)<22){
+      g.muster=naechstesMuster(g); g.letztes=g.muster; g.teil=1;
+      g.zustand='wind'; g.t=0; SFX.warn();
     }
-  } else if(g.zustand==='schlag'){
+    aktionPuffer.length=0;
+    return;
+  }
+
+  if(g.zustand==='wind'){
+    if(aktionPuffer.length){
+      aktionPuffer.length=0;
+      if(MUSTER[g.muster].taste==='E'&&g.t>=konterAb(g)){ konterTreffer(g); return; }
+      /* Zu frueh, oder E gegen einen Tiefschlag: Fehlschlag. Der Schlag
+         sitzt sofort und Du stehst danach eine Weile daneben. */
+      const zuFrueh=MUSTER[g.muster].taste==='E';
+      g.zustand='fehl'; g.t=0;
+      if(kassiere(zuFrueh?'ZU FRUEH':'DA HILFT KEIN SCHLAG')) return;
+      return;
+    }
+    if(g.t>=windupDauer(g)) schlagKommt(g);
+    return;
+  }
+
+  if(g.zustand==='schlag'){
+    aktionPuffer.length=0;
     if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
+    return;
+  }
+
+  /* Nach dem Sprung ueber den Tiefschlag steht er kurz offen. Wer jetzt
+     drueckt, trifft. Wer nicht, hat nur ausgewichen. */
+  if(g.zustand==='offen'){
+    if(aktionPuffer.length){ aktionPuffer.length=0; konterTreffer(g,'AUSGEHEBELT'); return; }
+    if(g.t>=TUNE.gegnerOffen){ g.zustand='pause'; g.t=0; meldung('CHANCE VERTAN',1); }
+    return;
+  }
+
+  if(g.zustand==='getroffen'){
+    aktionPuffer.length=0;
     g.x-=Math.sign(dist)*90*dt;
     if(g.t>=0.5){
       if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
+      /* Der Doppelschlag hat noch einen zweiten Teil - der kommt sofort. */
+      if(g.teil<MUSTER[g.muster].teile){ g.teil++; g.zustand='wind'; g.t=0; SFX.warn(); }
+      else { g.zustand='pause'; g.t=0; }
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
+    return;
+  }
+
+  if(g.zustand==='fehl'){
+    aktionPuffer.length=0;
+    if(g.t>=TUNE.fehlschlagPause){ g.zustand='pause'; g.t=0; }
+    return;
+  }
+
+  if(g.zustand==='pause'){
+    aktionPuffer.length=0;
     if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
   }
 }
 
@@ -926,16 +1053,36 @@ function zeichneWohnung(){
   /* Der Kracher */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
+    const m=MUSTER[g.muster];
+    /* Die Haltung sagt schon, was kommt: der Tiefschlag geht in die Knie,
+       nach einem Sprung darueber steht er offen da. */
+    let rows=SPR.kracher;
+    if(g.zustand==='schlag') rows = g.muster==='tief'?SPR.kracherTief:SPR.kracherAus;
+    else if(g.zustand==='wind'&&g.muster==='tief') rows=SPR.kracherTief;
+    else if(g.zustand==='offen'||g.zustand==='getroffen') rows=SPR.kracherOffen;
     const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
+    const offenBlinkt = g.zustand==='offen'&&Math.floor(S.t*12)%2===0;
     outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
+    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':(offenBlinkt?P.gruen:null));
+    const kopf=BODEN-rows.length;
     if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+      /* Der Balken laeuft leer, das gruene Stueck am Ende ist das
+         Konterfenster. Wer vorher drueckt, faengt sich was ein - also
+         muss man sehen koennen, wo es anfaengt. */
+      const dauer=windupDauer(g), ab=konterAb(g), bw=20;
+      const f=1-g.t/dauer;
+      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,kopf-7,bw+2,5);
+      ctx.fillStyle=P[m.farbe]; ctx.fillRect(g.x-2,kopf-6,Math.round(bw*f),3);
+      if(m.taste==='E'){
+        const gb=Math.round(bw*(1-ab/dauer));
+        ctx.fillStyle=g.t>=ab?P.gruen:'#2f5f45';
+        ctx.fillRect(g.x-2,kopf-6,Math.min(gb,Math.round(bw*f)),3);
+      }
+      /* Welche Taste rettet Dich - das darf man wissen, das Timing nicht. */
+      if(Math.floor(S.t*10)%2===0) text(m.taste,g.x+9,kopf-14,P[m.farbe]);
+      text(m.ruf,g.x-Math.round((textW(m.ruf)-7)/2),kopf-21,P.dunkel);
     }
+    if(g.zustand==='offen'&&Math.floor(S.t*8)%2===0) text('E',g.x+3,kopf-9,P.gruen);
     /* Lebensbalken */
     const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
@@ -945,7 +1092,9 @@ function zeichneWohnung(){
   /* Spieler */
   let rows;
   if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
+  else if(S.modus==='kampf'&&S.gegner&&['getroffen','offen'].includes(S.gegner.zustand)) rows=SPR.konter;
+  /* Nach einem Fehlschlag stehst Du sichtbar daneben. */
+  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='fehl') rows=SPR.fall;
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
