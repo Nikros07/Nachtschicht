@@ -155,12 +155,17 @@ const TUNE = {
   langsamAb:      70,     // darueber wirst du langsamer
   wackelnAb:      55,     // darueber schwankt das Bild
 
-  /* (6) DIE KONTROLLEURE */
+  /* (6) DIE KONTROLLEURE
+     Diese vier Zahlen sind eingestellt, nicht geraten: ein Bot hat den
+     Level 120 mal gespielt. Wer nichts tut, kommt nie durch. Wer nur
+     ausweicht, schafft es in gut einem Drittel der Faelle. Wer das Ticket
+     sucht und ausweicht, in gut vier von fuenf. Genau so soll es sein -
+     das Ticket ist das, was den Unterschied macht. */
   kontrolleAb:     2,     // ab dieser Haltestelle sind sie an Bord
-  kontrollTempo:  26,     // wie schnell sie durch den Bus gehen
-  pruefDauer:      1.7,   // so lange haelt sie ein Fahrgast auf
+  kontrollTempo:  22,     // wie schnell sie durch den Bus gehen
+  pruefDauer:      2.1,   // so lange haelt sie ein Fahrgast auf
   pruefReichweite:14,     // ab hier greifen sie nach dir
-  gnadeNachFang:   3.0,   // so lange lassen sie dich nach einem Fang in Ruhe
+  gnadeNachFang:   4.0,   // so lange lassen sie dich nach einem Fang in Ruhe
 
   /* (7) SUCHEN UND REICHWEITE */
   reichweite:     15,
@@ -686,6 +691,12 @@ function fahrt(dt){
     if(S.phaseT>=TUNE.bremsDauer){
       S.phase='halt'; S.phaseT=0; S.tempo=0; S.tuerT=TUNE.haltDauer;
       SFX.zisch();
+      /* An jeder Haltestelle steigen Leute aus und andere ein. Das ist nicht
+         nur Deko: ohne das waeren nach einem Durchgang alle geprueft, die
+         Kontrolleure haetten nie wieder etwas zu tun und liefen als zwei
+         Waende durch einen geschlossenen Gang. Dann ist der Level nicht
+         mehr zu schaffen. Jede Haltestelle setzt den Druck zurueck. */
+      neueFahrgaeste();
       /* Hier steigen die Kontrolleure zu. */
       if(S.halt+1===TUNE.kontrolleAb&&!kontrolleAnBord()) steigenEin();
     }
@@ -757,6 +768,17 @@ function umfallen(r){
   for(const k of S.kontrolleure){ k.ziel=S.x; k.pruefT=0; }
 }
 
+/* Umsteigen an der Haltestelle: wer schon geprueft war, ist ausgestiegen,
+   und der Neue hat noch keinen Fahrschein gezeigt. Ein paar bleiben sitzen,
+   damit nicht der ganze Bus auf einen Schlag wechselt. */
+function neueFahrgaeste(){
+  let neu=0;
+  for(const g of FAHRGAESTE){
+    if(g.geprueft&&Math.random()<0.75){ g.geprueft=false; neu++; }
+  }
+  if(neu&&kontrolleAnBord()) meldung('NEUE LEUTE STEIGEN ZU',1.4);
+}
+
 /* ---- Die Kontrolleure ---- */
 function steigenEin(){
   const tuer=TUEREN[1].x;
@@ -811,10 +833,12 @@ function erwischt(k){
     S.faenger='RAUSGEFLOGEN. '+HALTE[Math.min(S.halt,HALTE.length-1)]+'.';
     return;
   }
-  /* Sie fangen von ihrer Tuer aus neu an - du hast einen Moment Ruhe. */
-  const tuer=TUEREN[1].x;
-  S.kontrolleure[0].x=tuer-6; S.kontrolleure[0].richtung=-1; S.kontrolleure[0].ziel=null;
-  if(S.kontrolleure[1]){ S.kontrolleure[1].x=tuer+6; S.kontrolleure[1].richtung=1; S.kontrolleure[1].ziel=null; }
+  /* Sie schreiben erst mal deine Personalien auf. Beide - der eine
+     diktiert, der andere schreibt. So lange kommst du weg.
+     (Vorher sind sie an ihre Tuer zurueckgesprungen. Das konnte den
+     zweiten mitten auf dich draufsetzen, und gesprungen ist ohnehin
+     nichts, was eine Figur tun sollte.) */
+  for(const kk of S.kontrolleure){ kk.pruefT=TUNE.gnadeNachFang; kk.ziel=null; }
 }
 
 /* ---- Bewegung ---- */

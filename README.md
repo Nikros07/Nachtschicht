@@ -275,7 +275,9 @@ Drei Herzen hast Du.
 Drei Dinge helfen:
 
 **Die anderen Fahrgäste.** Jeder ungeprüfte Fahrgast hält einen Kontrolleur
-knapp zwei Sekunden auf. Das sind Deine Sekunden.
+gut zwei Sekunden auf. Das sind Deine Sekunden. Und an **jeder Haltestelle
+steigen neue Leute zu** — sonst wäre nach einem Durchgang jeder geprüft und die
+beiden hätten nichts mehr zu tun, außer Dich zu jagen.
 
 **Rausgehen.** Solange die Türen offen sind, bringt Dich `E` an einer Tür auf den
 Bordstein. Draußen kommt keiner an Dich ran, und Du kannst am Bus entlanglaufen
@@ -285,6 +287,10 @@ zeigt, wie lange die Türen noch offen sind, und **der Bus fährt ohne Dich weit
 **Das Ticket.** Auf einem der Sitze liegt eins. Es ist nicht Deins, und es hält
 **genau eine Kontrolle** — beim zweiten Mal passt der Name nicht. Wo es liegt,
 ist jede Runde anders; Sitze durchsuchst Du mit `E`.
+
+*Such es.* Die Kontrolleure sind so eingestellt, dass reines Ausweichen selten
+reicht — das Ticket ist der Unterschied zwischen knapp durchkommen und
+rausfliegen.
 
 ### Und am Ende
 
