@@ -56,7 +56,10 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 - [ ] **Insgesamt rund 7 Personen** über mehrere Freundesgruppen
 - [ ] Die **drei Besten** begleiten die ganze Nacht und haben die stärksten Fähigkeiten
 - [ ] Die anderen tauchen in je einem Level auf
-- [ ] Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter, mehr Ausdauer …)
+- [x] **Struktur für Fähigkeiten steht** — die Liste `JUNGS` in `spielstand.js`
+      hält Name, Level und Wirkung; die Level rechnen nicht mehr selbst
+- [ ] Restliche Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter,
+      mehr Ausdauer …) — bisher belegt: Tempo (Max Ferdi), Charme (Moritz)
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
@@ -78,9 +81,14 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] **Spielstand speichern** — `spielstand.js`: freigeschaltete Level, Crew und
+      Bestzeiten in einem Schlüssel, alte Spielstände werden übernommen
+- [x] **Übergänge zwischen den Leveln** — Abblenden, Levelkarte, Aufblenden
+- [x] **Levelliste als Daten** — die Liste `LEVEL` in `spielstand.js` ist die
+      einzige Stelle, an der ein Level angemeldet wird; Levelleiste,
+      Freischaltung und Übergänge lesen von dort
+- [ ] Auch die **Level-Inhalte** als Daten (Räume, Möbel, Gegner) — noch stecken
+      sie in der jeweiligen HTML-Datei, ein neues Level heißt neue Datei
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -123,3 +131,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Gemeinsamer Spielstand für alle Level (`spielstand.js`)
+- [x] Levelleiste zeigt alle acht Level, gesperrte sichtbar aber nicht anklickbar
+- [x] Übergangsbild beim Levelwechsel
+- [x] Spielstand löschen über die Levelleiste
+- [x] `E` auf dem Endbild von Level 1 führt wirklich weiter (lief vorher ins Leere)
+- [x] Prozentzeichen im Bitmap-Font (`+15% TEMPO` stand als `+15? TEMPO` da)

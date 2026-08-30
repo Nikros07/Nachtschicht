@@ -207,6 +207,20 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Wie es weitergeht
+
+Unter dem Bildschirm steht die **Levelleiste**. Sie zeigt alle acht Level der
+Nacht — auch die, die es noch nicht gibt. Was Du noch nicht freigespielt hast,
+steht grau da und lässt sich nicht anklicken: **ein Level schaltet das nächste
+frei.** Am Rechner springen die Zifferntasten `1` bis `8` auf dem Titelbild
+direkt in ein freies Level.
+
+Was die Nacht überlebt, merkt sich der Browser: **welche Level offen sind, wer
+aus der Crew dabei ist und Deine Bestzeit pro Level.** Das `↺` ganz rechts in
+der Leiste löscht den Spielstand — nach Rückfrage, und dann komplett.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -237,6 +251,34 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+## Ein Level dazubauen
+
+`spielstand.js` liegt neben den Leveln und wird von jedem eingebunden. Darin
+stehen zwei Listen, und nur die sind zu pflegen:
+
+- **`LEVEL`** — alle acht Stufen der Nacht. `datei: null` heißt „gibt es noch
+  nicht" und erscheint in der Leiste als graue Stufe. Sobald dort ein Dateiname
+  steht, ist das Level überall angemeldet: Levelleiste, Zifferntasten,
+  Freischaltung und der Übergang aus dem Level davor.
+- **`JUNGS`** — wer in welchem Level dazukommt und was er bringt (`tempo`,
+  `charme`, später mehr). Die Level fragen nur noch
+  `Spielstand.tempoBonus()`, sie rechnen nicht selbst.
+
+Eine neue Level-Datei braucht davon genau vier Zeilen:
+
+```html
+<script src="spielstand.js"></script>
+```
+```js
+const NR = 3;                               // welches Level das hier ist
+Spielstand.baueLeiste(NR);                  // Leiste unter dem Bildschirm
+Spielstand.geschafft(NR, S.zeit);           // beim Gewinnen: Crew, Freischaltung, Bestzeit
+```
+
+Der Spielstand liegt unter `nachtschicht.spielstand` im Browser. Ältere Stände
+aus der Zeit vor dieser Datei werden beim ersten Start übernommen. Ein von Hand
+verbogener Eintrag kippt nichts — was nicht passt, fällt beim Laden raus.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -265,5 +307,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar, der Spielstand hält sie
+zusammen. Level 3 bis 8 sowie das Freischalten der restlichen Crew stehen in
+[TODO.md](TODO.md).

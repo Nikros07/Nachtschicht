@@ -83,14 +83,17 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
+  <!-- Die Leiste baut spielstand.js aus der Levelliste. Was hier steht, ist
+       nur der Notnagel, falls das Script nicht laedt. -->
   <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
     <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
   </div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<!-- Spielstand, Levelliste und Crew liegen fuer alle Level in einer Datei. -->
+<script src="spielstand.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -169,6 +172,8 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ /* Ohne Prozentzeichen stand auf dem Titelbild "+15? TEMPO". */
+ '%':'101,001,010,100,101',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -486,13 +491,13 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Crew, Bestzeit und Freischaltungen liegen in spielstand.js. */
+const NR=2;                                   // welches Level das hier ist
+const ladeCrew=()=>Spielstand.crew();
+const ladeBest=()=>Spielstand.bestzeit(NR);
+const tempoBonus=()=>Spielstand.tempoBonus();
+/* Das naechste gebaute Level - gibt es keines, bleibt E ein Rueckweg. */
+const naechstesLevel=()=>Spielstand.naechstes(NR);
 
 /* ==========================================================================
    EINGABE
@@ -514,7 +519,11 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){
+    /* Nach gewonnenem Level weiter ins naechste. Gibt es noch keines,
+       geht es zurueck an den Anfang der Nacht. */
+    if(S.gewonnen){ const n=naechstesLevel(); Spielstand.wechsel(n?n.nr:1); return; }
+    neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -526,8 +535,10 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+  /* Levelauswahl auf dem Titelbild: jede Ziffer springt in ihr Level,
+     solange es frei ist. Gesperrte ignoriert der Spielstand. */
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-8]$/.test(e.code)){
+    e.preventDefault(); const z=+e.code.slice(-1); if(z!==NR) Spielstand.wechsel(z); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -547,6 +558,9 @@ bind('tjump',['touchend','mouseup','touchcancel'],()=>sprungAn=false);
 bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
 bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
 if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); removeEventListener('touchstart',einmal); },{once:true});
+
+/* Die Leiste unter dem Bildschirm kommt aus der Levelliste in spielstand.js. */
+Spielstand.baueLeiste(NR);
 
 /* ==========================================================================
    INTRO
@@ -806,11 +820,10 @@ const SZENEN=[
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
+/* Der Spielstand nimmt Moritz auf, schaltet das naechste Level frei und
+   sagt, ob die Zeit eine Bestzeit war. Zweimal aufrufen schadet nichts. */
 function levelGeschafft(){
-  speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(Spielstand.geschafft(NR,S.zeit)) S.neueBestzeit=true;
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -1025,10 +1038,11 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  /* H-14 und H-7: bei H-5 war die untere Zeile an der Bildkante abgeschnitten. */
   const a='TASTE 1    LEVEL 1 - DIE SCHULE';
   const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  text(a,(W-textW(a))/2,H-14,P.dunkel);
+  text(b,(W-textW(b))/2,H-7,P.neon2);
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
@@ -1080,8 +1094,10 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      const n=naechstesLevel();
+      if(!n) textC('LEVEL 3 FOLGT',124,P.dunkel);
+      if(Math.floor(S.t*2)%2===0)
+        textC(n?'E  WEITER ZU LEVEL '+n.nr+' - '+n.name:'E  ZURUECK ZU LEVEL 1',136,P.dunkel);
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
