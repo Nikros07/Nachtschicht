@@ -40,6 +40,11 @@ Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 - [ ] **Der Name des Jungen, der hier dazukommt** — steht als `DER TYP VON HINTEN`
       im Code (`spielstand.js`, `JUNGS`) und in der Cutscene. Die Fähigkeit steht
       fest (+1 Herz), nur wie er heißt kommt vom Nick
+- [ ] **Das Aussteigen lohnt sich noch nicht.** Ein Bot, der die Tür nutzt,
+      schafft den Level seltener als einer, der nur ausweicht (23 % gegen 38 %
+      über je 120 Durchläufe). Als Notausgang taugt es — draußen kommt keiner
+      an Dich ran — aber es müsste einen Grund geben, es freiwillig zu tun.
+      Idee: die Kontrolleure verlieren Dich und fangen ihren Durchgang neu an
 - [ ] Der Busfahrer als Figur — sagt bisher nichts
 - [ ] Das Gelenk in der Mitte als eigener Durchgang, nicht nur als Deko
 - [ ] Der Pegel startet fest bei 70 — schöner wäre, ihn aus Level 2 mitzunehmen
