@@ -359,18 +359,29 @@ const SFX={
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* Musik: Vorgluehen laeuft. Lauter je hoeher der Pegel - und schiefer.
+   Ueber den Bass legt sich ein zweiter, leicht verstimmter Ton, der gegen
+   ihn schwebt; ab der Haelfte kippt die Wellenform von square auf sawtooth
+   und der Takt faengt an zu schleppen. Genau das macht Musik im Kopf, wenn
+   man zu viel getrunken hat. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const schief=S.modus==='spiel'?S.pegel/100:0;
+  /* Ab 60 Pegel schleppt der Takt, hoechstens acht Prozent langsamer. */
+  const st=(60/128/4)*(1+0.08*Math.max(0,schief-0.6)/0.4);
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
+    const laut=S.modus==='spiel'?.026+schief*.02:.014;
+    if(f){
+      ton(f,MUS.next,st*.85,schief>0.55?'sawtooth':'square',laut);
+      /* Der verstimmte Zwilling. Bis zu gut zwanzig Cent daneben - genug
+         zum Schweben, zu wenig fuer einen zweiten Ton. */
+      if(schief>0.25) ton(f*(1+0.012*schief),MUS.next,st*.85,'square',laut*0.5*schief);
+    }
     if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+      if(i%4===0) ton(55*(1-0.03*schief),MUS.next,.09,'sine',.05);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -383,6 +394,20 @@ function rauschenKurz(when){
   const s=AC.createBufferSource(), g=AC.createGain();
   s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
 }
+
+/* Statisten werden gebaut, nicht getippt: Haarfarbe und Shirtfarbe rein,
+   drei Haltungen raus. */
+const gastKopf=h=>['..'+h.repeat(3)+'..','.'+h+'sss'+h+'.','.sssss.','..sss..'];
+SPR.gastSteh=(h,c)=>[...gastKopf(h),'..'+c.repeat(3)+'..','.'+c.repeat(5)+'.',
+  'k.'+c.repeat(3)+'.k','..'+c.repeat(3)+'..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+/* Becher hoch - der Grund, warum hier alle stehen. */
+SPR.gastBecher=(h,c)=>[...gastKopf(h),'..'+c.repeat(3)+'.l','.'+c.repeat(5)+'k',
+  'k.'+c.repeat(3)+'..','..'+c.repeat(3)+'..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+/* Hockt an der Wand. Zwei Leerzeilen oben, damit die Fuesse auf dem Boden
+   bleiben - gezeichnet wird ab BODEN minus Sprite-Hoehe. */
+SPR.gastHockt=(h,c)=>['.......','.......','..'+h.repeat(3)+'..','.'+h+'sss'+h+'.','.sssss.',
+  '..sss..','..'+c.repeat(3)+'..','.'+c.repeat(5)+'.','k'+c.repeat(5)+'k','..'+c.repeat(3)+'..',
+  '.ppppp.','.p...p.','.kk.kk.'];
 
 /* ==========================================================================
    AUFBAU
@@ -462,6 +487,30 @@ const LEUTE=[
     brauchtMut:true,
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
+
+/* Die anderen auf der Bude. Mit denen redest du nicht, die stehen nur rum -
+   aber eine Wohnung mit vier Leuten ist keine Party. Rein optisch, sie
+   tauchen weder in LEUTE noch in der Aktionsabfrage auf und koennen deshalb
+   auch nichts blockieren.
+     haar/shirt  Buchstaben aus KEY, jeder sieht anders aus
+     art         steh | hockt
+     ph          Phase, damit nicht alle im Takt wippen
+     spruch      faellt ab und zu ueber ihm, wenn Musik laeuft */
+const STATISTEN=[
+  { x:205, haar:'j', shirt:'c', art:'steh',  ph:0.0, spruch:'EY' },
+  { x:300, haar:'z', shirt:'n', art:'steh',  ph:1.7, spruch:'HAHAHA' },
+  { x:385, haar:'h', shirt:'g', art:'hockt', ph:3.1, spruch:'...' },
+  { x:470, haar:'H', shirt:'u', art:'steh',  ph:0.9, spruch:'NOCH EINEN' },
+  { x:672, haar:'j', shirt:'v', art:'hockt', ph:4.4, spruch:'WANN GEHTS LOS' },
+  { x:862, haar:'z', shirt:'q', art:'steh',  ph:2.3, spruch:'WER FAEHRT' },
+];
+/* Einmal bauen, nicht pro Bild. Der Bild-Cache erkennt ein Sprite an der
+   Identitaet seines Zeilen-Arrays - wer jedes Bild ein neues erzeugt,
+   backt jedes Bild neu und macht den Cache kaputt. */
+STATISTEN.forEach(g=>{ g.bild={
+  steh:  SPR.gastSteh(g.haar,g.shirt),
+  becher:SPR.gastBecher(g.haar,g.shirt),
+  hockt: SPR.gastHockt(g.haar,g.shirt) }; });
 
 /* Was du finden musst */
 const AUFGABEN=[
@@ -1035,6 +1084,11 @@ function zeichneWohnung(){
     }
   }
 
+  /* Die anderen auf der Bude. Vor den Moebeln, hinter den Leuten, die etwas
+     von dir wollen - und etwas blasser, damit klar bleibt, wer dazugehoert
+     und wer nur da ist. */
+  zeichneStatisten();
+
   /* Leute */
   for(const l of LEUTE){
     const rows=SPR[l.spr]||SPR.steh;
@@ -1170,6 +1224,28 @@ function hud(){
     const zeile=p2._zeilen[S.redeZeile]||'';
     textC(zeile,H-24,P.weiss);
     if(Math.floor(S.t*2)%2===0) text('E',W-12,H-12,P.dunkel);
+  }
+}
+
+/* Statisten: ein Pixel Wippen, ab und zu ein Schluck, ab und zu ein Satz.
+   Mehr braucht Hintergrund nicht - und mehr darf er auch nicht, sonst zieht
+   er den Blick von denen weg, mit denen man reden muss.
+   Je hoeher dein Pegel, desto staerker wippt die ganze Bude mit. */
+function zeichneStatisten(){
+  const schief=S.pegel/100;
+  for(const g of STATISTEN){
+    /* Alle 4 Sekunden ein Schluck, versetzt ueber die Phase. */
+    const trinkt = g.art==='steh' && ((S.t*0.5+g.ph)%4)<0.6;
+    const rows = g.art==='hockt' ? g.bild.hockt : (trinkt?g.bild.becher:g.bild.steh);
+    /* Ein Pixel hoch und runter. Mit Pegel schneller - das Bild schwankt
+       ohnehin schon, die Leute duerfen mitschwanken. */
+    const wippe = Math.sin(S.t*(1.3+schief*1.6)+g.ph)>0 ? 0 : 1;
+    const y=BODEN-rows.length+wippe;
+    outline(rows,g.x-3,y,1,.4);
+    sprite(rows,g.x-3,y,1,null,.82);
+    /* Alle sieben Sekunden faellt ein Satz. */
+    if(((S.t*0.35+g.ph)%7)<1.1)
+      text(g.spruch,g.x+3-textW(g.spruch)/2,y-8,P.dunkel);
   }
 }
 

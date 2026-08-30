@@ -24,17 +24,19 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
-- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
+- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, Kampf mit drei Mustern, Moritz schaltet frei
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
+- [x] **Sechs Statisten in der Wohnung** — wippen, trinken, sagen ab und zu
+      was; rein optisch, sie blockieren nichts
 - [x] **Der Kracher hat jetzt drei Angriffsmuster** — Schwinger (kontern),
       Tiefschlag (drüberspringen, dann kontern) und Doppel (zweimal kontern);
       Konterfenster nur im letzten Drittel, Fehlschläge werden bestraft, sein
       Ausholen wird mit jedem Treffer kürzer
-- [ ] Musik lauter/verzerrter je höher der Pegel — lauter ist umgesetzt,
-      verzerrter fehlt noch
+- [x] **Musik lauter und verzerrter je höher der Pegel** — ein verstimmter
+      Zwilling legt sich über den Bass, ab der Hälfte kippt die Wellenform
+      und der Takt fängt an zu schleppen
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -145,3 +147,5 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Prozentzeichen im Bitmap-Font (`+15% TEMPO` stand als `+15? TEMPO` da)
 - [x] Der Kracher mit drei Angriffsmustern, Konterfenster und Fehlschlagstrafe
 - [x] Im Kampf kann gesprungen werden (vorher stand die Physik still)
+- [x] Statisten in Moritz' Wohnung
+- [x] Musik verzieht sich mit dem Pegel

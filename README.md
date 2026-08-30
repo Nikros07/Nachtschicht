@@ -171,6 +171,10 @@ zwei Stunden rum und keiner macht Anstalten loszugehen. Also machst Du es.
 **Kein zweites Schleich-Level.** In Level 1 geht es darum, nicht gesehen zu
 werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 
+Vier davon musst Du überzeugen. Die anderen sechs in der Wohnung stehen nur
+rum, trinken und reden — mit denen hast Du nichts zu tun, die sind der Grund,
+warum es sich nach Party anfühlt und nicht nach leerem Flur.
+
 ### Vier Aufgaben
 
 | Aufgabe | Wie |
@@ -191,6 +195,11 @@ machen würdest — zum Beispiel jemandem einfach das Handy abnehmen.
 Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
+
+**Du hörst es auch.** Die Musik wird nicht nur lauter — ab einem Viertel legt
+sich ein verstimmter zweiter Ton über den Bass, ab der Hälfte wird die
+Wellenform hart, und ganz oben fängt der Takt an zu schleppen. Und die Leute,
+die nur rumstehen, wippen mit.
 
 ### Und dann klingelt es
 
