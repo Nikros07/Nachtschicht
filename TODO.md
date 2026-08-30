@@ -1,6 +1,6 @@
 # Was noch fertig werden muss
 
-Stand: Level 1 (Die Schule) ist spielbar und durchspielbar. Alles andere steht hier.
+Stand: Level 1 bis 3 sind spielbar und durchspielbar. Alles andere steht hier.
 
 Reihenfolge ist bewusst: was oben steht, blockiert das darunter.
 
@@ -22,22 +22,30 @@ Handy mit Taschenlampe und Nachrichten, zwei Spielarten, Cutscene mit Max Ferdi.
 
 ## Die anderen Level
 
-Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
+Jedes Level ist eine Stufe des Abends. Drei stehen, der Rest ist Konzept.
 
-- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, Kampf mit drei Mustern, Moritz schaltet frei
+- [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, Kampf mit
+      drei Angriffsmustern, sechs Statisten, Moritz schaltet frei
+- [x] **Level 3 — Der Nachtbus.** ✅ Sechs Haltestellen, Fahrt in vier Phasen,
+      Ruckeln mit Vorwarnung und Haltestangen, zwei Kontrolleure, Aussteigen und
+      Wiedereinsteigen am Bordstein, ein Ticket das genau einmal hält
 
 **Offen in Level 2:**
 
-- [x] **Sechs Statisten in der Wohnung** — wippen, trinken, sagen ab und zu
-      was; rein optisch, sie blockieren nichts
-- [x] **Der Kracher hat jetzt drei Angriffsmuster** — Schwinger (kontern),
-      Tiefschlag (drüberspringen, dann kontern) und Doppel (zweimal kontern);
-      Konterfenster nur im letzten Drittel, Fehlschläge werden bestraft, sein
-      Ausholen wird mit jedem Treffer kürzer
-- [x] **Musik lauter und verzerrter je höher der Pegel** — ein verstimmter
-      Zwilling legt sich über den Bass, ab der Hälfte kippt die Wellenform
-      und der Takt fängt an zu schleppen
-- [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
+- [ ] Noch mehr Leben in der Wohnung — die Statisten stehen, aber sie gehen nicht
+- [ ] Der Kracher könnte ab dem letzten Treffer eine vierte Ansage kriegen
+
+**Offen in Level 3:**
+
+- [ ] **Der Name des Jungen, der hier dazukommt** — steht als `DER TYP VON HINTEN`
+      im Code (`spielstand.js`, `JUNGS`) und in der Cutscene. Die Fähigkeit steht
+      fest (+1 Herz), nur wie er heißt kommt vom Nick
+- [ ] Der Busfahrer als Figur — sagt bisher nichts
+- [ ] Das Gelenk in der Mitte als eigener Durchgang, nicht nur als Deko
+- [ ] Der Pegel startet fest bei 70 — schöner wäre, ihn aus Level 2 mitzunehmen
+
+**Noch nicht gebaut:**
+
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
 - [ ] **Level 6 — Afterhour.** Surreal, verzerrt, die Schule taucht wieder auf
@@ -64,8 +72,9 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 - [ ] Die anderen tauchen in je einem Level auf
 - [x] **Struktur für Fähigkeiten steht** — die Liste `JUNGS` in `spielstand.js`
       hält Name, Level und Wirkung; die Level rechnen nicht mehr selbst
-- [ ] Restliche Fähigkeiten festlegen (Doppelsprung, Extraherz, härterer Konter,
-      mehr Ausdauer …) — bisher belegt: Tempo (Max Ferdi), Charme (Moritz)
+- [ ] Restliche Fähigkeiten festlegen (Doppelsprung, härterer Konter, mehr
+      Ausdauer …) — bisher belegt: Tempo (Max Ferdi), Charme (Moritz),
+      Extraherz (Level 3, Name noch offen)
 - [ ] Gesichter als Pixel-Köpfe — der Kopf ist im Code bereits ein eigener Block
 - [ ] Fotos bleiben lokal, nur die Sprites landen im Repo
 - [ ] Namen und Eigenheiten: kommt vom Nick
@@ -97,6 +106,10 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
       Freischaltung und Übergänge lesen von dort
 - [ ] Auch die **Level-Inhalte** als Daten (Räume, Möbel, Gegner) — noch stecken
       sie in der jeweiligen HTML-Datei, ein neues Level heißt neue Datei
+- [ ] **Gemeinsamen Motor herausziehen** (Font, Bild-Cache, Audio, Canvas-Aufbau,
+      Touch) — liegt jetzt dreimal da. Gemessen sind nur rund 220 Zeilen davon
+      wortgleich, der Rest ist auseinandergelaufen: das ist ein Umbau der
+      bestehenden Level, keine reine Verschiebung. Lohnt sich vor Level 4
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -149,3 +162,6 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Im Kampf kann gesprungen werden (vorher stand die Physik still)
 - [x] Statisten in Moritz' Wohnung
 - [x] Musik verzieht sich mit dem Pegel
+- [x] **Level 3: Der Nachtbus** — Fahrt in vier Phasen, Ruckeln mit Vorwarnung,
+      Haltestangen, Kontrolleure, Bordstein zum Aussteigen, Ticket als Einmal-Joker
+- [x] Fähigkeiten wirken in allen Leveln (`leben()` = TUNE.leben + Crew-Bonus)

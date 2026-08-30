@@ -512,6 +512,8 @@ const ladeBest=()=>Spielstand.bestzeit(NR);
 /* Max Ferdi ist Sportler - mit ihm laeufst du schneller. Wie viel schneller,
    steht bei den Jungs in spielstand.js, nicht mehr hier. */
 const tempoBonus=()=>Spielstand.tempoBonus();
+/* Wie viele Herzen du hast, haengt an der Crew - ein Junge bringt eins mit. */
+const leben=()=>TUNE.leben+Spielstand.lebenBonus();
 /* Was die Crew dem Spieler bringt, in einer Zeile fuers Titelbild. */
 const crewZeile=()=>{ const c=ladeCrew(); if(!c.length) return null;
   const kann=c.map(n=>(Spielstand.JUNGS.find(j=>j.name===n)||{}).was).filter(Boolean);
@@ -540,7 +542,7 @@ function neuesSpiel(){
     t:0, zeit:0,
     x:60, y:BODEN[0], vx:0, vy:0, etage:0, amBoden:true, letzterBoden:0,
     blick:1, gehPhase:0,
-    hp:TUNE.leben, unverwundbar:0,
+    hp:leben(), unverwundbar:0,
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
@@ -1824,7 +1826,7 @@ function zeichneRaum(){
 function hud(){
   if(S.modus==='titel') return;
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<leben();i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -1914,7 +1916,9 @@ function titelbild(){
     text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   const cz=crewZeile();
   if(cz) textC(cz,60,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  /* H-24: bei H-19 stiess der Glow der blinkenden Zeile in die
+     Levelauswahl darunter. */
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-24,P.weiss,1);
   /* Levelauswahl - ohne die sieht man nie, dass es mehr als dieses gibt.
      Gesperrtes steht trotzdem da, nur grau: man soll wissen, was kommt. */
   /* H-14 und H-7: bei H-5 stand die untere Zeile mit ihren fuenf Pixeln

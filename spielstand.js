@@ -29,7 +29,7 @@
 const LEVEL = [
   { nr:1, name:'DIE SCHULE',   unter:'EINGESPERRT',           datei:'index.html'  },
   { nr:2, name:'BEI MORITZ',   unter:'VORGLUEHEN',            datei:'level2.html' },
-  { nr:3, name:'NACHTBUS',     unter:'FAHRENDER UNTERGRUND',  datei:null },
+  { nr:3, name:'NACHTBUS',     unter:'FAHRENDER UNTERGRUND',  datei:'level3.html' },
   { nr:4, name:'DIE SCHLANGE', unter:'DER TUERSTEHER',        datei:null },
   { nr:5, name:'CLUB',         unter:'STROBOSKOP',            datei:null },
   { nr:6, name:'AFTERHOUR',    unter:'ES WIRD SELTSAM',       datei:null },
@@ -44,11 +44,15 @@ const spielbar = nr => { const l=levelVon(nr); return !!(l&&l.datei); };
    Jedes Level bringt einen aus der Crew, jeder gibt eine Faehigkeit.
    Die Werte hier sind die Wahrheit - kein Level rechnet mehr selbst.
      tempo   Faktor auf das Gehtempo
+     leben   zusaetzliche Herzen in jedem Level
      charme  hilft spaeter im Club-Minispiel
    ========================================================================== */
 const JUNGS = [
-  { name:'MAX FERDI', level:1, was:'+15% TEMPO',           tempo:1.15 },
-  { name:'MORITZ',    level:2, was:'BESSER BEI DEN CHAYAS', charme:1  },
+  { name:'MAX FERDI', level:1, was:'+15% TEMPO',            tempo:1.15 },
+  { name:'MORITZ',    level:2, was:'BESSER BEI DEN CHAYAS', charme:1   },
+  /* PLATZHALTER: Name und Eigenheiten kommen vom Nick (siehe TODO.md).
+     Der Junge selbst und seine Faehigkeit stehen, nur wie er heisst nicht. */
+  { name:'DER TYP VON HINTEN', level:3, was:'+1 HERZ',      leben:1    },
 ];
 const jungeVon = name => JUNGS.find(j=>j.name===name) || null;
 
@@ -159,6 +163,11 @@ function tempoBonus(){
 }
 function charme(){
   return crew().reduce((f,n)=>{ const j=jungeVon(n); return j&&j.charme ? f+j.charme : f; }, 0);
+}
+/* Zusaetzliche Herzen. Die Level rechnen leben() = TUNE.leben + das hier -
+   so wirkt ein Junge in jedem Level, ohne dass ein Level ihn kennen muss. */
+function lebenBonus(){
+  return crew().reduce((f,n)=>{ const j=jungeVon(n); return j&&j.leben ? f+j.leben : f; }, 0);
 }
 
 /* Das naechste Level, das es wirklich gibt. Null, wenn hier Schluss ist. */
@@ -323,7 +332,7 @@ window.Spielstand = {
   level:levelVon, spielbar, naechstes,
   crew, dabei, crewDazu,
   frei, schalteFrei, geschafft, bestzeit,
-  tempoBonus, charme,
+  tempoBonus, charme, lebenBonus,
   zuruecksetzen, wechsel, baueLeiste,
 };
 

@@ -234,6 +234,65 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+22:00. Der Bus fährt. **Sechs Haltestellen** bis zum Clubviertel, und keiner von
+Euch hat ein Ticket.
+
+**Der Untergrund fährt.** Das ist der ganze Unterschied zu vorher. In Level 1
+versteckst Du Dich in einem Gebäude, das stehen bleibt. In Level 2 räumst Du eine
+Wohnung auf, die stehen bleibt. Hier steht gar nichts.
+
+### Der Takt
+
+Jede Haltestelle ist derselbe Ablauf: **fährt → bremst → hält → fährt an.** Beim
+Bremsen und beim Anfahren ruckt es, dazwischen kommen Schlaglöcher. Jedes Mal
+siehst Du es vorher kommen — ein Balken über Deinem Kopf läuft leer, ein Pfeil
+zeigt, wohin es Dich schiebt.
+
+Wenn er dann ruckt, entscheidet sich, ob Du stehen bleibst:
+
+| Wo Du bist | Was passiert |
+|:--|:--|
+| **An einer Haltestange** (`E`) | Nichts. Dafür ist sie da. |
+| **Still, und halbwegs nüchtern** | Gerade noch gehalten |
+| **Still, aber über der grünen Marke am Pegel** | Hingeflogen |
+| **In Bewegung oder in der Luft** | Hingeflogen |
+
+Hinfliegen kostet kein Herz — aber Du liegst gut eine Sekunde am Boden, rutschst
+noch ein Stück, und **es ist laut.** Wer im Bus nach Dir sucht, weiß danach genau,
+wo Du bist.
+
+Die Stange ist kein Freifahrtschein: solange Du Dich festhältst, kommst Du nicht
+weg. Loslassen geht mit `A`/`D` oder nochmal `E`.
+
+### Die Kontrolleure
+
+Ab **Hermannplatz** steigen zwei durch die mittlere Tür zu und gehen in beide
+Richtungen durch den Bus. Kommen sie in Deine Reichweite, kostet es ein Herz.
+Drei Herzen hast Du.
+
+Drei Dinge helfen:
+
+**Die anderen Fahrgäste.** Jeder ungeprüfte Fahrgast hält einen Kontrolleur
+knapp zwei Sekunden auf. Das sind Deine Sekunden.
+
+**Rausgehen.** Solange die Türen offen sind, bringt Dich `E` an einer Tür auf den
+Bordstein. Draußen kommt keiner an Dich ran, und Du kannst am Bus entlanglaufen
+und durch eine andere Tür wieder rein — hinter ihnen. Aber der Balken oben links
+zeigt, wie lange die Türen noch offen sind, und **der Bus fährt ohne Dich weiter.**
+
+**Das Ticket.** Auf einem der Sitze liegt eins. Es ist nicht Deins, und es hält
+**genau eine Kontrolle** — beim zweiten Mal passt der Name nicht. Wo es liegt,
+ist jede Runde anders; Sitze durchsuchst Du mit `E`.
+
+### Und am Ende
+
+Clubviertel. Jemand, der die ganze Fahrt hinten saß, steht auf und kommt mit.
+Ab dann hast Du in jedem Level **ein Herz mehr.**
+
+---
+
 ## Wie es weitergeht
 
 Unter dem Bildschirm steht die **Levelleiste**. Sie zeigt alle acht Level der
@@ -334,6 +393,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 und Level 2 sind fertig und durchspielbar, der Spielstand hält sie
-zusammen. Level 3 bis 8 sowie das Freischalten der restlichen Crew stehen in
+Level 1 bis 3 sind fertig und durchspielbar, der Spielstand hält sie zusammen.
+Level 4 bis 8 sowie das Freischalten der restlichen Crew stehen in
 [TODO.md](TODO.md).

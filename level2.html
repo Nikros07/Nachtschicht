@@ -455,6 +455,16 @@ const ORTE=[
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 
+/* Crew, Bestzeit und Freischaltungen liegen in spielstand.js. */
+const NR=2;                                   // welches Level das hier ist
+const ladeCrew=()=>Spielstand.crew();
+const ladeBest=()=>Spielstand.bestzeit(NR);
+const tempoBonus=()=>Spielstand.tempoBonus();
+/* Wie viele Herzen du hast, haengt an der Crew - ein Junge bringt eins mit. */
+const leben=()=>TUNE.leben+Spielstand.lebenBonus();
+/* Das naechste gebaute Level - gibt es keines, bleibt E ein Rueckweg. */
+const naechstesLevel=()=>Spielstand.naechstes(NR);
+
 /* Dinge zum Anfassen. aktion bestimmt, was passiert. */
 const DINGE=[
   { x:250, art:'sofa',    label:'SOFA',        moebel:'sofa',   h:6  },
@@ -528,7 +538,7 @@ function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
-    kamX:0, hp:TUNE.leben,
+    kamX:0, hp:leben(),
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
@@ -552,14 +562,6 @@ function neuesSpiel(){
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
 neuesSpiel();
-
-/* Crew, Bestzeit und Freischaltungen liegen in spielstand.js. */
-const NR=2;                                   // welches Level das hier ist
-const ladeCrew=()=>Spielstand.crew();
-const ladeBest=()=>Spielstand.bestzeit(NR);
-const tempoBonus=()=>Spielstand.tempoBonus();
-/* Das naechste gebaute Level - gibt es keines, bleibt E ein Rueckweg. */
-const naechstesLevel=()=>Spielstand.naechstes(NR);
 
 /* ==========================================================================
    EINGABE
@@ -1172,7 +1174,7 @@ function zeichneWohnung(){
 /* ---- HUD ---- */
 function hud(){
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<leben();i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -1262,7 +1264,9 @@ function titelbild(){
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
+  /* H-24: bei H-19 stiess der Glow der blinkenden Zeile in die
+     Levelauswahl darunter. */
+  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-24,P.weiss,1);
   /* H-14 und H-7: bei H-5 war die untere Zeile an der Bildkante abgeschnitten. */
   const a='TASTE 1    LEVEL 1 - DIE SCHULE';
   const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
