@@ -1159,11 +1159,17 @@ const SZENEN=[
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
+const PEGEL_KEY='nachtschicht.pegel';
 function levelGeschafft(){
   speichereCrew('MORITZ');
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  /* Der Pegel faehrt mit in die Nacht. Level 3 liest ihn hier heraus und
+     macht daraus eine kuerzere Vorwarnung vor jedem Ruck im Bus - wer bei
+     Moritz zu viel getrunken hat, steht spaeter schlechter. Ohne diese
+     Zeile bliebe das ein Versprechen ohne Deckung. */
+  try{ localStorage.setItem(PEGEL_KEY,String(Math.max(0,Math.min(100,S.pegel)))); }catch(e){}
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
