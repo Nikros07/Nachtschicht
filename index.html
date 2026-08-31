@@ -96,6 +96,7 @@
   <div id="levelbar">
     <a href="index.html" class="aktiv">1 &middot; DIE SCHULE</a>
     <a href="level2.html">2 &middot; BEI MORITZ</a>
+    <a href="level3.html">3 &middot; NACHTBUS</a>
   </div>
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -723,6 +724,8 @@ addEventListener('keydown',e=>{
      wenn man Level 1 gewinnt - und sieht bis dahin nicht, dass es da ist. */
   if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
     e.preventDefault(); location.href='level2.html'; }
+  if(S.modus==='titel'&&(e.code==='Digit3'||e.code==='Numpad3')){
+    e.preventDefault(); location.href='level3.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -1899,8 +1902,8 @@ function titelbild(){
   if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
   /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt */
-  const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
-  const b='TASTE 2    LEVEL 2 - BEI MORITZ';
+  const a='LEERTASTE  1 SCHULE';
+  const b='TASTE 2  BEI MORITZ    TASTE 3  NACHTBUS';
   text(a,(W-textW(a))/2,H-11,P.dunkel);
   text(b,(W-textW(b))/2,H-5,P.neon2);
 }

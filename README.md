@@ -43,6 +43,9 @@ der durchs ganze Gebäude wandert — und eine Uhr, die um **17:30** abläuft.
 **Am Handy** im Querformat: Steuerkreuz links, Aktionstasten rechts. Die erste
 Berührung schaltet ins Vollbild.
 
+Auf dem Titelbild wechselst Du mit `1` `2` `3` zwischen den Leveln — oder über
+die Leiste unter dem Bild.
+
 ---
 
 ## Zwei Spielarten
@@ -239,6 +242,79 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+---
+
+## Level 3 — Der Nachtbus
+
+22:12, Linie N7. Ihr habt sie gerade noch gekriegt. Sechs Haltestellen bis zum
+Rathaus, und keiner von Euch hat einen Fahrschein.
+
+**Kein Schleichen, kein Vorglühen.** Hier geht es darum, sich auf einem Boden zu
+halten, der selbst in Bewegung ist.
+
+### Der Boden fährt mit
+
+Der Bus bremst, fährt an und nimmt Kurven. Jedes Mal kündigt sich das oben in
+der Mitte an — **BREMSE**, **KURVE**, **ES GEHT LOS** — und ein Balken läuft
+leer. Ist er leer, reißt es.
+
+**Halt Dich fest:** `E` **gedrückt halten**, während Du an einer Haltestange
+stehst. Dann passiert Dir nichts. Hältst Du Dich nicht fest, liegst Du
+anderthalb Sekunden auf dem Boden — laut, und die Kontrolleure kommen dann
+direkt zu Dir.
+
+Festhalten heißt stehenbleiben. Das ist der ganze Handel: jeder Meter, den Du
+gehst, kostet Sicherheit; jede Sekunde, in der Du sicher stehst, kostet Weg.
+
+**Am Gelenk gibt es keine Stange.** Das ist die gefährlichste Stelle im Bus —
+und genau da ist auch das beste Versteck.
+
+### Die Kontrolleure
+
+Sie steigen vorn ein und arbeiten sich nach hinten durch. An jedem Fahrgast
+bleiben sie stehen und prüfen — das ist Dein Vorsprung. **Sie drehen nie um**,
+und sie bleiben an Bord, bis sie hinten raus sind.
+
+Drei Wege, nicht kontrolliert zu werden:
+
+**Im Pulk untertauchen.** Am Gelenk steht ein Haufen Leute. `E` und Du bist
+zwischen ihnen — da sieht Dich keiner. Aber der Pulk hält Dich nicht fest: kommt
+ein Ruck, musst Du raus oder Du liegst.
+
+**Raus und vorne wieder rein.** An der Haltestelle sind die Türen **fünf
+Sekunden** offen. Steig aus, lauf über den Steig nach vorn, steig vorne wieder
+ein — jetzt ist er *vor* Dir statt hinter Dir, und er dreht nicht um. Das ist
+der beste Zug im ganzen Level. Aber: **wer draußen steht, wenn die Türen
+zugehen, fährt nicht mit.**
+
+**Die Box.** Siehe unten.
+
+### Die Box
+
+Ganz hinten sitzt einer mit einer Bluetooth-Box. Sie ist seit drei Stunden leer.
+Durchsuch die Sitze — irgendwo liegt eine **Powerbank**. Bring sie ihm, und der
+ganze Bus wird laut: die Kontrolleure werden **spürbar langsamer** und brauchen
+an jedem Fahrgast länger.
+
+Am Rathaus kommt er dann mit. **Mit ihm hältst Du einen Schlag mehr aus** — ein
+Herz extra, ab der nächsten Runde.
+
+Du kannst auch ohne ihn ankommen. Dann steht er am Ende da und schaut Euch nach.
+
+### Der Pegel fährt mit
+
+Was Du bei Moritz getrunken hast, nimmst Du mit in den Bus — der Spielstand
+merkt es sich. Hier macht er Dich aber **nicht mutiger, sondern wackeliger:** je
+höher der Pegel, desto **kürzer die Vorwarnung** vor jedem Ruck. Nüchtern hast
+Du gut eine Sekunde, voll nur noch eine halbe.
+
+### Und Deine Jungs
+
+Sind Max Ferdi oder Moritz dabei, sagen sie Dir Bescheid, wenn vorne einer
+einsteigt — bevor Du ihn siehst. Dafür hast Du sie mitgenommen.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -249,10 +325,55 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 
 # Für Entwickler
 
+## Wie die Dateien zusammenhängen
+
+| Datei | Was drin ist |
+|:--|:--|
+| `engine.js` | Der gemeinsame Unterbau: 3×5-Font, Bild-Cache, Vollbild, Touch, Ton, Musikbus, Spielstand. Weiß nichts vom Spiel. |
+| `index.html` | Level 1 — Die Schule |
+| `level2.html` | Level 2 — Bei Moritz |
+| `level3.html` | Level 3 — Der Nachtbus. Das erste Level auf `engine.js`. |
+| `runner.html` | Der alte Endlos-Brawler |
+
+Bis Level 2 trug jede Seite ihre **eigene Kopie** desselben Unterbaus mit sich —
+rund 250 Zeilen, drei Mal. Bei acht Leveln wären es acht Kopien, und jede
+Verbesserung müsste acht Mal gemacht werden. Deshalb liegt das alles jetzt genau
+einmal in `engine.js`. Level 3 ist das erste Level, das ihn benutzt; Level 1 und
+2 laufen noch auf ihren eigenen Kopien und werden nachgezogen (steht in
+[TODO.md](TODO.md)).
+
+Benutzt wird er so — die Namen werden flach herausgezogen, damit der Level-Code
+aussieht, als wären die Funktionen direkt da:
+
+```js
+const E = Nachtschicht({ palette: KEY, beiGroesse: w => W = w });
+const { ctx, sprite, text, textC, piep, SPIELSTAND } = E;
+```
+
+`engine.js` ist ein **ganz normales Script, kein Modul**. Das ist Absicht: Module
+unterliegen im Browser der Herkunftsprüfung und würden den Doppelklick auf
+`index.html` kaputt machen.
+
+## Der Spielstand
+
+Alles in `localStorage`, alles mit Fangnetz — im privaten Fenster wirft der
+Zugriff, und daran soll kein Level sterben.
+
+| Was | Schlüssel |
+|:--|:--|
+| Wer schon dabei ist | `nachtschicht.crew` |
+| Bestzeit je Level | `nachtschicht.bestzeit1` … `3` |
+| Der Pegel, der mitfährt | `nachtschicht.pegel` |
+
+Welches Level offen ist, ergibt sich **aus der Crew** statt aus einem eigenen
+Eintrag: Level 2 braucht Max Ferdi, Level 3 braucht Moritz. Ein Schlüssel
+weniger, der schief stehen kann — und alte Spielstände sind ohne Umbau richtig.
+
 ## Selbst dran drehen
 
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
-Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
+Ganz oben in jeder Level-Datei steht ein Block namens `TUNE`. Dort liegt das
+komplette Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen
+Zahlen.
 
 | Regler | Bewirkt |
 |:--|:--|
@@ -297,5 +418,10 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1, 2 und 3 sind fertig und durchspielbar. Level 4 bis 8 sowie das
+Freischalten der restlichen Crew stehen in [TODO.md](TODO.md).
+
+**Ein offener Punkt in Level 3:** *Der mit der Box* ist ein Platzhalter. Er
+heißt nach dem, was er trägt, weil die Namen und Eigenheiten der Crew laut
+TODO vom Nick kommen. Mechanik und Cutscene stehen — nur der Name muss noch
+ersetzt werden.
