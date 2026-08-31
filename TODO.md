@@ -114,13 +114,13 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] **Musik pro Level** — jedes Level hat eine eigene Basslinie, und der
       Musikbus (Zerre + Tiefpass) hängt am Pegel
 
-- [ ] **Level 1 und 2 auf `engine.js` umstellen.** Sie laufen noch auf ihren
-      eigenen Kopien des Unterbaus — rund 250 Zeilen doppelt, je Datei.
-      Level 3 zeigt, wie es geht. Weil beide Level fertig und durchspielbar
-      sind, gehört das mit Bildvergleich vorher/nachher gemacht, nicht
-      nebenbei. **Das blockiert alles Weitere an der Technik.**
+- [x] **Level 1 und 2 auf `engine.js` umgestellt** — 396 Zeilen Doppeltes weg,
+      Bild für Bild bitgleich geprüft über 35 Spielzustände
+
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-      *(erst sinnvoll, wenn alle drei Level auf demselben Unterbau laufen)*
+      *(jetzt möglich — alle drei Level laufen auf demselben Unterbau)*
+- [ ] `runner.html` hat noch seine eigene Kopie des Unterbaus. Er ist
+      eingefroren, also eilt es nicht; wer ihn anfasst, sollte ihn mitnehmen
 - [ ] Übergänge zwischen den Leveln — bisher springt man über `location.href`
       von Abspann zu Titelbild
 - [ ] Kampfsystem und Level-System zusammenführen
@@ -184,3 +184,8 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
       laufen mit dem Bustempo mit
 - [x] **Der Pegel fährt von Level 2 nach Level 3 mit** — und macht dort nicht
       mutiger, sondern wackeliger
+- [x] **Level 1 und 2 laufen auf `engine.js`** — der Umbau ist mit einem
+      Bildvergleich abgesichert: 17 Zustände aus Level 2, 18 aus Level 1,
+      vorher und nachher bitgleich. Dabei ist ein echter Fehler aufgefallen
+      und behoben worden (ein zu weiter Schnitt hatte in Level 1 die Spinde
+      und die Lehrer-Startpositionen mit herausgelöscht)

@@ -332,15 +332,17 @@ Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.ht
 | `engine.js` | Der gemeinsame Unterbau: 3×5-Font, Bild-Cache, Vollbild, Touch, Ton, Musikbus, Spielstand. Weiß nichts vom Spiel. |
 | `index.html` | Level 1 — Die Schule |
 | `level2.html` | Level 2 — Bei Moritz |
-| `level3.html` | Level 3 — Der Nachtbus. Das erste Level auf `engine.js`. |
-| `runner.html` | Der alte Endlos-Brawler |
+| `level3.html` | Level 3 — Der Nachtbus |
+| `runner.html` | Der alte Endlos-Brawler — eingefroren, hat noch seine eigene Kopie |
 
-Bis Level 2 trug jede Seite ihre **eigene Kopie** desselben Unterbaus mit sich —
-rund 250 Zeilen, drei Mal. Bei acht Leveln wären es acht Kopien, und jede
-Verbesserung müsste acht Mal gemacht werden. Deshalb liegt das alles jetzt genau
-einmal in `engine.js`. Level 3 ist das erste Level, das ihn benutzt; Level 1 und
-2 laufen noch auf ihren eigenen Kopien und werden nachgezogen (steht in
-[TODO.md](TODO.md)).
+Vorher trug jede Seite ihre **eigene Kopie** desselben Unterbaus mit sich — rund
+250 Zeilen, Wort für Wort dieselben, drei Mal. Bei acht Leveln wären es acht
+Kopien, und jede Verbesserung müsste acht Mal gemacht werden.
+
+Alle drei Level laufen jetzt auf `engine.js`. Das hat **396 Zeilen Doppeltes**
+aus `index.html` und `level2.html` entfernt, ohne dass sich am Bild etwas
+geändert hat — geprüft mit einem Vergleich Bild für Bild über 35 Spielzustände,
+bitgleich vorher wie nachher.
 
 Benutzt wird er so — die Namen werden flach herausgezogen, damit der Level-Code
 aussieht, als wären die Funktionen direkt da:
