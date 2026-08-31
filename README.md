@@ -180,6 +180,14 @@ werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
 | **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
 | **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
 
+### Die anderen
+
+Außer den vier, die Du mitnehmen musst, steht die Wohnung voll. Die anderen
+Gäste haben keine Aufgabe für Dich — sie trinken, reden, sitzen rum und jubeln,
+wenn was klappt. Du erkennst sie daran, dass sie **kein Namensschild** tragen
+und blasser gezeichnet sind. Ein `E` bei ihnen ist grau statt gold: da gibt es
+nichts zu holen, aber sie sagen Dir was.
+
 ### Der Pegel
 
 Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
@@ -192,12 +200,36 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Und Du hörst es auch.** Mit steigendem Pegel wird die Musik lauter, verzerrter
+und dumpfer, der Takt zieht sich, die Töne fangen an zu schweben. Nur die Musik
+— Schritte, Treffer und Fundgeräusche bleiben sauber, sonst würdest Du im
+Vollrausch nicht mehr mitkriegen, was das Spiel Dir sagen will.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und im Kampf darfst Du
+**laufen und springen**, denn er hat drei Angriffe, und jeder will eine andere
+Antwort:
+
+| Über ihm | Was er macht | Was Du machst |
+|:--|:--|:--|
+| **SCHWINGER** rot, `!` | Holt aus und setzt schnell nach | `E` drücken — kontern |
+| **GRIFF** blau, `>` | Kommt mit beiden Armen auf Dich zu | Weglaufen |
+| **FEGER** gold, `-` | Fegt flach über den Boden | Springen |
+
+Er blinkt dabei in der Farbe des Angriffs — Du musst nicht auf den Balken
+schauen. Die ersten beiden Male steht der Name mit dabei, danach nicht mehr.
+
+**Kontern kannst Du nur den Schwinger.** Die weiße Marke auf dem roten Balken
+zeigt, ab wann: davor ist es zu früh. Wer daneben haut, kann kurz gar nichts —
+Tastenhämmern hilft hier nicht.
+
+**Ausweichen ist nicht nur Überleben.** Greift er ins Leere, taumelt er und ein
+grüner Balken läuft. Geh ran und drück `E`: das ist Dein Treffer. So kommst Du
+auch an Griff und Feger zu Schaden. Viermal treffen, dann liegt er.
+
+Je mehr er einsteckt, desto kürzer wird seine Vorwarnung. Drei Herzen hast Du.
 
 ### Moritz
 

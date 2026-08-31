@@ -26,11 +26,14 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
-**Offen in Level 2:**
+**Offen in Level 2:** — nichts mehr, siehe Erledigt
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster
+- [x] Musik lauter/verzerrter je höher der Pegel
+
+**Die nächsten Level:**
+
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -70,9 +73,14 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      *(in Level 2 als `TUNE.fehlSperre` gebaut — beim Zusammenführen übernehmen)*
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      *(in Level 2 als `TUNE.konterFenster` gebaut, steht auf 0,7 —
+      beim Zusammenführen übernehmen und härter stellen)*
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      *(Muster-Tabelle aus Level 2 (`MUSTER`) ist die Vorlage: pro Angriff
+      Farbe, Zeichen, Bild, Vorwarnzeit, Reichweite und Antwort)*
 
 ---
 
@@ -123,3 +131,13 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] **Acht Statisten in Moritz' Wohnung** — drei Posen, eigene Kleidung,
+      jubeln wenn was klappt, geben Sprüche von sich. Ohne Aufgabe, ohne
+      Einfluss aufs Spiel; die Aufstellung wird beim Laden geprüft
+- [x] **Der Kracher hat drei Angriffsmuster** — Schwinger (kontern), Griff
+      (weglaufen), Feger (springen). Dafür darf man im Kampf laufen und
+      springen, und wer ihn ins Leere greifen lässt, kriegt sein Fenster
+- [x] **Konterfenster und Fehlschlag-Sperre** — der Konter zählt erst im
+      letzten Teil des Ausholens, Danebenhauen sperrt kurz die Taste
+- [x] **Musikbus mit Zerre und Tiefpass** — Musik wird lauter, dreckiger und
+      dumpfer mit dem Pegel; Rückmeldungs-Geräusche bleiben sauber
