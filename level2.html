@@ -134,11 +134,42 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
-  gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  /* (6) DIE MUSIK - sie kippt mit dem Pegel */
+  musikGrund:       0.026, // Grundlautstaerke des Basses
+  musikProPegel:    0.040, // was der volle Pegel obendrauf legt
+  musikSchraeg:     0.022, // Verstimmung bei vollem Pegel
+  verzerrtAb:       0.45,  // ab diesem Pegelanteil kippt der Klang
+
+  /* (7) DER KRACHER AM ENDE
+     Vier Muster. Drei kannst du kontern, eins nicht.
+     Der Balken sagt WANN, die Farbe sagt OB. */
+  arenaVon:        26,     // im Flur, zwischen Tuer und Wohnzimmer
+  arenaBis:       190,
+  gegnerTreffer:    5,     // so oft musst du landen
+  gegnerNah:       22,     // ab hier faengt er ein Muster an
+  gegnerTempo:     70,
+  konterFenster:    0.34,  // nur das letzte Drittel des Ausholens zaehlt
+  /* Das Konterfenster ist immer das letzte Drittel - wie lang das in
+     Sekunden ist, entscheidet das Ausholen. Der Schwinger ist der
+     Lehrmeister und bleibt breit, die Doppel zieht spuerbar an. */
+  windSchwinger:    0.95,  // Fenster ~0,32 s
+  windDoppel1:      0.72,  // Fenster ~0,24 s
+  windDoppel2:      0.58,  // Fenster ~0,20 s - der zweite kommt schneller
+  windStrafe:       0.68,  // Konterschlag, nachdem du auf die Deckung gehauen hast
+  gegnerSchlag:     0.20,
+  gegnerPause:      1.00,
+  getroffenDauer:   0.50,
+  rueckstoss:      90,
+  deckungDauer:     1.20,  // so lange haelt er die Deckung hoch
+  deckungStrafe:    0.55,  // so lange bist du danach geprellt
+  fehlErholung:     0.70,  // Strafe fuers Danebenhauen - hier stirbt das Spammen
+  hektikStrafe:     0.25,  // jeder Druck WAEHREND der Erholung verlaengert sie
+  sturmWarnung:     0.90,  // gelber Balken, bevor er losrennt
+  sturmTempo:     210,
+  benommenDauer:    1.50,  // so lange liegt er nach dem Wandtreffer offen
+  benommenTreffer:  2,     // so viele freie Schlaege gibt dir das
+  iframe:           0.60,  // kurz unverwundbar nach einem Treffer
+  mutBonus:         2,     // Konterschaden, wenn du Mut hast
   leben:            3,
 };
 
@@ -169,6 +200,7 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ '(':'010,100,100,100,010', ')':'010,001,001,001,010',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -189,7 +221,9 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
   j:'#3d2f22', u:'#8c94ad', q:'#2e3350', z:'#5a4632',
   /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
+  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0',
+  /* Staffage: die Leute, die nur rumstehen. Jeder ein anderes Oberteil. */
+  R:'#b8452f', Y:'#6d5aa8', N:'#2f9e8f', X:'#d98a3a', L:'#8c8a9e', Z:'#4a3020' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -218,6 +252,18 @@ function outline(rows,x,y,sc=1,a=.7){
     xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc); xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
     c=cc; _out.set(k,c); }
   ctx.globalAlpha=a; ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc); ctx.globalAlpha=1;
+}
+/* Gespiegelte Kontur - der Kracher schaut nach dem Sturm in die andere
+   Richtung, und eine ungespiegelte Kontur haengt dann schief unter ihm. */
+function outlineFlip(rows,x,y,sc=1,a=.7){
+  const s=holeSprite(rows,sc,'#000'); const k=rowsId(rows)+'|'+sc;
+  let c=_out.get(k);
+  if(!c){ const [cc,xx]=leinwand(s.width+2*sc,s.height+2*sc);
+    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc); xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
+    c=cc; _out.set(k,c); }
+  ctx.save(); ctx.globalAlpha=a;
+  ctx.translate(Math.round(x)-sc+c.width,Math.round(y)-sc); ctx.scale(-1,1);
+  ctx.drawImage(c,0,0); ctx.restore(); ctx.globalAlpha=1;
 }
 function textTo(g,str,x,y,col,s){
   g.fillStyle=col; str=String(str).toUpperCase();
@@ -278,11 +324,25 @@ const SPR={
   /* Der Telefonierer auf dem Balkon */
   telefon:['..hhh..','.hsssh.','.sssssg','..sss.g','..mmm..','.mmmmm.','k.mmm..','..mmm..',
            '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  /* Der Kracher am Ende */
+  /* Der Kracher am Ende - eine Pose pro Zustand, damit man ihn lesen kann */
   kracher:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','vvvvvvv','k.vvv.k',
            '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
+  kracherGeh:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','vvvvvvv','k.vvv.k',
+              '..vvv..','..mmm..','..mmm..','.mm.m..','.kk..kk'],
   kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
               'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
+  /* Deckung: Haende hoch, da kommst du nicht durch */
+  kracherDeckung:['..ddd..','.dkkkd.','.dsssd.','..ksk..','k.sss.k','kvvvvvk','.vvvvv.','..vvv..',
+                  '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
+  /* Er geht in die Knie, gleich rennt er los */
+  kracherHocke:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','kvvvvvk','.vvvvv.',
+                '..mmm..','.mm.mm.','.kk..kk'],
+  /* Der Sturm: Kopf voran, Arme hinterher */
+  kracherSturm:['....ddd..','...dkkkd.','...dsssd.','....ksk..','k...sss..','.kvvvvvv.','..vvvvv..',
+                '..vvvv...','..mmm....','.mm...mm.','kk.....kk'],
+  /* Nach dem Wandtreffer: er sackt zusammen */
+  kracherBenommen:['..ddd..','.dkkkd.','.dsssd.','..sss..','.vvvvv.','kvvvvvk','.vvvvv.','..mmm..',
+                   '.mm.mm.','kk...kk'],
 
   /* Einrichtung */
   sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
@@ -301,6 +361,18 @@ const SPR={
   flasche:['..gg..','..gg..','.gggg.','.gwgg.','.gggg.','.gggg.','..gg..'],
   dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
 };
+
+/* Die Leute, die nur rumstehen. Ein Bauplan, viele Oberteile - so wird die
+   Wohnung voll, ohne dass jede Figur eigene Pixel braucht. Die Reihen werden
+   hier einmal gebaut und danach vom Bild-Cache wiedererkannt. */
+const steher=(t,h='h')=>['..'+h+h+h+'..','.'+h+'sss'+h+'.','.sssss.','..sss..',
+  '..'+t+t+t+'..','.'+t+t+t+t+t+'.','k.'+t+t+t+'.k','..'+t+t+t+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+const steherB=(t,h='h')=>['..'+h+h+h+'..','.'+h+'sss'+h+'.','.sssss.','..sss..',
+  '..'+t+t+t+'.g','.'+t+t+t+t+t+'k','k.'+t+t+t+'..','..'+t+t+t+'..',
+  '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'];
+const hocker=(t,h='h')=>['..'+h+h+h+'..','.'+h+'sss'+h+'.','.sssss.','..sss..',
+  '..'+t+t+t+'..','.'+t+t+t+t+t+'.','k.'+t+t+t+'kk','..ppppp','..k...k'];
 
 /* ==========================================================================
    AUDIO
@@ -340,30 +412,48 @@ const SFX={
   klatsch:()=>{ rauschen(.09,.13); glissando(220,60,.14,'square',.07); },
   aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
   sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
+  /* Kampf */
+  deckung:()=>piep(150,.12,'square',.045),
+  geprellt:()=>{ rauschen(.07,.07); glissando(140,70,.16,'square',.055); },
+  sturmruf:()=>glissando(170,540,.34,'sawtooth',.055),
+  krach:  ()=>{ rauschen(.34,.15); glissando(150,45,.4,'square',.08); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
+/* Musik: das Vorgluehen laeuft. Sie kippt mit dem Pegel - erst nur lauter,
+   ab dem Kipppunkt kratzig, verstimmt und mit Offbeat. Was du hoerst, ist
+   nicht die Wohnung, sondern dein Kopf. */
 const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
   const st=60/128/4;
+  const spielt = S.modus==='spiel'||S.modus==='kampf';
+  const p = spielt ? Math.min(1,S.pegel/TUNE.pegelMax) : 0;
+  const kippt = p>TUNE.verzerrtAb;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
-      if(i%4===2) rauschenKurz(MUS.next);
+    const laut = spielt ? TUNE.musikGrund+p*TUNE.musikProPegel : .014;
+    if(f){
+      /* Verstimmung: die Tonhoehe eiert, je voller der Pegel */
+      const schief = 1+Math.sin(MUS.step*.7)*TUNE.musikSchraeg*p;
+      ton(f*schief,MUS.next,st*.85,kippt?'sawtooth':'square',laut);
+      /* Unter dem Bass legt sich eine zweite, dreckige Oktave dazu */
+      if(kippt) ton(f*.5*schief,MUS.next,st*.9,'sawtooth',laut*.5*p);
+    }
+    if(spielt){
+      if(i%4===0) ton(55,MUS.next,.09+p*.05,'sine',.05+p*.035);
+      if(i%4===2) rauschenKurz(MUS.next,.012+p*.026);
+      /* ab dem Kipppunkt schiebt sich ein Offbeat zwischen die Schlaege */
+      if(kippt&&i%4===1) ton(BASS[(i+3)%BASS.length]||110,MUS.next+st*.5,st*.4,'sawtooth',laut*.35);
     }
     MUS.next+=st; MUS.step++;
   }
 }
-function rauschenKurz(when){
+function rauschenKurz(when,vol=.012){
   if(!AC||muted) return;
   const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
   const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
+  s.buffer=buf; g.gain.value=vol; s.connect(g); g.connect(AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -445,6 +535,33 @@ const LEUTE=[
     danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
 ];
 
+/* Die anderen auf der Party.
+   Die machen nichts, die stehen nur rum - und genau das macht die Wohnung
+   voll. Sie sind bewusst NICHT in LEUTE: sie zaehlen bei der Reichweite gar
+   nicht erst mit, koennen also weder ein Moebel blockieren noch ein E fressen.
+   Wer nur Kulisse ist, darf dem Spieler nicht im Weg stehen. */
+const KAMPF_RUFE=['OH','GEHT AB','HAU IHN','WER IST DAS','NICHT DIE LAMPE','AUA'];
+const STAFFAGE=[
+  /* Bewusst NICHT im Flur: dort ist am Ende die Kampfarena, und wer da steht,
+     legt seinen Zuruf genau auf den Balken, an dem der Kampf haengt. */
+  { x:214, spr:[steher('R'),steherB('R')],
+    sagt:['STEHT IHR HIER SEIT NER STUNDE','MIR EGAL WO WIR HIN','IST DAS EUER FLUR'] },
+  { x:298, spr:[steher('Y'),steherB('Y')],
+    sagt:['UND DANN MEINT SIE NUR','ICH SO: JA UND','ALTER ECHT JETZT'] },
+  { x:311, spr:[steher('N','Z')], flip:true,
+    sagt:['NEIN','DOCH','HOER AUF'] },
+  { x:392, spr:[steherB('X'),steher('X')],
+    sagt:['WER HAT DEN LAUTSPRECHER','DAS LIED KENN ICH','NOCHMAL VON VORNE'] },
+  { x:472, spr:[steher('L'),steherB('L')], flip:true,
+    sagt:['IST DA NOCH WAS DRIN','NUR MILCH','WER TRINKT DENN MILCH'] },
+  { x:578, spr:[hocker('N','Z')],
+    sagt:['...','ICH SITZ HIER GANZ GUT','GEHT SCHON'] },
+  { x:688, spr:[steher('X','Z'),steherB('X','Z')],
+    sagt:['DAS IST NICHT MEIN ZIMMER','ICH SUCH NUR MEIN LADEKABEL'] },
+  { x:858, spr:[steher('R','Z')], flip:true,
+    sagt:['DA IST SEIT ZEHN MINUTEN WER DRIN','MACH MAL HIN','ICH KLOPF JETZT'] },
+];
+
 /* Was du finden musst */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
@@ -470,6 +587,8 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
+    erholung:0, iframe:0, gesehen:{}, redner:-1,
+    staffage:STAFFAGE.map((s,i)=>({ sagT:2+Math.random()*7, satz:'', zeigT:0, phase:i*1.7 })),
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -599,7 +718,8 @@ function update(dt){
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
 
-  if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
+  staffageTick(dt);
+  if(S.modus==='kampf'){ kampf(dt); return; }
 
   /* --- Gespraech laeuft --- */
   if(S.reden){
@@ -608,37 +728,7 @@ function update(dt){
     kamera(dt); return;
   }
 
-  /* --- Bewegung --- */
-  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
-  if(richtung) S.blick=richtung;
-  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
-  const hoechst = TUNE.gehTempo*tempoBonus()*langsam;
-  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
-  if(richtung){
-    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
-    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
-  } else {
-    const brems=TUNE.bremsung*kontrolle*dt;
-    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
-  }
-  S.x+=S.vx*dt;
-  S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
-
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
-    const n=Math.floor(S.gehPhase);
-    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
-  }
-  while(sprungPuffer.length){
-    const t0=sprungPuffer.shift();
-    if(S.t-t0>TUNE.puffermMs/1000) continue;
-    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
-  }
-  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
-  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
-    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+  bewegung(dt,14,LEVEL_B-14);
 
   /* --- Suchen laeuft --- */
   if(S.suchT>0){
@@ -665,6 +755,67 @@ function update(dt){
     else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
   }
   kamera(dt);
+}
+
+/* ---- Bewegung ----
+   Steht als eigener Block da, weil sie im Kampf genauso gebraucht wird wie
+   in der Wohnung - nur mit engeren Waenden und gebremst, wenn du gerade
+   danebengehauen hast. */
+function bewegung(dt,von,bis,tempoF=1){
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  if(richtung) S.blick=richtung;
+  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
+  const hoechst = TUNE.gehTempo*tempoBonus()*langsam*tempoF;
+  const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
+  if(richtung){
+    S.vx+=richtung*TUNE.beschleunigung*kontrolle*dt;
+    if(Math.abs(S.vx)>hoechst) S.vx=hoechst*Math.sign(S.vx);
+  } else {
+    const brems=TUNE.bremsung*kontrolle*dt;
+    S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
+  }
+  S.x+=S.vx*dt;
+  if(S.x<von||S.x>bis) S.vx=0;
+  S.x=Math.max(von,Math.min(bis,S.x));
+
+  if(S.amBoden&&Math.abs(S.vx)>12){
+    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+    const n=Math.floor(S.gehPhase);
+    if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
+  }
+  while(sprungPuffer.length){
+    const t0=sprungPuffer.shift();
+    if(S.t-t0>TUNE.puffermMs/1000) continue;
+    if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
+      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+  }
+  if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
+  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+    S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+}
+
+/* ---- Die Staffage ----
+   Nur wer in Hoerweite steht, sagt ueberhaupt was - und immer nur einer.
+   Zwei Spruchblasen nebeneinander sind unlesbar, und die beiden im
+   Wohnzimmer stehen dreizehn Pixel auseinander. */
+function staffageTick(dt){
+  const imKampf = S.modus==='kampf';
+  for(let i=0;i<STAFFAGE.length;i++){
+    const s=STAFFAGE[i], z=S.staffage[i];
+    if(z.zeigT>0){ z.zeigT-=dt;
+      if(z.zeigT<=0){ z.satz=''; if(S.redner===i) S.redner=-1; } continue; }
+    z.sagT-=dt;
+    if(z.sagT>0) continue;
+    z.sagT = imKampf ? 1.0+Math.random()*2.2 : 4+Math.random()*7;
+    if(S.redner>=0) continue;
+    if(Math.abs(s.x-S.x)>W*.5) continue;
+    /* Im Kampf ruft nur, wer nicht in der Arena steht */
+    if(imKampf&&s.x>TUNE.arenaVon-20&&s.x<TUNE.arenaBis+20) continue;
+    z.satz = imKampf ? pick(KAMPF_RUFE) : pick(s.sagt);
+    z.zeigT = imKampf ? 1.4 : 2.4;
+    S.redner = i;
+  }
 }
 
 /* ---- Dinge benutzen ---- */
@@ -743,47 +894,182 @@ function kamera(dt){
 
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
+
+   Ein Muster reicht nicht: wer nur einen Schwinger kann, wird nach dem
+   zweiten Mal auswendig gelernt und danach mit E totgedrueckt. Also vier.
+
+     SCHWINGER  roter Balken. E im letzten Drittel des Ausholens - kontern.
+     DECKUNG    er haelt die Haende hoch. Wer trotzdem schlaegt, prellt sich
+                die Hand und faengt sich den Konterschlag. Nichts tun ist hier
+                die richtige Antwort.
+     DOPPEL     zwei Schlaege hintereinander. Kontert man den ersten, bricht
+                die Kette - das belohnt frueh richtig liegen.
+     STURM      gelber Balken, unblockbar. E hilft nicht, hier musst du
+                springen. Rennt er in die Wand, liegt er offen.
+
+   Zwei Regeln haengen quer darueber:
+   - Danebengehauen kostet Erholungszeit. Genau daran stirbt das Spammen.
+   - Ab Mut (Pegel) landet auf jeden Konter ein Nachschlag. Wer sich vorher
+     traut zu trinken, kaempft kuerzer - und ist dafuer langsamer unterwegs.
    ========================================================================== */
+const MUSTER_FOLGE=['schwinger','deckung','schwinger','doppel','sturm','schwinger','doppel','sturm'];
+const MUSTER_ALLE=['schwinger','deckung','doppel','sturm'];
+const MUSTER_NAME={ schwinger:'SCHWINGER', deckung:'DECKUNG', doppel:'DOPPEL',
+                    sturm:'STURM', strafe:'KONTERSCHLAG' };
+const MUSTER_HINWEIS={
+  schwinger:'ROTER BALKEN - E ERST KURZ VOR SCHLUSS',
+  deckung:  'ER DECKT SICH - JETZT NICHT SCHLAGEN',
+  doppel:   'ZWEI SCHLAEGE HINTEREINANDER',
+  sturm:    'GELB KANNST DU NICHT KONTERN - SPRING DRUEBER',
+};
+/* Nur das letzte Drittel des Ausholens zaehlt */
+const imKonterfenster=g=>g.t>=g.dauer*(1-TUNE.konterFenster);
+const hatMut=()=>S.pegel>=TUNE.mutAb;
+
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
+  S.x=Math.max(TUNE.arenaVon+60,Math.min(TUNE.arenaBis-20,S.x));
+  S.vx=0; S.erholung=0; S.iframe=0; S.gesehen={};
+  S.gegner={ x:TUNE.arenaVon+6, blick:1, hp:TUNE.gegnerTreffer, zustand:'komm',
+             t:0, dauer:0, muster:null, kette:0, folge:0, frei:0, richtung:1 };
   zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+
+/* Erst die feste Reihenfolge - die bringt jedes Muster einmal einzeln und
+   erklaert es dabei. Danach gewuerfelt, aber nie zweimal dasselbe. */
+function naechstesMuster(g){
+  let m;
+  if(g.folge<MUSTER_FOLGE.length) m=MUSTER_FOLGE[g.folge++];
+  else do{ m=pick(MUSTER_ALLE); } while(m===g.muster);
+  g.muster=m; g.t=0; g.kette=1;
+  if(!S.gesehen[m]){ S.gesehen[m]=true; zeigeHinweis(MUSTER_HINWEIS[m],3.4); }
+  if(m==='deckung'){ g.zustand='deckung'; g.dauer=TUNE.deckungDauer; SFX.deckung(); }
+  else if(m==='sturm'){ g.zustand='warnung'; g.dauer=TUNE.sturmWarnung; SFX.sturmruf(); }
+  else { g.zustand='wind'; g.kette=(m==='doppel')?2:1;
+         g.dauer=(m==='doppel')?TUNE.windDoppel1:TUNE.windSchwinger; SFX.warn(); }
+}
+
+function spielerTreffer(txt){
+  if(S.iframe>0) return;
+  S.hp--; S.iframe=TUNE.iframe; S.ruettel=6; S.blitz=.5; SFX.aua();
+  meldung(txt||'AUTSCH',1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+}
+function gegnerNimmt(g,schaden,txt){
+  g.hp-=schaden; g.kette=0; g.zustand='getroffen'; g.t=0;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch(); meldung(txt,1.2);
+}
+function danebenGehauen(){
+  S.erholung=TUNE.fehlErholung; SFX.nichts(); meldung('DANEBEN',1);
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
-  const dist=S.x-g.x;
-  if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
-    }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
-      if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
-    }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+  if(S.erholung>0) S.erholung=Math.max(0,S.erholung-dt);
+  if(S.iframe>0)   S.iframe  =Math.max(0,S.iframe-dt);
+
+  bewegung(dt,TUNE.arenaVon,TUNE.arenaBis,S.erholung>0?.45:1);
+  if(!linksAn&&!rechtsAn) S.blick=Math.sign(g.x+3-S.x)||S.blick;
+  g.blick=Math.sign(S.x-(g.x+3))||g.blick;
+
+  /* Ein Druck pro Bild - Dauerfeuer bringt hier nichts.
+     Und wer waehrend der Erholung weiterdrueckt, verlaengert sie: genau
+     daran stirbt das Dauerhaemmern. Wer zweimal aus Versehen drueckt,
+     merkt es kaum, weil die Verlaengerung bei der vollen Erholung deckelt. */
+  let druck=false;
+  while(aktionPuffer.length){ aktionPuffer.shift(); druck=true; }
+  if(S.erholung>0){
+    if(druck){ S.erholung=Math.min(TUNE.fehlErholung,S.erholung+TUNE.hektikStrafe);
+      if(S.meldungT<=0) meldung('ZU HEKTISCH',1); }
+    druck=false;
   }
+
+  switch(g.zustand){
+    case 'komm': {
+      const d=S.x-g.x;
+      g.x+=Math.sign(d)*TUNE.gegnerTempo*dt;
+      if(druck) danebenGehauen();
+      if(Math.abs(d)<TUNE.gegnerNah) naechstesMuster(g);
+      break;
+    }
+    case 'wind': {
+      if(druck){
+        if(imKonterfenster(g)){
+          const mut=hatMut();
+          gegnerNimmt(g,mut?TUNE.mutBonus:1,
+            mut?'KONTER UND NACHSCHLAG':pick(['SITZT','KONTER','ZU LANGSAM']));
+        } else danebenGehauen();
+      }
+      if(g.zustand==='wind'&&g.t>=g.dauer){
+        g.zustand='schlag'; g.t=0;
+        spielerTreffer(g.muster==='doppel'?'DER ERSTE SITZT':null);
+      }
+      break;
+    }
+    case 'schlag': {
+      if(g.t>=TUNE.gegnerSchlag){
+        if(g.kette>1){ g.kette--; g.zustand='wind'; g.t=0;
+                       g.dauer=TUNE.windDoppel2; SFX.warn(); }
+        else { g.zustand='pause'; g.t=0; }
+      }
+      break;
+    }
+    case 'deckung': {
+      if(druck){
+        /* Auf die Deckung schlagen tut nur dir weh - und er nutzt es aus */
+        S.erholung=TUNE.deckungStrafe; S.ruettel=3; SFX.geprellt();
+        meldung('GEDECKT. AUA.',1.4);
+        g.muster='strafe'; g.zustand='wind'; g.t=0; g.kette=1; g.dauer=TUNE.windStrafe;
+        break;
+      }
+      if(g.t>=g.dauer){ g.zustand='pause'; g.t=0;
+        meldung(pick(['NA KOMM','WAR DAS ALLES']),1.2); }
+      break;
+    }
+    case 'warnung': {
+      if(druck) danebenGehauen();
+      if(g.t>=g.dauer){ g.zustand='sturm'; g.t=0; g.richtung=Math.sign(S.x-g.x)||1; }
+      break;
+    }
+    case 'sturm': {
+      g.x+=g.richtung*TUNE.sturmTempo*dt;
+      if(druck) danebenGehauen();
+      if(Math.abs(g.x+3-S.x)<10&&S.amBoden){
+        spielerTreffer('UMGERANNT'); S.vx=g.richtung*180;
+        g.zustand='pause'; g.t=0; break;
+      }
+      if(g.x<=TUNE.arenaVon||g.x>=TUNE.arenaBis-8){
+        g.x=Math.max(TUNE.arenaVon,Math.min(TUNE.arenaBis-8,g.x));
+        g.zustand='benommen'; g.t=0; g.frei=TUNE.benommenTreffer;
+        S.ruettel=7; SFX.krach(); zeigeHinweis('JETZT - E',1.8);
+      }
+      break;
+    }
+    case 'benommen': {
+      if(druck&&g.frei>0){
+        g.frei--; g.hp--; S.ruettel=4; S.blitz=.4; SFX.klatsch();
+        meldung(pick(['NIMM DAS','UND NOCH EINS']),1);
+        if(g.hp<=0){ g.zustand='getroffen'; g.t=0; break; }
+      }
+      if(g.t>=TUNE.benommenDauer){ g.zustand='pause'; g.t=0; }
+      break;
+    }
+    case 'getroffen': {
+      g.x=Math.max(TUNE.arenaVon,Math.min(TUNE.arenaBis-8,g.x-g.blick*TUNE.rueckstoss*dt));
+      if(g.t>=TUNE.getroffenDauer){
+        if(g.hp<=0){ starteCutscene(); return; }
+        g.zustand='pause'; g.t=0;
+      }
+      break;
+    }
+    case 'pause': {
+      if(druck) danebenGehauen();
+      if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
+      break;
+    }
+  }
+  kamera(dt);
 }
 
 /* ==========================================================================
@@ -805,7 +1091,10 @@ const SZENEN=[
   { d:2.4, txt:'LEVEL 2 GESCHAFFT' },
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
-  S.gegner=null; SFX.sieg(); }
+  S.gegner=null; S.erholung=0; S.iframe=0;
+  /* Die Zurufe der Umstehenden wuerden sonst als Standbild stehenbleiben */
+  for(const z of S.staffage){ z.satz=''; z.zeigT=0; } S.redner=-1;
+  SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('MORITZ');
   const best=ladeBest();
@@ -883,6 +1172,21 @@ function zeichneWohnung(){
   for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
   ctx.fillRect(890,BODEN-26,90,2);
 
+  /* Die Staffage steht hinter den Moebeln - das gibt Tiefe, und die
+     schwaechere Kontur schiebt sie optisch nach hinten. */
+  for(let i=0;i<STAFFAGE.length;i++){
+    const s=STAFFAGE[i], z=S.staffage[i];
+    if(s.x<kx-16||s.x>kx+W+16) continue;
+    const pose=s.spr[Math.floor(S.t*.45+z.phase)%s.spr.length];
+    const wippt=Math.sin(S.t*1.7+z.phase)>.85?1:0;
+    const y=BODEN-pose.length+wippt;
+    if(s.flip){ outlineFlip(pose,s.x-3,y,1,.35); spriteFlip(pose,s.x-3,y); }
+    else      { outline(pose,s.x-3,y,1,.35);     sprite(pose,s.x-3,y); }
+    /* Das Gequatsche liegt auf einer festen Zeile weit ueber den Koepfen -
+       auf Kopfhoehe lag es sonst genau auf den Namensschildern der Jungs. */
+    if(z.satz) text(z.satz,s.x+3-textW(z.satz)/2,BODEN-40,P.dim);
+  }
+
   /* Dinge */
   for(const d of DINGE){
     const rows=SPR[d.moebel]; if(!rows) continue;
@@ -901,6 +1205,9 @@ function zeichneWohnung(){
     const y=l.liegt?BODEN-8:BODEN-rows.length;
     outline(rows,l.x-3,y,1,.55);
     sprite(rows,l.x-3,y);
+    /* Im Kampf bleiben die Schilder aus. Max Ferdi steht mitten in der
+       Arena, und sein Namensschild lag genau da, wo man den Balken liest. */
+    if(S.modus==='kampf') continue;
     const erledigt = l.id==='max' || S.erledigt[l.id==='moritz'?'ausweis':l.id];
     text(l.name,l.x+3-textW(l.name)/2,y-16,erledigt?P.gruen:P.dim);
     if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
@@ -911,23 +1218,7 @@ function zeichneWohnung(){
   }
 
   /* Der Kracher */
-  if(S.gegner){
-    const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
-    }
-    /* Lebensbalken */
-    const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
-  }
+  if(S.gegner) zeichneKracher(S.gegner);
 
   /* Spieler */
   let rows;
@@ -936,10 +1227,21 @@ function zeichneWohnung(){
   else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Nach einem Treffer flackerst du kurz - solange geht auch nichts durch */
+  if(!(S.iframe>0&&Math.floor(S.t*22)%2===0)){
+    outline(rows,S.x-3,S.y-rows.length,1,.6);
+    if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  }
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
+  /* Erholung nach dem Danebenhauen - der Balken sagt dir, wann E wieder geht.
+     In P.dunkel war er auf dem schwarzen Flur praktisch unsichtbar, und
+     ausgerechnet dieser Balken erklaert, warum das Draufhalten nichts tut. */
+  if(S.erholung>0){
+    const bw=12, f=S.erholung/TUNE.fehlErholung;
+    ctx.fillStyle='#000a'; ctx.fillRect(S.x-4,S.y-rows.length-6,bw+2,4);
+    ctx.fillStyle=P.dim; ctx.fillRect(S.x-3,S.y-rows.length-5,Math.round(bw*Math.min(1,f)),2);
+  }
 
   ctx.restore();
 
@@ -951,6 +1253,65 @@ function zeichneWohnung(){
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
   ctx.globalAlpha=1;
+}
+
+/* ---- Der Kracher ----
+   Jeder Zustand hat seine eigene Pose, der Balken seine eigene Farbe.
+   Wer den Kampf verliert, soll wissen warum. */
+function zeichneKracher(g){
+  let rows=SPR.kracher, tint=null;
+  switch(g.zustand){
+    case 'komm':      rows=Math.floor(g.x*.12)%2?SPR.kracherGeh:SPR.kracher; break;
+    case 'wind':      if(imKonterfenster(g)&&Math.floor(S.t*20)%2===0) tint=P.weiss; break;
+    case 'schlag':    rows=SPR.kracherAus; break;
+    case 'deckung':   rows=SPR.kracherDeckung; break;
+    case 'warnung':   rows=SPR.kracherHocke; break;
+    case 'sturm':     rows=SPR.kracherSturm; break;
+    case 'benommen':  rows=SPR.kracherBenommen; break;
+    case 'getroffen': if(g.t<.14) tint=P.weiss; break;
+  }
+  const y=BODEN-rows.length;
+  if(g.blick<0){ outlineFlip(rows,g.x,y,1,.6); spriteFlip(rows,g.x,y,1,tint); }
+  else         { outline(rows,g.x,y,1,.6);     sprite(rows,g.x,y,1,tint); }
+
+  /* Der Balken ueber ihm. Die Fuellung sagt WANN, die Farbe sagt OB. */
+  const balken = g.zustand==='wind'    ? P.rot
+               : g.zustand==='warnung' ? P.gold
+               : g.zustand==='deckung' ? P.neon2 : null;
+  if(balken){
+    const bw=20, bx=Math.round(g.x-6), by=y-8, f=Math.min(1,g.t/g.dauer);
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,5);
+    ctx.fillStyle=balken;  ctx.fillRect(bx,by,Math.round(bw*f),3);
+    if(g.zustand==='wind'){
+      /* Die Konterzone steht sichtbar am Ende - so lernt man das Fenster,
+         statt es zu erraten. */
+      const kz=Math.max(2,Math.round(bw*TUNE.konterFenster));
+      ctx.fillStyle=imKonterfenster(g)&&Math.floor(S.t*20)%2===0?P.weiss:'#ffffff33';
+      ctx.fillRect(bx+bw-kz,by,kz,3);
+    }
+    const ruf=g.zustand==='warnung'?'SPRING':g.zustand==='deckung'?'DECKUNG':'!';
+    if(Math.floor(S.t*10)%2===0) text(ruf,g.x+3-textW(ruf)/2,by-7,balken);
+  }
+  if(g.zustand==='benommen'){
+    for(let i=0;i<3;i++){ const a=S.t*4+i*2.1;
+      ctx.fillStyle=i%2?P.gold:P.weiss;
+      ctx.fillRect(Math.round(g.x+3+Math.cos(a)*6),Math.round(y-4+Math.sin(a)*2),1,1); }
+    if(g.frei>0&&Math.floor(S.t*8)%2===0) text('E',g.x+2,y-10,P.gold);
+  }
+
+  /* Lebensbalken oben in der Mitte. Er liegt im verschobenen Bild, deshalb
+     wird die Kamera hier wieder rausgerechnet. */
+  const lb=44, lx=Math.round(S.kamX)+Math.round((W-lb)/2);
+  text('DER KRACHER',lx+(lb-textW('DER KRACHER'))/2,21,P.dim);
+  ctx.fillStyle='#000a'; ctx.fillRect(lx-1,28,lb+2,6);
+  ctx.fillStyle=P.rot;   ctx.fillRect(lx,29,Math.round(lb*Math.max(0,g.hp)/TUNE.gegnerTreffer),4);
+  /* Waehrend er benommen liegt, waere der Name des letzten Musters eine
+     alte Nachricht - da zaehlt nur noch, dass er offen ist. */
+  const mn=g.zustand==='benommen'?'BENOMMEN':MUSTER_NAME[g.muster];
+  if(mn&&g.zustand!=='komm'&&g.zustand!=='pause'&&g.zustand!=='getroffen')
+    text(mn,lx+(lb-textW(mn))/2,38,
+      (g.zustand==='warnung'||g.zustand==='benommen')?P.gold:P.weiss);
+  if(hatMut()) text('MUT',lx+lb+6,29,P.gruen);
 }
 
 /* ---- HUD ---- */
@@ -978,15 +1339,18 @@ function hud(){
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
-  /* Aufgabenliste */
-  let y=22;
-  for(const a of AUFGABEN){
-    const ok=!!S.erledigt[a.id];
-    text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
-    text(a.text,14,y,ok?P.dunkel:P.weiss);
-    y+=8;
+  /* Aufgabenliste - im Kampf ist sie ohnehin abgehakt und stoert nur */
+  if(S.modus!=='kampf'){
+    let y=22;
+    for(const a of AUFGABEN){
+      const ok=!!S.erledigt[a.id];
+      text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
+      text(a.text,14,y,ok?P.dunkel:P.weiss);
+      y+=8;
+    }
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
+  if(S.modus==='spiel'&&alleFertig()&&Math.floor(S.t*2)%2===0)
+    textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
   /* Inventar */
   let ix=W-30;

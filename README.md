@@ -192,12 +192,41 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+### Die anderen
+
+Die Wohnung ist voll. Die meisten stehen nur rum, quatschen und haben mit Dir
+nichts zu tun — die kannst Du nicht ansprechen und die stehen Dir auch nicht im
+Weg. Beim Kampf am Ende schauen sie zu und kommentieren.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und er kann mehr als
+einen Schlag.
+
+Über seinem Kopf läuft ein Balken. **Die Füllung sagt Dir wann, die Farbe sagt
+dir ob.**
+
+| Muster | Woran Du es erkennst | Was Du tust |
+|:--|:--|:--|
+| **Schwinger** | Roter Balken | `E` im hellen Feld am Ende des Balkens — kontern |
+| **Deckung** | Blauer Balken, `DECKUNG` | **Nichts.** Wer draufhaut, prellt sich die Hand |
+| **Doppel** | Roter Balken, zweimal | Beide kontern. Sitzt der erste, bricht die Kette |
+| **Sturm** | **Gelber Balken**, `SPRING` | Kontern geht nicht. **Spring drüber** |
+
+**Das helle Feld am Ende des roten Balkens ist Dein Konterfenster** — nur das
+letzte Drittel des Ausholens zählt. Zu früh gedrückt heißt danebengehauen, und
+danebengehauen kostet Erholungszeit, in der `E` nichts tut. Wer in der Erholung
+weiterhämmert, verlängert sie. **Draufhalten ist hier die schlechteste Idee.**
+
+Rennt er beim Sturm an Dir vorbei in die Wand, liegt er **benommen** — das sind
+zwei freie Schläge.
+
+**Und Dein Pegel zählt mit.** Hast Du Mut (grüne Marke auf dem Pegelbalken),
+landet auf jedem Konter ein Nachschlag: doppelter Schaden, halb so langer Kampf.
+Betrunken bist Du dafür langsamer unterwegs — und beim Sturm musst Du springen.
+
+Fünf Treffer, dann liegt er. Drei Herzen hast Du.
 
 ### Moritz
 
@@ -236,6 +265,22 @@ Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
 Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
+
+In `level2.html` gilt dasselbe. Dort steuern zusätzlich:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `proSchluck` · `mutAb` · `wackelnAb` · `langsamAb` | Wie schnell der Pegel steigt und was er anrichtet |
+| `musikProPegel` · `musikSchraeg` · `verzerrtAb` | Wie stark die Musik mit dem Pegel kippt |
+| `konterFenster` | Wie viel vom Ausholen als Konter zählt (Anteil, vom Ende her) |
+| `windSchwinger` · `windDoppel1` · `windDoppel2` | Wie lang er bei welchem Muster ausholt |
+| `fehlErholung` · `hektikStrafe` | Wie hart Danebenhauen und Dauerdrücken bestraft werden |
+| `deckungDauer` · `deckungStrafe` · `windStrafe` | Die Deckung und was sie kostet |
+| `sturmWarnung` · `sturmTempo` · `benommenDauer` · `benommenTreffer` | Der Sturm und die Belohnung fürs Ausweichen |
+| `mutBonus` | Konterschaden mit Mut |
+
+Die Räume liegen in `ORTE`, die Möbel in `DINGE`, die Jungs in `LEUTE`, die
+Leute-die-nur-rumstehen in `STAFFAGE` und die Kampfmuster in `MUSTER_FOLGE`.
 
 ## Lokal starten
 

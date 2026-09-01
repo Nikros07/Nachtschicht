@@ -28,9 +28,21 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — acht Stück, mit Gequatsche
+      und eigenen Zurufen während des Kampfes. Bewusst nicht ansprechbar.
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — vier Muster:
+      Schwinger, Deckung, Doppel, Sturm
+- [x] Musik lauter/verzerrter je höher der Pegel — Lautstärke, Verstimmung,
+      Sawtooth-Kipppunkt, zweite Oktave, Offbeat
+
+**Neu offen geblieben:**
+
+- [ ] Verlierst Du den Kampf, fängt das ganze Level von vorn an — alle vier
+      Aufgaben nochmal. Das ist zu teuer für einen Boss, den man lernen muss.
+      Gehört zusammen mit „Spielstand speichern" unter *Technik* gelöst
+      (Checkpoint vor dem Kampf), deshalb hier nicht einzeln gefixt.
+- [ ] Der Kampf hat keine Musik-Eigenständigkeit — er läuft auf der
+      Vorglüh-Schleife weiter. Wartet auf „Musik pro Level".
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,19 +79,40 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Drei Punkte sind am Kracher in Level 2 vorweggenommen und dort erprobt. Sie
+stehen als Vorlage bereit, wenn das Kampfsystem wirklich zusammengeführt wird —
+abhaken lassen sie sich erst, wenn sie auch in `runner.html` gelten.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
+      *(in Level 2 gebaut: Muster `deckung`, Schlag darauf kostet Erholung
+      plus Konterschlag)*
 - [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
+      *(in Level 2 gebaut: `fehlErholung`, und `hektikStrafe` verlängert sie
+      bei jedem Druck währenddessen. Ein Bot, der nur hämmert, verliert jetzt.)*
 - [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+      *(in Level 2 gebaut: `konterFenster: 0.34`, sichtbar als helles Feld am
+      Balkenende. Die Fensterlänge in Sekunden regelt das Ausholen pro Muster.)*
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
+      *bewusst nicht in Level 2: die Erholung nach Fehlschlägen erledigt das
+      Anti-Spam schon, ein zweiter Balken hätte den ersten Kampf überladen.
+      Gehört ins richtige Kampfsystem.*
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+      *(unblockbare Angriffe in Level 2 gebaut: Muster `sturm`, gelber Balken,
+      nur per Sprung zu lösen, Wandtreffer öffnet ihn für zwei freie Schläge)*
 
 ---
 
 ## Technik
 
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
+      — **das ist inzwischen der eigentliche Blocker.** `index.html` und
+      `level2.html` haben Bitmap-Font, Bild-Cache, Sprites, Audio, Kamera und
+      Eingabe jeweils als eigene Kopie. Jede Änderung am Gefühl muss doppelt
+      gemacht werden, und bei Level 3 dreifach. Vor Level 3 sollte der
+      gemeinsame Teil in eine Datei wandern.
 - [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
+      — dazu gehört ein Checkpoint vor dem Bosskampf, siehe Level 2
 - [ ] Übergänge zwischen den Leveln
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
