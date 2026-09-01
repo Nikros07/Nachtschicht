@@ -292,6 +292,32 @@ python -m http.server 5173
 
 Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
+## Testen
+
+```bash
+node test/run.js
+```
+
+Keine Installation, keine Abhängigkeiten — der Test lädt das Spiel aus der
+HTML-Datei in einen nachgebauten Browser und taktet die Schleife von Hand.
+**Gezeichnet wird dabei mit**: das fängt zwar keine hässlichen Bilder, aber
+jeden Absturz im Zeichenpfad — und das ist bei einem Spiel, das jede Zeile pro
+Bild ausführt, die häufigste Art kaputtzugehen.
+
+`test/level1.test.js` fährt jeden Zustand der Schule einmal an. Level 1 gilt
+als fertig; das hier ist das Sicherheitsnetz für den Tag, an dem die
+gemeinsame Grundlage beider Level zusammengelegt wird.
+
+`test/level2.test.js` spielt Level 2 einmal komplett durch und lässt danach
+**sieben verschiedene Spieler gegen den Kracher antreten** — vom perfekten
+Konter über zwei menschliche Reaktionszeiten bis zum Dauerhämmerer. Ein Kampf
+ist nur dann richtig eingestellt, wenn sauberes Spiel gewinnt *und* stumpfes
+Draufhalten verliert. Beides steht als Prüfung drin, damit eine Änderung an
+den Reglern nicht unbemerkt das eine oder das andere kippt.
+
+Wie es aussieht, sagt der Test nicht. Dafür `index.html` bzw. `level2.html`
+im Browser aufmachen.
+
 ## Technisch
 
 - 320 × 180 interne Auflösung, Breite wächst auf breiten Schirmen mit

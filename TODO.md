@@ -132,6 +132,10 @@ abhaken lassen sie sich erst, wenn sie auch in `runner.html` gelten.
 
 ## Erledigt
 
+- [x] **Kopfloser Testlauf** (`node test/run.js`) — lädt das Spiel aus der
+      HTML-Datei, taktet die Schleife von Hand, rechnet und zeichnet jeden
+      Zustand durch. Sieben Bots treten gegen den Kracher an, damit die
+      Kampfregler nicht unbemerkt kippen. Ohne Installation, ohne Abhängigkeiten.
 - [x] Pixel-Art-Grundgerüst mit CRT-Optik und eigenem Bitmap-Font
 - [x] Bild-Cache: Zeichenzeit von 4,8 ms auf 1,2 ms pro Bild
 - [x] Vollbild auf Desktop und Handy, Querformat-Hinweis
