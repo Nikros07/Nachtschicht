@@ -192,12 +192,47 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+### Die Bude ist voll
+
+Außer den vier Jungs stehen noch ein paar Leute rum, die niemanden
+interessieren. Mit denen kannst Du nicht reden — aber wenn Du an ihnen
+vorbeiläufst, kriegst Du was ab. Je voller Dein Pegel, desto dümmer wird das,
+was sie sagen. Und die Musik kippt mit: sie wird nicht nur lauter, sondern
+dumpfer und schiefer, bis das Tempo hörbar eiert.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und der bringt Dir bei,
+worum es in jedem Kampf danach geht: **lesen statt hämmern.**
+
+Über ihm läuft ein Balken, während er ausholt. Die Farbe sagt Dir alles:
+
+| Balken | Was Du tun musst |
+|:--|:--|
+| **Rot** mit hellem Feld | `E` drücken, **sobald der Balken im hellen Feld ist** |
+| **Gold**, kein helles Feld | Nicht kontern — **springen**. Der Schlag geht tief |
+
+**Zu früh gedrückt ist schlimmer als gar nicht gedrückt.** Der Konter für
+diesen Angriff ist dann verspielt, und Du stehst eine halbe Sekunde im Weg
+herum. Hämmern verliert diesen Kampf zuverlässig.
+
+Er hat vier Muster, und er packt sie nach und nach aus:
+
+| Muster | Was passiert |
+|:--|:--|
+| **Schwinger** | Der ehrliche Schlag. Damit fängt er an, damit lernst Du es |
+| **Finte** | Sieht aus wie der Schwinger — er bricht ab und schlägt sofort schneller nach |
+| **Rundumschlag** | Gold. Nicht konterbar. Spring drüber, danach steht er offen |
+| **Doppelschlag** | Zwei schnelle hintereinander. Verpasst Du den ersten, kommt sofort der zweite |
+
+Mit jedem Treffer, den er kassiert, wird er schneller — **und das helle
+Konterfeld schrumpft sichtbar mit.** Dreimal kontern, dann liegt er.
+
+**Verlieren beendet das Level nicht.** Er wirft Dich nicht raus, er schiebt
+Dich zurück in die Wohnung. Das kostet Dich **20 Sekunden** und Du darfst
+nochmal ran — genau wie das Erwischtwerden in Level 1 Zeit kostet, nicht die
+Runde. Die Uhr entscheidet am Ende trotzdem.
 
 ### Moritz
 
@@ -237,6 +272,22 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+`level2.html` ist genauso aufgebaut. Die Wohnung steht in `ORTE`, `DINGE` und
+`LEUTE`, die Kulisse in `STATISTEN` mit ihren Sprüchen in `STAT_SPRUECHE` und
+`STAT_SPRUECHE_PEGEL`. Zwei Blöcke lohnen sich extra:
+
+| Regler | Bewirkt |
+|:--|:--|
+| `konterFenster` · `konterFensterPlus` | Wie groß das Konterfeld am Ende ist — und wie viel größer beim ersten Treffer |
+| `patzerErholung` | Wie teuer zu frühes Drücken ist |
+| `phasenTempo` · `kampfStrafe` | Wie schnell er wird · was ein verlorener Kampf an der Uhr kostet |
+| `musDumpfAb` · `musTiefpassMin` | Ab wann und wie stark der Pegel die Höhen frisst |
+| `musVerzerrtAb` · `musEiernAb` | Ab wann der Bass sägt und das Tempo eiert |
+
+Die **Angriffsmuster des Krachers stehen als Daten in `MUSTER`**, welche er in
+welcher Phase auspackt in `PHASEN`. Ein neues Muster ist ein Eintrag in `MUSTER`
+und ein Name in `PHASEN` — die Kampflogik muss dafür nicht angefasst werden.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -265,5 +316,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und Level 2 sind fertig und durchspielbar, Max Ferdi und Moritz sind
+freigeschaltet. Level 3 bis 8 sowie der Rest der Crew stehen in
+[TODO.md](TODO.md).

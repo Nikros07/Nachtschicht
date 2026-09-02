@@ -26,11 +26,19 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 - [x] **Level 2 — Bei Moritz.** ✅ Wohnung, vier Aufgaben, Pegel-System, erster Kampf, Moritz schaltet frei
 
+**In Level 2 erledigt:**
+
+- [x] Mehr Leute in der Wohnung, die nur rumstehen — sechs Statisten mit
+      Wippen, Bechern und Sprüchen, die mit dem Pegel dümmer werden
+- [x] Der Kracher am Ende braucht mehr als ein Angriffsmuster — vier Muster
+      (Schwinger, Finte, Rundumschlag, Doppelschlag), phasenweise freigeschaltet
+- [x] Musik lauter/verzerrter je höher der Pegel — Tiefpass frisst die Höhen,
+      der Bass sägt, eine verstimmte zweite Stimme schwebt, das Tempo eiert
+
 **Offen in Level 2:**
 
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [ ] Der Schläfer verschwindet optisch im Sofa — beide sind dunkelrot
+- [ ] Raumnamen im Hintergrund liegen unter der Aufgabenliste
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,20 +75,40 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
-- [ ] Nahkampf, Konter, Combos übernehmen
+Ein Teil davon ist im Kracher in Level 2 schon gebaut und erprobt — das ist die
+Vorlage, an der sich der Rest orientieren kann. Die Muster stehen dort als
+Daten (`MUSTER`, `PHASEN`), nicht als Logik.
+
+- [x] **Fehlschläge bestrafen** — zu früh gedrückt verspielt den Konter für den
+      Angriff und legt dich 0,55 s lahm. Hämmern verliert den Kampf zuverlässig
+- [x] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens — und
+      zwar so, dass es beim ersten Treffer noch weit ist und mit jedem Treffer
+      sichtbar schrumpft. Ohne diese Rampe war der Kampf für langsamere Spieler
+      nicht zu gewinnen
+- [x] **Unblockbare Angriffe** — der Rundumschlag ist gold statt rot und geht
+      nur mit einem Sprung weg, danach steht der Gegner offen
+- [ ] Nahkampf, Combos übernehmen (der Konter steht)
 - [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
-- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
+- [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, Arena verändert sich pro Phase
 
 ---
 
 ## Technik
 
+**Das hier ist der nächste große Brocken, und er blockiert Level 3.**
+`index.html` und `level2.html` teilen sich rund 500 Zeilen, die in beiden
+Dateien doppelt stehen: Font, Bild-Cache, Sprite-Backen, Audio, Eingabe,
+Touch, Vollbild, Speicherstand. Ein drittes Level würde das verdreifachen.
+Bevor Level 3 anfängt, gehört der gemeinsame Teil in eine eigene Datei.
+
+- [ ] Gemeinsamen Unterbau aus beiden Dateien in ein `engine.js` ziehen
 - [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei) —
+      aktuell ist nur die Crew gespeichert. Die Levelleiste zeigt jedes Level
+      als offen, egal ob man es je erreicht hat
+- [ ] Übergänge zwischen den Leveln — Level 2 landet nach dem Sieg wieder auf
+      seinem eigenen Titel, weil es kein Level 3 gibt, in das es übergeben könnte
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -123,3 +151,8 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Der Kracher: vier Angriffsmuster, Phasen, schrumpfendes Konterfenster,
+      Strafe fürs Hämmern, Rundumschlag zum Überspringen
+- [x] Verlorener Kampf kostet 20 Sekunden statt der ganzen Runde
+- [x] Statisten in Moritz' Wohnung
+- [x] Musik kippt mit dem Pegel statt nur lauter zu werden
