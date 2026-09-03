@@ -207,6 +207,35 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+---
+
+## Wie es weitergeht
+
+Die Nacht hat acht Stufen. Unter dem Bild siehst Du alle — die gespielten zum
+Anklicken, die gesperrten grau, die noch nicht gebauten als blosse Nummer.
+
+**Ein Level öffnet das nächste.** Wer Level 1 schafft, kommt zu Level 2. Vorher
+nicht. Auf dem Titelbild wechseln die Zifferntasten `1` bis `8` direkt zum
+Level, die Leiste unter dem Bild tut dasselbe mit einem Klick.
+
+**Gespeichert wird im Browser**, ohne Konto und ohne Server: welche Level frei
+sind, wer aus der Crew dabei ist, und die Bestzeit für jedes Level einzeln. Wer
+schon vor dieser Änderung gespielt hat, behält seinen Stand — Bestzeiten und
+Crew zählen rückwirkend als Beweis.
+
+| Level | | |
+|:--|:--|:--|
+| 1 | **Die Schule** | fertig — bringt Max Ferdi |
+| 2 | **Bei Moritz** | fertig — bringt Moritz |
+| 3 | Der Nachtbus | kommt |
+| 4 | Die Schlange | kommt |
+| 5 | Club | kommt |
+| 6 | Afterhour | kommt |
+| 7 | Späti | kommt |
+| 8 | Heimweg | kommt |
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -237,6 +266,35 @@ Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
 `LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
 Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
 
+## Levelverzeichnis und Spielstand — `spielstand.js`
+
+Was es überhaupt für Level gibt, wer wen freischaltet und was der Spieler schon
+geschafft hat, steht an genau einer Stelle. Die Leveldateien kennen nur ihre
+eigene Nummer — die sagt ihnen `data-level` an der Levelleiste.
+
+```js
+const LEVEL = [
+  { nr:1, datei:'index.html',  name:'DIE SCHULE', kurz:'SCHULE', bringt:'MAX FERDI' },
+  { nr:3, datei:null,          name:'DER NACHTBUS', kurz:'BUS' },   // gibt es noch nicht
+];
+```
+
+`datei: null` heisst „noch nicht gebaut" — solche Level erscheinen in der Leiste
+als graue Nummer. Ein neues Level dazuzunehmen heisst: `datei` eintragen, fertig.
+Endbildschirm, Levelleiste und Zifferntasten richten sich danach.
+
+| Aufruf | Was er tut |
+|:--|:--|
+| `NS.geschafft(nr, zeit)` | Junge aufnehmen, nächstes Level öffnen, Bestzeit prüfen |
+| `NS.frei(nr)` · `NS.gehZu(nr)` | Ist das Level offen · dahin wechseln |
+| `NS.crew()` · `NS.tempoBonus()` | Wer dabei ist · was das zusammen bringt |
+| `NS.naechstes(nr)` · `NS.gebaut(l)` | Was folgt · gibt es das schon |
+| `NS.zuruecksetzen()` | Alles löschen und von vorn |
+
+Die Fähigkeiten der Jungs stehen in `FAEHIGKEIT` — nicht als feste 1.15 mitten
+im Spielcode. Fehlt `localStorage` (privater Modus, abgeschaltete Seitendaten),
+läuft die Sitzung trotzdem, sie überlebt nur keinen Neustart.
+
 ## Lokal starten
 
 Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
@@ -245,7 +303,12 @@ Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
 python -m http.server 5173
 ```
 
-Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
+| Parameter | Wofür |
+|:--|:--|
+| `?touch=1` | Handy-Steuerung am Rechner testen |
+| `?alle=1` | Alle gebauten Level offen, ohne sie freizuspielen |
+
+Beide bleiben beim Levelwechsel erhalten.
 
 ## Technisch
 
@@ -265,5 +328,5 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Level 1 und 2 sind fertig und durchspielbar, das eine schaltet das andere frei.
+Level 3 bis 8 sowie der Rest der Crew stehen in [TODO.md](TODO.md).

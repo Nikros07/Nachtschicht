@@ -44,16 +44,21 @@
   #fs:hover { color:#ffd447; border-color:#ffd447; }
 
   /* Levelauswahl als echte Links - funktioniert ohne Tastatur-Fokus
-     und am Handy. */
+     und am Handy. Der Inhalt kommt aus spielstand.js. */
   #levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
-  #levelbar a { flex:1; text-align:center; text-decoration:none;
+  #levelbar a, #levelbar span { flex:1; text-align:center; text-decoration:none;
     font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
     color:#8d86a8; background:rgba(255,255,255,.04);
     border:1px solid #2a2246; border-radius:5px; }
   #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
   #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  /* Gebaut, aber noch nicht freigespielt */
+  #levelbar span.zu { color:#4a4363; border-style:dashed; cursor:not-allowed; }
+  /* Gibt es noch gar nicht - nur die Nummer */
+  #levelbar span.bald { flex:0 0 auto; min-width:22px; color:#332e4a;
+    background:transparent; border-color:#1e1935; }
   html.touch #levelbar { padding:6px 8px; }
-  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  html.touch #levelbar a, html.touch #levelbar span { padding:11px 4px; font-size:11px; }
   #cab:fullscreen #levelbar { display:none; }
   html.touch #touch { display:block; }
   html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
@@ -83,14 +88,12 @@
     </div>
   </div>
   <button id="fs">VOLLBILD</button>
-  <div id="levelbar">
-    <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
-  </div>
+  <div id="levelbar" data-level="2"></div>
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="spielstand.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -169,6 +172,8 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ /* Prozent stand bisher nicht im Font - "+15% TEMPO" kam als "+15? TEMPO" raus. */
+ '%':'101,001,010,100,101',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -486,13 +491,12 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+/* Spielstand, Crew und Levelverzeichnis: spielstand.js */
+const NR=2;                                  // welches Level das hier ist
+const ladeCrew=()=>NS.crew();
+const speichereCrew=n=>NS.crewDazu(n);
+const ladeBest=()=>NS.bestzeit(NR);
+const tempoBonus=()=>NS.tempoBonus();
 
 /* ==========================================================================
    EINGABE
@@ -514,7 +518,10 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='index.html'; return; } neuesSpiel(); return; }
+  /* Weiter ins naechste Level, sobald es das gibt. Bis dahin bleibt E
+     hier - der Weg zurueck steht in der Leiste unter dem Bild. */
+  if(S.modus==='ende'&&S.gewonnen&&NS.gehZu(NR+1)) return;
+  if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -526,8 +533,8 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
+  if(S.modus==='titel'&&/^(Digit|Numpad)[1-8]$/.test(e.code)){
+    e.preventDefault(); NS.gehZu(parseInt(e.code.slice(-1),10)); }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -806,11 +813,9 @@ const SZENEN=[
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
   S.gegner=null; SFX.sieg(); }
+/* Moritz aufnehmen, Level 3 oeffnen, Bestzeit pruefen - siehe spielstand.js */
 function levelGeschafft(){
-  speichereCrew('MORITZ');
-  const best=ladeBest();
-  if(best===null||S.zeit<best){ S.neueBestzeit=true;
-    try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  S.neueBestzeit = NS.geschafft(NR, S.zeit) || S.neueBestzeit;
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -1025,10 +1030,14 @@ function titelbild(){
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
   if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-  const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  zeichneLevelwahl();
+}
+/* Die zwei Zeilen ganz unten - welche das sind, weiss das Verzeichnis. */
+function zeichneLevelwahl(){
+  NS.titelZeilen(NR,2).forEach((z,i)=>{
+    const col=z.art==='offen'?P.neon2:P.dunkel;
+    text(z.txt,(W-textW(z.txt))/2,H-13+i*6,col);
+  });
 }
 function zeichneIntro(){
   ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
@@ -1080,8 +1089,17 @@ function bildschirme(){
       textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      textC('LEVEL 3 FOLGT',124,P.dunkel);
-      if(Math.floor(S.t*2)%2===0) textC('E  ZURUECK ZU LEVEL 1',136,P.dunkel);
+      /* Was als naechstes kommt, steht im Verzeichnis - und ob es das
+         schon gibt. Vorher stand hier fest "ZURUECK ZU LEVEL 1", was mit
+         Level 3 sofort falsch gewesen waere. */
+      const n=NS.naechstes(NR);
+      if(NS.gebaut(n)){
+        textC('LEVEL '+n.nr+' - '+n.name,124,P.dim);
+        if(Math.floor(S.t*2)%2===0) textC('E  WEITER ZU LEVEL '+n.nr,136,P.gold);
+      } else if(n){
+        textC('LEVEL '+n.nr+' - '+n.name,124,P.dunkel);
+        textC('FORTSETZUNG FOLGT',136,P.dunkel);
+      }
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);

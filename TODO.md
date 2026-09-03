@@ -78,9 +78,16 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 
 ## Technik
 
-- [ ] Level-Daten in eine eigene Struktur, damit neue Level ohne Code entstehen
-- [ ] Spielstand speichern (welches Level ist frei, welche Jungs sind dabei)
-- [ ] Übergänge zwischen den Leveln
+- [x] **Spielstand speichern** — `spielstand.js`: freigeschaltete Level, Crew,
+      Bestzeit pro Level. Alte Stände wandern automatisch mit
+- [x] **Übergänge zwischen den Leveln** — welches Level auf welches folgt,
+      steht im Verzeichnis. Kein fester Dateiname mehr im Spielcode
+- [ ] **Level-Daten in eine eigene Struktur** — halb erledigt. Das *Verzeichnis*
+      der Level (Name, Datei, wer freigeschaltet wird) liegt in `spielstand.js`.
+      Die Level-Inhalte selbst (`RAEUME`, `MOEBEL`, `LEHRER_START` …) stecken
+      weiter in der jeweiligen HTML-Datei. Nächster Schritt: eine gemeinsame
+      Engine, die so eine Beschreibung lädt — sonst wird jedes neue Level
+      wieder eine Kopie von 1900 Zeilen
 - [ ] Kampfsystem und Level-System zusammenführen
 - [ ] Musik pro Level statt einer Schleife
 - [ ] Ladezeit prüfen, wenn mehr Level dazukommen
@@ -123,3 +130,9 @@ Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wan
 - [x] Max Ferdi als erster Junge freigeschaltet, +15 % Tempo
 - [x] Bestzeit, Cutscene überspringbar
 - [x] Vollständige Spielanleitung im README
+- [x] Level-Verzeichnis und Spielstand in `spielstand.js` — eine Stelle statt
+      zweimal dasselbe in jeder Leveldatei
+- [x] Levelleiste zeigt alle acht Stufen: gespielt, gesperrt, noch nicht gebaut
+- [x] `%` fehlte im Bitmap-Font — „+15% TEMPO" stand als „+15? TEMPO" da
+- [x] Am Ende von Level 1 stand „E WEITER ZU LEVEL 2", E hat aber neu gestartet
+- [x] `?touch=1` ging beim Levelwechsel verloren
