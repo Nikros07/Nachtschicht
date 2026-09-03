@@ -128,6 +128,11 @@ const TUNE = {
   pegelAbbau:       0.6,   // pro Sekunde, sehr langsam
   mutAb:           35,     // ab hier traust du dich Sachen
   wackelnAb:       55,     // ab hier faengt das Bild an zu schwanken
+  musikKipptAb:    55,     // ab hier kippt auch die Musik - bewusst
+                           // dieselbe Schwelle wie wackelnAb
+  gastPauseVon:     4,     // so selten sagt einer der Gaeste was
+  gastPauseBis:     9,
+  gastDauer:      2.6,
   langsamAb:       70,     // ab hier wirst du spuerbar langsamer
   blackoutBei:    100,
 
@@ -390,10 +395,16 @@ function musik(){
   const st=60/128/4;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
+    /* Je hoeher der Pegel, desto lauter, haerter und schiefer. Ab
+       musikKipptAb wechselt die Welle von square auf sawtooth - das ist
+       derselbe Moment, in dem das Bild anfaengt zu schwanken. */
+    const p=S.modus==='spiel'?S.pegel/100:0;
+    const laut=S.modus==='spiel'?.026+p*.026:.014;
+    const welle=S.pegel>=TUNE.musikKipptAb?'sawtooth':'square';
+    const schief=1+p*p*.035*Math.sin(MUS.step*.7);   // es eiert
+    if(f) ton(f*schief,MUS.next,st*.85,welle,laut);
     if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
+      if(i%4===0) ton(55*schief,MUS.next,.09+p*.05,'sine',.05+p*.03);
       if(i%4===2) rauschenKurz(MUS.next);
     }
     MUS.next+=st; MUS.step++;
@@ -467,6 +478,34 @@ const DINGE=[
   { x:180, art:'box',     label:'BOX',         moebel:'box',    h:7  },
 ];
 
+/* Gaeste, die nur rumstehen.
+   Kein E, keine Aufgabe, kein Name ueber dem Kopf - sie stehen bewusst
+   als dunkle Silhouetten hinten drin. Ohne sie sind das vier Leute in
+   einer leeren Wohnung, und das ist kein Vorgluehen.
+   Die Positionen liegen zwischen den Moebeln, damit sie keinem E-Symbol
+   im Weg stehen. */
+const GAESTE=[
+  { x:205, spr:'steh',    ton:'#544c73', tempo:1.6, phase:0.0 },
+  { x:292, spr:'max',     ton:'#5a5279', tempo:1.1, phase:1.7 },
+  { x:372, spr:'steh',    ton:'#4e476c', tempo:1.9, phase:3.1 },
+  { x:466, spr:'moritz',  ton:'#565076', tempo:1.3, phase:0.8 },
+  { x:572, spr:'steh',    ton:'#5c5480', tempo:2.2, phase:2.4 },
+  { x:668, spr:'max',     ton:'#514a70', tempo:1.5, phase:4.2 },
+];
+/* Was im Hintergrund geredet wird. Niemand meint dich damit. */
+const GAST_GEREDE=[
+  'UND DANN MEINT DER ZU MIR',
+  'NEE ICH FAHR NICHT MEHR',
+  'HAT WER FEUER',
+  'DIE MUSIK IST GEIL',
+  'WER KENNT DEN TYP DA',
+  'ICH BIN RAUS UM ZWEI',
+  'LETZTES MAL WAR BESSER',
+  'GEHT IHR JETZT ODER WAS',
+  'MEIN HANDY IST LEER',
+  'BOAH IST DAS WARM HIER',
+];
+
 /* Die Leute. jeder hat eine Bedingung, bevor er mitkommt. */
 const LEUTE=[
   { id:'max',    x:150, name:'MAX FERDI', spr:'max',
@@ -512,6 +551,7 @@ function neuesSpiel(){
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
     kampfX:0, erholung:0,        // wo der Kampf anfing, und die Patzer-Sperre
+    gastT:0, gastPause:2, gastWer:0, gastTxt:'',   // Hintergrundgerede
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -638,6 +678,18 @@ function update(dt){
   S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
   if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
     S.faenger='DIE BAHN IST WEG'; SFX.aua(); return; }
+
+  /* Das Gerede im Hintergrund. Laeuft nur, solange man rumlaeuft -
+     im Kampf und im Gespraech redet keiner dazwischen. */
+  if(S.modus==='spiel'&&!S.reden){
+    if(S.gastT>0) S.gastT-=dt;
+    else if((S.gastPause-=dt)<=0){
+      S.gastWer=Math.floor(Math.random()*GAESTE.length);
+      S.gastTxt=pick(GAST_GEREDE);
+      S.gastT=TUNE.gastDauer;
+      S.gastPause=TUNE.gastPauseVon+Math.random()*(TUNE.gastPauseBis-TUNE.gastPauseVon);
+    }
+  }
 
   /* Pegel baut sich sehr langsam ab */
   if(pruefeBlackout()) return;
@@ -1050,6 +1102,20 @@ function zeichneWohnung(){
       const t=S.durchsucht[d.art]?'OK':'E';
       text(t,d.x+6-textW(t)/2,y-9,S.durchsucht[d.art]?P.dunkel:P.gold);
     }
+  }
+
+  /* Gaeste - vor den echten Leuten gezeichnet, damit sie hinter ihnen
+     stehen. Nur Umriss, kein Name: was leuchtet, ist anfassbar. */
+  for(const gst of GAESTE){
+    const rows=SPR[gst.spr]||SPR.steh;
+    const heb=Math.round(Math.sin(S.t*gst.tempo+gst.phase)); // ein Pixel Leben
+    sprite(rows,gst.x-3,BODEN-rows.length-heb,1,gst.ton);
+  }
+  if(S.gastTxt&&S.gastT>0){
+    const gst=GAESTE[S.gastWer], rows=SPR[gst.spr]||SPR.steh;
+    ctx.globalAlpha=Math.min(1,S.gastT*1.5);
+    textC0(S.gastTxt,gst.x,BODEN-rows.length-24,P.dunkel);
+    ctx.globalAlpha=1;
   }
 
   /* Leute */

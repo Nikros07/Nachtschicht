@@ -31,8 +31,11 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 - [x] **Der Kracher hat vier Angriffsmuster** — Schwinger, Finte, Sturm, Doppel,
       in fester Reihenfolge und härter mit jedem Treffer, den er kassiert.
       Konterfenster nur im letzten Stück, zu früh gedrückt kostet den Schlag
-- [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Musik lauter/verzerrter je höher der Pegel
+- [x] **Mehr Leute in der Wohnung** — sechs Gäste als graue Silhouetten, mit
+      Hintergrundgerede. Farbe und Name heißt anfassbar, grau heißt Kulisse
+- [x] **Musik kippt mit dem Pegel** — lauter, ab 55 von `square` auf
+      `sawtooth`, und sie fängt an zu eiern. Dieselbe Schwelle, ab der auch
+      das Bild schwankt
 - [ ] Kampfdauer im Blick behalten: sauber gespielt rund 30 s von 190 s. Wenn
       das zu viel von der Uhr frisst, sind `gegnerPause` und `gegnerTreffer`
       die Regler dafür

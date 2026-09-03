@@ -192,6 +192,15 @@ Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
 langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
 auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 
+**Man hört es auch.** Ab derselben Schwelle, ab der das Bild schwankt, wird die
+Musik lauter, härter und fängt an zu eiern.
+
+### Die anderen im Raum
+
+Nicht jeder in der Wohnung ist eine Aufgabe. Die grauen Gestalten stehen nur
+rum, reden über nichts und kommen nirgends mit. **Farbe und ein Name über dem
+Kopf heißt: mit dem kannst Du was anfangen.** Grau heißt: der ist Kulisse.
+
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
