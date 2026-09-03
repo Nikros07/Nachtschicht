@@ -140,13 +140,43 @@ const TUNE = {
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
   suchDauer:        0.6,
 
-  /* (6) DER KRACHER AM ENDE */
+  /* (6) DER KRACHER AM ENDE
+     Vorher: er holt aus, du drueckst irgendwann E, fertig. Ein Knopf,
+     ein Muster, kein Grund hinzuschauen. Jetzt vier Muster und ein
+     Konterfenster, das man treffen muss. */
   gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  gegnerWindup:     0.85,  // volles Ausholen - der Schwinger
+  gegnerSchnell:    0.5,   // kurzes Ausholen - zweiter Schlag von Finte und Doppel
+  konterFenster:    0.4,   // nur das letzte Stueck vom Ausholen zaehlt
+  /* Muss kleiner als 1-konterFenster sein: bricht er erst im Fenster ab,
+     kann man das Scheinausholen kontern und die Finte ist keine. */
+  finteAbbruch:     0.45,  // bei diesem Anteil bricht er die Finte ab
+  fintePause:       0.38,  // und wartet so lange, bis er wirklich zuschlaegt
+  patzerErholung:   0.5,   // zu frueh gedrueckt: so lange geht gar nichts
+  sturmWarnung:     0.8,   // Vorwarnung fuer den unblockbaren Sturm
+  sturmTempo:     210,     // wie schnell er dann angerannt kommt
+  sturmOffen:       0.7,   // laeuft er ins Leere, ist er so lange offen
+  ausweichWeit:    30,     // so weit musst du weg sein, damit er dich verfehlt
+  kampfTempo:      78,     // wie schnell du im Kampf zur Seite gehst
+  kampfPlatz:      58,     // so weit kommst du nach hinten
+  kampfNah:        18,     // naeher als das kommst du nicht an ihn ran
+  gegnerTempo:     95,     // wie schnell er auf dich zugeht
   gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
+  gegnerPause:      0.75,  // vier Muster brauchen mehr Runden - also
+                           // kuerzere Pausen, sonst frisst der Kampf die Uhr
+  gegnerErholt:     0.4,   // wie lange er nach einem Konter braucht
   leben:            3,
 };
+
+/* Welche Angriffe er in welcher Phase faehrt. Der Reihe nach, nicht
+   zufaellig - einen Kampf, den man lernen kann, verliert man nicht zweimal
+   an dieselbe Stelle. Eine Zeile pro verbleibendem Treffer:
+   frisch fuehrt er vor, angeschlagen wird er ekelhaft. */
+const KRACHER_MUSTER = [
+  ['schwinger','schwinger','finte'],
+  ['schwinger','finte','sturm'],
+  ['finte','sturm','doppel','schwinger'],
+];
 
 const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
@@ -240,6 +270,9 @@ function text(str,x,y,col,s=1){
     ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y)); } }
 const textW=(s0,s=1)=>String(s0).length*4*s-s;
 const textC=(s0,y,col,s=1)=>text(s0,Math.round((W-textW(s0,s))/2),y,col,s);
+/* Ueber einer Figur zentriert statt ueber dem Bild - fuer die Ansagen
+   ueber dem Kracher. */
+const textC0=(s0,cx,y,col,s=1)=>text(s0,Math.round(cx-textW(s0,s)/2),y,col,s);
 function textGlow(str,x,y,col,s=1){
   str=String(str).toUpperCase(); const k=str+'|'+col+'|'+s;
   let c=_txt.get(k);
@@ -478,6 +511,7 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0,
     gegner:null, gewonnen:false, faenger:'',
+    kampfX:0, erholung:0,        // wo der Kampf anfing, und die Patzer-Sperre
   };
   /* Jacke und Ausweis liegen jede Runde woanders.
      Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
@@ -756,43 +790,158 @@ function kamera(dt){
    ========================================================================== */
 function starteKampf(){
   S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
+  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0,
+             angriff:'schwinger', dauer:TUNE.gegnerWindup, rest:0, zug:0,
+             echt:false, verpasst:false };
+  S.x=Math.max(80,S.x); S.vx=0; S.kampfX=S.x; S.erholung=0;
+  zeigeHinweis('KONTER AUF JETZT - WEG BEI AUSWEICHEN',5);
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+
+/* Ab wann im Ausholen ein Druck als Konter zaehlt. Vorher zaehlt er als
+   Patzer - genau das soll das Draufhauen abgewoehnen. */
+const konterAb = g => g.dauer*(1-TUNE.konterFenster);
+const imKonterfenster = g => g.zustand==='wind' && !g.verpasst && g.t>=konterAb(g);
+
+/* Daneben. Kein Schaden, aber zwei Strafen: du stehst kurz dumm da, und
+   dieser Schlag ist fuer dich gelaufen - kontern kannst du ihn nicht mehr.
+   Die Zeitsperre allein reichte nicht: sie ist kuerzer als das Ausholen,
+   wer draufhaut kaeme danach noch ins Fenster. */
+function patzer(g){
+  S.erholung=TUNE.patzerErholung;
+  if(g) g.verpasst=true;
+  meldung(pick(['DANEBEN','ZU FRUEH','LUFT']),1);
+  SFX.nichts();
+}
+function kracherTrifft(){
+  S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
+  meldung('AUTSCH',1.4);
+  if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+}
+function kracherKassiert(g){
+  g.hp--; g.zustand='getroffen'; g.t=0;
+  S.ruettel=5; S.blitz=.5; SFX.klatsch();
+  meldung(pick(['SITZT','KONTER','DAS WAR ER']),1.2);
+}
+/* Naechster Angriff aus dem Muster der aktuellen Phase. */
+function naechsterAngriff(g){
+  const phase=KRACHER_MUSTER[Math.min(KRACHER_MUSTER.length-1,
+                                      TUNE.gegnerTreffer-g.hp)];
+  g.angriff=phase[g.zug++ % phase.length];
+  g.t=0; g.echt=false; g.verpasst=false;
+  if(g.angriff==='sturm'){ g.zustand='sturmWarn'; SFX.warn(); return; }
+  g.zustand='wind';
+  g.dauer=TUNE.gegnerWindup;
+  g.rest=g.angriff==='doppel'?2:1;   // Doppel: zwei Schlaege ohne Pause
+  SFX.warn();
+}
+
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
+  if(S.erholung>0) S.erholung=Math.max(0,S.erholung-dt);
+
+  /* Ein Druck pro Bild reicht - der Rest fliegt raus, sonst zaehlt
+     Draufhauen als mehrere Versuche. */
+  const eDruck=aktionPuffer.length>0; aktionPuffer.length=0;
+  const kannDruecken=S.erholung<=0;
+
+  /* Im Kampf darfst du dich bewegen - ohne das gibt es kein Ausweichen.
+     Er steht immer links von dir: rechts ist weg, links ist ran. Nach
+     hinten nur begrenzt, nach vorn nur bis dicht vor ihn. */
+  const vorher=S.x;
+  if(linksAn)  S.x-=TUNE.kampfTempo*dt;
+  if(rechtsAn) S.x+=TUNE.kampfTempo*dt;
+  S.x=Math.min(Math.max(S.x,g.x+TUNE.kampfNah),S.kampfX+TUNE.kampfPlatz);
+  S.vx=(S.x-vorher)/Math.max(dt,1e-6);
+  if(Math.abs(S.vx)>12) S.gehPhase+=dt*9;
+  S.blick=-1;                                  // du schaust ihn an
+
   const dist=S.x-g.x;
+
   if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
+    g.x+=Math.sign(dist)*TUNE.gegnerTempo*dt;
+    if(eDruck&&kannDruecken) patzer(g);         // ins Leere gehauen
+    if(Math.abs(dist)<22) naechsterAngriff(g);
+    return;
+  }
+
+  if(g.zustand==='wind'){
+    if(eDruck&&kannDruecken){
+      if(imKonterfenster(g)){ kracherKassiert(g); return; }
+      patzer(g);
     }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
+    /* Die Finte bricht kurz vor dem Ende ab. Wer auf das erste Ausholen
+       reagiert hat, steht jetzt in der Erholung. */
+    if(g.angriff==='finte'&&!g.echt&&g.t>=g.dauer*TUNE.finteAbbruch){
+      g.zustand='finte'; g.t=0; SFX.reden(); return;
+    }
+    if(g.t>=g.dauer){ g.zustand='schlag'; g.t=0; kracherTrifft(); }
+    return;
+  }
+
+  if(g.zustand==='finte'){
+    /* Kein Zuruecksetzen von verpasst: wer auf die Finte reingefallen
+       ist, hat den echten Schlag verdient. Genau dafuer ist sie da. */
+    if(eDruck&&kannDruecken) patzer(g);
+    if(g.t>=TUNE.fintePause){
+      g.zustand='wind'; g.t=0; g.echt=true;
+      g.dauer=TUNE.gegnerSchnell; SFX.warn();
+    }
+    return;
+  }
+
+  if(g.zustand==='sturmWarn'){
+    if(eDruck&&kannDruecken) patzer(g);          // kontern hilft hier nicht
+    if(g.t>=TUNE.sturmWarnung){ g.zustand='sturm'; g.t=0; }
+    return;
+  }
+
+  if(g.zustand==='sturm'){
+    g.x+=TUNE.sturmTempo*dt;                   // er kommt immer von links
+    if(eDruck&&kannDruecken) patzer(g);
+    /* Entschieden wird an der Stelle, wo Du gestanden hast. Bist Du weit
+       genug weg, rennt er ins Leere. */
+    if(g.x>=S.kampfX){
+      if(dist>=TUNE.ausweichWeit){
+        g.zustand='offen'; g.t=0; g.verpasst=false;   // frische Gelegenheit
+        meldung('AUSGEWICHEN',1.2); SFX.erledigt();
+      } else { g.zustand='schlag'; g.t=0; g.rest=1; kracherTrifft(); }
+    }
+    return;
+  }
+
+  /* Nach dem verfehlten Sturm ist er kurz offen - das ist die Belohnung
+     fuers Ausweichen, nicht nur das ausgelassene Herz. */
+  if(g.zustand==='offen'){
+    g.x+=Math.max(0,60*(1-g.t/TUNE.sturmOffen))*dt;   // er rutscht aus
+    if(eDruck&&kannDruecken){ kracherKassiert(g); return; }
+    if(g.t>=TUNE.sturmOffen){ g.zustand='pause'; g.t=0; }
+    return;
+  }
+
+  if(g.zustand==='schlag'){
+    if(g.t<TUNE.gegnerSchlag) return;
+    g.t=0;
+    /* Doppel: der zweite Schlag kommt sofort und schneller. */
+    /* Doppel: jeder Schlag ist eine eigene Gelegenheit. */
+    if(--g.rest>0){ g.zustand='wind'; g.dauer=TUNE.gegnerSchnell;
+                    g.verpasst=false; SFX.warn(); }
+    else g.zustand='pause';
+    return;
+  }
+
+  if(g.zustand==='getroffen'){
+    g.x-=Math.sign(dist||1)*TUNE.gegnerTempo*1.3*dt;
+    if(g.t>=TUNE.gegnerErholt){
       if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
+      g.zustand='pause'; g.t=0; g.echt=false;
     }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
+    return;
+  }
+
+  if(g.zustand==='pause'){
+    if(eDruck&&kannDruecken) patzer(g);
+    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; g.echt=false; }
   }
 }
 
@@ -918,23 +1067,51 @@ function zeichneWohnung(){
     }
   }
 
-  /* Der Kracher */
+  /* Der Kracher.
+     Der Balken ueber ihm ist die ganze Ansage: rot heisst er holt aus,
+     gold heisst jetzt, blau heisst weg da. Ohne den waere aus vier
+     Mustern bloss Raten geworden. */
   if(S.gegner){
     const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
+    const sturmt = g.zustand==='sturmWarn'||g.zustand==='sturm';
+    const rows = (g.zustand==='schlag'||g.zustand==='sturm')?SPR.kracherAus:SPR.kracher;
+    const konter = imKonterfenster(g)||g.zustand==='offen';
+    /* Beim Ducken vor dem Sturm sackt er sichtbar zusammen */
+    const ky = BODEN-rows.length+(g.zustand==='sturmWarn'?2:0);
+    /* Weiss heisst genau eine Sache: jetzt drauf. Das Ausholen blinkt
+       rot, offen steht er gruen da. Vorher war beides weiss - dann sagt
+       die Farbe nichts mehr. */
+    const tint = konter?'#ffffff'
+               : (g.zustand==='wind'&&Math.floor(S.t*16)%2===0)?'#ff9090'
+               : (g.zustand==='offen')?'#9fe8c0':null;
+    outline(rows,g.x,ky,1,.6);
+    sprite(rows,g.x,ky,1,tint);
+
+    const oben=BODEN-rows.length-6, bw=18;
+    if(g.zustand==='wind'||sturmt){
+      const anteil = sturmt ? (g.zustand==='sturm'?1:g.t/TUNE.sturmWarnung)
+                            : g.t/g.dauer;
+      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,oben,bw+2,4);
+      /* Grau heisst: diesen Schlag hast Du schon verpatzt. */
+      ctx.fillStyle = sturmt?P.neon2 : konter?P.gold : g.verpasst?P.dunkel : P.rot;
+      ctx.fillRect(g.x-2,oben+1,Math.round(bw*Math.min(1,anteil)),2);
+      /* Wo das Konterfenster anfaengt - man soll es kommen sehen */
+      if(!sturmt){ ctx.fillStyle=P.gold;
+        ctx.fillRect(g.x-2+Math.round(bw*(1-TUNE.konterFenster)),oben,1,4); }
+    }
+    if(Math.floor(S.t*8)%2===0){
+      if(konter)          textC0('JETZT',g.x+3,oben-7,P.gold);
+      else if(sturmt)     textC0('AUSWEICHEN',g.x+3,oben-7,P.neon2);
+      else if(g.zustand==='finte') textC0('...',g.x+3,oben-7,P.dim);
+      else if(g.zustand==='wind')  textC0('!',g.x+3,oben-7,P.rot);
     }
     /* Lebensbalken */
-    const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
+    /* Eigene Tafel, sonst scheint der Raumname im Hintergrund durch. */
+    const lb=40, bx=Math.round(S.kamX)+W/2-lb/2;
+    ctx.fillStyle='#000000e0'; ctx.fillRect(bx-5,15,lb+10,17);
+    ctx.fillStyle='#2a2246';   ctx.fillRect(bx-1,25,lb+2,6);
+    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(lb*g.hp/TUNE.gegnerTreffer),4);
+    text('DER KRACHER',bx+lb/2-textW('DER KRACHER')/2,18,P.dim);
   }
 
   /* Spieler */
@@ -946,6 +1123,13 @@ function zeichneWohnung(){
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
   if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Nach einem Patzer stehst Du kurz dumm da. Ohne dass man das sieht,
+     fuehlt sich die Sperre nach kaputter Steuerung an statt nach Strafe. */
+  if(S.erholung>0){
+    ctx.globalAlpha=.5; sprite(rows,S.x-3,S.y-rows.length,1,'#4a4363'); ctx.globalAlpha=1;
+    const b=Math.round(9*S.erholung/TUNE.patzerErholung);
+    ctx.fillStyle=P.dim; ctx.fillRect(Math.round(S.x-4),S.y-rows.length-5,b,1);
+  }
   ctx.globalAlpha=.28; ctx.fillStyle='#000';
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 

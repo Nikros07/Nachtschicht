@@ -195,9 +195,39 @@ auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
 ### Und dann klingelt es
 
 Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
+eingeladen hat. Das ist der **erste Kampf** im Spiel — und der erste, bei dem
+Draufhauen nicht reicht.
+
+**Der Balken über ihm sagt Dir alles.** Er füllt sich, während er ausholt. Der
+goldene Strich darin ist die Marke: **erst ab da zählt `E` als Konter.**
+
+| Was Du siehst | Was Du tust |
+|:--|:--|
+| Roter Balken läuft | Warten. Noch nicht. |
+| Balken wird gold, **JETZT** blinkt | `E` — Konter |
+| Balken wird blau, **AUSWEICHEN** blinkt | Nach rechts weg. Kontern hilft nicht |
+| Er steht grün da | `E` — freier Treffer |
+| Balken wird grau | Zu spät, den hast Du verpatzt |
+
+**Zu früh gedrückt ist schlimmer als gar nicht gedrückt.** Du haust in die Luft,
+stehst einen Moment dumm da — und diesen Schlag kannst Du nicht mehr kontern.
+Er kommt an. Wer den Knopf festhält, verliert.
+
+**Vier Sachen macht er**, und mit jedem Treffer den er kassiert, wird er
+ekelhafter:
+
+- **Schwinger** — langes Ausholen. Damit fängt er an, daran lernst Du das Timing
+- **Finte** — sieht genauso aus, bricht aber kurz vorher ab und kommt dann
+  schnell. Wer auf das erste Ausholen reagiert, frisst den zweiten Schlag
+- **Sturm** — unblockbar. Er duckt sich, dann rennt er. Geh weg, dann läuft er
+  ins Leere und steht offen da
+- **Doppel** — zwei Schläge hintereinander, der zweite schneller. Erst ganz am
+  Ende
+
+Die Muster kommen **in fester Reihenfolge**, nicht zufällig. Man soll den Kampf
+lernen können. Dreimal kontern, dann liegt er — sauber gespielt dauert das rund
+30 Sekunden von Deinen 190. Wer draufhaut, verliert alle drei Herzen und die
+Bahn dazu.
 
 ### Moritz
 

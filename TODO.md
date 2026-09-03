@@ -28,9 +28,17 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 
 **Offen in Level 2:**
 
+- [x] **Der Kracher hat vier Angriffsmuster** — Schwinger, Finte, Sturm, Doppel,
+      in fester Reihenfolge und härter mit jedem Treffer, den er kassiert.
+      Konterfenster nur im letzten Stück, zu früh gedrückt kostet den Schlag
 - [ ] Mehr Leute in der Wohnung, die nur rumstehen (Atmosphäre)
-- [ ] Der Kracher am Ende braucht mehr als ein Angriffsmuster
 - [ ] Musik lauter/verzerrter je höher der Pegel
+- [ ] Kampfdauer im Blick behalten: sauber gespielt rund 30 s von 190 s. Wenn
+      das zu viel von der Uhr frisst, sind `gegnerPause` und `gegnerTreffer`
+      die Regler dafür
+- [ ] Idee: Konterfenster schrumpft mit dem Pegel. Verbindet die beiden
+      Systeme des Levels — aber bestraft dann das Trinken, das man für den
+      Balkon braucht. Erst entscheiden, dann bauen
 - [ ] **Level 3 — Der Nachtbus.** Fahrender Untergrund, Kontrolleure, Timing
 - [ ] **Level 4 — Die Schlange.** Erster echter Boss: der Türsteher
 - [ ] **Level 5 — Club.** Stroboskop, schlechte Sicht, das Mädels-Minispiel
@@ -67,10 +75,19 @@ Das Herzstück. Jedes Level bringt einen aus der Crew, jeder gibt eine Fähigkei
 
 Das Kampfsystem liegt fertig in `runner.html` und muss in die Level-Struktur wandern.
 
+Zwei dieser Regeln stehen inzwischen im Kracher-Kampf in `level2.html` und
+haben sich dort bewährt — beim Zusammenführen von dort abschreiben, nicht neu
+erfinden.
+
 - [ ] Nahkampf, Konter, Combos übernehmen
-- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar
-- [ ] **Fehlschläge bestrafen** — lange Erholung, damit Spammen aufhört
-- [ ] **Konterfenster verkleinern** auf das letzte Drittel des Ausholens
+- [ ] **Gegner müssen blocken können** — nicht dauerhaft angreifbar.
+      Im Kracher-Kampf greift die Frage nicht: dort konterst Du nur, Du
+      schlägst nie von Dir aus zu
+- [x] **Fehlschläge bestrafen** — im Kracher-Kampf umgesetzt: kurze Sperre
+      *und* der laufende Schlag ist verspielt. Die Sperre allein reichte
+      nicht, sie ist kürzer als das Ausholen
+- [x] **Konterfenster verkleinern** — im Kracher-Kampf das letzte Stück
+      (`konterFenster`), mit sichtbarer Marke im Balken
 - [ ] **Ausdauer** — nicht unbegrenzt schlagen können
 - [ ] **Bosse deutlich härter**: Fernangriffe (Silvesterraketen), kürzere Vorwarnung, unblockbare Angriffe, Arena verändert sich pro Phase
 
