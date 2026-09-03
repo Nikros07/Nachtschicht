@@ -36,9 +36,10 @@ Jedes Level ist eine Stufe des Abends. Level 1 steht, der Rest ist Konzept.
 - [x] **Musik kippt mit dem Pegel** — lauter, ab 55 von `square` auf
       `sawtooth`, und sie fängt an zu eiern. Dieselbe Schwelle, ab der auch
       das Bild schwankt
-- [ ] Kampfdauer im Blick behalten: sauber gespielt rund 30 s von 190 s. Wenn
-      das zu viel von der Uhr frisst, sind `gegnerPause` und `gegnerTreffer`
-      die Regler dafür
+- [ ] Ein perfekter Durchlauf sieht den Sturm nie: drei Konter, drei Angriffe,
+      und der Sturm kommt erst als vierter. Erst wer danebenhaut, kriegt ihn
+      zu sehen. Vielleicht ist das richtig so — vielleicht sollte er auch bei
+      sauberem Spiel einmal vorkommen
 - [ ] Idee: Konterfenster schrumpft mit dem Pegel. Verbindet die beiden
       Systeme des Levels — aber bestraft dann das Trinken, das man für den
       Balkon braucht. Erst entscheiden, dann bauen

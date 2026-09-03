@@ -234,9 +234,19 @@ ekelhafter:
   Ende
 
 Die Muster kommen **in fester Reihenfolge**, nicht zufällig. Man soll den Kampf
-lernen können. Dreimal kontern, dann liegt er — sauber gespielt dauert das rund
-30 Sekunden von Deinen 190. Wer draufhaut, verliert alle drei Herzen und die
-Bahn dazu.
+lernen können. Dreimal kontern, dann liegt er.
+
+Der Kampf ist kurz — **rund sieben Sekunden**, wenn alles sitzt, selten über
+zwölf. Er frisst Dir die Bahn also nicht weg. Gemessen mit unterschiedlich
+sicherer Hand:
+
+| Wenn Du triffst | Gewinnst Du | Herzen übrig |
+|:--|:--|:--|
+| fast immer | 9 von 10 Mal | gut zwei |
+| jedes zweite Mal | die Hälfte | knapp eins |
+
+Wer stattdessen den Knopf festhält, verliert alle drei Herzen — und zwar jedes
+Mal.
 
 ### Moritz
 
@@ -348,6 +358,22 @@ python -m http.server 5173
 | `?alle=1` | Alle gebauten Level offen, ohne sie freizuspielen |
 
 Beide bleiben beim Levelwechsel erhalten.
+
+## Prüfen, ob noch alles läuft
+
+Im Ordner [`pruefung/`](pruefung/) liegen automatische Prüfungen: sie öffnen das
+Spiel in einem echten Browser, legen die Bildschleife still und spielen es Bild
+für Bild durch — den Kracher-Kampf, das Freischalten, die Levelleiste, den Font.
+
+```bash
+cd pruefung && npm install && npx playwright install chromium
+node alle.js
+```
+
+**Das Spiel selbst braucht davon nichts.** Doppelklick auf `index.html` bleibt
+Doppelklick auf `index.html`. Wer aber an `TUNE` dreht, sollte das hier danach
+laufen lassen — ein paar dieser Zahlen hängen voneinander ab, und die Prüfungen
+sagen einem, welche.
 
 ## Technisch
 

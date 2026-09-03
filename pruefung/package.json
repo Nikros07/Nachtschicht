@@ -1,0 +1,12 @@
+{
+  "name": "nachtschicht-pruefung",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pruefungen fuer Nachtschicht. Das Spiel selbst braucht davon nichts.",
+  "scripts": {
+    "test": "node alle.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}
