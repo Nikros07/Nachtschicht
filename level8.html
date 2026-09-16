@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-<title>NACHTSCHICHT - BEI MORITZ</title>
-<meta name="description" content="Level 2 - Vorgluehen bei Moritz. Kriegt die Jungs aus der Wohnung.">
+<title>NACHTSCHICHT - HEIMWEG</title>
+<meta name="description" content="Level 8 - Der Heimweg. Endgegner: die Sonne. Komm nach Hause, bevor es hell wird.">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body { height:100%; background:#04030a; overflow:hidden;
@@ -80,7 +80,7 @@
 </head>
 <body>
 <div id="cab">
-  <div id="marquee">B E I &nbsp; M O R I T Z</div>
+  <div id="marquee">H E I M W E G</div>
   <div id="screen">
     <canvas id="c" width="320" height="180"></canvas>
     <div id="crt"></div>
@@ -93,35 +93,43 @@
   <button id="fs">VOLLBILD</button>
   <div id="levelbar">
     <a href="index.html">1 &middot; DIE SCHULE</a>
-    <a href="level2.html" class="aktiv">2 &middot; BEI MORITZ</a>
+    <a href="level2.html">2 &middot; BEI MORITZ</a>
     <a href="level3.html">3 &middot; DER NACHTBUS</a>
     <a href="level4.html">4 &middot; DIE SCHLANGE</a>
     <a href="level5.html">5 &middot; CLUB</a>
     <a href="level6.html">6 &middot; AFTERHOUR</a>
     <a href="level7.html">7 &middot; SPAETI</a>
-    <a href="level8.html">8 &middot; HEIMWEG</a>
+    <a href="level8.html" class="aktiv">8 &middot; HEIMWEG</a>
   </div>
-  <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
+  <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
 <script>
 /* ============================================================================
-   NACHTSCHICHT - LEVEL 2: BEI MORITZ
+   NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
 
-   Bewusst KEIN zweites Schleich-Level. In Level 1 geht es darum, nicht
-   gesehen zu werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
+   Die letzte Etappe der Nacht. Kein Kampf, kein Türsteher, kein Gegner mit
+   Fäusten - der Endgegner ist die Sonne selbst. Der Himmel wird waehrend des
+   ganzen Levels sichtbar heller, das ist gleichzeitig die Uhr UND die
+   Niederlage: erreicht das Licht 100, bist du auf offener Strasse erwischt
+   worden. Schatten (Baeume, Haeuser, eine Unterfuehrung) bremsen die Sonne,
+   Hindernisse (Muelltonnen, Jogger, ein Muellwagen) kosten dir Zeit und
+   zusaetzlich Licht, wenn du sie nicht ueberspringst.
+
+   Dieses Level hat KEIN Level 9. Sieg fuehrt zurueck zu index.html
+   ("ganzes Spiel neu starten"), nicht zu einem naechsten Level.
 
    >>> ALLE REGLER STEHEN HIER OBEN. <<<
    ========================================================================== */
 const TUNE = {
-  /* (1) BEWEGUNG */
-  gehTempo:       104,
-  beschleunigung: 900,
-  bremsung:      1250,
+  /* (1) BEWEGUNG - etwas ruhiger als Level 2, das ist der letzte lange Weg */
+  gehTempo:       100,
+  beschleunigung: 950,
+  bremsung:      1300,
   luftKontrolle:   0.55,
   gravitation:    920,
-  sprungKraft:   -240,
+  sprungKraft:   -235,
   kurzsprung:      0.45,
   coyoteMs:        95,
   puffermMs:      130,
@@ -130,30 +138,31 @@ const TUNE = {
   kameraTraegheit: 6.5,
   blickVoraus:    26,
 
-  /* (3) DER PEGEL - neu in diesem Level, und er bleibt dir erhalten */
-  pegelMax:       100,
-  proSchluck:      16,
-  pegelAbbau:       0.6,   // pro Sekunde, sehr langsam
-  mutAb:           35,     // ab hier traust du dich Sachen
-  wackelnAb:       55,     // ab hier faengt das Bild an zu schwanken
-  langsamAb:       70,     // ab hier wirst du spuerbar langsamer
-  blackoutBei:    100,
+  /* (3) DER PEGEL - was vom Abend noch uebrig ist, baut hier weiter ab.
+     Kein Blackout mehr in diesem Level - der Gegner ist die Sonne, nicht
+     der Alkohol. Der Pegel ist hier nur noch Flavor/Erschwernis (Wackeln,
+     Tempo), keine eigene Niederlage. */
+  pegelAbbau:      1.0,
+  wackelnAb:       55,
+  langsamAb:       70,
 
-  /* (4) DIE UHR - um 22:00 faehrt die Bahn */
-  startMinute:   21*60+10,
-  endMinute:     22*60,
-  levelSekunden: 190,
+  /* (4) DIE SONNE - der Endgegner. Steigt immer, im Schatten langsamer. */
+  lichtDauerBasis: 55,     // Sekunden bis 100% Sonne bei voller Belichtung
+  schattenFaktor:   0.35,  // Baeume/Haeuser: die Sonne waechst nur so schnell
+  tunnelFaktor:     0.12,  // Unterfuehrung schuetzt noch deutlich mehr
+  hindernisStrafe:  9,     // Lichtsprung bei einem Treffer
+  hindernisRuettel: 5,
+  hindernisKnockback: 55,
 
-  /* (5) REDEN UND SUCHEN */
-  reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
-  suchDauer:        0.6,
+  /* (5) HINDERNISSE */
+  hindernisRadius:  9,     // wie nah du dran sein musst, um zu treffen
+  hindernisHoehe:  13,     // so hoch muss dein Sprung sein, um drueberzukommen
+  joggerAmplitude: 10,
+  joggerTempo:      1.6,
 
-  /* (6) DER KRACHER AM ENDE */
-  gegnerTreffer:    3,     // so oft musst du kontern
-  gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
-  gegnerSchlag:     0.2,
-  gegnerPause:      1.1,
-  leben:            3,
+  /* (6) DIE WELT */
+  levelBreite:   5200,
+  zielPuffer:      40,
 };
 
 const P = {
@@ -203,8 +212,8 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', t:'#3ad1a0', p:'#2b2b48', w:'
   g:'#ffd447', n:'#ff3d8b', c:'#42d9ff', r:'#ff4d4d', d:'#4a4363', b:'#6b4a2a',
   o:'#a8681f', e:'#20182e', l:'#ffe08a', v:'#c8324a', m:'#7a2d3d', a:'#1a1626',
   j:'#3d2f22', u:'#8c94ad', q:'#2e3350', z:'#5a4632',
-  /* Moritz: dunkle Haare, weiss-blaues Trikot */
-  H:'#1d150e', T:'#eef2ff', B:'#2f6fd0' };
+  /* neu in diesem Level: Muellwagen, Jogger, Baumkrone */
+  x:'#5a5a66', y:'#8bd6ff', f:'#1f5c3a' };
 
 function backeSprite(rows,sc,tint){
   let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
@@ -275,46 +284,30 @@ const SPR={
   ],
   sprung:[...KOPF,'k.ttt.k','.tttttt','..ttt..','..ttt..','..ppp..','.pp.pp.','.p...p.','kk...kk'],
   fall:  [...KOPF,'..ttt..','ktttttk','..ttt..','..ppp..','..p.p..','.pp.pp.','.p...p.','.k...k.'],
-  suchen:[...KOPF,'..ttt..','.ttttts','k.ttt.s','..ttt..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
-  konter:['..hhh....','.hsssh...','.sssss...','..sss....','..ttt....','.ttttssss',
-          'k.ttt....','..ttt....','..ppp....','..p.p....','..p.p....','.pp.pp...','.kk..kk..'],
 
-  /* MORITZ - dunkle Haare, groesser, weiss-blaues Fussballtrikot */
-  moritz:['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','.TTBTT.',
-          'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  moritzGeh:['..HHH..','.HsssH.','.sssss.','..sss..','..sss..','..TBT..','TTBTT..',
-             'kTTBTTk','.TTBTT.','..TBT..','..ppp..','..ppp..','..pp.p.','..pp..p','.kk..kk'],
-  /* MAX FERDI - aus Level 1, Sportler */
-  max:['..hhh..','.hsssh.','.sssss.','..sss..','..ccc..','.ccccc.','k.ccc.k','..ccc..',
-       '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  /* Der Schlaefer auf dem Sofa */
-  schlaefer:['..........','..hhh.....','.hsssh....','.sssss....','.vvvvvvvv.','.vvvvvvvv.',
-             '..pppppp..','..kk..kk..'],
-  /* Der Telefonierer auf dem Balkon */
-  telefon:['..hhh..','.hsssh.','.sssssg','..sss.g','..mmm..','.mmmmm.','k.mmm..','..mmm..',
-           '..ppp..','..p.p..','..p.p..','.pp.pp.','.kk..kk'],
-  /* Der Kracher am Ende */
-  kracher:['..ddd..','.dkkkd.','.dsssd.','..ksk..','..sss..','.vvvvv.','vvvvvvv','k.vvv.k',
-           '..vvv..','..mmm..','..m.m..','.mm.mm.','.kk..kk'],
-  kracherAus:['..ddd....','.dkkkd...','.dsssd...','..ksk....','..sss....','.vvvvvss.',
-              'vvvvvvvss','k.vvv....','..vvv....','..mmm....','..m.m....','.mm.mm...','.kk..kk..'],
-
-  /* Einrichtung */
-  sofa:  ['.vvvvvvvvvv.','vvvvvvvvvvvv','vvvvvvvvvvvv','v..........v','v..........v','.dd......dd.'],
-  tisch: ['zzzzzzzz','z......z','dd....dd','d......d','d......d','d......d'],
-  kuehl: ['uuuuuuu','u.....u','u....gu','uuuuuuu','u.....u','u.....u','u....gu','u.....u','uuuuuuu','ddddddd'],
-  spuele:['uuuuuuuu','u......u','u.dddd.u','u.dddd.u','uuuuuuuu','d......d','d......d'],
-  bett:  ['..wwwwwwww..','.wwwwwwwwww.','zzzzzzzzzzzz','zzzzzzzzzzzz','z..........z','d..........d'],
-  schrank:['zzzzzzzz','z......z','z..g.g.z','z......z','z......z','z..g.g.z','z......z','z......z','zzzzzzzz'],
-  regal: ['zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','ddddddd'],
-  spiegel:['uuuuuuu','uwwwwwu','uwwwwwu','uwwwwwu','uwwwwwu','uuuuuuu'],
-  box:   ['dddddd','d.gg.d','dg..gd','dg..gd','d.gg.d','dddddd','dddddd'],
-  tuer:  ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
-          'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
-  jacke: ['.ddddd.','dddddddd'.slice(0,7),'dd.d.dd','dd.d.dd','.dd.dd.','.d...d.'],
-  ausweis:['ggggggg','g.....g','g.ss..g','g.ss..g','g.....g','ggggggg'],
-  flasche:['..gg..','..gg..','.gggg.','.gwgg.','.gggg.','.gggg.','..gg..'],
-  dose:  ['.ccc.','.cwc.','.ccc.','.ccc.','.ccc.'],
+  /* Muelltonne */
+  tonne:['.xxx.','xxxxx','x...x','x...x','x...x','xxxxx'],
+  /* Jogger - fremde Person, neonfarbene Jacke, immer in Bewegung */
+  jogger: geh(['.yyyyy.','k.yyy.k','..yyy..','..ppp..','..p.p..','.p...p.','.p...p.','kk...kk']),
+  /* Muellwagen - der grosse Brocken kurz vor der Zielgeraden */
+  laster:[
+    '.xxxxxxxxxxxx.',
+    'xxxxxxxxxxxxxx',
+    'x..ll.....oo.x',
+    'xxxxxxxxxxxxxx',
+    'xxxxxxxxxxxxxx',
+    'x............x',
+    '.kk........kk.',
+  ],
+  /* Baum, wirft Schatten */
+  baum:['..fff..','.fffff.','fffffff','.fffff.','...b...','...b...'],
+  /* Die eigene Haustuer - das Ziel */
+  haustuer:[
+    'zzzzzzzz','zjjjjjjz','zjjllljz','zjjjjjjz','zjjjjjjz',
+    'zjjjjgjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz',
+  ],
+  /* Laterne */
+  laterne:['..d..','..d..','..d..','..d..','ddddd'],
 };
 
 /* ==========================================================================
@@ -346,39 +339,25 @@ const SFX={
   schritt:()=>piep(95+Math.random()*20,.03,'triangle',.016),
   sprung: ()=>piep(430,.06,'square',.032),
   landen: ()=>piep(160,.05,'triangle',.028),
-  reden:  ()=>piep(520+Math.random()*180,.04,'square',.025),
-  fund:   ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.15),170); },
-  nichts: ()=>piep(220,.09,'sine',.03),
-  schluck:()=>{ glissando(300,160,.22,'sine',.05); rauschen(.1,.03); },
-  erledigt:()=>{ piep(660,.08); setTimeout(()=>piep(990,.12),85); },
+  aua:    ()=>{ rauschen(.16,.07); glissando(260,80,.18,'sawtooth',.05); },
   warn:   ()=>piep(880,.07,'square',.05),
-  klatsch:()=>{ rauschen(.09,.13); glissando(220,60,.14,'square',.07); },
-  aua:    ()=>{ rauschen(.28,.09); glissando(300,90,.3,'sawtooth',.06); },
-  sieg:   ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
+  sieg:   ()=>{ [660,880,1100,1320,1568].forEach((f,i)=>setTimeout(()=>piep(f,.16),i*110)); },
+  erwischt:()=>{ rauschen(.4,.1); glissando(300,60,.5,'sawtooth',.07); },
 };
-/* Musik: Vorgluehen laeuft, wird lauter je hoeher der Pegel */
-const BASS=[110,0,110,0, 146,0,110,0, 98,0,98,0, 130,0,146,164];
+/* Musik: ruhiger Puls, der schneller und drängender wird, je heller es wird */
+const BASS=[110,0,110,0, 98,0,98,0, 87,0,87,0, 98,0,110,0];
 const MUS={step:0,next:0};
 function musik(){
   if(!AC||muted||S.modus==='pause') return;
-  const st=60/128/4;
+  const drang=Math.min(1,S.licht/100);
+  const st=60/(112+drang*40)/4;
   while(MUS.next<AC.currentTime+.12){
     const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.026+(S.pegel/100)*.02:.014;
+    const laut=S.modus==='spiel'?.02+drang*.02:.012;
     if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'){
-      if(i%4===0) ton(55,MUS.next,.09,'sine',.05);
-      if(i%4===2) rauschenKurz(MUS.next);
-    }
+    if(S.modus==='spiel'&&i%4===0) ton(55,MUS.next,.09,'sine',.045);
     MUS.next+=st; MUS.step++;
   }
-}
-function rauschenKurz(when){
-  if(!AC||muted) return;
-  const n=Math.floor(AC.sampleRate*.02), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
-  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
-  const s=AC.createBufferSource(), g=AC.createGain();
-  s.buffer=buf; g.gain.value=.012; s.connect(g); g.connect(AC.destination); s.start(when);
 }
 
 /* ==========================================================================
@@ -414,104 +393,85 @@ function vollbild(){
 document.getElementById('fs').addEventListener('click',e=>{e.preventDefault();vollbild();});
 
 /* ==========================================================================
-   DIE WOHNUNG
+   DIE STRASSE NACH HAUSE
    ========================================================================== */
-const LEVEL_B=980;
-const ORTE=[
-  { von:0,   bis:130, name:'FLUR',        wand:'#2a2336', boden:'#1d1727' },
-  { von:130, bis:400, name:'WOHNZIMMER',  wand:'#33253c', boden:'#241a2c' },
-  { von:400, bis:600, name:'KUECHE',      wand:'#26303a', boden:'#1a222a' },
-  { von:600, bis:790, name:'MORITZ ZIMMER',wand:'#2b2740', boden:'#1e1b2e' },
-  { von:790, bis:890, name:'BAD',         wand:'#243440', boden:'#182630' },
-  { von:890, bis:980, name:'BALKON',      wand:'#141a2c', boden:'#101624' },
-];
-const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
-
-/* Dinge zum Anfassen. aktion bestimmt, was passiert. */
-const DINGE=[
-  { x:250, art:'sofa',    label:'SOFA',        moebel:'sofa',   h:6  },
-  { x:330, art:'tisch',   label:'TISCH',       moebel:'tisch',  h:6  },
-  { x:430, art:'kuehl',   label:'KUEHLSCHRANK',moebel:'kuehl',  h:10 },
-  { x:500, art:'getraenk',label:'GETRAENKE',   moebel:'flasche',h:7  },
-  { x:545, art:'spuele',  label:'SPUELE',      moebel:'spuele', h:7  },
-  { x:640, art:'bett',    label:'BETT',        moebel:'bett',   h:6  },
-  { x:700, art:'schrank', label:'SCHRANK',     moebel:'schrank',h:9  },
-  { x:750, art:'regal',   label:'REGAL',       moebel:'regal',  h:7  },
-  { x:820, art:'spiegel', label:'SPIEGEL',     moebel:'spiegel',h:6, hoch:true },
-  { x:180, art:'box',     label:'BOX',         moebel:'box',    h:7  },
+const LEVEL_B=TUNE.levelBreite;
+const ZIEL_X=LEVEL_B-TUNE.zielPuffer;
+const ZONEN=[
+  { von:0,    bis:900,  name:'HAUPTSTRASSE' },
+  { von:900,  bis:1900, name:'AN DEN BAEUMEN' },
+  { von:1900, bis:2700, name:'UNTERFUEHRUNG' },
+  { von:2700, bis:3700, name:'WOHNBLOCKS' },
+  { von:3700, bis:4600, name:'LETZTE KREUZUNG' },
+  { von:4600, bis:LEVEL_B, name:'DEINE STRASSE' },
 ];
 
-/* Die Leute. jeder hat eine Bedingung, bevor er mitkommt. */
-const LEUTE=[
-  { id:'max',    x:150, name:'MAX FERDI', spr:'max',
-    zeilen:['ALTER ENDLICH','ICH BIN SCHON SEIT NER STUNDE FERTIG','MACH HIN, BAHN GEHT UM ZEHN'],
-    fertig:true },
-  { id:'moritz', x:606, name:'MORITZ', spr:'moritz', gross:true,
-    zeilen:['ICH FIND MEINEN AUSWEIS NICHT','OHNE KOMM ICH DA NIE REIN','SUCH MAL MIT'],
-    braucht:'ausweis',
-    danach:['DU BIST EIN HELD','LOS GEHTS'] },
-  { id:'schlaefer', x:256, name:'DER SCHLAEFER', spr:'schlaefer', liegt:true,
-    zeilen:['...','ZZZZZ','...'],
-    braucht:'dose',
-    danach:['WAS','WIE SPAET','OKAY OKAY ICH KOMM'] },
-  { id:'telefon', x:920, name:'DER TELEFONIERER', spr:'telefon',
-    zeilen:['NEIN DU HOERST MIR NICHT ZU','...','SEKUNDE JA'],
-    brauchtMut:true,
-    danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
+/* Schattenspender - hier waechst die Sonne langsamer (Unterfuehrung am meisten) */
+const SCHATTEN=[
+  { von:300,  bis:750,  art:'baum',   label:'BAEUME' },
+  { von:1550, bis:2050, art:'tunnel', label:'UNTERFUEHRUNG' },
+  { von:2500, bis:2900, art:'haus',   label:'HAUSSCHATTEN' },
+  { von:3400, bis:3800, art:'baum',   label:'BAEUME' },
+  { von:4300, bis:4700, art:'haus',   label:'HAUSSCHATTEN' },
 ];
+function schattenBei(x){
+  for(const z of SCHATTEN) if(x>=z.von&&x<z.bis) return z;
+  return null;
+}
+function lichtFaktorBei(x){
+  const z=schattenBei(x);
+  if(!z) return 1;
+  return z.art==='tunnel'?TUNE.tunnelFaktor:TUNE.schattenFaktor;
+}
 
-/* Was du finden musst */
-const AUFGABEN=[
-  { id:'jacke',  text:'DEINE JACKE FINDEN' },
-  { id:'ausweis',text:'MORITZ AUSWEIS FINDEN' },
-  { id:'schlaefer',text:'DEN SCHLAEFER WECKEN' },
-  { id:'telefon',text:'DEN TELEFONIERER HOLEN' },
+/* Hindernisse - einmalig, statisch entlang der Strecke. Jogger wackeln etwas
+   um ihre Position, damit der Sprung nicht immer exakt gleich getimt ist. */
+const HINDERNISSE=[
+  { x:550,  art:'tonne' },
+  { x:1000, art:'jogger' },
+  { x:1400, art:'tonne' },
+  { x:1800, art:'jogger' },
+  { x:2300, art:'tonne' },
+  { x:2750, art:'jogger' },
+  { x:3150, art:'tonne' },
+  { x:3600, art:'laster' },
+  { x:4050, art:'tonne' },
+  { x:4500, art:'jogger' },
+  { x:4900, art:'tonne' },
 ];
+const HIND_BREITE={ tonne:5, jogger:7, laster:14 };
+
+/* Laternen - rein optisch, gehen aus, wenn es hell genug ist */
+const LATERNEN=[200,1150,2200,3250,4350,4950];
 
 /* ==========================================================================
    ZUSTAND
    ========================================================================== */
+const PEGEL_KEY='nachtschicht.pegel';
+const ladePegel=()=>{ const v=parseFloat(localStorage.getItem(PEGEL_KEY)); return isFinite(v)?v:0; };
+const CREW_KEY='nachtschicht.crew';
+const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
+const BEST_KEY='nachtschicht.bestzeit8';
+const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
+
 let S={};
 function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
-    kamX:0, hp:TUNE.leben,
-    pegel:0, minute:TUNE.startMinute,
-    inventar:{}, erledigt:{}, durchsucht:{},
-    reden:null, redeZeile:0, redeT:0,
+    kamX:0,
+    pegel:ladePegel(),
+    licht:0,
+    hinTreffer:{},
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
-    suchT:0, suchZiel:null,
-    ruettel:0, blitz:0,
+    ruettel:0,
     szene:0, szeneT:0, skipT:0,
-    gegner:null, gewonnen:false, faenger:'',
+    gewonnen:false, faenger:'', neueBestzeit:false,
   };
-  /* Jacke und Ausweis liegen jede Runde woanders.
-     Das Sofa faellt bewusst raus - dort liegt der Schlaefer, und bei
-     gleichem Abstand gewinnt die Person. Ein Fund dort waere nicht
-     erreichbar. */
-  const belegt=LEUTE.map(l=>l.x);
-  const versteckbar=DINGE.filter(d=>
-    ['tisch','schrank','regal','bett','box','spuele'].includes(d.art) &&
-    !belegt.some(px=>Math.abs(px-(d.x+6))<TUNE.reichweite));
-  const mischen=[...versteckbar].sort(()=>Math.random()-0.5);
-  S.jackeBei=mischen[0].art;
-  S.ausweisBei=mischen[1].art;
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
 neuesSpiel();
-
-const CREW_KEY='nachtschicht.crew';
-const ladeCrew=()=>{ try{ return JSON.parse(localStorage.getItem(CREW_KEY))||[]; }catch(e){ return []; } };
-const speichereCrew=n=>{ const c=ladeCrew(); if(!c.includes(n)){ c.push(n);
-  try{ localStorage.setItem(CREW_KEY,JSON.stringify(c)); }catch(e){} } };
-const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
-const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
-/* Der Pegel ist levelübergreifend - siehe TUNE-Kommentar "bleibt dir erhalten".
-   Level 2 startet immer bei 0 (hier faengt das Trinken erst an), speichert aber
-   den Endwert fuer Level 3 und alles danach. */
-const PEGEL_KEY='nachtschicht.pegel';
 
 /* ==========================================================================
    EINGABE
@@ -533,7 +493,12 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='level3.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){
+    /* Kein Level 9 - E fuehrt zurueck zum Anfang des GANZEN Spiels.
+       Leertaste (druckSprung) startet stattdessen nur dieses Level neu. */
+    if(S.gewonnen){ location.href='index.html'; return; }
+    neuesSpiel(); return;
+  }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -545,8 +510,6 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(S.modus==='titel'&&(e.code==='Digit1'||e.code==='Numpad1')){
-    e.preventDefault(); location.href='index.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
@@ -572,36 +535,41 @@ if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); remove
    INTRO
    ========================================================================== */
 const INTRO=[
-  { d:2.4, txt:'21:10. BEI MORITZ.' },
-  { d:2.4, txt:'DIE BAHN FAEHRT UM ZEHN.' },
-  { d:2.6, txt:'DIE JUNGS SITZEN SEIT ZWEI STUNDEN HIER.' },
-  { d:2.6, txt:'UND KEINER MACHT ANSTALTEN LOSZUGEHEN.' },
-  { d:2.6, txt:'ALSO MACHST DU ES.' },
+  { d:2.4, txt:'IRGENDWO ZWISCHEN CLUB UND ZUHAUSE.' },
+  { d:2.4, txt:'DEINE LEUTE SIND SCHON ALLE WEG.' },
+  { d:2.2, txt:'NUR DU BIST NOCH UNTERWEGS.' },
+  { d:2.6, txt:'UND DER HIMMEL WIRD SCHON HELLER.' },
+  { d:2.8, txt:'WENN DEINE ELTERN DICH SO SEHEN - AUS.' },
+  { d:2.4, txt:'ALSO LOS. NACH HAUSE. VOR DER SONNE.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ S.modus='spiel'; zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
+function starteLevel(){ S.modus='spiel'; zeigeHinweis('LAUF NACH HAUSE - MEIDE DIE SONNE',3);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
 
-function pruefeBlackout(){
-  if(S.pegel<TUNE.blackoutBei||S.modus==='ende') return false;
-  S.modus='ende'; S.gewonnen=false;
-  S.faenger='BLACKOUT. AUF MORITZ SOFA.'; SFX.aua();
-  return true;
-}
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
-const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
 
 /* ==========================================================================
    AKTUALISIEREN
    ========================================================================== */
+function pruefeSonne(){
+  if(S.licht<100||S.modus==='ende') return false;
+  S.modus='ende'; S.gewonnen=false;
+  S.faenger='DIE SONNE HAT DICH ERWISCHT.'; SFX.erwischt();
+  return true;
+}
+function pruefeZiel(){
+  if(S.x<ZIEL_X||!S.amBoden||S.modus==='ende') return false;
+  starteCutscene();
+  return true;
+}
+
 function update(dt){
   S.t+=dt; musik();
   S.ruettel=Math.max(0,S.ruettel-dt*16);
-  S.blitz=Math.max(0,S.blitz-dt*2.2);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
@@ -610,25 +578,9 @@ function update(dt){
   if(S.modus==='ende'){ return; }
 
   S.zeit+=dt;
-  const spanne=TUNE.endMinute-TUNE.startMinute;
-  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
-  if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
-    S.faenger='DIE BAHN IST WEG'; SFX.aua(); return; }
-
-  /* Pegel baut sich sehr langsam ab */
-  if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
 
-  if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
-
-  /* --- Gespraech laeuft --- */
-  if(S.reden){
-    S.redeT+=dt;
-    while(aktionPuffer.length){ aktionPuffer.shift(); naechsteZeile(); }
-    kamera(dt); return;
-  }
-
-  /* --- Bewegung --- */
+  /* --- Bewegung (gleiches Gefuehl wie in Level 2) --- */
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
   const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
@@ -660,99 +612,31 @@ function update(dt){
   if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
-  /* --- Suchen laeuft --- */
-  if(S.suchT>0){
-    S.suchT-=dt;
-    if(S.suchT<=0) suchErgebnis();
-    kamera(dt); return;
-  }
+  /* Reine Menue-Eingaben in diesem Modus ignorieren (kein Reden/Suchen hier) */
+  aktionPuffer.length=0;
 
-  /* --- Aktion --- */
-  while(aktionPuffer.length){
-    aktionPuffer.shift();
-    /* Das Naehere gewinnt. Haetten Personen immer Vorrang, waeren Moebel
-       direkt neben jemandem gar nicht erreichbar - genau so war das Bett
-       neben Moritz unbenutzbar und der Ausweis unauffindbar. */
-    let person=null, dPerson=1e9;
-    for(const l of LEUTE){ const d=Math.abs(l.x-S.x);
-      if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
-    let ding=null, dDing=1e9;
-    for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
-      if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
-    if(person&&(!ding||dPerson<=dDing)) rede(person);
-    else if(ding) benutze(ding);
-    else if(S.x<60&&alleFertig()) starteKampf();
-    else if(S.x<60) { meldung('NICHT OHNE DIE JUNGS'); SFX.nichts(); }
-  }
-  kamera(dt);
-}
+  /* --- Die Sonne steigt, im Schatten langsamer --- */
+  const faktor=lichtFaktorBei(S.x);
+  S.licht=Math.min(100,S.licht+(100/TUNE.lichtDauerBasis)*faktor*dt);
 
-/* ---- Dinge benutzen ---- */
-function benutze(d){
-  if(d.art==='getraenk'){
-    S.pegel=Math.min(TUNE.pegelMax,S.pegel+TUNE.proSchluck);
-    SFX.schluck(); meldung(pick(['AUF EX','RUNTER DAMIT','NOCH EINEN']),1.2);
-    /* Sofort pruefen. Getrunken wird am Ende eines Bildes, geprueft wurde
-       am Anfang des naechsten - dazwischen baut der Pegel ab und lag nie
-       mehr bei 100. Der Blackout konnte dadurch nie ausloesen. */
-    pruefeBlackout();
-    return;
-  }
-  if(d.art==='kuehl'){
-    if(S.inventar.dose){ meldung('HAST SCHON EINE',1); SFX.nichts(); return; }
-    S.inventar.dose=true; SFX.fund(); S.blitz=.4;
-    meldung('ENERGYDRINK EINGESTECKT',1.8);
-    zeigeHinweis('DAMIT KRIEGST DU DEN SCHLAEFER WACH',3);
-    return;
-  }
-  if(d.art==='spiegel'){
-    meldung(S.pegel>TUNE.mutAb?'DU SIEHST GUT AUS':'GEHT SO',1.4); SFX.reden(); return;
-  }
-  if(S.durchsucht[d.art]){ meldung('SCHON DURCHSUCHT',1); SFX.nichts(); return; }
-  S.suchT=TUNE.suchDauer; S.suchZiel=d; rauschen(.12,.03);
-}
-function suchErgebnis(){
-  const d=S.suchZiel; S.suchZiel=null;
-  S.durchsucht[d.art]=true;
-  if(d.art===S.jackeBei&&!S.inventar.jacke){
-    S.inventar.jacke=true; S.erledigt.jacke=true; SFX.fund(); S.blitz=.6;
-    meldung('DEINE JACKE',2); SFX.erledigt(); return;
-  }
-  if(d.art===S.ausweisBei&&!S.inventar.ausweis){
-    S.inventar.ausweis=true; SFX.fund(); S.blitz=.6;
-    meldung('MORITZ AUSWEIS',2);
-    zeigeHinweis('BRING IHN MORITZ',3); return;
-  }
-  SFX.nichts(); meldung(pick(['NICHTS','NUR KRAM','LEER']),1);
-}
-
-/* ---- Reden ---- */
-function rede(p){
-  S.reden=p; S.redeZeile=0; S.redeT=0; S.vx=0; SFX.reden();
-  /* Bedingungen pruefen */
-  p._zeilen = p.zeilen;
-  if(p.id==='moritz'&&S.inventar.ausweis&&!S.erledigt.ausweis){
-    p._zeilen=['DU HAST IHN','ALTER DANKE',...p.danach];
-    S.erledigt.ausweis=true; S.inventar.ausweis=false; SFX.erledigt();
-  } else if(p.id==='schlaefer'&&S.inventar.dose&&!S.erledigt.schlaefer){
-    p._zeilen=['*DU HAELTST IHM DIE DOSE HIN*',...p.danach];
-    S.erledigt.schlaefer=true; S.inventar.dose=false; SFX.erledigt();
-  } else if(p.id==='telefon'&&!S.erledigt.telefon){
-    if(S.pegel>=TUNE.mutAb){
-      p._zeilen=['*DU NIMMST IHM EINFACH DAS HANDY AB*',...p.danach];
-      S.erledigt.telefon=true; SFX.erledigt();
-    } else {
-      p._zeilen=[...p.zeilen,'(DU TRAUST DICH NICHT, IHN ZU UNTERBRECHEN)'];
+  /* --- Hindernisse: einmaliger Treffer, wenn nicht hoch genug gesprungen --- */
+  for(let i=0;i<HINDERNISSE.length;i++){
+    if(S.hinTreffer[i]) continue;
+    const o=HINDERNISSE[i];
+    const effX=o.art==='jogger'?o.x+Math.sin(S.t*TUNE.joggerTempo+i)*TUNE.joggerAmplitude:o.x;
+    const breite=HIND_BREITE[o.art]||6;
+    if(Math.abs(S.x-effX)<TUNE.hindernisRadius+breite*.3&&S.y>BODEN-TUNE.hindernisHoehe){
+      S.hinTreffer[i]=true;
+      S.licht=Math.min(100,S.licht+TUNE.hindernisStrafe);
+      S.ruettel=TUNE.hindernisRuettel;
+      S.vx-=Math.sign(S.vx||1)*TUNE.hindernisKnockback;
+      SFX.aua(); meldung(pick(['AUA','MIST','VORSICHT']),1.2);
     }
-  } else if(p.id==='moritz'&&S.erledigt.ausweis){
-    p._zeilen=['ALLES KLAR BEI DIR','WIR KOENNEN'];
   }
-}
-function naechsteZeile(){
-  const p=S.reden;
-  S.redeZeile++;
-  if(S.redeZeile>=p._zeilen.length){ S.reden=null; return; }
-  SFX.reden();
+
+  if(pruefeZiel()){ kamera(dt); return; }
+  if(pruefeSonne()){ kamera(dt); return; }
+  kamera(dt);
 }
 
 /* ---- Kamera ---- */
@@ -762,78 +646,23 @@ function kamera(dt){
 }
 
 /* ==========================================================================
-   DER KRACHER - erster Kampf im Spiel
-   ========================================================================== */
-function starteKampf(){
-  S.modus='kampf';
-  S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
-  S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis('E IM RICHTIGEN MOMENT - KONTERN',4);
-  SFX.warn(); meldung('WER IST DAS DENN',2);
-}
-function kampf(dt){
-  const g=S.gegner; g.t+=dt;
-  const dist=S.x-g.x;
-  if(g.zustand==='komm'){
-    g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
-  } else if(g.zustand==='wind'){
-    while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
-      g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
-      S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
-      break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
-      /* Treffer, wenn du nicht gekontert hast */
-      S.hp--; S.ruettel=6; S.blitz=.5; SFX.aua();
-      meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; }
-    }
-  } else if(g.zustand==='schlag'){
-    if(g.t>=TUNE.gegnerSchlag){ g.zustand='pause'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='getroffen'){
-    g.x-=Math.sign(dist)*90*dt;
-    if(g.t>=0.5){
-      if(g.hp<=0){ starteCutscene(); return; }
-      g.zustand='pause'; g.t=0;
-    }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  } else if(g.zustand==='pause'){
-    if(g.t>=TUNE.gegnerPause){ g.zustand='komm'; g.t=0; }
-    while(aktionPuffer.length) aktionPuffer.shift();
-  }
-}
-
-/* ==========================================================================
-   CUTSCENE
+   ZIEL-CUTSCENE
    ========================================================================== */
 const SZENEN=[
-  { d:1.2, txt:'' },
-  { d:2.2, txt:'*DER TYP LIEGT IM FLUR*' },
-  { d:2.2, txt:'MORITZ: WER WAR DAS UEBERHAUPT' },
-  { d:2.0, txt:'DU: KEINE AHNUNG' },
-  { d:2.2, txt:'MAX FERDI: BAHN. JETZT.' },
-  { d:1.2, txt:'' },
-  { d:2.4, txt:'MORITZ: WARTE - MEIN TRIKOT' },
-  { d:2.2, txt:'DU: DAS TRAEGST DU SEIT DREI TAGEN' },
-  { d:2.4, txt:'MORITZ: EBEN. DAS BRINGT GLUECK.' },
-  { d:2.0, txt:'' },
-  { d:2.8, txt:'MORITZ IST JETZT DABEI' },
-  { d:2.8, txt:'MIT IHM LAEUFT ES BESSER MIT DEN CHAYAS' },
-  { d:2.4, txt:'LEVEL 2 GESCHAFFT' },
+  { d:1.0, txt:'' },
+  { d:2.4, txt:'*DU SCHLIESST LEISE DIE HAUSTUER*' },
+  { d:2.2, txt:'DRAUSSEN WIRD ES HELL.' },
+  { d:2.2, txt:'ABER DU BIST DRIN.' },
+  { d:2.4, txt:'DIE NACHT IST VORBEI.' },
 ];
-function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
-  S.gegner=null; SFX.sieg(); }
+function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.vx=0; SFX.sieg(); }
 function levelGeschafft(){
-  speichereCrew('MORITZ');
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
-  /* Der Pegel bleibt erhalten - Level 3 liest ihn als Startwert.
-     Siehe PEGEL_KEY weiter oben. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+  /* Letztes Level - der Pegel wird nicht mehr gebraucht. Ein neuer Durchlauf
+     ueber index.html soll wieder nuechtern anfangen. */
+  try{ localStorage.removeItem(PEGEL_KEY); }catch(e){}
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;
@@ -849,6 +678,27 @@ function cutscene(dt){
 /* ==========================================================================
    ZEICHNEN
    ========================================================================== */
+/* Farbverlauf des Himmels - von Nacht bis Blendend-Hell, ueber das Licht */
+const SONNENFARBEN=[
+  { t:0.00, oben:[11,15,42],  unten:[27,16,48]  },
+  { t:0.30, oben:[26,20,58],  unten:[58,26,70]  },
+  { t:0.55, oben:[58,34,86],  unten:[214,90,140]},
+  { t:0.78, oben:[120,70,110],unten:[255,140,80]},
+  { t:1.00, oben:[220,190,180],unten:[255,240,196]},
+];
+function lerp(a,b,f){ return a+(b-a)*f; }
+function himmelFarbe(licht){
+  const t=Math.max(0,Math.min(1,licht/100));
+  let a=SONNENFARBEN[0], b=SONNENFARBEN[SONNENFARBEN.length-1];
+  for(let i=0;i<SONNENFARBEN.length-1;i++){
+    if(t>=SONNENFARBEN[i].t&&t<=SONNENFARBEN[i+1].t){ a=SONNENFARBEN[i]; b=SONNENFARBEN[i+1]; break; }
+  }
+  const span=(b.t-a.t)||1, f=(t-a.t)/span;
+  const mix=(c1,c2)=>[Math.round(lerp(c1[0],c2[0],f)),Math.round(lerp(c1[1],c2[1],f)),Math.round(lerp(c1[2],c2[2],f))];
+  const ob=mix(a.oben,b.oben), un=mix(a.unten,b.unten);
+  return { oben:`rgb(${ob[0]},${ob[1]},${ob[2]})`, unten:`rgb(${un[0]},${un[1]},${un[2]})`, t };
+}
+
 function draw(dt){
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
@@ -860,103 +710,116 @@ function draw(dt){
   const rx=(Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack;
   const ry=(Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
-  zeichneWohnung();
+  zeichneStrasse();
   ctx.restore();
 
   hud();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  /* Die Sonne holt dich ein - je hoeher das Licht, desto mehr wird das Bild
+     ausgewaschen. Bewusst kein hartes Weiss, sonst ist der letzte Moment
+     nicht mehr lesbar. */
+  if(S.licht>55){
+    const a=Math.min(.55,(S.licht-55)/45*.55);
+    ctx.fillStyle=`rgba(255,250,230,${a.toFixed(3)})`; ctx.fillRect(0,0,W,H);
+  }
   bildschirme();
 }
 
-function zeichneWohnung(){
+function zeichneStrasse(){
   const kx=Math.round(S.kamX);
+  const himmel=himmelFarbe(S.licht);
+
+  /* Himmel */
+  const grd=ctx.createLinearGradient(0,0,0,BODEN);
+  grd.addColorStop(0,himmel.oben); grd.addColorStop(1,himmel.unten);
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,BODEN);
+
+  /* Sterne, verblassen mit steigendem Licht */
+  if(himmel.t<0.6){
+    ctx.globalAlpha=Math.max(0,1-himmel.t/0.6);
+    for(let i=0;i<30;i++){ ctx.fillStyle=i%5===0?'#ffffffaa':'#ffffff55';
+      ctx.fillRect((i*57-kx*0.05)%W,(i*23)%100+4,1,1); }
+    ctx.globalAlpha=1;
+  }
+
+  /* Die Sonne selbst - steigt langsam am Horizont hoch */
+  const sonneX=W*0.74;
+  const sonneY=Math.round(BODEN-6-(S.licht/100)*88);
+  zeichneSonne(sonneX,sonneY,himmel.t);
+
   ctx.save(); ctx.translate(-kx,0);
 
-  /* Raeume */
-  for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,BODEN-20);
-    ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    /* Trennwand */
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,BODEN-20);
-    /* Boden */
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,BODEN,o.bis-o.von,H-BODEN);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,BODEN,o.bis-o.von,1);
-    ctx.fillStyle='#00000033';
-    for(let x=o.von;x<o.bis;x+=14) ctx.fillRect(x,BODEN+5,7,1);
-    /* Name des Raums */
-    text(o.name,o.von+6,26,'#ffffff18');
+  /* Haeuser-Silhouette im Hintergrund, langsamerer Parallax */
+  ctx.save(); ctx.translate(-kx*0.4,0);
+  for(let i=0;i<40;i++){
+    const bx=i*140, bh=30+((i*53)%40);
+    ctx.fillStyle=himmel.t<0.5?'#141224':'#2a2338';
+    ctx.fillRect(bx,BODEN-bh,90,bh);
   }
-  /* Wohnungstuer im Flur */
-  sprite(SPR.tuer,34,BODEN-12);
-  text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
+  ctx.restore();
 
-  /* Partylicht im Wohnzimmer */
-  const puls=(Math.sin(S.t*6)*.5+.5);
-  ctx.globalAlpha=.10+puls*.10;
-  ctx.drawImage(verlauf('partylicht',200,120,g=>{
-    const gr=g.createRadialGradient(100,20,4,100,20,100);
-    gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
-    g.fillStyle=gr; g.fillRect(0,0,200,120); }),160,26);
-  ctx.globalAlpha=1;
-  /* Balkon: Nachthimmel */
-  ctx.fillStyle='#0b1024'; ctx.fillRect(890,20,90,BODEN-20);
-  for(let i=0;i<22;i++) { ctx.fillStyle=i%4===0?'#ffffff55':'#ffffff22';
-    ctx.fillRect(895+(i*37)%84,26+(i*29)%70,1,1); }
-  ctx.fillStyle='#2a3450';
-  for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
-  ctx.fillRect(890,BODEN-26,90,2);
+  /* Zonen-Hintergrund + Strasse */
+  for(const z of ZONEN){
+    ctx.fillStyle=himmel.t<0.5?'#1c1826':'#2c2436';
+    ctx.fillRect(z.von,BODEN-2,z.bis-z.von,2);
+    text(z.name,z.von+6,BODEN-14,'#ffffff14');
+  }
+  ctx.fillStyle='#221c2c'; ctx.fillRect(0,BODEN,LEVEL_B,H-BODEN);
+  ctx.fillStyle=P.bodenKante; ctx.fillRect(0,BODEN,LEVEL_B,1);
+  ctx.fillStyle='#00000033';
+  for(let x=0;x<LEVEL_B;x+=16) ctx.fillRect(x,BODEN+6,8,1);
 
-  /* Dinge */
-  for(const d of DINGE){
-    const rows=SPR[d.moebel]; if(!rows) continue;
-    const y=d.hoch?BODEN-40:BODEN-rows.length;
-    outline(rows,d.x,y,1,.5); sprite(rows,d.x,y);
-    const nah=Math.abs(d.x+6-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
-    if(nah&&Math.floor(S.t*4)%2===0){
-      const t=S.durchsucht[d.art]?'OK':'E';
-      text(t,d.x+6-textW(t)/2,y-9,S.durchsucht[d.art]?P.dunkel:P.gold);
+  /* Schatten-Zonen: Baumkronen/Haus-Kante oben, dunkler Ueberzug am Boden */
+  for(const z of SCHATTEN){
+    const dunkel=z.art==='tunnel'?0.5:0.28;
+    ctx.fillStyle=`rgba(0,0,0,${dunkel})`;
+    ctx.fillRect(z.von,20,z.bis-z.von,BODEN-20);
+    if(z.art==='baum'){
+      for(let x=z.von+10;x<z.bis;x+=40) sprite(SPR.baum,x,BODEN-24);
+    } else if(z.art==='tunnel'){
+      ctx.fillStyle='#0a0812'; ctx.fillRect(z.von,20,z.bis-z.von,18);
+    } else {
+      ctx.fillStyle='#000000aa'; ctx.fillRect(z.von,20,z.bis-z.von,10);
+    }
+    text(z.label,z.von+6,26,'#ffffff30');
+  }
+
+  /* Laternen - gehen aus, wenn es hell genug ist */
+  for(const lx of LATERNEN){
+    sprite(SPR.laterne,lx,BODEN-24);
+    if(himmel.t<0.55){
+      ctx.globalAlpha=.5+Math.sin(S.t*3+lx)*.15;
+      ctx.fillStyle='#ffe08a'; ctx.fillRect(lx-1,BODEN-25,3,3);
+      ctx.globalAlpha=1;
     }
   }
 
-  /* Leute */
-  for(const l of LEUTE){
-    const rows=SPR[l.spr]||SPR.steh;
-    const y=l.liegt?BODEN-8:BODEN-rows.length;
-    outline(rows,l.x-3,y,1,.55);
-    sprite(rows,l.x-3,y);
-    const erledigt = l.id==='max' || S.erledigt[l.id==='moritz'?'ausweis':l.id];
-    text(l.name,l.x+3-textW(l.name)/2,y-16,erledigt?P.gruen:P.dim);
-    if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
-    else {
-      const nah=Math.abs(l.x-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
-      if(nah&&Math.floor(S.t*4)%2===0) text('E',l.x+2,y-9,P.gold);
+  /* Hindernisse */
+  for(let i=0;i<HINDERNISSE.length;i++){
+    const o=HINDERNISSE[i];
+    const effX=o.art==='jogger'?o.x+Math.sin(S.t*TUNE.joggerTempo+i)*TUNE.joggerAmplitude:o.x;
+    const rows=SPR[o.art];
+    const y=BODEN-rows.length;
+    outline(rows,effX-Math.round(rows[0].length/2),y,1,.5);
+    if(o.art==='jogger'){
+      const geht=Math.sin(S.t*TUNE.joggerTempo*3+i)>0;
+      sprite(rows,effX-Math.round(rows[0].length/2),y);
+    } else sprite(rows,effX-Math.round(rows[0].length/2),y);
+    if(!S.hinTreffer[i]&&Math.abs(effX-S.x)<40&&Math.floor(S.t*5)%2===0){
+      text('!',effX-1,y-9,P.rot);
     }
   }
 
-  /* Der Kracher */
-  if(S.gegner){
-    const g=S.gegner;
-    const rows = g.zustand==='schlag'?SPR.kracherAus:SPR.kracher;
-    const blinkt = g.zustand==='wind'&&Math.floor(S.t*16)%2===0;
-    outline(rows,g.x,BODEN-rows.length,1,.6);
-    sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
-    if(g.zustand==='wind'){
-      if(Math.floor(S.t*10)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
-      ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
-      ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
-    }
-    /* Lebensbalken */
-    const bw=40, bx=Math.round(S.kamX)+W/2-bw/2;
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,25,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
+  /* Ziel: die eigene Haustuer */
+  {
+    const rows=SPR.haustuer, y=BODEN-rows.length;
+    outline(rows,ZIEL_X-4,y,1,.6); sprite(rows,ZIEL_X-4,y);
+    const nah=Math.abs(S.x-ZIEL_X)<120;
+    text('ZUHAUSE',ZIEL_X+4-textW('ZUHAUSE')/2,y-9,nah?P.gold:P.dunkel);
   }
 
   /* Spieler */
   let rows;
-  if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
-  else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
+  if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
   outline(rows,S.x-3,S.y-rows.length,1,.6);
@@ -965,117 +828,87 @@ function zeichneWohnung(){
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
   ctx.restore();
+}
 
-  /* Vignette, staerker mit steigendem Pegel */
-  const p=S.pegel/100;
-  ctx.globalAlpha=Math.min(1,.5+p*.4);
-  ctx.drawImage(verlauf('vig',W,H,g=>{
-    const gr=g.createRadialGradient(W/2,H*.55,44,W/2,H*.55,W*.6);
-    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
-    g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+/* Die Sonne wird pixelig aus Reihen gezeichnet statt aus einem Canvas-
+   Gradient - passt besser zum Rest der Optik und muss nicht mit wechselnder
+   Position/Farbe gecacht werden (waere sonst ein wachsender Cache pro Frame). */
+function zeichneSonne(x,y,t){
+  const farbe = t<0.35?'#fff4c2':t<0.65?'#ffd447':'#ff8a3d';
+  ctx.globalAlpha=.18;
+  ctx.fillStyle=farbe; ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2); ctx.fill();
   ctx.globalAlpha=1;
+  ctx.fillStyle=farbe; ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
 }
 
 /* ---- HUD ---- */
 function hud(){
-  /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
-    const x=6+i*7,y=6, voll=i<S.hp;
-    if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
-    ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
-    ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
-  }
-  /* Uhr */
-  const std=Math.floor(S.minute/60)%24, min=Math.floor(S.minute%60);
-  const uhr=std+':'+String(min).padStart(2,'0');
-  const knapp=S.minute>=TUNE.endMinute-12;
-  text(uhr,W-textW(uhr)-6,6,knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.dim));
-
-  /* Pegel */
-  const bw=64,bx=(W-bw)/2,by=6, p=S.pegel/100;
+  /* Sonnenanzeige - der eigentliche Gegner dieses Levels */
+  const bw=90,bx=(W-bw)/2,by=6, l=S.licht/100;
   ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,8);
   ctx.fillStyle='#2a2440'; ctx.fillRect(bx,by,bw,4);
-  ctx.fillStyle=p<.35?P.neon2:p<.7?P.gold:P.rot;
-  ctx.fillRect(bx,by,Math.round(bw*p),4);
-  /* Mut-Marke */
-  ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
-  text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
+  ctx.fillStyle=l<.5?P.neon2:l<.8?P.gold:P.rot;
+  ctx.fillRect(bx,by,Math.round(bw*l),4);
+  text('SONNE',bx+(bw-textW('SONNE'))/2,by+6,l>0.8&&Math.floor(S.t*4)%2===0?P.rot:P.dunkel);
 
-  /* Aufgabenliste */
-  let y=22;
-  for(const a of AUFGABEN){
-    const ok=!!S.erledigt[a.id];
-    text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
-    text(a.text,14,y,ok?P.dunkel:P.weiss);
-    y+=8;
+  /* Fortschritt zur Haustuer */
+  const fbw=50, fbx=W-fbw-6, fby=6;
+  const frac=Math.max(0,Math.min(1,S.x/ZIEL_X));
+  ctx.fillStyle='#000a'; ctx.fillRect(fbx-2,fby-2,fbw+4,8);
+  ctx.fillStyle='#2a2440'; ctx.fillRect(fbx,fby,fbw,4);
+  ctx.fillStyle=P.gruen; ctx.fillRect(fbx,fby,Math.round(fbw*frac),4);
+  text('HEIMWEG',fbx+(fbw-textW('HEIMWEG'))/2,fby+6,P.dunkel);
+
+  /* Restpegel, falls noch da */
+  if(S.pegel>2){
+    const pbw=40,pbx=6,pby=6;
+    ctx.fillStyle='#000a'; ctx.fillRect(pbx-2,pby-2,pbw+4,8);
+    ctx.fillStyle='#2a2440'; ctx.fillRect(pbx,pby,pbw,4);
+    ctx.fillStyle=P.neon2; ctx.fillRect(pbx,pby,Math.round(pbw*S.pegel/100),4);
+    text('PEGEL',pbx+(pbw-textW('PEGEL'))/2,pby+6,P.dunkel);
   }
-  if(alleFertig()&&Math.floor(S.t*2)%2===0) textC('ALLE BEREIT - RAUS AUS DER WOHNUNG',H-42,P.gold);
 
-  /* Inventar */
-  let ix=W-30;
-  if(S.inventar.jacke){ sprite(SPR.jacke,ix,16); ix-=12; }
-  if(S.inventar.ausweis){ sprite(SPR.ausweis,ix,16); ix-=12; }
-  if(S.inventar.dose){ sprite(SPR.dose,ix,16); ix-=10; }
+  if(S.licht>80&&Math.floor(S.t*3)%2===0) textC('DIE SONNE GEHT AUF',H-42,P.rot);
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
     textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
-
-  /* Gespraech */
-  if(S.reden){
-    const p2=S.reden;
-    ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-44,W,44);
-    ctx.fillStyle=P.neon; ctx.fillRect(0,H-44,W,1);
-    text(p2.name,8,H-38,P.neon2);
-    const zeile=p2._zeilen[S.redeZeile]||'';
-    textC(zeile,H-24,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E',W-12,H-12,P.dunkel);
-  }
 }
 
 /* ---- Bildschirme ---- */
 function titelbild(){
-  ctx.fillStyle='#08060f'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#0a0716'; ctx.fillRect(0,0,W,H);
+  const himmel=himmelFarbe(20);
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,himmel.oben); grd.addColorStop(1,himmel.unten);
+  ctx.fillStyle=grd; ctx.globalAlpha=.5; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;
   for(let i=0;i<44;i++){ ctx.fillStyle=i%6===0?'#2a2440':'#151020';
     ctx.fillRect((i*83)%W,(i*47)%H,1,1); }
-  textGlowC('BEI MORITZ',22,P.neon,3);
-  textC('LEVEL 2 - VORGLUEHEN',44,P.dim);
-  const zeilen=['DIE BAHN FAEHRT UM ZEHN','VIER LEUTE. KEINER WILL LOS.','MACH SIE FERTIG.'];
-  zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['< >','LAUFEN'],['SPR','SPRINGEN'],['E','REDEN, SUCHEN, TRINKEN']]
-                   :[['A D','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, SUCHEN, TRINKEN']];
-  st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
+  textGlowC('HEIMWEG',22,P.neon,3);
+  textC('LEVEL 8 - DER LETZTE WEG',44,P.dim);
+  const zeilen=['DIE SONNE GEHT AUF.','KOMM NACH HAUSE, BEVOR ES HELL WIRD.','MEIDE SCHATTEN, SPRING UEBER ALLES.'];
+  zeilen.forEach((z,i)=>textC(z,64+i*10,i===1?P.gold:P.weiss));
+  const st=IS_TOUCH?[['< >','LAUFEN'],['SPR','SPRINGEN']]
+                   :[['A D','LAUFEN'],['LEER','SPRINGEN']];
+  st.forEach((z,i)=>{ text(z[0],92,106+i*9,P.gold); text(z[1],126,106+i*9,P.dim); });
   const crew=ladeCrew();
-  if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC(IS_TOUCH?'TIPPEN ZUM START':'LEERTASTE ODER E',H-19,P.weiss,1);
-  if(!IS_TOUCH){
-    const a='TASTE 1    LEVEL 1 - DIE SCHULE';
-    const b='LEERTASTE  LEVEL 2 - BEI MORITZ';
-    text(a,(W-textW(a))/2,H-11,P.dunkel);
-    text(b,(W-textW(b))/2,H-5,P.neon2);
-  }
+  if(crew.length) textC('DABEI WAR: '+crew.join(', '),128,P.neon2);
+  const best=ladeBest();
+  if(best!==null) textC('BESTZEIT '+Math.floor(best/60)+':'+String(Math.floor(best%60)).padStart(2,'0'),140,P.dim);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC(IS_TOUCH?'TIPPEN ZUM START':'LEERTASTE ODER E',H-14,P.weiss,1);
 }
 function zeichneIntro(){
-  ctx.fillStyle='#0a0812'; ctx.fillRect(0,0,W,H);
+  const himmel=himmelFarbe(10);
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,himmel.oben); grd.addColorStop(1,himmel.unten);
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
   const m=Math.round(W/2);
-  ctx.fillStyle='#241a2c'; ctx.fillRect(0,30,W,100);
-  ctx.fillStyle='#1d1727'; ctx.fillRect(0,130,W,H-130);
+  ctx.fillStyle='#1c1826'; ctx.fillRect(0,130,W,H-130);
   ctx.fillStyle=P.bodenKante; ctx.fillRect(0,130,W,1);
-  /* Partylicht */
-  const puls=(Math.sin(S.t*5)*.5+.5);
-  ctx.globalAlpha=.14+puls*.12;
-  ctx.drawImage(verlauf('introlicht',220,110,g=>{
-    const gr=g.createRadialGradient(110,14,4,110,14,96);
-    gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
-    g.fillStyle=gr; g.fillRect(0,0,220,110); }),m-110,30);
-  ctx.globalAlpha=1;
-  sprite(SPR.sofa,m-60,124);
-  sprite(SPR.schlaefer,m-52,122);
-  sprite(SPR.steh,m+20,130-13);
-  sprite(SPR.moritz,m+46,130-15);
+  sprite(SPR.steh,m-4,130-13);
   ctx.drawImage(verlauf('introvig',W,H,g=>{
-    const gr=g.createRadialGradient(m,80,40,m,80,W*.6);
+    const gr=g.createRadialGradient(m,90,40,m,90,W*.6);
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.82)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
   ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-38,W,38);
@@ -1098,17 +931,20 @@ function bildschirme(){
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
     if(S.gewonnen){
-      textGlowC('LEVEL 2 GESCHAFFT',34,P.gold,2);
-      textC('IHR SEID DRAUSSEN. GERADE NOCH.',56,P.weiss);
+      textGlowC('DURCHGESPIELT',30,P.gold,2);
+      textC('DU BIST ZUHAUSE. DIE SONNE WAR ZU LANGSAM.',52,P.weiss);
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
-      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),74,S.neueBestzeit?P.gold:P.dim);
-      if(S.neueBestzeit) textC('NEUE BESTZEIT',84,P.gold);
-      textC('PEGEL  '+Math.round(S.pegel),96,P.dim);
+      textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),70,S.neueBestzeit?P.gold:P.dim);
+      if(S.neueBestzeit) textC('NEUE BESTZEIT',80,P.gold);
       const crew=ladeCrew();
-      if(crew.length) textC('DABEI: '+crew.join(', '),110,P.neon2);
-      if(Math.floor(S.t*2)%2===0) textGlowC(IS_TOUCH?'TIPPEN  WEITER ZU LEVEL 3':'E  WEITER ZU LEVEL 3',134,P.gruen,1);
+      textC(crew.length?'MIT DABEI: '+crew.join(', '):'GANZ ALLEIN DURCH DIE NACHT',94,P.neon2);
+      textC('DIE NACHT IST VORBEI.',108,P.dim);
+      if(Math.floor(S.t*2)%2===0)
+        textGlowC(IS_TOUCH?'TIPPEN: GANZES SPIEL NEU STARTEN':'E: GANZES SPIEL NEU STARTEN',132,P.gruen,1);
+      text(IS_TOUCH?'ODER TIPPEN (SPR): NUR DIESES LEVEL':'ODER LEERTASTE: NUR DIESES LEVEL',
+        (W-textW('ODER LEERTASTE: NUR DIESES LEVEL'))/2,144,P.dunkel);
     } else {
-      textGlowC('VERPASST',48,P.rot,3);
+      textGlowC('ERWISCHT',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
     }
     if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);

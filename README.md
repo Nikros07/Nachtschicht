@@ -207,6 +207,52 @@ Chayas** — das wird im Club-Level wichtig.
 
 ---
 
+## Level 3 — Der Nachtbus
+
+21:10 vorbei, 22:00 fährt die letzte Bahn. Zwei Teile: erst ein Sprint durch
+die Stadt gegen die Uhr, dann die Fahrt selbst — ohne Ticket, mit
+Kontrolleuren an Bord. Kein Sichtkegel wie bei den Lehrern, sondern ein
+Verdachtsbalken im engen Gang: wer zu lange auffällt, fliegt auf. Der Pegel
+aus Level 2 ist an Bord dabei und wirkt sich hier schon aufs Gleichgewicht
+aus. Schaltet **JONAS** frei.
+
+## Level 4 — Die Schlange
+
+Der erste echte Boss: der Türsteher lässt euch nicht rein. Reiner
+Konter-Kampf ohne Bewegung — er holt sichtbar aus, `E` im richtigen Moment
+kontert, verpasstes Timing kostet ein Herz. Zwei verschiedene Schlagmuster,
+damit man nicht einfach im Takt drücken kann. Schaltet **DENNIS** frei, der
+ab hier fest dabei ist.
+
+## Level 5 — Club
+
+Drinnen. Ein Stroboskop lässt die Sicht immer wieder wegbrechen, und wer
+jemanden ansprechen will, spielt ein Timing-Minispiel: ein Zeiger läuft über
+eine Leiste, `E` im grünen Fenster trifft. Erfolg macht kurz selbstbewusst
+und schneller, Fehlschlag bremst. Der Pegel steigt hier weiter. Schaltet
+**SEMIH** frei.
+
+## Level 6 — Afterhour
+
+Tief in der Nacht kippt es ins Surreale — die Schule aus Level 1 taucht
+verzerrt wieder auf, mit doppelten Konturen und Erinnerungsfetzen statt
+Räumen. Kein neuer Kampf, nur Navigation durch etwas, das nicht ganz stimmt.
+Schaltet **LEA** frei.
+
+## Level 7 — Späti
+
+Die Ruhepause. Kein Kampf, keine Uhr, die drängt — Wasser und Snacks holen,
+mit der Crew reden, kurz durchatmen, bevor der letzte Akt beginnt.
+
+## Level 8 — Heimweg
+
+Der letzte Weg nach Hause, gegen die aufgehende Sonne. Kein klassischer
+Bosskampf, sondern ein Wettlauf: die Sonne holt sichtbar auf, wer es nicht
+rechtzeitig schafft, wird von ihr eingeholt. Danach ist die Nacht vorbei —
+`E` startet das ganze Spiel neu, Leertaste nur dieses Level.
+
+---
+
 ## Der alte Modus
 
 Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
@@ -265,5 +311,6 @@ Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
 
 ## Stand
 
-Level 1 ist fertig und durchspielbar. Level 2 bis 8 sowie das Freischalten der
-restlichen Crew stehen in [TODO.md](TODO.md).
+Alle acht Level sind durchspielbar, Level 1 und 2 ausgereift, Level 3 bis 8
+als erste spielbare Grundversion. Was daran noch fehlt oder wackelt, steht in
+[TODO.md](TODO.md).

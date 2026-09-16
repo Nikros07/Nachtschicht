@@ -43,11 +43,21 @@
   #thit   { right:3%; bottom:8%;  width:17%; aspect-ratio:1; }
   #tjump  { right:22%;bottom:8%;  width:17%; aspect-ratio:1; }
   #tup    { right:12%;bottom:34%; width:15%; aspect-ratio:1; }
+  #tdown  { right:32%;bottom:34%; width:15%; aspect-ratio:1; }
   #tsneak { left:12%; bottom:34%; width:15%; aspect-ratio:1; font-size:8px; }
   #fs { position:absolute; top:6px; right:8px; z-index:5;
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
     border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
   #fs:hover { color:#ffd447; border-color:#ffd447; }
+
+  /* Ausstieg aus dem Vollbild am Handy: ohne dieses Kreuz gibt es dort keinen
+     Weg zurueck zur Levelauswahl - #fs und #levelbar sind im Vollbild aus,
+     und iOS/Android kennen keine Zurueck-Taste dafuer. */
+  #texit { position:absolute; top:8px; left:8px; z-index:6; width:30px; height:30px;
+    border-radius:50%; background:rgba(20,16,34,.75); border:1px solid #2a2246;
+    color:#8d86a8; display:none; align-items:center; justify-content:center;
+    font:700 13px monospace; }
+  html.touch #cab:fullscreen #texit { display:flex; }
 
   /* Levelauswahl als echte Links. Die Tastenbelegung allein reichte nicht:
      ohne Klick ins Bild hat die Seite keinen Tastatur-Fokus, und am Handy
@@ -87,15 +97,22 @@
     <div id="crt"></div>
     <div id="touch">
       <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
-      <div class="btn" id="tup">&#9650;</div>
+      <div class="btn" id="tup">&#9650;</div><div class="btn" id="tdown">&#9660;</div>
       <div class="btn" id="tjump">SPR</div><div class="btn" id="thit">E</div>
       <div class="btn" id="tsneak">LEISE</div>
     </div>
+    <div id="texit">&#10005;</div>
   </div>
   <button id="fs">VOLLBILD</button>
   <div id="levelbar">
     <a href="index.html" class="aktiv">1 &middot; DIE SCHULE</a>
     <a href="level2.html">2 &middot; BEI MORITZ</a>
+    <a href="level3.html">3 &middot; DER NACHTBUS</a>
+    <a href="level4.html">4 &middot; DIE SCHLANGE</a>
+    <a href="level5.html">5 &middot; CLUB</a>
+    <a href="level6.html">6 &middot; AFTERHOUR</a>
+    <a href="level7.html">7 &middot; SPAETI</a>
+    <a href="level8.html">8 &middot; HEIMWEG</a>
   </div>
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
@@ -216,6 +233,7 @@ const F = {
  '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
+ '%':'100,001,010,100,001',
 };
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
 
@@ -605,7 +623,7 @@ neuesSpiel();
    EINGABE
    ========================================================================== */
 const keys={};
-let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false, schleichAn=false;
+let linksAn=false, rechtsAn=false, sprungAn=false, hochAn=false, touchRunterAn=false, schleichAn=false;
 let aktionGehalten=false;
 let sprungPuffer=[], aktionPuffer=[];
 
@@ -733,7 +751,7 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false;
 });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=schleichAn=aktionGehalten=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=touchRunterAn=schleichAn=aktionGehalten=false; });
 
 const el=id=>document.getElementById(id);
 const bind=(id,evs,fn)=>evs.forEach(ev=>el(id).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
@@ -743,11 +761,15 @@ bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
 bind('tup',['touchstart','mousedown'],()=>hochAn=true);
 bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
+bind('tdown',['touchstart','mousedown'],()=>touchRunterAn=true);
+bind('tdown',['touchend','mouseup','touchcancel'],()=>touchRunterAn=false);
 bind('tjump',['touchstart','mousedown'],druckSprung);
 bind('tjump',['touchend','mouseup','touchcancel'],()=>sprungAn=false);
-bind('thit',['touchstart','mousedown'],druckAktion);
+bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
+bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
 bind('tsneak',['touchstart','mousedown'],()=>schleichAn=true);
 bind('tsneak',['touchend','mouseup','touchcancel'],()=>schleichAn=false);
+bind('texit',['touchstart','mousedown'],()=>{ if(imVollbild()) vollbild(); });
 if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild(); removeEventListener('touchstart',einmal); },{once:true});
 
 /* ==========================================================================
@@ -966,13 +988,13 @@ function update(dt){
      Klammern sind hier wichtig - && bindet staerker als ||, sonst haengt
      die halbe Bedingung am falschen Zweig. */
   const treppe = S.amBoden && anTreppe(S.x);
-  const runterAn = !!(keys['ArrowDown'] || keys['KeyS']);
+  const runterAn = !!(keys['ArrowDown'] || keys['KeyS']) || touchRunterAn;
   if(treppe && hochAn && S.etage < BODEN.length-1){
     S.etage++; S.y=BODEN[S.etage]; S.vy=0; hochAn=false;
     SFX.landen(); meldung('ETAGE '+(S.etage+1),1); nachricht('etage');
   } else if(treppe && runterAn && S.etage > 0){
     S.etage--; S.y=BODEN[S.etage]; S.vy=0;
-    keys['ArrowDown']=false; keys['KeyS']=false;
+    keys['ArrowDown']=false; keys['KeyS']=false; touchRunterAn=false;
     SFX.landen(); meldung('ETAGE '+(S.etage+1),1); nachricht('etage');
   }
 
@@ -1872,7 +1894,7 @@ function hud(){
     let t=null;
     if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
     else if(ri>=0) t='E  REIN';
-    else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? 'W  HOCH' : 'S  RUNTER';
+    else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? (IS_TOUCH?'HOCH':'W  HOCH') : (IS_TOUCH?'RUNTER':'S  RUNTER');
     if(t&&Math.floor(S.t*3)%2===0) textC(t,H-42,P.gold);
   }
 }
@@ -1890,19 +1912,28 @@ function titelbild(){
     'DIE LEHRER SIND NOCH DA',
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
-  const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
-            ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
-            ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
-  st.forEach((z,i)=>{ const y=100+i*8;
-    text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
+  if(IS_TOUCH){
+    const st=[['< >','LAUFEN'],['LEISE','SCHLEICHEN'],['AUF AB','TREPPE'],
+              ['E','TUER, SPIND, DURCHSUCHEN']];
+    st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],86,y,P.dim); });
+  } else {
+    const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
+              ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
+              ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
+    st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
+  }
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
-  if(Math.floor(S.t*1.6)%2===0) textGlowC('LEERTASTE ODER E',H-19,P.weiss,1);
-  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt */
-  const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
-  const b='TASTE 2    LEVEL 2 - BEI MORITZ';
-  text(a,(W-textW(a))/2,H-11,P.dunkel);
-  text(b,(W-textW(b))/2,H-5,P.neon2);
+  if(Math.floor(S.t*1.6)%2===0) textGlowC(IS_TOUCH?'TIPPEN ZUM START':'LEERTASTE ODER E',H-19,P.weiss,1);
+  /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt.
+     Am Handy uebernimmt die #levelbar unter dem Bild das - Tastenhinweise
+     wie "Taste 2" gibt es dort schlicht nicht. */
+  if(!IS_TOUCH){
+    const a='LEERTASTE  LEVEL 1 - DIE SCHULE';
+    const b='TASTE 2    LEVEL 2 - BEI MORITZ';
+    text(a,(W-textW(a))/2,H-11,P.dunkel);
+    text(b,(W-textW(b))/2,H-5,P.neon2);
+  }
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1914,7 +1945,7 @@ function bildschirme(){
     textGlowC('ERWISCHT',48,P.rot,3);
     textC(S.faenger||'ERWISCHT',72,P.dim);
     textC(S.hp>0?'ZURUECK ZUR TREPPE':'KEINE VERSUCHE MEHR',86,P.weiss);
-    if(S.szeneT>.6&&Math.floor(S.t*2)%2===0) textC('LEERTASTE',104,P.gold);
+    if(S.szeneT>.6&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN':'LEERTASTE',104,P.gold);
   }
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
@@ -1942,7 +1973,7 @@ function bildschirme(){
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
     }
-    if(Math.floor(S.t*2)%2===0) textC('LEERTASTE FUER NEUSTART',H-20,P.gold);
+    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-20,P.gold);
   }
 }
 
