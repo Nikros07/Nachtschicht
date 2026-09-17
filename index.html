@@ -123,6 +123,8 @@
 <script src="nacht/ton.js"></script>
 <script src="nacht/stand.js"></script>
 <script src="nacht/welt.js"></script>
+<script src="nacht/nacht.js"></script>
+<script src="nacht/dialog.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -213,6 +215,11 @@ const TUNE = {
   tiefeTempo:     1.0,
   kegelOeffnung: 0.5,    // wie weit sich der Blick mit der Entfernung oeffnet
   tuerTiefe:     0.42,   // so weit hinten muss man fuer Tuer und Spind
+
+  /* (5c) DAS HANDY - liegt eingezogen im Lehrerzimmer. Freiwillig, aber
+     ohne das bleibt die restliche Nacht stumm. */
+  handyRaum:  'LEHRERZIMMER',
+  handyMoebel:      1,   // welches Moebel im Raum (0-basiert)
 
   /* (6) OPTIK */
   flackern:      true,
@@ -501,6 +508,8 @@ function neuesSpiel(){
   /* Start hinten an der Wand: die erste Tuer soll ohne Erklaerung
      funktionieren. Nach vorne gehen entdeckt man beim ersten Lehrer. */
   S.tiefe=0.18; S.vt=0;
+  S.handyGeholt=false; S.redenMit=null;
+  S.handyRaumNr=RAEUME.findIndex(r=>r.name===TUNE.handyRaum);
   /* Lehrer verteilen sich ueber die Tiefe, sonst stehen alle auf einer
      Linie und der Flur fuehlt sich wieder flach an. */
   S.lehrer.forEach((L,i)=>{ L.t=0.3+((i*0.37)%0.5); });
@@ -528,6 +537,8 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  /* Laeuft ein Gespraech, ist E die Bestaetigung - sonst nichts. */
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
@@ -616,6 +627,12 @@ function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    /* Im Gespraech waehlen links/rechts die Antwort. Am Handy dieselben
+       Knoepfe - deshalb braucht die Auswahl keine Tap-Erkennung. */
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
@@ -645,9 +662,9 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
 addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=touchRunterAn=schleichAn=aktionGehalten=false; });
 
 
-bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchstart','mousedown'],()=>{ if(gespraechAktiv()){ gespraechWaehle(-1); return; } linksAn=true; });
 bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
-bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchstart','mousedown'],()=>{ if(gespraechAktiv()){ gespraechWaehle(1); return; } rechtsAn=true; });
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
 bind('tup',['touchstart','mousedown'],()=>hochAn=true);
 bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
@@ -766,6 +783,9 @@ function update(dt){
   if(S.modus==='pause'||S.modus==='titel') return;
 
   if(S.modus==='intro'){ intro(dt); return; }
+  /* Laeuft ein Gespraech, steht der Rest still - sonst laeuft dir ein
+     Lehrer waehrend der Antwortauswahl in den Ruecken. */
+  if(gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt,true); return; }
   if(S.modus==='ende'){ S.zeit+=dt; return; }
   if(S.modus==='gefangen'){ S.szeneT+=dt; return; }
@@ -906,8 +926,10 @@ function update(dt){
       if(S.hatSchluessel){ starteCutscene(); }
       else { meldung('ABGESCHLOSSEN'); SFX.nichts(); }
     } else if(hm){
-      /* Nur wenn er abgelenkt ist, kommst du an den Schluessel. */
-      if(hm.suchtX!=null||hm.abgelenkt>0){
+      /* Zwei Wege: ablenken und zugreifen - oder ihn ansprechen.
+         Wer ihn anschaut, waehrend er hinschaut, redet eben. */
+      if(!(hm.suchtX!=null||hm.abgelenkt>0)){ starteHausmeisterGespraech(hm); }
+      else if(hm.suchtX!=null||hm.abgelenkt>0){
         hm.hatSchluessel=false; S.hatSchluessel=true;
         SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL VOM GUERTEL GEZOGEN',2.4);
@@ -962,7 +984,15 @@ function imRaum(dt){
       S.durchsucht.add(S.raum+':'+S.suchZiel);
       const zettel=S.zettel.find(z=>z.raum===S.raum&&z.moebel===S.suchZiel&&!z.gefunden);
       const fund=S.funde.find(f=>f.raum===S.raum&&f.moebel===S.suchZiel&&!f.gefunden);
-      if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
+      if(S.raum===S.handyRaumNr && S.suchZiel===TUNE.handyMoebel && !S.handyGeholt){
+        /* Dein eingezogenes Handy. Rein optional - aber ohne das bleibt
+           die restliche Nacht ohne Nachrichten, siehe setzeFlag unten. */
+        S.handyGeholt=true; SFX.fund(); S.blitz=1;
+        setzeFlag('handyZurueck');
+        aendereWert('ruf',5);
+        meldung('DEIN HANDY - EINGEZOGEN UND WIEDER DA',2.6);
+        zeigeHinweis('JETZT SCHREIBEN DIR DIE JUNGS WIEDER',3);
+      } else if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
         S.hatSchluessel=true; SFX.fund(); S.blitz=1;
         meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
         nachricht('schluessel');
@@ -1163,6 +1193,66 @@ function lehrerLogik(dt){
   }
   S.lehrerJagt=jagt;
 }
+
+/* ==========================================================================
+   REDEN STATT KLAUEN
+   Der Hausmeister war bisher ein Hindernis mit genau einer Loesung: ablenken
+   und zugreifen. Wer ihn anspricht, hat jetzt einen zweiten Weg - und der
+   haengt daran, wie die Nacht bisher lief (Mut, Ruf, wer dabei ist).
+   ========================================================================== */
+const HAUSMEISTER_GESPRAECH = {
+  start:{ wer:'HAUSMEISTER', text:'Was machst du hier? Schule ist seit zwei stunden aus.',
+    wahl:[
+      { txt:'Ich hab mein handy vergessen.',            geh:'handy' },
+      { txt:'Ich bin beim nachsitzen eingepennt.',      geh:'ehrlich' },
+      { txt:'Machen sie einfach die tuer auf.',         wenn:{mut:45}, geh:'frech' },
+      { txt:'Max ferdi laesst gruessen.',               wenn:{crew:'MAX FERDI'}, geh:'ferdi' },
+    ], zeit:9, standard:1 },
+
+  handy:{ wer:'HAUSMEISTER', text:'Handys liegen im lehrerzimmer. Zweiter stock, und beeil dich.',
+    tu:{ruf:2}, geh:'ende' },
+
+  ehrlich:{ wer:'HAUSMEISTER', text:'Eingepennt. Beim nachsitzen. Das muss man erstmal schaffen.',
+    wahl:[
+      { txt:'War ne lange woche.',        geh:'mitleid', tu:{ruf:3} },
+      { txt:'Passiert den besten.',       geh:'genervt', tu:{mut:3} },
+    ], zeit:7, standard:0 },
+
+  mitleid:{ wer:'HAUSMEISTER', text:'Kenn ich. Komm, ich lass dich raus - aber du hast mich nie gesehen.',
+    tu:{flag:'hausmeisterHilft', ruf:6, mag:['HAUSMEISTER',10]}, geh:'schluessel' },
+
+  genervt:{ wer:'HAUSMEISTER', text:'Bei den besten. Klar. Ich hab zu tun.',
+    tu:{mag:['HAUSMEISTER',-5]}, geh:'ende' },
+
+  frech:{ wer:'HAUSMEISTER', text:'Ich mach hier gar nichts auf. Verschwinde.',
+    tu:{ruf:-4, mag:['HAUSMEISTER',-12]}, geh:'ende' },
+
+  ferdi:{ wer:'HAUSMEISTER', text:'Der ferdi. Der ist heute schon durchs fenster raus. Ihr seid mir welche.',
+    wahl:[
+      { txt:'Dann lassen sie mich auch raus.', geh:'mitleid' },
+      { txt:'Ich sag ihm schoene gruesse.',    geh:'ende', tu:{ruf:2} },
+    ], zeit:7, standard:1 },
+
+  schluessel:{ wer:'HAUSMEISTER', text:'Der zweitschluessel haengt am haken. Nimm ihn und tu ihn zurueck.',
+    geh:'ende' },
+
+  ende:null,
+};
+
+function starteHausmeisterGespraech(hm){
+  S.redenMit=hm;
+  starteGespraech(HAUSMEISTER_GESPRAECH,'start',()=>{
+    S.redenMit=null;
+    /* Wer ihn ueberzeugt hat, bekommt den Schluessel ohne Klauerei. */
+    if(flag('hausmeisterHilft')&&hm.hatSchluessel){
+      hm.hatSchluessel=false; S.hatSchluessel=true;
+      SFX.fund(); S.blitz=1;
+      meldung('ER GIBT DIR DEN SCHLUESSEL',2.4);
+      zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+    }
+  });
+}
+
 function gefangen(L){
   if(S.unverwundbar>0) return;
   S.hp--; S.modus='gefangen'; S.szeneT=0; S.ruettel=6; SFX.gefangt();
@@ -1352,6 +1442,7 @@ function draw(dt){
   ctx.restore();
   hud();
   if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  zeichneGespraech();
   bildschirme();
 }
 
