@@ -118,6 +118,7 @@
 <script src="nacht/stand.js"></script>
 <script src="nacht/welt.js"></script>
 <script src="nacht/kampf.js"></script>
+<script src="nacht/nacht.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -279,6 +280,17 @@ const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return 
 const dennisKampfBonus=()=>ladeCrew().includes('DENNIS')?{leben:1,fenster:1.15}:{leben:0,fenster:1};
 
 let S={};
+/* Die Gruppengroesse aus Level 2 wirkt hier: mit vier Mann faellt ihr auf
+   und er laesst sich mehr bitten, zu zweit kommt ihr leichter durch.
+   Das ist die andere Haelfte des Tauschs - im grossen Fight ist es umgekehrt. */
+function trefferZiel(){
+  let n=TUNE.bossTreffer;
+  if(typeof flag==='function'){
+    if(flag('gruppeGross')) n+=1;
+    else if(flag('gruppeKlein')) n-=1;
+  }
+  return Math.max(3,n);
+}
 function neuesSpiel(){
   const bonus=dennisKampfBonus();
   setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne);
@@ -370,7 +382,7 @@ function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(33
 function starteLevel(){
   S.modus='kampf';
   S.boss=kaempfer({ x:W+30, t:0.5, blick:-1, art:'tuersteher',
-    hp:TUNE.bossTreffer, maxHp:TUNE.bossTreffer, reichweite:19,
+    hp:trefferZiel(), maxHp:trefferZiel(), reichweite:19,
     pauseT:0.9, anlauf:true, vorZustand:'frei' });
   zeigeHinweis('E IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
   SFX.warn(); meldung('NA WARTE',1.4);
@@ -386,7 +398,7 @@ const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
    DER TUERSTEHER - der Kampf
    ========================================================================== */
 function bossPhase(b){
-  const anteil=b.hp/TUNE.bossTreffer;
+  const anteil=b.hp/b.maxHp;
   return anteil<=TUNE.phase3Ab?3:anteil<=TUNE.phase2Ab?2:1;
 }
 function naechsteArt(b){
@@ -757,7 +769,7 @@ function zeichneArena(){
     const bw=40, bx=Math.round(W/2-bw/2);
     ctx.fillStyle='#000a'; ctx.fillRect(bx-1,13,bw+2,6);
     ctx.fillStyle=P.rot;
-    ctx.fillRect(bx,14,Math.round(bw*Math.max(0,b.hp)/TUNE.bossTreffer),4);
+    ctx.fillRect(bx,14,Math.round(bw*Math.max(0,b.hp)/b.maxHp),4);
     /* Phasenstriche, damit man sieht wann es haerter wird */
     ctx.fillStyle='#0008';
     ctx.fillRect(bx+Math.round(bw*TUNE.phase2Ab),13,1,6);
@@ -787,7 +799,7 @@ function hud(){
     ctx.fillRect(bx+Math.round(bw*KAMPF.ausdauerSchlag/KAMPF.ausdauerMax),by,1,3);
   }
 
-  const tr='TREFFER '+S.treffer+'/'+TUNE.bossTreffer;
+  const tr='TREFFER '+S.treffer+'/'+(S.boss?S.boss.maxHp:TUNE.bossTreffer);
   text(tr,W-textW(tr)-6,6,P.dim);
   if(S.boss&&!S.boss.anlauf){
     const ph='PHASE '+bossPhase(S.boss);

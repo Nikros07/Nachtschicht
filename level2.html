@@ -38,6 +38,8 @@
   #tright { left:22%; bottom:8%; width:17%; aspect-ratio:1; }
   #thit   { right:3%; bottom:8%; width:17%; aspect-ratio:1; }
   #tjump  { right:22%;bottom:8%; width:17%; aspect-ratio:1; }
+  #tup    { left:12%; bottom:34%; width:15%; aspect-ratio:1; }
+  #tdown  { left:32%; bottom:34%; width:15%; aspect-ratio:1; }
   #fs { position:absolute; top:6px; right:8px; z-index:5;
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
     border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
@@ -86,6 +88,7 @@
     <div id="crt"></div>
     <div id="touch">
       <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
+      <div class="btn" id="tup">&#9650;</div><div class="btn" id="tdown">&#9660;</div>
       <div class="btn" id="tjump">SPR</div><div class="btn" id="thit">E</div>
     </div>
     <div id="texit">&#10005;</div>
@@ -109,6 +112,9 @@
 <script src="nacht/bild.js"></script>
 <script src="nacht/ton.js"></script>
 <script src="nacht/stand.js"></script>
+<script src="nacht/welt.js"></script>
+<script src="nacht/nacht.js"></script>
+<script src="nacht/dialog.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -147,6 +153,12 @@ const TUNE = {
   startMinute:   21*60+10,
   endMinute:     22*60,
   levelSekunden: 190,
+
+  /* (4b) TIEFE - die Wohnung ist ein Raum, kein Gang */
+  tiefeHinten:   128,
+  tiefeVorne:    150,
+  tiefeTempo:    1.0,
+  tiefeWelt:      52,
 
   /* (5) REDEN UND SUCHEN */
   reichweite:      15,     // wie nah du an Leuten und Sachen sein musst
@@ -356,6 +368,7 @@ function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
+    tiefe:0.5, vt:0, mitnehmen:null,
     kamX:0, hp:TUNE.leben,
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
@@ -380,6 +393,10 @@ function neuesSpiel(){
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
 neuesSpiel();
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
+/* Die Leute verteilen sich in der Tiefe, sonst steht die Wohnung wieder
+   auf einer Linie. */
+LEUTE.forEach((l,i)=>{ l.t=[0.25,0.62,0.8,0.4][i%4]; });
 
 
 const BEST_KEY='nachtschicht.bestzeit2';
@@ -395,6 +412,7 @@ const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
    ========================================================================== */
 
 let linksAn=false, rechtsAn=false, sprungAn=false, aktionGehalten=false;
+let hochAn=false, runterAn=false;
 let sprungPuffer=[], aktionPuffer=[];
 
 function druckSprung(){
@@ -407,6 +425,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
@@ -416,8 +435,14 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
+  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
@@ -429,15 +454,21 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ArrowDown','KeyS'].includes(e.code)) runterAn=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false; });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=hochAn=runterAn=false; });
 
 
-bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchstart','mousedown'],()=>{ if(gespraechAktiv()){ gespraechWaehle(-1); return; } linksAn=true; });
 bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
-bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchstart','mousedown'],()=>{ if(gespraechAktiv()){ gespraechWaehle(1); return; } rechtsAn=true; });
 bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
+bind('tup',['touchstart','mousedown'],()=>hochAn=true);
+bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
+bind('tdown',['touchstart','mousedown'],()=>runterAn=true);
+bind('tdown',['touchend','mouseup','touchcancel'],()=>runterAn=false);
 bind('tjump',['touchstart','mousedown'],druckSprung);
 bind('tjump',['touchend','mouseup','touchcancel'],()=>sprungAn=false);
 bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
@@ -482,6 +513,7 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
   if(S.modus==='intro'){ intro(dt); return; }
+  if(gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
   if(S.modus==='ende'){ return; }
 
@@ -517,6 +549,14 @@ function update(dt){
     const brems=TUNE.bremsung*kontrolle*dt;
     S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
   }
+  /* Tiefe. Ausgeschrieben statt bewegeTiefe(S,...), weil S.t hier die
+     Spielzeit ist - der Engine-Aufruf wuerde sie ueberschreiben. */
+  {
+    const rt=(runterAn?1:0)-(hochAn?1:0);
+    const zielVt=rt*TUNE.tiefeTempo;
+    S.vt += (zielVt-S.vt)*Math.min(1,14*dt);
+    S.tiefe = Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
+  }
   S.x+=S.vx*dt;
   S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
 
@@ -550,7 +590,11 @@ function update(dt){
        direkt neben jemandem gar nicht erreichbar - genau so war das Bett
        neben Moritz unbenutzbar und der Ausweis unauffindbar. */
     let person=null, dPerson=1e9;
-    for(const l of LEUTE){ const d=Math.abs(l.x-S.x);
+    for(const l of LEUTE){
+      /* Wer in einer anderen Tiefe steht, ist nicht in Reichweite -
+         man muss zu den Leuten hin, nicht nur an ihnen vorbei. */
+      if(Math.abs((l.t||0.5)-S.tiefe)>0.3) continue;
+      const d=Math.abs(l.x-S.x);
       if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
     let ding=null, dDing=1e9;
     for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
@@ -700,9 +744,59 @@ const SZENEN=[
   { d:2.8, txt:'MIT IHM LAEUFT ES BESSER MIT DEN CHAYAS' },
   { d:2.4, txt:'LEVEL 2 GESCHAFFT' },
 ];
-function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
-  S.gegner=null; SFX.sieg(); }
+
+/* ==========================================================================
+   WER KOMMT MIT
+   Die Entscheidung des Levels. Sie setzt die Crew fuer die ganze restliche
+   Nacht und ein Flag, an dem Level 4 und Level 8 haengen.
+   ========================================================================== */
+const MITNEHMEN = {
+  start:{ wer:'MAX FERDI', text:'Also. Wer kommt jetzt eigentlich mit?',
+    wahl:[
+      { txt:'Alle. Wir sind eine gruppe.',        geh:'alle' },
+      { txt:'Nur wir zwei. Der rest ist zu drauf.', geh:'klein' },
+      { txt:'Moritz und der schlaefer. Der am telefon bleibt.', geh:'mittel' },
+    ], zeit:10, standard:0 },
+
+  alle:{ wer:'MAX FERDI', text:'Vier mann. Der tuersteher wird uns lieben.',
+    tu:{flag:'gruppeGross', crew:'MORITZ', mut:6, mag:['MORITZ',6]},
+    geh:'ende' },
+
+  klein:{ wer:'MAX FERDI', text:'Auch gut. Kleiner faellt weniger auf.',
+    tu:{flag:'gruppeKlein', crew:'MORITZ', ruf:-3, mag:['MORITZ',-4]},
+    geh:'ende' },
+
+  mittel:{ wer:'MAX FERDI', text:'Passt. Der telefoniert eh bis morgen frueh.',
+    tu:{crew:'MORITZ', mag:['MORITZ',3]},
+    geh:'ende' },
+
+  ende:null,
+};
+
+/* Wer in der Gruppe landet, haengt an der Wahl. MORITZ kommt immer mit -
+   er ist der Grund, warum man ueberhaupt hier war. */
+function fuehreCrewZusammen(){
+  speichereCrew('MAX FERDI');
+  speichereCrew('MORITZ');
+  if(flag('gruppeGross')){
+    speichereCrew('DER SCHLAEFER');
+    speichereCrew('DER TELEFONIERER');
+  } else if(!flag('gruppeKlein')){
+    speichereCrew('DER SCHLAEFER');
+  }
+}
+
+function starteCutscene(){
+  /* Erst die Entscheidung, dann die Cutscene. Vorher kamen automatisch
+     alle mit - das war keine Wahl, das war eine Ansage. */
+  S.gegner=null; SFX.sieg();
+  starteGespraech(MITNEHMEN,'start',()=>{
+    fuehreCrewZusammen();
+    S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
+  });
+}
 function levelGeschafft(){
+  /* Die Crew steht schon aus der Entscheidung, siehe fuehreCrewZusammen. */
   speichereCrew('MORITZ');
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
@@ -741,6 +835,7 @@ function draw(dt){
 
   hud();
   if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  zeichneGespraech();
   bildschirme();
 }
 
@@ -794,19 +889,28 @@ function zeichneWohnung(){
     }
   }
 
-  /* Leute */
+  /* Leute und Spieler nach Tiefe sortiert - wer weiter hinten steht,
+     wird zuerst gezeichnet und damit verdeckt. */
+  const inTiefe=[];
   for(const l of LEUTE){
-    const rows=SPR[l.spr]||SPR.steh;
-    const y=l.liegt?BODEN-8:BODEN-rows.length;
-    outline(rows,l.x-3,y,1,.55);
-    sprite(rows,l.x-3,y);
-    const erledigt = l.id==='max' || S.erledigt[l.id==='moritz'?'ausweis':l.id];
-    text(l.name,l.x+3-textW(l.name)/2,y-16,erledigt?P.gruen:P.dim);
-    if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
-    else {
-      const nah=Math.abs(l.x-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
-      if(nah&&Math.floor(S.t*4)%2===0) text('E',l.x+2,y-9,P.gold);
-    }
+    inTiefe.push({t:l.t||0.5, mal:()=>{
+      const rows=SPR[l.spr]||SPR.steh;
+      const fuss=bodenY(l.t||0.5);
+      const y=l.liegt?fuss-8:fuss-rows.length;
+      ctx.globalAlpha=.24; ctx.fillStyle='#000';
+      ctx.fillRect(Math.round(l.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
+      outline(rows,l.x-3,y,1,.55);
+      sprite(rows,l.x-3,y);
+      const erledigt = l.id==='max' || S.erledigt[l.id==='moritz'?'ausweis':l.id];
+      text(l.name,l.x+3-textW(l.name)/2,y-16,erledigt?P.gruen:P.dim);
+      if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
+      else {
+        const nah=Math.abs(l.x-S.x)<TUNE.reichweite
+                 &&Math.abs((l.t||0.5)-S.tiefe)<=0.3
+                 &&S.modus==='spiel'&&!S.reden;
+        if(nah&&Math.floor(S.t*4)%2===0) text('E',l.x+2,y-9,P.gold);
+      }
+    }});
   }
 
   /* Der Kracher */
@@ -828,17 +932,23 @@ function zeichneWohnung(){
     ctx.fillStyle=P.rot; ctx.fillRect(bx,26,Math.round(bw*g.hp/TUNE.gegnerTreffer),4);
   }
 
-  /* Spieler */
-  let rows;
-  if(S.suchT>0) rows=SPR.suchen;
-  else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
-  else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
-  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
-  else rows=SPR.steh;
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
-  ctx.globalAlpha=.28; ctx.fillStyle='#000';
-  ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
+  /* Spieler - kommt in dieselbe Liste, damit die Tiefe stimmt */
+  inTiefe.push({t:S.tiefe, mal:()=>{
+    let rows;
+    if(S.suchT>0) rows=SPR.suchen;
+    else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
+    else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
+    else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+    else rows=SPR.steh;
+    /* S.y traegt die Sprunghoehe, die Tiefe verschiebt zusaetzlich. */
+    const versatz=BODEN-bodenY(S.tiefe);
+    const y=S.y-versatz-rows.length;
+    ctx.globalAlpha=.28; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(S.x-3),Math.round(bodenY(S.tiefe)),7,1); ctx.globalAlpha=1;
+    outline(rows,S.x-3,y,1,.6);
+    if(S.blick<0) spriteFlip(rows,S.x-3,y); else sprite(rows,S.x-3,y);
+  }});
+  zeichneNachTiefe(inTiefe);
 
   ctx.restore();
 
