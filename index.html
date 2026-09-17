@@ -901,11 +901,19 @@ function update(dt){
 
   /* Tiefe. W und S sind kontextabhaengig: an der Treppe wechseln sie die
      Etage wie frueher, ueberall sonst gehen sie nach hinten und vorne.
-     Das spart zwei zusaetzliche Knoepfe am Handy. */
+     Das spart zwei zusaetzliche Knoepfe am Handy.
+
+     ACHTUNG, hier steht bewusst KEIN bewegeTiefe(S,...): die Engine-Funktion
+     schreibt auf e.t - und S.t ist in diesem Level die Spielzeit. Der Aufruf
+     hat die Uhr jeden Frame ueberschrieben und auf 0..1 geklemmt, wodurch
+     alle Animationen praktisch stehen blieben. Deshalb hier ausgeschrieben
+     auf S.tiefe. */
   if(!treppe){
     const rt=(runterAn?1:0)-(hochAn?1:0);
     const langsam=S.schleicht?0.55:1;
-    bewegeTiefe(S,rt,dt,TUNE.tiefeTempo*langsam);
+    const zielVt=rt*TUNE.tiefeTempo*langsam;
+    S.vt += (zielVt-S.vt)*Math.min(1,14*dt);
+    S.tiefe = Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
   }
 
   if(treppe && hochAn && S.etage < BODEN.length-1){

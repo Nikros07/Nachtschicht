@@ -49,6 +49,12 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   in der Spiellogik.
 - Nach jeder Änderung im Browser prüfen: Konsole leer, Level erreicht
   seinen Spielzustand.
+- **Vorsicht bei `bewegeTiefe(obj, …)`:** die Funktion schreibt auf `obj.t`.
+  In Level 1 ist `S.t` die *Spielzeit* — der Aufruf mit `S` hat dort jeden
+  Frame die Uhr überschrieben und alle Animationen eingefroren. Entweder ein
+  eigenes Objekt übergeben (wie die Kämpfer in Level 4 und 8) oder die drei
+  Zeilen ausschreiben. Der Fehler ist still: nichts stürzt ab, es wirkt nur
+  alles seltsam zäh.
 
 ## Was schon umgebaut ist
 
