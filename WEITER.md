@@ -3,7 +3,7 @@
 Diese Datei ist die Übergabe. Wenn Du "continue" sagst, liest Claude hier
 nach, wo es stand, und macht genau dort weiter.
 
-**Stand:** Phase 0, 1 und 2 fertig. Phase 3 läuft (Level 1).
+**Stand:** Phase 0, 1, 2 fertig. Phase 3 läuft — Level 1 zum großen Teil um.
 **Zuletzt aktualisiert:** 2026-09-17
 
 ---
@@ -52,6 +52,10 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Was schon umgebaut ist
 
+- **Level 1 (Die Schule)** hat Tiefe: Lehrer sehen in einem Kegel in der
+  Fläche, wer weit genug vorne läuft kommt vorbei. Türen und Spinde liegen
+  an der Rückwand. Dazu das eingezogene Handy als zweites, freiwilliges Ziel
+  und ein Gespräch mit dem Hausmeister, das einen zweiten Lösungsweg öffnet.
 - **Level 4 (Türsteher)** läuft komplett auf dem neuen Kampfsystem: Bewegung
   in der Fläche, Blocken, Ausdauer, Ausweichrolle, Rammstoß (unblockbar) und
   drei Phasen.
@@ -62,22 +66,22 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Phase 3, Level 1 (Die Schule).** Der Reihe nach, chronologisch. Geplant:
+**Level 1 fertig machen**, dann der Reihe nach weiter:
 
-- Tiefe einbauen — Flure werden Räume, Sichtkegel werden echte Kegel in der
-  Fläche, hinten rum gehen wird zur echten Option
-- Zweites Ziel: das eingezogene Handy aus dem Lehrerzimmer holen. Ohne das
-  gibt es die ganze Nacht keine Nachrichten
-- Gespräche mit Entscheidungsbaum (`dialog.js`) statt reiner Textkästen
-- Lehrer bekommen echte Routinen (Kaffee, Klo, Kopierer) statt nur Patrouille
-- Keller, Spind mit Zahlencode, optionale Abrechnung mit dem Direktor
+- [ ] Lehrer-Routinen: Kaffee holen, Klo, Kopierer statt nur Patrouille
+- [ ] Keller als vierte Ebene
+- [ ] Spind mit Zahlencode, die Nummer steht woanders
+- [ ] Optionale Abrechnung mit dem Direktor am Ausgang (Gespräch statt
+      fester Cutscene)
+- [ ] Mehr Möbelarten, damit sich die zehn Räume unterscheiden
 
-Danach Level 2, 3, 5 … in dieser Reihenfolge.
+Danach **Level 2 (Bei Moritz)**: Wohnung mit Tiefe, mehr Leute mit eigenen
+Gesprächsbäumen, Trinkspiele, und die Entscheidung wen man mitnimmt.
 
-**Wichtig für Level 5 (Club):** die kleine Schlägerei aus Phase 2 ist bewusst
-noch nicht gebaut — sie kommt zusammen mit dem Club-Ausbau, damit die Datei
-nicht zweimal angefasst wird. Dort gehört auch der Ansprechen-Entscheidungs-
-baum hin, Nicks Hauptwunsch.
+**Level 5 (Club)** ist der wichtigste Brocken — dort gehört Nicks
+Hauptwunsch hin: das Ansprechen als echter Entscheidungsbaum, dazu die
+kleine Schlägerei aus Phase 2 (die ist bewusst noch nicht gebaut, damit die
+Datei nicht zweimal angefasst wird).
 
 ## Testen
 
