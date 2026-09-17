@@ -3,7 +3,7 @@
 Diese Datei ist die Übergabe. Wenn Du "continue" sagst, liest Claude hier
 nach, wo es stand, und macht genau dort weiter.
 
-**Stand:** Phase 0, 1, 2 fertig. Phase 3 läuft — Level 1 zum großen Teil um.
+**Stand:** Phase 0, 1, 2 fertig. Phase 3 läuft — Level 1 und 2 umgebaut.
 **Zuletzt aktualisiert:** 2026-09-17
 
 ---
@@ -58,6 +58,11 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Was schon umgebaut ist
 
+- **Level 2 (Bei Moritz)** hat Tiefe (Reden geht nur, wenn man auch hingeht)
+  und am Ende die Entscheidung, wen man mitnimmt. Die Wahl setzt Crew, Flags
+  und Beziehungen — und wirkt messbar weiter: Level 4 braucht je nach
+  Gruppengröße 6, 5 oder 4 Treffer, Level 8 bekommt dafür mehr Hilfe im
+  großen Fight.
 - **Level 1 (Die Schule)** hat Tiefe: Lehrer sehen in einem Kegel in der
   Fläche, wer weit genug vorne läuft kommt vorbei. Türen und Spinde liegen
   an der Rückwand. Dazu das eingezogene Handy als zweites, freiwilliges Ziel
@@ -72,7 +77,10 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Level 1 fertig machen**, dann der Reihe nach weiter:
+**Level 3 (Nachtbus)** ist als nächstes dran — chronologisch. Danach Level 5
+(Club), der größte Brocken.
+
+Offen aus Level 1, wenn Zeit ist:
 
 - [ ] Lehrer-Routinen: Kaffee holen, Klo, Kopierer statt nur Patrouille
 - [ ] Keller als vierte Ebene
