@@ -109,6 +109,10 @@
 <script src="nacht/bild.js"></script>
 <script src="nacht/ton.js"></script>
 <script src="nacht/stand.js"></script>
+<script src="nacht/welt.js"></script>
+<script src="nacht/nacht.js"></script>
+<script src="nacht/dialog.js"></script>
+<script src="nacht/kampf.js"></script>
 <script src="nacht/mobil.js"></script>
 <script>
 /* ============================================================================
@@ -148,19 +152,95 @@ const TUNE = {
   stolperVerlust:    0.55, // Anteil vom Hoechsttempo, der beim Stolpern fehlt
 
   /* (4) IM BUS - Kontrolleure */
-  busLaenge:        740,
+  /* Gemessen: bei 740 Pixeln Laenge war der Bus in sieben Sekunden
+     durchlaufen, und der Verdacht kam nie ueber 46 von 100. Ein Level,
+     das kuerzer ist als seine eigene Anspannung, kann nicht spannend
+     werden. Drei Waggons statt einem - das ist auch der Plan. */
+  busLaenge:       1680,
   einstiegX:         24,
-  ausstiegX:        700,
-  sichtWeite:        44,   // wie weit ein Kontrolleur nach vorn sieht
+  ausstiegX:       1600,
+  sichtWeite:        50,   // wie weit ein Kontrolleur nach vorn sieht
   verdachtProSek:    58,   // Fuellrate im Sichtkegel
   verdachtAbbau:     26,   // Abbau pro Sekunde ausserhalb
   verdachtAbbauVersteckt: 70, // schnellerer Abbau beim Verstecken
   kontrolleurTempo:  24,
   patrouillePause:    0.8,
-  versteckReichweite: 13,
+  versteckReichweite: 22,   // grosszuegig: im Laufen muss man ein Versteck
+                            // treffen koennen, ohne stehenzubleiben
   erwischtRueckstoss: 46,  // Ruecksetzung nach einer Kontrolle
   unverwundbarDauer:  1.6,
   leben:               3,
+
+  /* (4b) TIEFE - der Bus ist ein Raum, kein Gang.
+     Die Kontrolleure laufen im Gang (gangTiefe) und sehen nach vorn. Wer
+     sich in die Sitzreihe druckt (sitzTiefe), kommt an ihnen vorbei -
+     vorausgesetzt, der Kegel greift seitlich nicht ueber das ganze Band.
+     Dafuer sorgt TIEFE.kegelMax in welt.js. */
+  tiefeHinten:   116,    // Boden-Y der Sitzreihe
+  tiefeVorne:    148,    // Boden-Y der Gangkante
+  tiefeWelt:      46,    // wie tief das Band in Weltmass ist
+  tiefeTempo:    1.05,
+  kegelOeffnung: 0.42,
+  sitzTiefe:     0.26,   // so weit hinten muss man sein, um durchzukommen
+  gangTiefe:     0.72,   // dort patrouillieren die Kontrolleure
+
+  /* (4b2) SITZBLOECKE
+     Gemessen: wer sich einfach an die Rueckwand druckt, laeuft den ganzen
+     Bus in sechs Sekunden durch, Verdacht null. Die Tiefe war damit keine
+     Entscheidung, sondern eine Abkuerzung. Deshalb ist die Sitzreihe nicht
+     durchgehend: an diesen Stellen stehen Sitze im Weg, und man muss in
+     den Gang raus - genau dorthin, wo die Kontrolleure schauen.
+     Die Zahl ist die Tiefe, die man dort MINDESTENS haben muss. */
+  sitzbloecke: [
+    { von: 120, bis: 260, tiefe:0.50 },   // Zone 1
+    { von: 350, bis: 470, tiefe:0.52 },   // Zone 2
+    { von: 560, bis: 640, tiefe:0.44 },   // Uebergang, ruhiger
+    { von: 690, bis: 830, tiefe:0.50 },   // Zone 3
+    { von: 900, bis:1040, tiefe:0.52 },   // Zone 4
+    { von:1100, bis:1180, tiefe:0.44 },   // Uebergang
+    { von:1210, bis:1380, tiefe:0.50 },   // Zone 5
+  ],
+  kontrolleurPendel: 0.13,   // wie weit sie selbst in der Tiefe wandern
+  kontrolleurPendelTempo: 0.45,
+
+  /* (4b3) SIE SETZEN NACH
+     Gemessen: der Spieler ist mit 106 Pixeln pro Sekunde viermal so
+     schnell wie ein Kontrolleur. Wer einfach durchlaeuft, ist nach einer
+     halben Sekunde am Kegel vorbei - der Verdacht kam nie ueber 27 von
+     100, egal welche Spur man nimmt. Ein Balken, der sich fuellt und
+     sonst nichts, ist keine Bedrohung.
+     Also: wer gesehen wird, wird verfolgt. Dann faellt auch der
+     Geschwindigkeitsvorteil weg, weil ein Verfolger hinter einem bleibt
+     und die naechste Luecke schon besetzt ist. */
+  jagdTempo:        74,   // so schnell kommt ein alarmierter hinterher
+  jagdDauer:       3.5,   // so lange bleibt er dran, nachdem er dich verlor
+  jagdNah:          34,   // ab hier wird es schnell eng
+  jagdVerdacht:     18,   // Fuellrate, solange er dran ist. Bewusst so
+                          // niedrig, dass eine Verfolgung allein den Balken
+                          // NICHT vollmacht - sonst waere jedes Gesehen-
+                          // werden automatisch eine Kontrolle, und Weglaufen
+                          // haette keinen Sinn.
+  jagdVerdachtNah: 105,   // Fuellrate, wenn er direkt neben dir steht
+
+  /* (4c) DREI WAGGONS. Die Grenzen sind die Durchgaenge. */
+  waggonGrenzen: [540, 1080],
+
+  /* (4d) REDEN, KAUFEN, BREMSEN */
+  redeReichweite:  16,
+  ticketPreis:      9,   // Euro - das Geld fehlt danach an der Tuer
+  ablenkDauer:      8,   // so lange bindet eine Szene die Kontrolleure
+  notbremsRuf:    -14,   // was die Notbremse kostet
+  notbremsAblenk:  14,   // dafuer laufen alle nach vorn
+
+  /* (4e) DIE KLOPPE IM LETZTEN WAGGON
+     Der erste Kampf der Nacht. Klein, weil er die Regeln beibringt:
+     zwei Gegner, keine Phasen, kein Zeitdruck. */
+  kloppeX:       1508,   // ab hier stehen sie im Weg
+  kloppeLeben:      4,   // Treffer, die der Spieler einstecken kann
+  kloppeSchaden:    1,
+  kloppeReich:     17,
+  kloppeTiefe:   0.55,   // Mitte des Gangs - sie stellen sich breit hin
+  kloppeGeld:      -6,   // was eine Niederlage kostet
 
   /* (5) DAS RUCKELN - der Bus faehrt nicht immer ruhig */
   ruckelMin:    4.5,
@@ -222,6 +302,13 @@ const SPR={
 
   /* Kontrolleur - dunkelblaue Uniform, Muetze, Goldabzeichen */
   kontrolleur:[...KKOPF,'..yyy..','y.yyy.y','..ygy..','..y.y..','..y.y..','.yy.yy.','.kk..kk'],
+
+  /* Fahrgaeste - drei Silhouetten, damit man sie auseinanderhaelt */
+  sitzend:  ['..hhh..','.hsssh.','.sssss.','..ggg..','.ggggg.','..p.p..','..k.k..'],
+  breit:    ['..hhh..','.hsssh.','.sssss.','.vvvvv.','vvvvvvv','.vv.vv.','.kk.kk.'],
+  schmal:   ['..hhh..','.hsssh.','.sssss.','..ccc..','.ccccc.','..p.p..','..k.k..'],
+  automat:  ['dddddd','duuuud','duuuud','dggggd','dddddd','d....d','dddddd'],
+  bremse:   ['.rrrr.','rrrrrr','.r..r.','.r..r.','.dddd.'],
 
   /* Einrichtung im Bus */
   sitz:  ['vvvvvvvv','vvvvvvvv','vv.vv.vv','kk.kk.kk'],
@@ -297,21 +384,388 @@ const TUER_X     = TUNE.ausstiegX;
 
 /* Drei Kontrolleure, jeder patrouilliert seine eigene Zone im Gang. */
 function erzeugeKontrolleure(){
+  /* Jeder haelt seinen Waggon. Die Tiefe streut leicht, damit nicht alle
+     auf derselben Linie stehen und dieselbe Luecke lassen. */
   return [
-    { x:150, minX:70,  maxX:230, blick:1,  pauseT:0 },
-    { x:375, minX:290, maxX:460, blick:-1, pauseT:0 },
-    { x:590, minX:520, maxX:660, blick:1,  pauseT:0 },
+    { x:190, minX: 100, maxX: 300, blick: 1, pauseT:0, t:0.70, heimT:0.70, heim: 190, alarm:0 },
+    { x:410, minX: 340, maxX: 490, blick:-1, pauseT:0, t:0.62, heimT:0.62, heim: 410, alarm:0 },
+    { x:760, minX: 670, maxX: 860, blick: 1, pauseT:0, t:0.74, heimT:0.74, heim: 760, alarm:0 },
+    { x:970, minX: 890, maxX:1070, blick:-1, pauseT:0, t:0.66, heimT:0.66, heim: 970, alarm:0 },
+    { x:1300,minX:1200, maxX:1400, blick: 1, pauseT:0, t:0.70, heimT:0.70, heim:1300, alarm:0 },
   ];
 }
 /* Verstecke - manche liegen in einer Patrouillenzone (riskant, Timing noetig),
    manche in einer Luecke dazwischen (sicherer Rueckzugsort). */
 const VERSTECKE=[
-  { id:'v1', x:150, art:'sitz'    },
-  { id:'v2', x:260, art:'gepaeck' },
-  { id:'v3', x:375, art:'sitz'    },
-  { id:'v4', x:490, art:'gepaeck' },
-  { id:'v5', x:590, art:'sitz'    },
+  { id:'v1', x:  96, art:'sitz',    t:0.18 },
+  { id:'v2', x: 300, art:'gepaeck', t:0.12 },
+  { id:'v3', x: 500, art:'sitz',    t:0.20 },
+  { id:'v4', x: 660, art:'gepaeck', t:0.10 },
+  { id:'v5', x: 860, art:'sitz',    t:0.16 },
+  { id:'v6', x:1060, art:'gepaeck', t:0.12 },
+  { id:'v7', x:1190, art:'sitz',    t:0.18 },
+  { id:'v8', x:1420, art:'gepaeck', t:0.10 },
 ];
+
+/* ==========================================================================
+   WER SONST NOCH IM BUS SITZT
+   Jeder Eintrag ist ein Ort im Raum (x und Tiefe) plus ein Gespraechsbaum.
+   Die Baeume stehen weiter unten - hier steht nur, wer wo sitzt.
+   ========================================================================== */
+const FAHRGAESTE=[
+  { id:'automat',     name:'AUTOMAT',   x:  60, t:0.14, spr:'automat', ding:true },
+  { id:'betrunkener', name:'DER LAUTE', x: 330, t:0.30, spr:'breit'   },
+  { id:'frau',        name:'DIE FRAU',  x: 610, t:0.24, spr:'sitzend' },
+  { id:'notbremse',   name:'NOTBREMSE', x: 880, t:0.10, spr:'bremse', ding:true },
+  { id:'jonas',       name:'JONAS',     x:1240, t:0.28, spr:'schmal'  },
+];
+
+
+/* ==========================================================================
+   DIE GESPRAECHE IM BUS
+   Drei Fahrgaeste, drei verschiedene Arten, an den Kontrolleuren
+   vorbeizukommen - keiner davon ist noetig, jeder ist ein anderer Preis.
+
+   Schrift: der 3x5-Font kann keine Umlaute. ae/oe/ue/ss ausschreiben.
+   ========================================================================== */
+
+/* DER LAUTE. Wer ihn anstachelt, bekommt das groesste Zeitfenster im Level
+   und zahlt mit Ruf - man schickt jemanden vor, der es nicht mitbekommt. */
+const BETRUNKENER = {
+  start:{ wer:'DER LAUTE', text:'Eyyy. Setz dich. Ich erzaehl dir was.',
+    wahl:[
+      { txt:'Die kontrolleure suchen dich.',  geh:'aufgestachelt' },
+      { txt:'Lass mal, ich muss weiter.',     geh:'abgewimmelt' },
+      { txt:'Hast du einen fahrschein?',      geh:'schein' },
+      { txt:'Erzaehl.',                       wenn:{mut:40}, geh:'geschichte' },
+    ], zeit:9, standard:1 },
+
+  aufgestachelt:{ wer:'DER LAUTE', text:'MICH? MICH SUCHEN SIE? DIE SOLLEN MAL HERKOMMEN!',
+    tu:{ruf:-6, flag:'busSzene'}, geh:'ende' },
+
+  abgewimmelt:{ wer:'DER LAUTE', text:'Alle muessen immer weiter. Keiner hat zeit.', geh:'ende' },
+
+  schein:{ wer:'DER LAUTE', text:'Fahrschein. Guter witz. Nimm, ich brauch den nicht mehr.',
+    tu:{nimm:'ALTER FAHRSCHEIN', mag:['DER LAUTE',5]}, geh:'ende' },
+
+  geschichte:{ wer:'DER LAUTE', text:'Ich war auch mal wie du. Nur schneller.',
+    tu:{mut:4}, geh:'ende' },
+
+  ende:null,
+};
+
+/* DIE FRAU. Kostet nichts ausser Zeit und sagt dir, wo die Kontrolleure
+   stehen - das ist die vorsichtige Loesung fuer Leute, die nicht pokern. */
+const FRAU = {
+  start:{ wer:'DIE FRAU', text:'Sie sehen aus, als haetten Sie keinen fahrschein.',
+    wahl:[
+      { txt:'Hab ich auch nicht.',            geh:'ehrlich' },
+      { txt:'Doch, klar hab ich einen.',      geh:'gelogen' },
+      { txt:'Schoener hund.',                 geh:'hund' },
+    ], zeit:8, standard:0 },
+
+  ehrlich:{ wer:'DIE FRAU', text:'Dachte ich mir. Zwei sind im mittleren wagen, einer ganz hinten.',
+    tu:{flag:'busTipp', ruf:3}, geh:'ende' },
+
+  gelogen:{ wer:'DIE FRAU', text:'Natuerlich. Dann zeigen Sie ihn doch gleich vor.',
+    tu:{ruf:-2}, geh:'ende' },
+
+  hund:{ wer:'DIE FRAU', text:'Der heisst Rocky. Und ja, er faehrt auch schwarz.',
+    tu:{mag:['DIE FRAU',8], flag:'busTipp'}, geh:'ende' },
+
+  ende:null,
+};
+
+/* JONAS. Der Zuwachs fuer die Crew. Er kommt nur mit, wenn ihm die Nacht
+   gross genug klingt - deshalb haengt der beste Weg am Mut. */
+const JONAS_GESPRAECH = {
+  start:{ wer:'JONAS', text:'Alter. Was machst du denn hier?',
+    wahl:[
+      { txt:'Wir gehen feiern. Kommst du mit?', geh:'einladen' },
+      { txt:'Fahre nur heim.',                  geh:'abgesagt' },
+      { txt:'Weg da, kontrolle.',               geh:'gewarnt' },
+    ], zeit:8, standard:1 },
+
+  einladen:{ wer:'JONAS', text:'Wo denn hin? Wenn du sagst zu dir nach hause, steig ich aus.',
+    wahl:[
+      { txt:'Club. Der grosse.',        wenn:{mut:35}, geh:'dabei' },
+      { txt:'Weiss noch nicht genau.',  geh:'unsicher' },
+    ], zeit:7, standard:1 },
+
+  dabei:{ wer:'JONAS', text:'Na endlich. Ich hab seit drei wochen nichts gemacht.',
+    tu:{crew:'JONAS', mut:5, mag:['JONAS',10], flag:'jonasDabei'}, geh:'ende' },
+
+  unsicher:{ wer:'JONAS', text:'Sag bescheid, wenn ihr es wisst. Ich sitz hier.',
+    geh:'ende' },
+
+  abgesagt:{ wer:'JONAS', text:'Schade. Gruess die anderen.', tu:{mag:['JONAS',-3]}, geh:'ende' },
+
+  gewarnt:{ wer:'JONAS', text:'Kontrolle? Ich hab ein ticket, du nicht. Viel spass.',
+    tu:{mag:['JONAS',-2]}, geh:'ende' },
+
+  ende:null,
+};
+
+/* DER AUTOMAT. Kein Gespraech, ein Kaufvorgang - aber derselbe Baum, damit
+   die Entscheidung genauso aussieht wie jede andere. */
+const AUTOMAT = {
+  start:{ wer:'AUTOMAT', text:'EINZELFAHRT ' + TUNE.ticketPreis + ' EURO. BITTE BETRAG EINWERFEN.',
+    wahl:[
+      { txt:'Kaufen.',                wenn:{geld:TUNE.ticketPreis}, geh:'gekauft' },
+      { txt:'Zu teuer. Weiter.',      geh:'ende' },
+      { txt:'Draufhauen.',            wenn:{mut:55}, geh:'geschlagen' },
+    ], zeit:0 },
+
+  gekauft:{ wer:'AUTOMAT', text:'FAHRSCHEIN ENTNEHMEN. GUTE FAHRT.',
+    tu:{geld:-TUNE.ticketPreis, flag:'busTicket', nimm:'FAHRSCHEIN', ruf:2}, geh:'ende' },
+
+  geschlagen:{ wer:'AUTOMAT', text:'STOERUNG. BITTE PERSONAL VERSTAENDIGEN.',
+    tu:{ruf:-5, flag:'automatKaputt'}, geh:'ende' },
+
+  ende:null,
+};
+
+/* DIE NOTBREMSE. Der Notausgang aus jeder Lage - und der teuerste. */
+const NOTBREMSE = {
+  start:{ wer:'NOTBREMSE', text:'MISSBRAUCH WIRD BESTRAFT.',
+    wahl:[
+      { txt:'Ziehen.',     geh:'gezogen' },
+      { txt:'Lieber nicht.', geh:'ende' },
+    ], zeit:0 },
+
+  gezogen:{ wer:'', text:'Der bus steht. Alle drei rennen nach vorn.',
+    tu:{ruf:TUNE.notbremsRuf, flag:'notbremse'}, geh:'ende' },
+
+  ende:null,
+};
+
+/* Wer welchen Baum hat. Getrennt von den Baeumen, damit die Baeume reine
+   Daten bleiben. */
+const BAUM_FUER={ betrunkener:BETRUNKENER, frau:FRAU, jonas:JONAS_GESPRAECH,
+                  automat:AUTOMAT, notbremse:NOTBREMSE };
+
+/* Der naechste Fahrgast in Reichweite - Abstand zaehlt in BEIDEN Achsen,
+   sonst redet man quer durch den halben Bus mit jemandem. */
+function naherFahrgast(){
+  let bester=null, d0=1e9;
+  for(const f of FAHRGAESTE){
+    if(Math.abs(f.t-S.tiefe)>0.3) continue;
+    const d=Math.abs(f.x-S.x);
+    if(d<TUNE.redeReichweite&&d<d0){ bester=f; d0=d; }
+  }
+  return bester;
+}
+
+/* Was nach einem Gespraech passiert. Die Baeume selbst setzen nur Flags -
+   die Folgen im Level stehen hier, an einer Stelle. */
+function gespraechFolgen(f){
+  S.geredet[f.id]=true;
+  if(f.id==='betrunkener'&&flag('busSzene')){
+    /* Alle lassen alles stehen und gehen zu ihm. Das ist das Fenster. */
+    S.ablenkT=TUNE.ablenkDauer;
+    S.kontrolleure.forEach(k=>{ k.zielX=f.x; });
+    meldung('ER MACHT EINE SZENE - JETZT',2.2);
+  }
+  if(f.id==='notbremse'&&flag('notbremse')){
+    S.ablenkT=TUNE.notbremsAblenk;
+    S.kontrolleure.forEach(k=>{ k.zielX=TUNE.einstiegX+20; });
+    S.ruettel=10; SFX.ruckel();
+    meldung('DER BUS STEHT',2.2);
+  }
+  if(f.id==='automat'&&flag('busTicket')){
+    S.ticket=true;
+    meldung('FAHRSCHEIN - JETZT KANN DIR KEINER',2.4);
+  }
+  if(f.id==='jonas'&&flag('jonasDabei')) meldung('JONAS KOMMT MIT',2);
+  if(f.id==='frau'&&flag('busTipp')) zeigeHinweis('ZWEI IM MITTLEREN WAGEN, EINER GANZ HINTEN',3.5);
+}
+
+
+/* ==========================================================================
+   DIE KLOPPE IM LETZTEN WAGGON
+   Vor der Tuer stehen drei. Reden geht - auf vier verschiedene Arten.
+   ========================================================================== */
+const DIE_DREI = {
+  start:{ wer:'DER MIT DER KAPPE', text:'Wo willst du hin? Das ist unsere tuer.',
+    wahl:[
+      { txt:'Wir sind zu viert. Geh zur seite.', wenn:{crew:'JONAS'},  geh:'zurueckgewichen' },
+      { txt:'Verschwinde.',                      wenn:{mut:50},        geh:'angeblafft' },
+      { txt:'Alles gut, ich warte.',                                   geh:'gewartet' },
+      { txt:'Dann macht doch was.',                                    geh:'kampf' },
+    ], zeit:8, standard:2 },
+
+  zurueckgewichen:{ wer:'DER MIT DER KAPPE', text:'Schon gut. Wir wollten sowieso raus.',
+    tu:{ruf:6, flag:'busDurchDieCrew'}, geh:'ende' },
+
+  angeblafft:{ wer:'DER MIT DER KAPPE', text:'...na dann geh halt. Assi.',
+    tu:{mut:5, ruf:3, flag:'busAngeblafft'}, geh:'ende' },
+
+  gewartet:{ wer:'DER MIT DER KAPPE', text:'Braver junge. Zehn euro und du darfst durch.',
+    wahl:[
+      { txt:'Hier.',            wenn:{geld:10}, geh:'gezahlt' },
+      { txt:'Hab nichts dabei.',                geh:'kampf' },
+    ], zeit:6, standard:1 },
+
+  gezahlt:{ wer:'DER MIT DER KAPPE', text:'Siehst du. Geht doch.',
+    tu:{geld:-10, mut:-6, ruf:-4, flag:'busGezahlt'}, geh:'ende' },
+
+  kampf:{ wer:'DER MIT DER KAPPE', text:'Dann machen wir was.',
+    tu:{flag:'busKloppe'}, geh:'ende' },
+
+  ende:null,
+};
+
+/* Der Kampf selbst. Zwei Gegner, unterschiedlich schnell - damit man lernt,
+   dass ein Konter auf den Flitzer anders getimt ist als auf den Schlaeger. */
+function starteKloppe(){
+  S.modus='kloppe'; S.kloppeStand='kampf';
+  S.ich=kaempfer({ x:S.x, t:TUNE.kloppeTiefe, blick:1,
+                   hp:TUNE.kloppeLeben, maxHp:TUNE.kloppeLeben });
+  S.tiefe=TUNE.kloppeTiefe;
+  /* Drei, so viele wie im Gespraech stehen. Unterschiedlich schnell, damit
+     man merkt, dass ein Konter auf den Flitzer anders getimt ist als auf
+     den mit der Kappe. Der Anfuehrer haelt mehr aus - er ist der Grund,
+     warum der Kampf laenger dauert als ein Schlagabtausch. */
+  const kappe=gegner('schlaeger', TUNE.kloppeX+34, 0.52);
+  kappe.hp=kappe.maxHp=3; kappe.anfuehrer=true;
+  S.gegner=[ gegner('flitzer',   TUNE.kloppeX+20, 0.70),
+             kappe,
+             gegner('schlaeger', TUNE.kloppeX+58, 0.38) ];
+  zeigeHinweis('E SCHLAEGT - UMSCHALT BLOCKT - LEERTASTE WEICHT AUS',4);
+  SFX.warn();
+}
+
+function kloppeVorbei(gewonnen){
+  S.kloppeStand = gewonnen ? 'gewonnen' : 'verloren';
+  S.modus='spiel'; S.gegner=[]; S.ich=null;
+  S.tiefe=TUNE.gangTiefe; S.unverwundbarT=TUNE.unverwundbarDauer;
+  if(gewonnen){
+    wirke({mut:8, ruf:8, flag:'busKloppeGewonnen'});
+    meldung('SIE MACHEN PLATZ',2.2); SFX.sieg();
+  } else {
+    /* Verlieren beendet nichts. Es kostet - und die Tuer ist trotzdem frei,
+       weil sie dich nach dem Geld einfach stehen lassen. */
+    wirke({geld:TUNE.kloppeGeld, ruf:-6, flag:'busKloppeVerloren'});
+    meldung('SIE NEHMEN DAS GELD UND GEHEN',2.6); SFX.erwischt();
+  }
+}
+
+function kloppe(dt){
+  kampfStopTakt(dt);
+  const z=kampfZeitFaktor(); if(z===0) return;
+  const d=dt*z;
+
+  const ich=S.ich;
+  kaempferTakt(ich,d);
+  S.tiefe=ich.t;
+
+  /* Laufen und Ausweichen in der Flaeche */
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  const rt=(runterAn?1:0)-(hochAn?1:0);
+  if(ich.zustand==='frei'||ich.zustand==='block'){
+    if(richtung){ ich.x+=richtung*TUNE.gehTempo*0.62*d; ich.blick=richtung; }
+    if(rt) bewegeTiefe(ich,rt,d,TIEFE.tempo*0.8,16);
+  }
+  ich.x=Math.max(TUNE.kloppeX-40,Math.min(BUS_B-14,ich.x));
+  S.x=ich.x;
+
+  if(S.rolleGedrueckt){ S.rolleGedrueckt=false; rolle(ich, rt||(ich.t<0.5?1:-1)); }
+  blocke(ich, !!S.blockAn && aktionPuffer.length===0);
+
+  /* Schlagen. Der Konter wird beim DRUECKEN geprueft, nicht wenn der
+     eigene Schlag aktiv wird - sonst frisst die eigene Ausholzeit das
+     ganze Fenster. Steht so auch in kampf.js. */
+  while(aktionPuffer.length){
+    aktionPuffer.shift();
+    let gekontert=false;
+    for(const g of S.gegner){
+      if(g.hp<=0) continue;
+      if(konterVersuch(ich,g,{reichweite:TUNE.kloppeReich})){ gekontert=true; SFX.warn(); break; }
+    }
+    if(!gekontert) schlage(ich);
+  }
+
+  if(ich.zustand==='schlag'){
+    for(const g of S.gegner){
+      if(g.hp<=0) continue;
+      const was=spielerTrifft(ich,g,{reichweite:TUNE.kloppeReich,schaden:1});
+      if(was==='treffer'||was==='konter'||was==='gardebruch'){ SFX.stolper(); break; }
+    }
+  }
+
+  for(const g of S.gegner){
+    if(g.hp<=0) continue;
+    gegnerTakt(g,d,ich);
+    if(g.zustand==='schlag'){
+      const was=loeseTreffer(g,ich,{reichweite:g.reichweite,schaden:TUNE.kloppeSchaden});
+      if(was==='treffer'){ S.ruettel=7; S.blitz=.4; SFX.erwischt(); }
+      else if(was==='block') SFX.nichts();
+    }
+  }
+
+  if(S.gegner.every(g=>g.hp<=0)) kloppeVorbei(true);
+  else if(ich.hp<=0) kloppeVorbei(false);
+
+  kamera(dt);
+}
+
+function zeichneKloppe(){
+  const liste=[];
+  for(const g of S.gegner){
+    if(g.hp<=0) continue;
+    liste.push({ t:g.t, mal:()=>{
+      const rows = g.art==='flitzer'?SPR.schmal:(g.anfuehrer?SPR.breit:SPR.sitzend);
+      const fuss=bodenY(g.t), y=fuss-rows.length;
+      ctx.globalAlpha=.22; ctx.fillStyle='#000';
+      ctx.fillRect(Math.round(g.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
+      /* Ausholen faerbt die Figur - das ist das Konterfenster, und das
+         muss man sehen koennen, sonst ist der Konter Gluecksache.
+         Gefaerbt wird der Sprite, nicht der Umriss: outline() kennt keine
+         Farbe, das macht bild.js absichtlich nur einfarbig schwarz. */
+      const tint = g.zustand==='ausholen' ? P.gold
+                 : g.zustand==='block'    ? P.neon2
+                 : g.zustand==='getroffen'? '#ff8080' : null;
+      outline(rows,g.x-3,y,1,.55);
+      if(g.blick<0) spriteFlip(rows,g.x-3,y,1,tint); else sprite(rows,g.x-3,y,1,tint);
+      for(let i=0;i<g.maxHp;i++){
+        ctx.fillStyle=i<g.hp?P.rot:'#2a2440';
+        ctx.fillRect(Math.round(g.x-3+i*3),y-7,2,2);
+      }
+    }});
+  }
+  const ich=S.ich;
+  liste.push({ t:ich.t, mal:()=>{
+    const rows = ich.zustand==='rolle' ? SPR.versteckt
+               : ich.zustand==='block' ? SPR.steh
+               : ich.zustand==='schlag'||ich.zustand==='ausholen' ? SPR.geh[1]
+               : SPR.steh;
+    const fuss=bodenY(ich.t), y=fuss-rows.length;
+    if(ich.unverwundbar>0&&Math.floor(S.t*14)%2===0) return;
+    ctx.globalAlpha=.26; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(ich.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
+    const tint = ich.zustand==='block' ? P.neon2
+               : ich.zustand==='getroffen' ? '#ff8080' : null;
+    outline(rows,ich.x-3,y,1,.7);
+    if(ich.blick<0) spriteFlip(rows,ich.x-3,y,1,tint); else sprite(rows,ich.x-3,y,1,tint);
+  }});
+  zeichneNachTiefe(liste);
+}
+
+/* Ausdauer- und Lebensbalken - ohne die sieht man nicht, warum ein
+   Dauerblock irgendwann nicht mehr geht. */
+function kloppeHud(){
+  const ich=S.ich; if(!ich) return;
+  for(let i=0;i<ich.maxHp;i++){
+    ctx.fillStyle=i<ich.hp?P.rot:'#2a2440';
+    ctx.fillRect(6+i*7,6,5,4);
+  }
+  const bw=54;
+  ctx.fillStyle='#000a'; ctx.fillRect(4,13,bw+4,5);
+  ctx.fillStyle='#2a2440'; ctx.fillRect(6,14,bw,3);
+  ctx.fillStyle=ich.ausdauer<KAMPF.ausdauerSchlag?P.rot:P.neon2;
+  ctx.fillRect(6,14,Math.round(bw*ich.ausdauer/KAMPF.ausdauerMax),3);
+  textC('DIE TUER IST HINTER IHNEN',24,P.dim);
+}
 
 /* ==========================================================================
    SPIELSTAND
@@ -335,6 +789,10 @@ const verdachtMultiplikator=()=>ladeCrew().includes('JONAS')?0.8:1;
    ========================================================================== */
 let S={};
 function neuesSpiel(){
+  /* Ein laufendes Gespraech ueberlebt sonst den Neustart: update() steigt
+     bei gespraechAktiv() sofort wieder aus und nichts bewegt sich mehr.
+     Aufgefallen beim Messen, als der zweite Testlauf komplett stillstand. */
+  if(typeof GESPR!=='undefined') GESPR=null;
   const startPegel=parseFloat(localStorage.getItem(PEGEL_KEY))||0;
   S={
     modus:'titel', t:0, zeit:0, letzteSzene:'sprint',
@@ -343,6 +801,9 @@ function neuesSpiel(){
 
     sprintZeit:0, stolperT:0, hindernisse:erzeugeHindernisse(),
 
+    tiefe:TUNE.gangTiefe, vt:0,
+    kloppeStand:'offen', ich:null, gegner:[], rolleGedrueckt:false, blockAn:false,
+    ablenkT:0, ticket:flag('busTicket'), geredet:{}, verrat:0,
     busZeit:0, verdacht:0, versteckt:null, hp:TUNE.leben, unverwundbarT:0, warnGespielt:false,
     kontrolleure:erzeugeKontrolleure(),
     ruckelT:0, naechstesRuckel:TUNE.ruckelMin+Math.random()*(TUNE.ruckelMax-TUNE.ruckelMin),
@@ -355,12 +816,14 @@ function neuesSpiel(){
   S.kamX=Math.max(0,Math.min(SPRINT_B-W,S.x-W/2));
 }
 neuesSpiel();
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
 
 /* ==========================================================================
    EINGABE
    ========================================================================== */
 
 let linksAn=false, rechtsAn=false, sprungAn=false, aktionGehalten=false;
+let hochAn=false, runterAn=false;
 let sprungPuffer=[], aktionPuffer=[];
 
 function druckSprung(){
@@ -373,6 +836,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
@@ -382,8 +846,16 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
+  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
+  if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); S.blockAn=true; }
+  if(e.code==='Space'&&S.modus==='kloppe'){ e.preventDefault(); S.rolleGedrueckt=true; return; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
@@ -392,7 +864,7 @@ addEventListener('keydown',e=>{
     e.preventDefault(); location.href='index.html'; }
   if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
     e.preventDefault(); location.href='level2.html'; }
-  if(e.code==='KeyP'&&(S.modus==='sprint'||S.modus==='spiel'||S.modus==='pause')){
+  if(e.code==='KeyP'&&(S.modus==='sprint'||S.modus==='spiel'||S.modus==='kloppe'||S.modus==='pause')){
     if(S.modus==='pause'){ S.modus=S.pausiertVon||'sprint'; }
     else { S.pausiertVon=S.modus; S.modus='pause'; }
   }
@@ -400,9 +872,13 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ArrowDown','KeyS'].includes(e.code)) runterAn=false;
+  if(['ShiftLeft','ShiftRight'].includes(e.code)&&S) S.blockAn=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false; });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=hochAn=runterAn=false;
+  if(S) S.blockAn=false; });
 
 
 bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
@@ -431,6 +907,29 @@ function starteSprint(){ S.modus='sprint'; S.letzteSzene='sprint';
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteSprint(); else piep(440,.05,'sine',.03); } }
+
+/* ==========================================================================
+   WAS DIE KNOEPFE AM HANDY GERADE TUN
+   nacht/mobil.js fragt das ab. Im Bus ist E dreierlei: reden, verstecken,
+   auftauchen - und am Handy sieht man die Figur nicht, weil der Daumen
+   davor ist. Also sagt es der Knopf.
+   ========================================================================== */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
+  if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
+  if(S.modus==='pause')    return {aktion:null,     zwei:null};
+  /* Im Sprint gibt es nur eine Sache zu tun: springen. */
+  if(S.modus==='sprint')   return {aktion:null, zwei:'SPRINGEN'};
+
+  if(S.modus==='kloppe')   return {aktion:'SCHLAG', zwei:'AUSWEICHEN', block:true};
+  if(S.versteckt)          return {aktion:'RAUS', zwei:null};
+  const f=naherFahrgast();
+  if(f) return {aktion:f.ding?(f.id==='automat'?'TICKET':'BREMSE'):'REDEN', zwei:null};
+  if(naheVersteck())       return {aktion:'VERSTECKEN', zwei:null};
+  return {aktion:null, zwei:null};
+}
 
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
@@ -494,6 +993,14 @@ function sprint(dt){
   if(S.x>=SPRINT_B-20) starteBus();
 }
 function starteBus(){
+  /* Entscheidungen, die nur fuer DIESE Fahrt gelten, muessen zurueck auf
+     null. Sonst haette ein "Dann macht doch was" aus dem letzten Versuch
+     beim naechsten Mal sofort wieder einen Kampf gestartet, auch wenn man
+     gerade bezahlt hat - die Wahl stand ja schon im Speicherstand.
+     Der Fahrschein bleibt: der ist bezahlt. */
+  ['busSzene','busKloppe','notbremse','jonasDabei','busTipp',
+   'busDurchDieCrew','busAngeblafft','busGezahlt',
+   'busKloppeGewonnen','busKloppeVerloren'].forEach(f=>setzeFlag(f,false));
   S.modus='spiel'; S.letzteSzene='bus';
   S.x=EINSTIEG_X; S.y=BODEN; S.vx=0; S.vy=0; S.amBoden=true; S.blick=1; S.kamX=0;
   S.verdacht=0; S.versteckt=null; S.warnGespielt=false;
@@ -506,7 +1013,13 @@ function starteBus(){
    ========================================================================== */
 function naheVersteck(){
   let besten=null,d0=1e9;
-  for(const v of VERSTECKE){ const d=Math.abs(v.x-S.x); if(d<TUNE.versteckReichweite&&d<d0){ besten=v; d0=d; } }
+  for(const v of VERSTECKE){
+    /* Verstecke liegen alle in der Sitzreihe - wer im Gang steht, greift
+       ins Leere. Damit ist auch das Verstecken eine Bewegung. */
+    if(Math.abs((v.t!=null?v.t:TUNE.sitzTiefe)-S.tiefe)>0.3) continue;
+    const d=Math.abs(v.x-S.x);
+    if(d<TUNE.versteckReichweite&&d<d0){ besten=v; d0=d; }
+  }
   return besten;
 }
 function verlasseVersteck(){ S.versteckt=null; SFX.auftauchen(); }
@@ -519,6 +1032,12 @@ function ruckeln(){
 }
 function erwischt(){
   S.hp--; S.verdacht=0; S.unverwundbarT=TUNE.unverwundbarDauer; S.warnGespielt=false;
+  /* Die Kontrolle beendet die Verfolgung. Ohne das blieb der Alarm stehen,
+     der Verdacht war nach der Unverwundbarkeit sofort wieder voll, und man
+     verlor alle drei Leben am selben Kontrolleur - in jedem einzelnen
+     Testlauf exakt drei Kontrollen hintereinander. Er hat dich ja gerade
+     kontrolliert; er faengt nicht sofort wieder von vorn an. */
+  S.kontrolleure.forEach(k=>{ k.alarm=0; k.zielX=null; });
   S.x=Math.max(EINSTIEG_X-10,S.x-TUNE.erwischtRueckstoss);
   S.ruettel=8; S.blitz=.5; SFX.erwischt();
   meldung(pick(['AUSWEIS BITTE','KONTROLLE','SIE DA']),1.6);
@@ -534,8 +1053,27 @@ function bus(dt){
   if(S.naechstesRuckel<=0) ruckeln();
   if(S.unverwundbarT>0) S.unverwundbarT-=dt;
 
+  if(S.ablenkT>0){
+    S.ablenkT-=dt;
+    if(S.ablenkT<=0) S.kontrolleure.forEach(k=>{ k.zielX=null; });
+  }
+
   /* Bewegung aus dem Versteck bricht es automatisch ab */
-  if(S.versteckt&&(linksAn||rechtsAn)) verlasseVersteck();
+  if(S.versteckt&&(linksAn||rechtsAn||hochAn||runterAn)) verlasseVersteck();
+
+  /* Tiefe. Ausgeschrieben statt bewegeTiefe(S,...): die Engine-Funktion
+     schreibt auf obj.t - und S.t ist hier die Spielzeit. Der Aufruf wuerde
+     jeden Frame die Uhr ueberschreiben, ohne dass etwas abstuerzt. */
+  if(!S.versteckt){
+    const rt=(runterAn?1:0)-(hochAn?1:0);
+    S.vt += (rt*TUNE.tiefeTempo-S.vt)*Math.min(1,14*dt);
+    S.tiefe = Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
+    /* Wo Sitze stehen, kommt man nicht hinten durch. Man wird in den Gang
+       gedrueckt - und der Gang ist die Gefahr. */
+    for(const b of TUNE.sitzbloecke){
+      if(S.x>b.von&&S.x<b.bis&&S.tiefe<b.tiefe){ S.tiefe=b.tiefe; S.vt=0; }
+    }
+  } else S.vt=0;
 
   const richtung = S.versteckt?0:(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
@@ -552,27 +1090,85 @@ function bus(dt){
 
   while(aktionPuffer.length){
     aktionPuffer.shift();
-    if(S.versteckt) verlasseVersteck();
-    else {
-      const spot=naheVersteck();
-      if(spot){ S.versteckt=spot.id; SFX.verstecken(); meldung('VERSTECKT',1); }
-      else { meldung('HIER NICHT',0.8); SFX.nichts(); }
+    if(S.versteckt){ verlasseVersteck(); continue; }
+    /* Reden geht vor Verstecken: wer direkt vor jemandem steht, meint den. */
+    const f=naherFahrgast();
+    if(f){
+      starteGespraech(BAUM_FUER[f.id],'start',()=>gespraechFolgen(f));
+      continue;
     }
+    const spot=naheVersteck();
+    if(spot){ S.versteckt=spot.id; SFX.verstecken(); meldung('VERSTECKT',1); }
+    else { meldung('HIER NICHT',0.8); SFX.nichts(); }
   }
 
   for(const k of S.kontrolleure){
+    if(k.alarm>0) k.alarm-=dt;
+    /* Verstecken bricht die Verfolgung ab - das ist der Zweck der
+       Verstecke, und ohne das waere eine Jagd nicht mehr abzuschuetteln. */
+    if(S.versteckt||S.ticket) k.alarm=0;
+
+    /* Alarm geht vor allem anderen: er laesst seine Zone stehen und
+       kommt hinterher. */
+    if(k.alarm>0&&S.modus==='spiel'){
+      const d=S.x-k.x;
+      if(Math.abs(d)>2) k.blick=Math.sign(d);
+      k.x+=k.blick*TUNE.jagdTempo*dt;
+      k.t += Math.sign((S.tiefe-k.t)||0)*Math.min(Math.abs(S.tiefe-k.t),0.9*dt);
+      continue;
+    }
+
+    /* Abgelenkt: sie verlassen ihre Zone und gehen zum Laerm. Solange sie
+       unterwegs sind, schauen sie dorthin und nicht auf dich. */
+    if(k.zielX!=null){
+      const d=k.zielX-k.x;
+      if(Math.abs(d)>3){ k.blick=Math.sign(d); k.x+=k.blick*TUNE.kontrolleurTempo*1.6*dt; }
+      continue;
+    }
+    /* Zurueck auf Posten, nachdem die Ablenkung vorbei ist */
+    if(Math.abs(k.x-k.heim)>60){
+      const d=k.heim-k.x; k.blick=Math.sign(d);
+      k.x+=k.blick*TUNE.kontrolleurTempo*1.2*dt; continue;
+    }
+    /* Sie stehen nicht auf einer festen Linie: wer im Gang pendelt,
+       verschiebt seinen Kegel - damit gibt es keine Spur, die immer
+       sicher ist. */
+    k.t = k.heimT + Math.sin(S.busZeit*TUNE.kontrolleurPendelTempo + k.heim)*TUNE.kontrolleurPendel;
     if(k.pauseT>0){ k.pauseT-=dt; continue; }
     k.x+=k.blick*TUNE.kontrolleurTempo*dt;
     if(k.x>=k.maxX){ k.x=k.maxX; k.blick=-1; k.pauseT=TUNE.patrouillePause; }
     else if(k.x<=k.minX){ k.x=k.minX; k.blick=1; k.pauseT=TUNE.patrouillePause; }
   }
 
-  if(!S.versteckt&&S.unverwundbarT<=0){
+  if(!S.versteckt&&S.unverwundbarT<=0&&!S.ticket){
+    /* Sichtkegel in der Flaeche: wer weit genug in der Sitzreihe ist,
+       liegt seitlich ausserhalb und kommt vorbei. Genau davon lebt die
+       Tiefe - ohne die Kappung in welt.js waere der Kegel am Ende so
+       breit wie der Bus und Ausweichen braechte nichts. */
     let gesehen=false;
     for(const k of S.kontrolleure){
-      const frontDist=(S.x-k.x)*k.blick;
-      if(frontDist>0&&frontDist<TUNE.sichtWeite){ gesehen=true; break; }
+      if(imSichtkegel({x:k.x,t:k.t,blick:k.blick},{x:S.x,t:S.tiefe},
+                      TUNE.sichtWeite,TUNE.kegelOeffnung)){
+        gesehen=true;
+        k.alarm=TUNE.jagdDauer;          // er hat dich, und er bleibt dran
+      }
     }
+    /* Wer verfolgt wird, wird auch dann verdaechtiger, wenn er gerade
+       aus dem Kegel raus ist - sonst reicht ein Schritt zur Seite.
+       Direkt neben dir geht es schnell: dann bleibt etwa eine Sekunde, um
+       in ein Versteck zu kommen oder durch einen Durchgang zu sein.
+       Bewusst KEIN sofortiges Zugreifen - das hat im Test jeden erwischt,
+       der stehen geblieben ist, ohne dass der Balken je etwas gezeigt
+       haette. Ein Tod ohne Vorwarnung ist kein Stealth, das ist eine
+       Falle. */
+    let jagdRate=0;
+    for(const k of S.kontrolleure){
+      if(k.alarm<=0) continue;
+      const nah=Math.abs(S.x-k.x)<TUNE.jagdNah;
+      jagdRate=Math.max(jagdRate, nah?TUNE.jagdVerdachtNah:TUNE.jagdVerdacht);
+    }
+    if(jagdRate)
+      S.verdacht=Math.min(100,S.verdacht+jagdRate*verdachtMultiplikator()*dt);
     if(gesehen) S.verdacht=Math.min(100,S.verdacht+TUNE.verdachtProSek*verdachtMultiplikator()*dt);
     else S.verdacht=Math.max(0,S.verdacht-TUNE.verdachtAbbau*dt);
   } else if(S.versteckt){
@@ -585,6 +1181,20 @@ function bus(dt){
 
   kamera(dt);
 
+  /* Der letzte Waggon: vor der Tuer stehen drei. Erst wird geredet. */
+  if(S.modus==='spiel'&&S.kloppeStand==='offen'&&S.x>=TUNE.kloppeX&&!S.versteckt){
+    S.kloppeStand='geredet';
+    starteGespraech(DIE_DREI,'start',()=>{
+      if(flag('busKloppe')) starteKloppe();
+      else { S.kloppeStand='vorbei'; meldung('SIE LASSEN DICH DURCH',1.8); }
+    });
+    return;
+  }
+  /* Solange sie noch da stehen, kommt niemand an der Tuer vorbei. */
+  if(S.kloppeStand==='geredet'||S.kloppeStand==='kampf'){
+    S.x=Math.min(S.x,TUNE.kloppeX+2);
+  }
+
   if(S.modus==='spiel'&&S.x>=TUER_X&&!S.versteckt) starteCutscene();
 }
 
@@ -593,7 +1203,7 @@ function bus(dt){
    ========================================================================== */
 function szeneFuerModus(){
   if(S.modus==='sprint') return 'sprint';
-  if(S.modus==='spiel') return 'bus';
+  if(S.modus==='spiel'||S.modus==='kloppe') return 'bus';
   return S.letzteSzene;
 }
 function kamera(dt){
@@ -624,7 +1234,14 @@ function cutscene(dt){
   }
 }
 function levelGeschafft(){
-  speichereCrew('JONAS');
+  /* Jonas kommt nur mit, wenn man ihn ueberzeugt hat. Vorher stand er
+     automatisch in der Crew, egal ob man ihn ueberhaupt gesehen hat -
+     das war keine Begegnung, das war eine Zeile Code. */
+  if(flag('jonasDabei')) speichereCrew('JONAS');
+  /* Wer die Notbremse gezogen hat, kommt spaeter an. Level 4 liest das:
+     die Schlange ist dann laenger und der Tuersteher schlechter gelaunt. */
+  if(flag('notbremse')) setzeFlag('spaetDran');
+  setzeKapitel(4);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -643,8 +1260,12 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
   if(S.modus==='intro'){ intro(dt); return; }
+  /* Waehrend eines Gespraechs steht der Bus still - sonst laeuft dir ein
+     Kontrolleur waehrend der Antwortauswahl in den Ruecken. */
+  if(gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   if(S.modus==='sprint'){ sprint(dt); return; }
   if(S.modus==='spiel'){ bus(dt); return; }
+  if(S.modus==='kloppe'){ kloppe(dt); return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
   if(S.modus==='ende'){ return; }
 }
@@ -664,11 +1285,15 @@ function draw(dt){
   const ry=(Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
 
-  if(szeneFuerModus()==='sprint') zeichneSprint(); else zeichneBus();
+  if(szeneFuerModus()==='sprint') zeichneSprint();
+  else { zeichneBus(); if(S.modus==='kloppe'){ ctx.save(); ctx.translate(-Math.round(S.kamX),0);
+         zeichneKloppe(); ctx.restore(); } }
 
   ctx.restore();
 
   hud();
+  if(S.modus==='kloppe') kloppeHud();
+  zeichneGespraech();
   if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   bildschirme();
 }
@@ -679,8 +1304,16 @@ function zeichneSpieler(){
   if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
   else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
+  /* Im Sprint gibt es keine Tiefe - da bleibt S.y der Boden. Im Bus
+     verschiebt die Tiefe zusaetzlich, S.y traegt weiter die Sprunghoehe. */
+  const versatz = szeneFuerModus()==='bus' ? BODEN-bodenY(S.tiefe) : 0;
+  const y=S.y-versatz-rows.length;
+  if(versatz!==0){
+    ctx.globalAlpha=.26; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(S.x-3),Math.round(bodenY(S.tiefe)),7,1); ctx.globalAlpha=1;
+  }
+  outline(rows,S.x-3,y,1,.6);
+  if(S.blick<0) spriteFlip(rows,S.x-3,y); else sprite(rows,S.x-3,y);
 }
 
 function zeichneBusAussen(x){
@@ -747,31 +1380,102 @@ function zeichneBus(){
 
   for(let x=60;x<BUS_B-20;x+=90) sprite(SPR.stange,x,BODEN-30);
 
-  for(const v of VERSTECKE){
-    const rows=SPR[v.art]; const y=BODEN-rows.length;
-    outline(rows,v.x,y,1,.6); sprite(rows,v.x,y);
-    const nah=Math.abs(v.x-S.x)<TUNE.versteckReichweite&&S.modus==='spiel'&&!S.versteckt;
-    if(nah&&Math.floor(S.t*4)%2===0) text('E',v.x+2,y-9,P.gold);
-    if(S.versteckt===v.id) text('OK',v.x+2,y-9,P.gruen);
+  /* Die Waggon-Uebergaenge. Sie sind nicht nur Deko: an ihnen sieht man,
+     wo die Zone des naechsten Kontrolleurs anfaengt. */
+  for(const gx of TUNE.waggonGrenzen){
+    ctx.fillStyle='#0d0a18'; ctx.fillRect(gx-5,18,10,BODEN-18);
+    ctx.fillStyle=KEY.u;     ctx.fillRect(gx-5,18,1,BODEN-18); ctx.fillRect(gx+4,18,1,BODEN-18);
+    ctx.fillStyle='#161230'; ctx.fillRect(gx-3,26,6,BODEN-34);
   }
 
-  { const rows=SPR.tuerBus, y=BODEN-rows.length;
-    outline(rows,TUER_X,y,1,.6); sprite(rows,TUER_X,y);
-    text('AUSSTIEG',TUER_X+4-textW('AUSSTIEG')/2,y-9,P.gold); }
+  /* Alles mit Tiefe kommt in eine Liste und wird von hinten nach vorn
+     gemalt. Sonst steht der Kontrolleur vor dem Sitz, hinter dem man
+     sich gerade versteckt. */
+  const inTiefe=[];
+
+  /* Die Sitzbloecke sichtbar machen. Eine unsichtbare Wand waere die
+     unfairste Art, dem Spieler die Abkuerzung wegzunehmen. */
+  for(const b of TUNE.sitzbloecke){
+    inTiefe.push({ t:b.tiefe-0.16, mal:()=>{
+      const fuss=bodenY(Math.max(0,b.tiefe-0.16)), rows=SPR.sitz;
+      for(let x=b.von;x<b.bis-6;x+=10){
+        outline(rows,x,fuss-rows.length,1,.5);
+        sprite(rows,x,fuss-rows.length);
+      }
+    }});
+  }
+
+  for(const v of VERSTECKE){
+    inTiefe.push({ t:v.t, mal:()=>{
+      const rows=SPR[v.art], fuss=bodenY(v.t), y=fuss-rows.length;
+      outline(rows,v.x,y,1,.6); sprite(rows,v.x,y);
+      const nah=Math.abs(v.x-S.x)<TUNE.versteckReichweite
+               &&Math.abs(v.t-S.tiefe)<=0.3&&S.modus==='spiel'&&!S.versteckt;
+      if(nah&&Math.floor(S.t*4)%2===0) text('E',v.x+2,y-9,P.gold);
+      if(S.versteckt===v.id) text('OK',v.x+2,y-9,P.gruen);
+    }});
+  }
+
+  for(const f of FAHRGAESTE){
+    inTiefe.push({ t:f.t, mal:()=>{
+      const rows=SPR[f.spr], fuss=bodenY(f.t), y=fuss-rows.length;
+      ctx.globalAlpha=.22; ctx.fillStyle='#000';
+      ctx.fillRect(Math.round(f.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
+      outline(rows,f.x-3,y,1,.55); sprite(rows,f.x-3,y);
+      const nah=Math.abs(f.x-S.x)<TUNE.redeReichweite
+               &&Math.abs(f.t-S.tiefe)<=0.3&&S.modus==='spiel'&&!S.versteckt;
+      /* Namen nur in der Naehe - sonst stehen bei 320 Pixeln Breite fuenf
+         Beschriftungen gleichzeitig im Bild und man sieht den Bus nicht. */
+      if(Math.abs(f.x-S.x)<46){
+        const farbe=S.geredet[f.id]?P.dim:P.gold;
+        text(f.name,f.x+3-textW(f.name)/2,y-16,farbe);
+      }
+      if(nah&&Math.floor(S.t*4)%2===0) text('E',f.x+2,y-9,P.gold);
+    }});
+  }
+
+  { const rows=SPR.tuerBus, fuss=bodenY(TUNE.gangTiefe), y=fuss-rows.length;
+    inTiefe.push({ t:TUNE.gangTiefe, mal:()=>{
+      outline(rows,TUER_X,y,1,.6); sprite(rows,TUER_X,y);
+      text('AUSSTIEG',TUER_X+4-textW('AUSSTIEG')/2,y-9,P.gold); }}); }
 
   for(const k of S.kontrolleure){
-    const kegelX = k.blick>0?k.x+6:k.x+6-TUNE.sichtWeite;
-    ctx.globalAlpha=.16; ctx.fillStyle=P.rot; ctx.fillRect(kegelX,BODEN-26,TUNE.sichtWeite,20); ctx.globalAlpha=1;
-    const rows=SPR.kontrolleur, y=BODEN-rows.length;
-    outline(rows,k.x-3,y,1,.55);
-    if(k.blick<0) spriteFlip(rows,k.x-3,y); else sprite(rows,k.x-3,y);
+    inTiefe.push({ t:k.t, mal:()=>{
+      const fuss=bodenY(k.t);
+      /* Der Kegel wird als Flaeche gemalt, nicht als Balken - sonst sieht
+         man nicht, dass er sich seitlich nicht beliebig oeffnet. */
+      if(!S.ticket){
+        ctx.globalAlpha=S.ablenkT>0?.07:(k.alarm>0?.28:.15);
+        ctx.fillStyle=k.alarm>0?P.gold:P.rot;
+        const seit=Math.min(TIEFE.kegelMax,TUNE.kegelOeffnung)*(TIEFE.vorne-TIEFE.hinten);
+        ctx.beginPath();
+        ctx.moveTo(k.x+k.blick*4,fuss-6);
+        ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6-seit);
+        ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6+seit);
+        ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+      }
+      const rows=SPR.kontrolleur, y=fuss-rows.length;
+      ctx.globalAlpha=.22; ctx.fillStyle='#000';
+      ctx.fillRect(Math.round(k.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
+      outline(rows,k.x-3,y,1,.55);
+      if(k.blick<0) spriteFlip(rows,k.x-3,y); else sprite(rows,k.x-3,y);
+      if(S.ablenkT>0) text('?',k.x+2,y-9,P.gold);
+      else if(k.alarm>0&&Math.floor(S.t*6)%2===0) text('!',k.x+2,y-9,P.rot);
+    }});
   }
 
   if(S.versteckt){
     const spot=VERSTECKE.find(v=>v.id===S.versteckt);
-    const rows=SPR.versteckt, y=BODEN-rows.length;
-    if(spot) sprite(rows,spot.x,y,1,null,.85);
-  } else zeichneSpieler();
+    if(spot) inTiefe.push({ t:spot.t+0.01, mal:()=>{
+      const rows=SPR.versteckt, y=bodenY(spot.t)-rows.length;
+      sprite(rows,spot.x,y,1,null,.85); }});
+  } else if(S.modus!=='kloppe'){
+    /* Im Kampf zeichnet zeichneKloppe() die Figur mit ihren Kampfzustaenden.
+       Beides zusammen haette den Block- und Rollzustand ueberdeckt. */
+    inTiefe.push({ t:S.tiefe, mal:()=>zeichneSpieler() });
+  }
+
+  zeichneNachTiefe(inTiefe);
 
   ctx.restore();
 
@@ -787,6 +1491,10 @@ function zeichneBus(){
 /* ---- HUD ---- */
 function hud(){
   const szene=szeneFuerModus();
+
+  /* Im Kampf gilt die Kampfanzeige. Vorher lagen Herzen und Verdachtsbalken
+     genau unter Leben und Ausdauer - zwei Anzeigen an derselben Stelle. */
+  if(S.modus==='kloppe'){ return; }
 
   if(szene==='bus'){
     for(let i=0;i<TUNE.leben;i++){
