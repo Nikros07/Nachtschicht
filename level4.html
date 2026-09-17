@@ -36,7 +36,13 @@
   #touch .btn:active { background:rgba(255,61,139,.3); border-color:#ff3d8b; color:#fff; }
   /* Kein Sprung in diesem Level - reiner Konter-Kampf. Der Aktionsknopf ist
      bewusst gross und mittig, weil er beim Kontern aufs Zehntel ankommt. */
-  #thit  { right:6%; bottom:10%; width:22%; aspect-ratio:1; }
+  #thit  { right:3%;  bottom:8%;  width:17%; aspect-ratio:1; }
+  #tblock{ right:22%; bottom:8%;  width:17%; aspect-ratio:1; font-size:8px; }
+  #trolle{ right:12%; bottom:34%; width:15%; aspect-ratio:1; font-size:8px; }
+  #tleft { left:3%;   bottom:8%;  width:17%; aspect-ratio:1; }
+  #tright{ left:22%;  bottom:8%;  width:17%; aspect-ratio:1; }
+  #tup   { left:12%;  bottom:34%; width:15%; aspect-ratio:1; }
+  #tdown { left:32%;  bottom:34%; width:15%; aspect-ratio:1; }
   #fs { position:absolute; top:6px; right:8px; z-index:5;
     background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
     border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
@@ -84,7 +90,10 @@
     <canvas id="c" width="320" height="180"></canvas>
     <div id="crt"></div>
     <div id="touch">
-      <div class="btn" id="thit">E</div>
+      <div class="btn" id="tleft">&#9664;</div><div class="btn" id="tright">&#9654;</div>
+      <div class="btn" id="tup">&#9650;</div><div class="btn" id="tdown">&#9660;</div>
+      <div class="btn" id="thit">E</div><div class="btn" id="tblock">BLOCK</div>
+      <div class="btn" id="trolle">ROLLE</div>
     </div>
     <div id="texit">&#10005;</div>
   </div>
@@ -107,6 +116,8 @@
 <script src="nacht/bild.js"></script>
 <script src="nacht/ton.js"></script>
 <script src="nacht/stand.js"></script>
+<script src="nacht/welt.js"></script>
+<script src="nacht/kampf.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -147,6 +158,27 @@ const TUNE = {
 
   /* (4) TEMPO STEIGT MIT JEDEM TREFFER LEICHT AN */
   musikBeschleunigung: 0.05,
+
+  /* (5) BEWEGUNG - du stehst nicht mehr fest, vor dem Club ist Platz.
+     Die Tiefe ist hier kein Schmuck: der Rammstoss laesst sich NUR durch
+     Ausweichen loesen, blocken hilft dagegen nicht. */
+  gehTempo:        74,
+  arenaLinks:      20,
+  arenaRechtsRand: 28,   // Abstand zum rechten Bildrand
+  tiefeHinten:    124,   // Boden-Y der hintersten Laufebene
+  tiefeVorne:     154,
+
+  /* (6) DER RAMMSTOSS - unblockbar, kommt ab Phase 2 */
+  rammeWindup:    0.80,
+  rammeSchlag:    0.30,
+  rammeAb:           2,  // ab dieser Phase
+  rammeTempo:      150,  // er setzt nach, wenn er rammt
+
+  /* (7) PHASEN - er wird ungemuetlicher, je naeher er am Boden ist */
+  phase2Ab:         0.66,  // Anteil Rest-Leben
+  phase3Ab:         0.33,
+  phasePauseKuerzer: 0.22, // pro Phase weniger Verschnaufen
+  phaseWindupKuerzer:0.12, // pro Phase kuerzere Vorwarnung
 };
 
 const P = {
@@ -249,16 +281,19 @@ const dennisKampfBonus=()=>ladeCrew().includes('DENNIS')?{leben:1,fenster:1.15}:
 let S={};
 function neuesSpiel(){
   const bonus=dennisKampfBonus();
+  setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne);
   S={
     modus:'titel', t:0, zeit:0,
     maxHp:TUNE.leben+bonus.leben, hp:TUNE.leben+bonus.leben, fensterMult:bonus.fenster,
     pegelStart:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
-    treffer:0, erholungT:0, invulnT:0,
+    treffer:0, erholungT:0,
     ruettel:0, blitz:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     szene:0, szeneT:0, skipT:0,
     boss:null, gewonnen:false, faenger:'', neueBestzeit:false,
+    spieler:null, blockAn:false,
   };
+  S.spieler=kaempfer({ x:96, t:0.5, blick:1, hp:S.maxHp, maxHp:S.maxHp });
 }
 neuesSpiel();
 
@@ -278,22 +313,47 @@ function druckAktion(){
   if(S.modus==='pause') return;
   aktionPuffer.push(S.t);
 }
+let linksAn=false, rechtsAn=false, hochAn=false, runterAn=false, rolleGedrueckt=false;
+
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
-  if(['KeyE','Enter','Space'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
+  if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
+  if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
+  if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
+  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
+  if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); S.blockAn=true; }
+  if(e.code==='Space'){ e.preventDefault(); rolleGedrueckt=true; }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(e.code==='KeyP'&&(S.modus==='kampf'||S.modus==='pause')) S.modus=S.modus==='kampf'?'pause':'kampf';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
-  if(['KeyE','Enter','Space'].includes(e.code)) aktionGehalten=false; });
-addEventListener('blur',()=>{ aktionGehalten=false; });
+  if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
+  if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
+  if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ArrowDown','KeyS'].includes(e.code)) runterAn=false;
+  if(['ShiftLeft','ShiftRight'].includes(e.code)) S.blockAn=false; });
+addEventListener('blur',()=>{ aktionGehalten=false;
+  linksAn=rechtsAn=hochAn=runterAn=false; if(S) S.blockAn=false; });
 
 
 /* Der Konterknopf muss instantan feuern - touchstart, nicht click, sonst
    verliert der Handy-Spieler genau die Millisekunden, um die es hier geht. */
 bind('thit',['touchstart','mousedown'],()=>{ aktionGehalten=true; druckAktion(); });
 bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
+bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
+bind('tleft',['touchend','mouseup','touchcancel'],()=>linksAn=false);
+bind('tright',['touchstart','mousedown'],()=>rechtsAn=true);
+bind('tright',['touchend','mouseup','touchcancel'],()=>rechtsAn=false);
+bind('tup',['touchstart','mousedown'],()=>hochAn=true);
+bind('tup',['touchend','mouseup','touchcancel'],()=>hochAn=false);
+bind('tdown',['touchstart','mousedown'],()=>runterAn=true);
+bind('tdown',['touchend','mouseup','touchcancel'],()=>runterAn=false);
+bind('tblock',['touchstart','mousedown'],()=>{ S.blockAn=true; });
+bind('tblock',['touchend','mouseup','touchcancel'],()=>{ S.blockAn=false; });
+bind('trolle',['touchstart','mousedown'],()=>{ rolleGedrueckt=true; });
 
 
 /* ==========================================================================
@@ -309,8 +369,9 @@ const INTRO=[
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){
   S.modus='kampf';
-  S.boss={ x:W+30, zielX:Math.round(W*0.62), hp:TUNE.bossTreffer, zustand:'anlauf', t:0,
-           art:null, windupDauer:0, schlagDauer:0, fensterAnteil:0, serie:0 };
+  S.boss=kaempfer({ x:W+30, t:0.5, blick:-1, art:'tuersteher',
+    hp:TUNE.bossTreffer, maxHp:TUNE.bossTreffer, reichweite:19,
+    pauseT:0.9, anlauf:true, vorZustand:'frei' });
   zeigeHinweis('E IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
   SFX.warn(); meldung('NA WARTE',1.4);
 }
@@ -324,84 +385,185 @@ const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 /* ==========================================================================
    DER TUERSTEHER - der Kampf
    ========================================================================== */
+function bossPhase(b){
+  const anteil=b.hp/TUNE.bossTreffer;
+  return anteil<=TUNE.phase3Ab?3:anteil<=TUNE.phase2Ab?2:1;
+}
 function naechsteArt(b){
-  let art = Math.random()<0.5?'schwung':'jab';
-  if(b.art===art) b.serie++; else b.serie=0;
-  if(b.serie>=TUNE.serieMax) art = art==='schwung'?'jab':'schwung';
+  /* Ab Phase 2 kommt der Rammstoss dazu. Der ist unblockbar - ab da reicht
+     Decken allein nicht mehr, man muss ausweichen. */
+  const moeglich = bossPhase(b)>=TUNE.rammeAb ? ['schwung','jab','ramme']
+                                              : ['schwung','jab'];
+  let art=pick(moeglich);
+  if(b.letzteArt===art) b.serie=(b.serie||0)+1; else b.serie=0;
+  if(b.serie>=TUNE.serieMax){
+    const andere=moeglich.filter(a=>a!==art);
+    art=pick(andere); b.serie=0;
+  }
+  b.letzteArt=art;
   return art;
 }
-function starteWind(b,art){
+function starteAngriff(b,art){
+  const phase=bossPhase(b);
+  const kuerzer=1-(phase-1)*TUNE.phaseWindupKuerzer;
   b.art=art;
-  b.windupDauer = art==='schwung'?TUNE.schwungWindup:TUNE.jabWindup;
-  b.schlagDauer = art==='schwung'?TUNE.schwungSchlag:TUNE.jabSchlag;
-  const pegelFaktor = 1-(S.pegelStart/100)*TUNE.pegelFensterStrafeMax;
-  b.fensterAnteil = Math.max(0.12,TUNE.fensterAnteil*S.fensterMult*pegelFaktor);
-  b.zustand='wind'; b.t=0; SFX.warn();
+  b.ausholenDauer=(art==='schwung'?TUNE.schwungWindup
+                  :art==='jab'?TUNE.jabWindup:TUNE.rammeWindup)*kuerzer;
+  b.schlagDauer=(art==='schwung'?TUNE.schwungSchlag
+                :art==='jab'?TUNE.jabSchlag:TUNE.rammeSchlag);
+  b.unblockbarJetzt=(art==='ramme');
+  /* Der Pegel aus den vorigen Leveln macht das Fenster enger, Dennis in der
+     Crew macht es wieder breiter. */
+  const pegelFaktor=1-(S.pegelStart/100)*TUNE.pegelFensterStrafeMax;
+  b.fensterAnteil=Math.max(0.12,TUNE.fensterAnteil*S.fensterMult*pegelFaktor);
+  b.zustand='ausholen'; b.zT=0; b.trefferGesetzt=false;
+  SFX.warn();
 }
 function fehlschlag(){
   if(S.erholungT>0) return;
   S.erholungT=TUNE.fehlschlagErholung; S.ruettel=2; SFX.fehl();
-  meldung('ZU FRUEH',0.9);
+  meldung('DANEBEN',0.9);
 }
-function verarbeiteFehldruck(){ while(aktionPuffer.length){ aktionPuffer.shift(); fehlschlag(); } }
+function bossTakt(b,dt,ziel){
+  kaempferTakt(b,dt);
+  if(b.hp<=0) return;
+  b.blick=Math.sign(ziel.x-b.x)||b.blick;
+
+  /* Beim Rammen setzt er nach - deshalb reicht Stehenbleiben nicht. */
+  if(b.art==='ramme'){
+    if(b.zustand==='ausholen') b.x+=b.blick*TUNE.rammeTempo*0.18*dt;
+    if(b.zustand==='schlag')   b.x+=b.blick*TUNE.rammeTempo*dt;
+  }
+
+  /* Nach jedem Angriff einmal Luft holen. Je tiefer die Phase, desto kuerzer. */
+  if(b.zustand==='frei'&&b.vorZustand!=='frei'){
+    const phase=bossPhase(b);
+    b.pauseT=Math.max(0.25,TUNE.bossPause-(phase-1)*TUNE.phasePauseKuerzer);
+  }
+  b.vorZustand=b.zustand;
+
+  if(b.zustand!=='frei') return;
+
+  if(b.anlauf){
+    const ziel2=Math.round(W*0.62);
+    b.x+=(ziel2-b.x)*Math.min(1,6*dt);
+    if(Math.abs(b.x-ziel2)<1){ b.x=ziel2; b.anlauf=false; b.pauseT=TUNE.bossPause; }
+    return;
+  }
+
+  b.pauseT-=dt;
+  /* Er schlaegt erst zu, wenn er auch hinkommt. Im ersten Spieltest hat
+     er aus 65 Pixeln Entfernung ausgeholt und ins Leere geschlagen -
+     seine Reichweite sind 19. Deshalb ist Naehe jetzt Bedingung. */
+  const dx=ziel.x-b.x;
+  const dtf=(ziel.t||0)-(b.t||0);
+  const zuWeit=Math.abs(dx)>b.reichweite*0.8||Math.abs(dtf)>KAMPF.tiefeToleranz*0.8;
+  if(b.pauseT>0||zuWeit){
+    /* Er geht auf dich zu und zieht in deine Tiefe - wegrennen allein
+       loest das Problem nicht. */
+    if(Math.abs(dx)>b.reichweite*0.75) b.x+=Math.sign(dx)*46*dt;
+    if(Math.abs(dtf)>0.05) bewegeTiefe(b,Math.sign(dtf),dt,TIEFE.tempo*0.6,9);
+    return;
+  }
+  starteAngriff(b,naechsteArt(b));
+}
 
 function kampf(dt){
-  const b=S.boss; if(!b) return;
-  b.t+=dt;
-  if(S.erholungT>0) S.erholungT=Math.max(0,S.erholungT-dt);
-  if(S.invulnT>0) S.invulnT=Math.max(0,S.invulnT-dt);
+  const b=S.boss, s=S.spieler; if(!b||!s) return;
 
-  if(b.zustand==='anlauf'){
-    b.zielX=Math.round(W*0.62);
-    b.x+=(b.zielX-b.x)*Math.min(1,6*dt);
-    verarbeiteFehldruck();
-    if(Math.abs(b.x-b.zielX)<1){ b.x=b.zielX; b.zustand='pause'; b.t=0; }
-    return;
+  /* Hit-Stop: nach einem Treffer steht die Welt ganz kurz. */
+  kampfStopTakt(dt);
+  const zdt=dt*kampfZeitFaktor();
+  if(zdt<=0) return;
+
+  if(S.erholungT>0) S.erholungT=Math.max(0,S.erholungT-zdt);
+
+  /* ---- Ausweichrolle ---- */
+  if(rolleGedrueckt){
+    rolleGedrueckt=false;
+    const r=(runterAn?1:0)-(hochAn?1:0);
+    if(!rolle(s,r||(s.t<0.5?1:-1))&&s.ausdauer<KAMPF.ausdauerRolle)
+      meldung('KEINE PUSTE',0.8);
   }
-  if(b.zustand==='pause'){
-    verarbeiteFehldruck();
-    if(b.t>=TUNE.bossPause) starteWind(b,naechsteArt(b));
-    return;
+
+  /* ---- Blocken ----
+     Liegt ein Tastendruck an, wird die Deckung in diesem Bild fallen
+     gelassen. Sonst haelt man Block, drueckt E und nichts passiert - das
+     fuehlt sich an wie eine verschluckte Eingabe. */
+  blocke(s,!!S.blockAn && aktionPuffer.length===0);
+
+  /* ---- Laufen, auch in die Tiefe ---- */
+  if(s.zustand==='frei'||s.zustand==='block'){
+    const rx=(rechtsAn?1:0)-(linksAn?1:0);
+    const langsamer=s.zustand==='block'?0.45:1;
+    if(rx){ s.x+=rx*TUNE.gehTempo*langsamer*zdt; s.blick=rx; }
+    const rt=(runterAn?1:0)-(hochAn?1:0);
+    bewegeTiefe(s,rt,zdt,TIEFE.tempo*langsamer);
   }
-  if(b.zustand==='wind'){
-    while(aktionPuffer.length){
-      aktionPuffer.shift();
-      if(S.erholungT>0) continue;
-      const fensterStart=b.windupDauer*(1-b.fensterAnteil);
-      if(b.t>=fensterStart&&b.t<=b.windupDauer){
-        b.hp--; S.treffer++; b.zustand='getroffen'; b.t=0;
-        S.ruettel=5; S.blitz=.5; SFX.klatsch();
-        meldung(pick(['SITZT','KONTER','GEHT AUFS AUGE']),1.1);
-        break;
-      } else fehlschlag();
+  s.x=Math.max(TUNE.arenaLinks,Math.min(W-TUNE.arenaRechtsRand,s.x));
+
+  /* ---- Zuschlagen ----
+     Der Konter wird im Moment des Druckens geprueft. Siehe konterVersuch()
+     in kampf.js - sonst frisst die eigene Ausholzeit das Fenster auf. */
+  while(aktionPuffer.length){
+    aktionPuffer.shift();
+    if(S.erholungT>0) continue;
+    if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); continue; }
+    if(konterVersuch(s,b,{konterAnteil:b.fensterAnteil,schaden:1,
+                          unblockbar:b.unblockbarJetzt})){
+      S.treffer++; S.ruettel=5; S.blitz=.5; SFX.klatsch();
+      meldung(pick(['SITZT','KONTER','GEHT AUFS AUGE']),1.1);
+      continue;
     }
-    if(b.zustand==='wind'&&b.t>=b.windupDauer){
-      b.zustand='schlag'; b.t=0;
-      if(S.invulnT<=0){
-        S.hp--; S.invulnT=TUNE.unverwundbarNachTreffer;
-        S.ruettel=6; S.blitz=.5; SFX.aua();
-        meldung(b.art==='schwung'?'VOLL ERWISCHT':'AUTSCH',1.2);
-        if(S.hp<=0){ S.modus='ende'; S.gewonnen=false;
-          S.faenger=pick(['RAUSGESCHMISSEN','KEIN EINLASS HEUTE','DU LIEGST VOR DER TUER']);
-          return; }
-      }
+    /* Kein Konter. In Reichweite zaehlt es als verfrueht - das ist die
+       Strafe fuers blinde Draufdruecken. Sonst ein normaler Schlag, der
+       nur den erwischt, der sich gerade erholt. */
+    if(trifftRaeumlich(s,b,KAMPF.reichweite)&&b.zustand==='ausholen') fehlschlag();
+    else schlage(s);
+  }
+
+  kaempferTakt(s,zdt);
+  bossTakt(b,zdt,s);
+
+  /* ---- Treffer aufloesen: erst du, dann er ---- */
+  /* Ein normaler Schlag landet nur, wenn er sich gerade erholt oder
+     betaeubt ist - sonst deckt er. Das haelt den Konter als Hauptweg. */
+  if(s.zustand==='schlag'&&!s.trefferGesetzt){
+    const offen=b.zustand==='erholung'||b.zustand==='getroffen';
+    const r=loeseTreffer(s,b,{schaden:offen?1:0.001});
+    if(r==='treffer'&&offen){
+      S.treffer++; S.ruettel=3; SFX.klatsch(); meldung('NACHGESETZT',0.9);
+    } else if(r==='block'||r==='gardebruch'){
+      meldung(r==='gardebruch'?'DECKUNG WEG':'ER BLOCKT',0.9);
+    } else if(r==='treffer'){
+      meldung('ER STECKT DAS WEG',0.8);
     }
-    return;
   }
-  if(b.zustand==='schlag'){
-    verarbeiteFehldruck();
-    if(b.t>=b.schlagDauer){ b.zustand='pause'; b.t=0; }
-    return;
-  }
-  if(b.zustand==='getroffen'){
-    verarbeiteFehldruck();
-    if(b.t>=0.45){
-      if(b.hp<=0){ starteCutscene(); return; }
-      b.zustand='pause'; b.t=0;
+  if(b.zustand==='schlag'&&!b.trefferGesetzt){
+    const r=loeseTreffer(b,s,{schaden:1,unblockbar:b.unblockbarJetzt,
+                              reichweite:b.reichweite,betaeubung:0.35});
+    if(r==='treffer'||r==='gardebruch'){
+      S.ruettel=6; S.blitz=.5; SFX.aua();
+      meldung(r==='gardebruch'?'DURCH DIE DECKUNG'
+             :b.art==='ramme'?'UMGERANNT'
+             :b.art==='schwung'?'VOLL ERWISCHT':'AUTSCH',1.2);
+    } else if(r==='block'){
+      S.ruettel=2; meldung('GEBLOCKT',0.8);
+    } else if(r==='daneben'){
+      meldung('AUSGEWICHEN',0.9);
     }
+  }
+
+  /* ---- Ausgang ---- */
+  S.hp=Math.max(0,Math.ceil(s.hp));
+  if(s.hp<=0&&S.modus==='kampf'){
+    S.modus='ende'; S.gewonnen=false;
+    S.faenger=pick(['RAUSGESCHMISSEN','KEIN EINLASS HEUTE','DU LIEGST VOR DER TUER']);
     return;
   }
+  if(b.hp<=0&&S.modus==='kampf'){ starteCutscene(); }
 }
+
 
 /* ==========================================================================
    CUTSCENE + ENDE
@@ -517,63 +679,121 @@ function zeichneKulisse(){
 
 function zeichneArena(){
   zeichneKulisse();
-  const spielerX=Math.round(W*0.30), bossY=BODEN;
-  const b=S.boss;
+  const b=S.boss, s=S.spieler;
 
-  /* Tuersteher */
-  if(b){
-    let rows=SPR.bossSteh, kopf=SPR.bossKopf;
-    if(b.zustand==='wind') rows=SPR.bossWind;
-    else if(b.zustand==='schlag') rows=SPR.bossSchlag;
-    const blinkt=b.zustand==='getroffen'&&Math.floor(S.t*20)%2===0;
-    const y=bossY-rows.length-kopf.length;
-    outline(kopf,b.x,y,1,.6); outline(rows,b.x,y+kopf.length,1,.6);
-    const tint=blinkt?'#ffffff':null;
-    spriteFlip(kopf,b.x,y,1,tint); spriteFlip(rows,b.x,y+kopf.length,1,tint);
-
-    if(b.zustand==='wind'){
-      /* Ausholbalken - Konterfenster als goldene Zone am Ende sichtbar.
-         Eigene Zeile UNTER dem Lebensbalken und UEBER dem Balken selbst,
-         damit sich Name des Angriffs, Lebensbalken und Balken nicht
-         gegenseitig ueberdecken (das tat er anfangs - Layout-Fehler). */
-      const bw=76, bx=Math.round(W/2-bw/2), by=29;
-      const f=Math.min(1,b.t/b.windupDauer);
-      ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,9);
-      ctx.fillStyle='#2a2440'; ctx.fillRect(bx,by,bw,5);
-      const fensterStart=1-b.fensterAnteil;
-      ctx.fillStyle='#ffd44766';
-      ctx.fillRect(bx+Math.round(bw*fensterStart),by,Math.round(bw*b.fensterAnteil),5);
-      ctx.fillStyle=P.rot; ctx.fillRect(bx,by,Math.round(bw*f),5);
-      textC(b.art==='schwung'?'SCHWUNG':'JAB',by-8,P.gold);
-      if(Math.floor(S.t*10)%2===0) text('!',b.x+2,y-9,P.rot);
-    }
-
-    /* Lebensbalken (Treffer bis er liegt) */
-    const bw=40, bx=Math.round(W/2-bw/2);
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,13,bw+2,6);
-    ctx.fillStyle=P.rot; ctx.fillRect(bx,14,Math.round(bw*b.hp/TUNE.bossTreffer),4);
+  /* Das Laufband sichtbar machen - ohne das schwebt bei Tiefe alles. */
+  ctx.fillStyle='#1a1526';
+  ctx.fillRect(0,bodenY(0)-2,W,bodenY(1)-bodenY(0)+6);
+  ctx.fillStyle='#2b2340'; ctx.fillRect(0,bodenY(0)-2,W,1);
+  ctx.fillStyle='#0d0a16'; ctx.fillRect(0,bodenY(1)+3,W,1);
+  /* Absperrung hinten - macht die hintere Grenze lesbar */
+  for(let x=6;x<W;x+=26){
+    ctx.fillStyle='#3a3152'; ctx.fillRect(x,bodenY(0)-9,1,8);
+    ctx.fillStyle='#4a3f66'; ctx.fillRect(x,bodenY(0)-10,2,1);
   }
 
-  /* Spieler */
-  let rows=SPR.steh;
-  if(S.invulnT>TUNE.unverwundbarNachTreffer-0.22) rows=SPR.treffer;
-  else if(b&&b.zustand==='getroffen'&&b.t<0.25) rows=SPR.konter;
-  outline(rows,spielerX,bossY-rows.length,1,.6);
-  sprite(rows,spielerX,bossY-rows.length);
-  ctx.globalAlpha=.28; ctx.fillStyle='#000';
-  ctx.fillRect(spielerX,BODEN,7,1); ctx.globalAlpha=1;
+  const zeichnungen=[];
+
+  /* ---- Tuersteher ---- */
+  if(b){
+    zeichnungen.push({t:b.t, mal:()=>{
+      let rows=SPR.bossSteh, kopf=SPR.bossKopf;
+      if(b.zustand==='ausholen') rows=SPR.bossWind;
+      else if(b.zustand==='schlag') rows=SPR.bossSchlag;
+      const blinkt=b.zustand==='getroffen'&&Math.floor(S.t*20)%2===0;
+      const fuss=bodenY(b.t);
+      const y=fuss-rows.length-kopf.length;
+      bodenSchatten(b,9,.3);
+      outline(kopf,b.x,y,1,.6); outline(rows,b.x,y+kopf.length,1,.6);
+      const tint=blinkt?'#ffffff':(b.zustand==='block'?'#42d9ff':null);
+      spriteFlip(kopf,b.x,y,1,tint); spriteFlip(rows,b.x,y+kopf.length,1,tint);
+      if(b.zustand==='ausholen'&&Math.floor(S.t*10)%2===0)
+        text('!',b.x+2,y-9,b.unblockbarJetzt?P.gold:P.rot);
+    }});
+  }
+
+  /* ---- Spieler ---- */
+  zeichnungen.push({t:s.t, mal:()=>{
+    let rows=SPR.steh;
+    if(s.zustand==='getroffen') rows=SPR.treffer;
+    else if(s.zustand==='schlag'||s.zustand==='ausholen') rows=SPR.konter;
+    const fuss=bodenY(s.t);
+    const rollt=s.zustand==='rolle';
+    const y=fuss-rows.length+(rollt?3:0);
+    bodenSchatten(s,7,.28);
+    const blinkt=s.unverwundbar>0&&Math.floor(S.t*18)%2===0;
+    const tint=rollt?'#8d86a8':(s.zustand==='block'?'#42d9ff':(blinkt?'#ffffff':null));
+    outline(rows,s.x,y,1,.6);
+    if(s.blick<0) spriteFlip(rows,s.x,y,1,tint); else sprite(rows,s.x,y,1,tint);
+    /* Deckung sichtbar machen */
+    if(s.zustand==='block'){
+      ctx.fillStyle='#42d9ff';
+      const bx=s.x+(s.blick>0?8:-2);
+      ctx.fillRect(bx,y+3,1,7);
+    }
+  }});
+
+  zeichneNachTiefe(zeichnungen);
+
+  /* ---- Ausholbalken mit Konterfenster ---- */
+  if(b&&b.zustand==='ausholen'){
+    const bw=76, bx=Math.round(W/2-bw/2), by=29;
+    const f=Math.min(1,b.zT/b.ausholenDauer);
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,9);
+    ctx.fillStyle='#2a2440'; ctx.fillRect(bx,by,bw,5);
+    if(!b.unblockbarJetzt){
+      const start=1-b.fensterAnteil;
+      ctx.fillStyle='#ffd44766';
+      ctx.fillRect(bx+Math.round(bw*start),by,Math.round(bw*b.fensterAnteil),5);
+    }
+    ctx.fillStyle=b.unblockbarJetzt?P.gold:P.rot;
+    ctx.fillRect(bx,by,Math.round(bw*f),5);
+    const name=b.art==='schwung'?'SCHWUNG':b.art==='jab'?'JAB':'RAMME - AUSWEICHEN';
+    textC(name,by-8,b.unblockbarJetzt?P.gold:P.gold);
+  }
+
+  /* ---- Lebensbalken des Tuerstehers ---- */
+  if(b){
+    const bw=40, bx=Math.round(W/2-bw/2);
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,13,bw+2,6);
+    ctx.fillStyle=P.rot;
+    ctx.fillRect(bx,14,Math.round(bw*Math.max(0,b.hp)/TUNE.bossTreffer),4);
+    /* Phasenstriche, damit man sieht wann es haerter wird */
+    ctx.fillStyle='#0008';
+    ctx.fillRect(bx+Math.round(bw*TUNE.phase2Ab),13,1,6);
+    ctx.fillRect(bx+Math.round(bw*TUNE.phase3Ab),13,1,6);
+  }
 }
 
 /* ---- HUD ---- */
 function hud(){
+  const s=S.spieler;
   for(let i=0;i<S.maxHp;i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
     ctx.fillRect(x,y,2,3); ctx.fillRect(x+3,y,2,3); ctx.fillRect(x+1,y+2,3,2); ctx.fillRect(x+2,y+4,1,1);
   }
-  text('TREFFER '+S.treffer+'/'+TUNE.bossTreffer,W-textW('TREFFER '+S.treffer+'/'+TUNE.bossTreffer)-6,6,P.dim);
-  if(S.erholungT>0) textC('ZU FRUEH - WARTEN',H-52,P.rot);
+
+  /* Ausdauer - der Balken, der das Knopf-Haemmern beendet. Rot, sobald
+     kein Schlag mehr drin ist. */
+  if(s){
+    const bw=46, bx=6, by=14, f=s.ausdauer/KAMPF.ausdauerMax;
+    ctx.fillStyle='#000a'; ctx.fillRect(bx-1,by-1,bw+2,5);
+    ctx.fillStyle='#2a2440'; ctx.fillRect(bx,by,bw,3);
+    ctx.fillStyle=s.ausdauer<KAMPF.ausdauerSchlag?P.rot:P.gruen;
+    ctx.fillRect(bx,by,Math.round(bw*f),3);
+    ctx.fillStyle='#0008';
+    ctx.fillRect(bx+Math.round(bw*KAMPF.ausdauerSchlag/KAMPF.ausdauerMax),by,1,3);
+  }
+
+  const tr='TREFFER '+S.treffer+'/'+TUNE.bossTreffer;
+  text(tr,W-textW(tr)-6,6,P.dim);
+  if(S.boss&&!S.boss.anlauf){
+    const ph='PHASE '+bossPhase(S.boss);
+    text(ph,W-textW(ph)-6,14,bossPhase(S.boss)>1?P.gold:P.dunkel);
+  }
+  if(S.erholungT>0) textC('DANEBEN - WARTEN',H-52,P.rot);
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }

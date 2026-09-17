@@ -35,12 +35,15 @@ const KAMPF = {
   ausdauerMax:      100,
   ausdauerSchlag:    18,
   ausdauerRolle:     25,
-  ausdauerBlock:     14,  // pro geblocktem Treffer
   ausdauerZurueck:   26,  // pro Sekunde, nur im Zustand frei
   ausdauerPause:    0.7,  // so lange nach Verbrauch kommt nichts zurueck
 
-  /* (4) BLOCKEN */
-  blockSchadenAnteil: 0.25,  // was trotzdem durchkommt
+  /* (4) BLOCKEN
+     Bewusst KEIN sicherer Dauerzustand: im Spieltest hat ein Bot, der immer
+     geblockt hat, den Kampf fast unbeschadet gewonnen. Deshalb blutet
+     Dauerdeckung (Anteil durch) und kostet spuerbar Ausdauer. */
+  blockSchadenAnteil: 0.35,  // was trotzdem durchkommt
+  ausdauerBlockKosten: 22,   // pro geblocktem Treffer
   gardeBruch:          1.1,  // Betaeubung, wenn die Ausdauer beim Blocken reisst
 
   /* (5) AUSWEICHROLLE - in die Tiefe, dafuer ist die dritte Achse da */
@@ -166,7 +169,7 @@ function loeseTreffer(angreifer, ziel, opt){
 
   /* Blocken - ausser bei unblockbaren Angriffen. */
   if(ziel.zustand === 'block' && !opt.unblockbar){
-    ziel.ausdauer -= KAMPF.ausdauerBlock;
+    ziel.ausdauer -= KAMPF.ausdauerBlockKosten;
     ziel.ausdauerPause = KAMPF.ausdauerPause;
     ziel.hp -= (opt.schaden || 1) * KAMPF.blockSchadenAnteil;
     if(ziel.ausdauer <= 0){                 // Garde gebrochen
@@ -187,6 +190,33 @@ function loeseTreffer(angreifer, ziel, opt){
   ziel.x += (Math.sign(ziel.x - angreifer.x) || 1) * KAMPF.rueckstoss * 0.35;
   kampfStop = KAMPF.hitStop;
   return 'treffer';
+}
+
+/* Konterversuch im Moment des DRUECKENS.
+
+   Warum nicht erst, wenn der eigene Schlag aktiv wird: der Spieler hat
+   selbst eine Ausholzeit. Bei einem kurzen Gegner-Jab ist das Fenster
+   keine 200 ms lang - zieht man davon die eigene Ausholzeit ab, bleiben
+   ein paar Millisekunden uebrig. Im Spieltest war der Konter dadurch
+   praktisch unmoeglich. Also zaehlt der Tastendruck, nicht der Treffer.
+
+   Liefert true, wenn gekontert wurde. */
+function konterVersuch(s, g, opt){
+  opt = opt || {};
+  if(opt.unblockbar) return false;      // manche Angriffe kontert man nicht
+  if(s.zustand !== 'frei') return false;
+  if(!imKonterfenster(g, opt.konterAnteil)) return false;
+  if(!trifftRaeumlich(s, g, opt.reichweite || KAMPF.reichweite)) return false;
+  if(!hatAusdauer(s, KAMPF.ausdauerSchlag)) return false;
+  verbrauche(s, KAMPF.ausdauerSchlag);
+  g.hp -= (opt.schaden || KAMPF.konterSchaden);
+  g.zustand = 'getroffen';
+  g.betaeubt = KAMPF.konterBetaeubung;
+  g.unverwundbar = 0.1;
+  /* Der Schlag wird trotzdem gezeigt, trifft aber nicht noch einmal. */
+  s.zustand = 'schlag'; s.zT = 0; s.trefferGesetzt = true;
+  kampfStop = KAMPF.hitStop * 1.6;
+  return true;
 }
 
 /* Der Spieler schlaegt zu. Trifft er den Gegner im Ausholen, ist es ein

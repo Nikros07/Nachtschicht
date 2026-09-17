@@ -50,7 +50,7 @@ console.log('\n--- Blocken ---');
   bisSchlag(a);                     // in 'schlag'
   const hp=z.hp, aus=z.ausdauer;
   const r=c.loeseTreffer(a,z,{schaden:2});
-  pruefe('Block laesst nur einen Teil durch', r==='block'&&hp-z.hp===2*c.KAMPF.blockSchadenAnteil, r+' schaden='+(hp-z.hp));
+  pruefe('Block laesst nur einen Teil durch', r==='block'&&Math.abs((hp-z.hp)-2*c.KAMPF.blockSchadenAnteil)<1e-6, r+' schaden='+(hp-z.hp));
   pruefe('Blocken kostet Ausdauer', z.ausdauer<aus);
 }
 {
