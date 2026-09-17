@@ -48,6 +48,10 @@ function vollbild(){
   if(imVollbild()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
   const req=root.requestFullscreen||root.webkitRequestFullscreen; if(!req) return;
   Promise.resolve(req.call(root)).then(()=>{
+    /* Frueher wurde hier hart auf Querformat gedreht und wer hochkant hielt,
+       sah nur "HANDY DREHEN". Seit nacht/mobil.js eine echte Hochformat-
+       Fassung hat, darf das Geraet so bleiben, wie der Spieler es haelt. */
+    if(window.MOBIL&&window.MOBIL.an) return;
     if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
   }).catch(()=>{});
 }

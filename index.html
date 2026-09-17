@@ -125,6 +125,7 @@
 <script src="nacht/welt.js"></script>
 <script src="nacht/nacht.js"></script>
 <script src="nacht/dialog.js"></script>
+<script src="nacht/mobil.js"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -549,6 +550,47 @@ function druckAktion(){
   if(S.modus==='ende'&&S.gewonnen){ location.href='level2.html'; return; }
   aktionPuffer.push(S.t);
 }
+/* ==========================================================================
+   WAS DIE KNOEPFE AM HANDY GERADE TUN
+   nacht/mobil.js fragt das hier ab. Am Rechner sieht man an der Figur, was
+   in Reichweite ist - am Handy ist der Daumen davor. Also sagt der Knopf,
+   was er ausloest: TUER, SPIND, SUCHEN, REDEN.
+
+   Die Lampe (Q) und der Wurf (R) waren am Handy vorher ueberhaupt nicht
+   erreichbar, weil die feste Knopfleiste sie nicht kannte. Jetzt melden
+   sie sich hier an - und nur dort, wo sie auch etwas bewirken.
+   ========================================================================== */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
+  if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='gefangen') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:'NOCHMAL',zwei:null};
+  if(S.modus==='pause')    return {aktion:null,     zwei:null};
+
+  if(S.modus==='raum'){
+    return { aktion: S.anTuerRaus ? 'RAUS'
+           : S.nahesMoebel>=0 ? (S.durchsucht.has(S.raum+':'+S.nahesMoebel)?'LEER':'SUCHEN')
+           : null,
+             zwei:null,
+             extras:[{txt:'LAMPE',code:'KeyQ'}] };
+  }
+
+  /* Korridor. Reihenfolge wie in der Aktionsaufloesung weiter unten -
+     sonst steht auf dem Knopf etwas anderes, als er dann macht. */
+  const hm=S.lehrer.find(L=>L.hausmeister&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<14);
+  const zuWeitVorne=S.tiefe>TUNE.tuerTiefe;
+  let was=null;
+  if(amAusgang(S.x))          was=S.hatSchluessel?'RAUS':'ZU';
+  else if(hm)                 was=(hm.suchtX!=null||hm.abgelenkt>0)?'KLAUEN':'REDEN';
+  else if(raumBei(S.etage,S.x)>=0)  was=zuWeitVorne?'NACH HINTEN':'TUER';
+  else if(spindBei(S.etage,S.x)>=0) was=zuWeitVorne?'NACH HINTEN':'SPIND';
+
+  const extras=[{txt:S.lampe?'LAMPE AUS':'LAMPE',code:'KeyQ'}];
+  if(S.wurfAbkuehlung<=0) extras.push({txt:'WERFEN',code:'KeyR'});
+  return { aktion:was, zwei:'SPRUNG', extras:extras };
+}
+
 /* ---- Intro ---- */
 const INTRO=[
   { d:2.6, txt:'FREITAG. LETZTER SCHULTAG.' },

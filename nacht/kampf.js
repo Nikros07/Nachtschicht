@@ -164,6 +164,12 @@ function loeseTreffer(angreifer, ziel, opt){
 
   angreifer.trefferGesetzt = true;
 
+  /* Am Handy kommt der Treffer auch in der Hand an. Einstecken vibriert
+     laenger als Austeilen - so weiss man ohne Hinsehen, wer getroffen hat.
+     Nur Zugabe: wer die Vibration aus hat, verpasst keine Information. */
+  const amEigenenLeib = ziel.art === 'spieler';
+  const ruettel = m => { if(typeof mobilVibriere==='function') mobilVibriere(m); };
+
   /* Ausweichrolle: unverwundbar, der Schlag geht ins Leere. */
   if(ziel.unverwundbar > 0) return 'daneben';
 
@@ -177,9 +183,11 @@ function loeseTreffer(angreifer, ziel, opt){
       ziel.zustand = 'getroffen';
       ziel.betaeubt = KAMPF.gardeBruch;
       kampfStop = KAMPF.hitStop;
+      ruettel([30,40,70]);
       return 'gardebruch';
     }
     kampfStop = KAMPF.hitStop * 0.6;
+    ruettel(12);
     return 'block';
   }
 
@@ -189,6 +197,7 @@ function loeseTreffer(angreifer, ziel, opt){
   ziel.unverwundbar = KAMPF.unverwundbarNachTreffer;
   ziel.x += (Math.sign(ziel.x - angreifer.x) || 1) * KAMPF.rueckstoss * 0.35;
   kampfStop = KAMPF.hitStop;
+  ruettel(amEigenenLeib ? [0,55] : 18);
   return 'treffer';
 }
 

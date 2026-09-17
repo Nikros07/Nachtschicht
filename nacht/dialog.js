@@ -99,6 +99,10 @@ function gespraechTakt(dt){
 
 function zeichneGespraech(){
   if(!GESPR) return;
+  /* Am Handy steht das Gespraech als antippbare Flaechen im Bedienfeld
+     unter dem Bild (nacht/mobil.js). Der Kasten auf dem Bild waere dann
+     dasselbe zweimal - und er verdeckt genau die Szene, um die es geht. */
+  if(window.MOBIL && window.MOBIL.an) return;
   const k=GESPR.knoten, w=GESPR.wahlen;
   const zeilen=umbrich(k.text||'',W-24);
   const hoehe=20+zeilen.length*8+(w.length?w.length*9+4:10);

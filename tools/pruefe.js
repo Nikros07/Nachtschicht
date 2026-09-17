@@ -5,7 +5,8 @@ const module_fuer=h=>['kern','bild','ton','stand']
   .concat(h.includes('nacht/welt.js')?['welt']:[])
   .concat(h.includes('nacht/kampf.js')?['kampf']:[])
   .concat(h.includes('nacht/nacht.js')?['nacht']:[])
-  .concat(h.includes('nacht/dialog.js')?['dialog']:[]);
+  .concat(h.includes('nacht/dialog.js')?['dialog']:[])
+  .concat(h.includes('nacht/mobil.js')?['mobil']:[]);
 let fehler=0;
 for(const f of ['index.html','level2.html','level3.html','level4.html',
                 'level5.html','level6.html','level7.html','level8.html']){
