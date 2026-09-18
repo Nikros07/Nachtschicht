@@ -108,3 +108,30 @@ function textGlow(str,x,y,col,s=1){
 const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,s);
 
 const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ---- Gehzyklus fuer Figuren ohne eigene Laufbilder ----
+   Tuersteher, Fahrgaeste, Schlaeger: die hatten nur ein Stehbild und
+   glitten im Kampf mit festen Beinen ueber den Boden. Statt fuer jede Figur
+   vier Bilder von Hand zu malen, werden die untersten Zeilen (Beine, Fuesse)
+   im Takt gespreizt und wieder geschlossen. Ergebnis wird gemerkt, damit
+   der Sprite-Cache dieselben Bilder wiedererkennt. */
+const _beine=new Map();
+function spreizeZeile(z){
+  const mitte=(z.length-1)/2, a=z.split('').map(()=>'.');
+  z.split('').forEach((c,i)=>{ if(c==='.') return;
+    const j=i<mitte?Math.max(0,i-1):(i>mitte?Math.min(z.length-1,i+1):i);
+    a[j]=c; });
+  return a.join('');
+}
+function gehBeine(rows,bild){
+  if(!(bild>0)) return rows;
+  const k=rowsId(rows)+'#'+bild;
+  let r=_beine.get(k);
+  if(!r){
+    r=rows.slice(); const n=r.length;
+    if(bild===1||bild===3) r[n-1]=spreizeZeile(r[n-1]);
+    if(bild===3) r[n-2]=spreizeZeile(r[n-2]);
+    _beine.set(k,r);
+  }
+  return r;
+}

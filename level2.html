@@ -108,14 +108,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js"></script>
-<script src="nacht/bild.js"></script>
-<script src="nacht/ton.js"></script>
-<script src="nacht/stand.js"></script>
-<script src="nacht/welt.js"></script>
-<script src="nacht/nacht.js"></script>
-<script src="nacht/dialog.js"></script>
-<script src="nacht/mobil.js"></script>
+<script src="nacht/kern.js?v=202609181627"></script>
+<script src="nacht/bild.js?v=202609181627"></script>
+<script src="nacht/ton.js?v=202609181627"></script>
+<script src="nacht/stand.js?v=202609181627"></script>
+<script src="nacht/welt.js?v=202609181627"></script>
+<script src="nacht/nacht.js?v=202609181627"></script>
+<script src="nacht/dialog.js?v=202609181627"></script>
+<script src="nacht/mobil.js?v=202609181627"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -561,8 +561,9 @@ function update(dt){
   S.x+=S.vx*dt;
   S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
 
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+  /* Auch Tiefe bewegt die Beine - siehe tempo2D in welt.js. */
+  if(S.amBoden&&tempo2D(S.vx,S.vt)>12){
+    S.gehPhase+=tempo2D(S.vx,S.vt)*dt*.09;
     const n=Math.floor(S.gehPhase);
     if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
   }
@@ -939,7 +940,7 @@ function zeichneWohnung(){
     if(S.suchT>0) rows=SPR.suchen;
     else if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='getroffen') rows=SPR.konter;
     else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
-    else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+    else if(tempo2D(S.vx,S.vt)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
     else rows=SPR.steh;
     /* S.y traegt die Sprunghoehe, die Tiefe verschiebt zusaetzlich. */
     const versatz=BODEN-bodenY(S.tiefe);

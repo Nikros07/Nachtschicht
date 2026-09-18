@@ -101,3 +101,30 @@ function bodenSchatten(e,breite=7,deckkraft=.28){
   ctx.fillRect(Math.round(e.x-breite/2),Math.round(bodenY(e.t)),breite,1);
   ctx.globalAlpha=1;
 }
+
+/* ---- Laufanimation aus der tatsaechlichen Bewegung ----
+   Vorher hing der Gehzyklus nur am Seitwaertstempo (vx). Wer nach hinten
+   oder vorne lief, glitt mit steifen Beinen durchs Bild - am Handy mit dem
+   Stick fiel das sofort auf, weil man dort staendig schraeg laeuft. Und
+   Kaempfer hatten gar keinen Gehzyklus.
+   Diese Funktion misst die Bewegung seit dem letzten Aufruf (x UND Tiefe)
+   und liefert das Bild im Gehzyklus, oder -1 fuer Stehen. Sie schreibt nur
+   auf e._lx, e._lt, e._lauf, e._stehT - nie auf e.t (siehe bewegeTiefe). */
+function laufBild(e,dt,tiefe){
+  if(dt===undefined) dt=bildDt;
+  const t = tiefe===undefined ? (e.t||0) : tiefe;
+  if(e._lx===undefined){ e._lx=e.x; e._lt=t; e._lauf=0; e._stehT=1; }
+  const d=Math.max(dt,1/240);
+  const tempo=Math.hypot((e.x-e._lx)/d, tWelt(t-e._lt)/d);
+  e._lx=e.x; e._lt=t;
+  /* Kurze Nachlaufzeit: ein einzelner Frame ohne Bewegung (Stick an der
+     Schwelle, Hit-Stop) soll nicht sofort ins Stehbild springen. */
+  if(tempo>10){ e._lauf+=tempo*dt*0.09; e._stehT=0; }
+  else e._stehT+=dt;
+  return e._stehT<0.08 ? Math.floor(e._lauf)%4 : -1;
+}
+
+/* Gehtempo in der Flaeche: seitwaerts plus Tiefe, in Weltpixeln pro Sekunde.
+   Fuer Level, die vx und vt selbst fuehren (Spielerfigur ausserhalb von
+   Kaempfen). */
+const tempo2D=(vx,vt)=>Math.hypot(vx||0,(vt||0)*TIEFE.welt);

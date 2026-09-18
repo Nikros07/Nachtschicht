@@ -56,6 +56,14 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   Zeilen ausschreiben. Der Fehler ist still: nichts stürzt ab, es wirkt nur
   alles seltsam zäh.
 
+- **Nach jeder Änderung in `nacht/*.js`: `python tools/version.py`.** Die
+  Engine-Dateien hängen mit `?v=…` im Level. Ohne neue Nummer liefert der
+  Browser (und GitHub Pages bis zu 10 Minuten lang) die alte Engine zum
+  neuen Level — beim Testen stürzte `update()` mit „tempo2D is not defined“ ab.
+- **Laufanimation immer aus der echten Bewegung:** `tempo2D(vx,vt)` für die
+  Spielfigur, `laufBild(k)` + `gehBeine(rows,bild)` für Kämpfer. Nur `vx`
+  zu prüfen heißt: wer in die Tiefe läuft, gleitet mit steifen Beinen.
+
 ## Was schon umgebaut ist
 
 - **Level 2 (Bei Moritz)** hat Tiefe (Reden geht nur, wenn man auch hingeht)

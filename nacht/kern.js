@@ -72,8 +72,12 @@ if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild();
 
 /* ---- Schleife. update(dt) und draw(dt) kommen aus dem Level. ---- */
 let letzte=performance.now();
+/* Zeit des aktuellen Bildes - fuer Animationen, die im Zeichnen gemessen
+   werden (laufBild in welt.js), wo draw() kein dt weiterreicht. */
+let bildDt=1/60;
 function bild(jetzt){
   const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
+  bildDt=dt;
   update(dt); draw(dt);
   requestAnimationFrame(bild);
 }

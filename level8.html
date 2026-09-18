@@ -109,14 +109,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js"></script>
-<script src="nacht/bild.js"></script>
-<script src="nacht/ton.js"></script>
-<script src="nacht/stand.js"></script>
-<script src="nacht/welt.js"></script>
-<script src="nacht/kampf.js"></script>
-<script src="nacht/nacht.js"></script>
-<script src="nacht/mobil.js"></script>
+<script src="nacht/kern.js?v=202609181627"></script>
+<script src="nacht/bild.js?v=202609181627"></script>
+<script src="nacht/ton.js?v=202609181627"></script>
+<script src="nacht/stand.js?v=202609181627"></script>
+<script src="nacht/welt.js?v=202609181627"></script>
+<script src="nacht/kampf.js?v=202609181627"></script>
+<script src="nacht/nacht.js?v=202609181627"></script>
+<script src="nacht/mobil.js?v=202609181627"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -407,8 +407,23 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false; });
 let rolleGedrueckt=false, hochAn=false, runterAn=false;
+
+/* Knopf-Aufschriften fuer nacht/mobil.js. Im Kampf sind es andere Knoepfe
+   als auf dem Heimweg - vorher zeigte das Handy im Finale SPRUNG und keinen
+   Blockknopf. */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:'WEITER', zwei:null};
+  if(S.modus==='pause')    return {aktion:null, zwei:null};
+  if(S.modus==='kampf')    return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
+  return {aktion:null, zwei:'SPRUNG'};
+}
 addEventListener('keydown',e=>{
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); if(S) S.blockAn=true; }
+  /* Die Ausweichrolle lag bisher NUR auf dem alten Touch-Knopf - auf der
+     Tastatur gab es sie im Finale gar nicht. Leertaste wie in Level 3 und 4. */
+  if(e.code==='Space'&&S&&S.modus==='kampf'){ e.preventDefault(); rolleGedrueckt=true; }
   if(['ArrowUp','KeyW'].includes(e.code)) hochAn=true;
   if(['ArrowDown','KeyS'].includes(e.code)) runterAn=true;
 });
@@ -1159,7 +1174,11 @@ function zeichneKampf8(){
   ctx.fillStyle='#00000044'; ctx.fillRect(0,bodenY(1)+3,W,H-bodenY(1));
 
   const liste=[];
-  const malKaempfer=(k,spr,tintBlock,grundTint)=>({t:k.t, mal:()=>{
+  const malKaempfer=(k,steh,tintBlock,grundTint)=>({t:k.t, mal:()=>{
+    /* Wer sich bewegt, geht - vorher glitten alle drei Rollen mit dem
+       Stehbild ueber den Boden. */
+    const lauf=laufBild(k);
+    const spr=(lauf>=0&&(k.zustand==='frei'||k.zustand==='block'))?SPR.geh[lauf]:steh;
     const y=bodenY(k.t)-spr.length+(k.zustand==='rolle'?3:0);
     bodenSchatten(k,7,.3);
     const blinkt=k.unverwundbar>0&&Math.floor(S.t*18)%2===0;

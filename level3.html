@@ -105,15 +105,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js"></script>
-<script src="nacht/bild.js"></script>
-<script src="nacht/ton.js"></script>
-<script src="nacht/stand.js"></script>
-<script src="nacht/welt.js"></script>
-<script src="nacht/nacht.js"></script>
-<script src="nacht/dialog.js"></script>
-<script src="nacht/kampf.js"></script>
-<script src="nacht/mobil.js"></script>
+<script src="nacht/kern.js?v=202609181627"></script>
+<script src="nacht/bild.js?v=202609181627"></script>
+<script src="nacht/ton.js?v=202609181627"></script>
+<script src="nacht/stand.js?v=202609181627"></script>
+<script src="nacht/welt.js?v=202609181627"></script>
+<script src="nacht/nacht.js?v=202609181627"></script>
+<script src="nacht/dialog.js?v=202609181627"></script>
+<script src="nacht/kampf.js?v=202609181627"></script>
+<script src="nacht/mobil.js?v=202609181627"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -714,7 +714,9 @@ function zeichneKloppe(){
   for(const g of S.gegner){
     if(g.hp<=0) continue;
     liste.push({ t:g.t, mal:()=>{
-      const rows = g.art==='flitzer'?SPR.schmal:(g.anfuehrer?SPR.breit:SPR.sitzend);
+      let rows = g.art==='flitzer'?SPR.schmal:(g.anfuehrer?SPR.breit:SPR.sitzend);
+      const lauf=laufBild(g);
+      if(lauf>=0&&(g.zustand==='frei'||g.zustand==='block')) rows=gehBeine(rows,lauf);
       const fuss=bodenY(g.t), y=fuss-rows.length;
       ctx.globalAlpha=.22; ctx.fillStyle='#000';
       ctx.fillRect(Math.round(g.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
@@ -735,9 +737,10 @@ function zeichneKloppe(){
   }
   const ich=S.ich;
   liste.push({ t:ich.t, mal:()=>{
+    const lauf=laufBild(ich);
     const rows = ich.zustand==='rolle' ? SPR.versteckt
-               : ich.zustand==='block' ? SPR.steh
                : ich.zustand==='schlag'||ich.zustand==='ausholen' ? SPR.geh[1]
+               : lauf>=0 ? SPR.geh[lauf]
                : SPR.steh;
     const fuss=bodenY(ich.t), y=fuss-rows.length;
     if(ich.unverwundbar>0&&Math.floor(S.t*14)%2===0) return;
@@ -1084,7 +1087,7 @@ function bus(dt){
     else { const brems=TUNE.bremsung*dt; S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems; }
     S.x+=S.vx*dt;
     S.x=Math.max(EINSTIEG_X-10,Math.min(BUS_B-10,S.x));
-    if(Math.abs(S.vx)>12){ S.gehPhase+=Math.abs(S.vx)*dt*.09; const n=Math.floor(S.gehPhase);
+    if(tempo2D(S.vx,S.vt)>12){ S.gehPhase+=tempo2D(S.vx,S.vt)*dt*.09; const n=Math.floor(S.gehPhase);
       if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); } }
   } else S.vx=0;
 
@@ -1302,7 +1305,7 @@ function zeichneSpieler(){
   if(S.unverwundbarT>0&&Math.floor(S.t*12)%2===0) return;
   let rows;
   if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
-  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+  else if(tempo2D(S.vx,S.vt)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
   else rows=SPR.steh;
   /* Im Sprint gibt es keine Tiefe - da bleibt S.y der Boden. Im Bus
      verschiebt die Tiefe zusaetzlich, S.y traegt weiter die Sprunghoehe. */

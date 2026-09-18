@@ -118,14 +118,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js"></script>
-<script src="nacht/bild.js"></script>
-<script src="nacht/ton.js"></script>
-<script src="nacht/stand.js"></script>
-<script src="nacht/welt.js"></script>
-<script src="nacht/nacht.js"></script>
-<script src="nacht/dialog.js"></script>
-<script src="nacht/mobil.js"></script>
+<script src="nacht/kern.js?v=202609181627"></script>
+<script src="nacht/bild.js?v=202609181627"></script>
+<script src="nacht/ton.js?v=202609181627"></script>
+<script src="nacht/stand.js?v=202609181627"></script>
+<script src="nacht/welt.js?v=202609181627"></script>
+<script src="nacht/nacht.js?v=202609181627"></script>
+<script src="nacht/dialog.js?v=202609181627"></script>
+<script src="nacht/mobil.js?v=202609181627"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -902,8 +902,10 @@ function update(dt){
   S.x = Math.max(14, Math.min(LEVEL_B-14, S.x));
 
   /* Schrittgeraeusch - beim Schleichen bleibt es still */
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase += Math.abs(S.vx)*dt*.09;
+  /* tempo2D statt nur vx: auch wer nach hinten oder vorne laeuft, bewegt
+     die Beine. Vorher glitt die Figur dabei steif durchs Bild. */
+  if(S.amBoden&&tempo2D(S.vx,S.vt)>12){
+    S.gehPhase += tempo2D(S.vx,S.vt)*dt*.09;
     const n=Math.floor(S.gehPhase);
     if(n!==S.schritte){ S.schritte=n; if(n%2===0&&!S.schleicht) SFX.schritt(); }
   }
@@ -1831,7 +1833,7 @@ function zeichneKorridor(){
 function zeichneSpieler(x,y){
   let rows;
   if(!S.amBoden) rows = S.vy<0?SPR.sprung:SPR.fall;
-  else if(Math.abs(S.vx)>12) rows = SPR.geh[Math.floor(S.gehPhase)%4];
+  else if(tempo2D(S.vx,S.vt)>12) rows = SPR.geh[Math.floor(S.gehPhase)%4];
   else rows = SPR.steh;
   outline(rows,x,y-13,1,.6);
   if(S.blick<0) spriteFlip(rows,x,y-13); else sprite(rows,x,y-13);

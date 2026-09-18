@@ -217,14 +217,35 @@ let stickId=null;
 const schleichenErlaubt = () =>
   !(window.MOBIL.kontext && window.MOBIL.kontext.block);
 
+/* Richtungen mit Hysterese und Winkelsektoren.
+   Vorher schaltete jede Achse hart bei 0.22 um. Zwei Folgen, beide in der
+   Animation sichtbar:
+   - Wer den Daumen knapp an der Schwelle hielt, liess die Taste jedes Bild
+     an- und ausgehen. Die Figur bremste und beschleunigte staendig und
+     sprang zwischen Steh- und Gehbild hin und her.
+   - Schon 13 Grad neben der Waagerechten kam die Hoch/Runter-Taste dazu -
+     wer "nach rechts" meinte, driftete in die Tiefe.
+   Jetzt: einschalten erst ueber AN, ausschalten erst unter AUS, und eine
+   Achse zaehlt nur, wenn sie mindestens SEKTOR der Auslenkung ausmacht
+   (sin 22.5 Grad - also echte acht Richtungen). */
+const AN=0.26, AUS=0.16, SEKTOR=0.38;
+function achse(code,wert,r){
+  const war=!!haelt[code];
+  const genug = wert > (war?AUS:AN) && wert >= SEKTOR*r*(war?0.8:1);
+  taste(code,genug);
+}
 function stickSetzen(dx,dy,r){
   const max=stick.clientWidth*0.29;
   knopf.style.transform='translate('+(dx*max).toFixed(1)+'px,'+(dy*max).toFixed(1)+'px)';
-  taste('ArrowLeft',  dx<-TOT);
-  taste('ArrowRight', dx> TOT);
-  taste('ArrowUp',    dy<-TOT);
-  taste('ArrowDown',  dy> TOT);
-  taste('ShiftLeft', schleichenErlaubt() && r>TOT && r<SCHLEICH);
+  achse('ArrowLeft',  -dx, r);
+  achse('ArrowRight',  dx, r);
+  achse('ArrowUp',    -dy, r);
+  achse('ArrowDown',   dy, r);
+  /* Auch das Schleichen mit Hysterese, sonst flackert die Figur beim
+     Uebergang zwischen leise und normal. */
+  const schleichtSchon=!!haelt['ShiftLeft'];
+  const grenze=schleichtSchon?SCHLEICH+0.06:SCHLEICH-0.06;
+  taste('ShiftLeft', schleichenErlaubt() && r>TOT && r<grenze);
 }
 function stickLos(){
   stickId=null; stick.classList.remove('zieht');
@@ -316,7 +337,10 @@ klick('mb-menu',function(){
    nur "weiter", und dafuer soll man nicht den Aktionsknopf suchen muessen. */
 const schirm=document.getElementById('screen');
 if(schirm) schirm.addEventListener('pointerdown',function(e){
-  e.preventDefault(); ensureAudio(); tipp('Enter'); tipp('KeyE');
+  /* Nur Enter. Vorher gingen Enter UND E raus - beide loesen in jedem
+     Level dieselbe Aktion aus, also passierte alles doppelt: das Intro
+     sprang zwei Texte weiter, Zwischenbildschirme wurden uebersprungen. */
+  e.preventDefault(); ensureAudio(); tipp('Enter');
 });
 
 /* --------------------------------------------------------------------------

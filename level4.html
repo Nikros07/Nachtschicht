@@ -112,14 +112,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js"></script>
-<script src="nacht/bild.js"></script>
-<script src="nacht/ton.js"></script>
-<script src="nacht/stand.js"></script>
-<script src="nacht/welt.js"></script>
-<script src="nacht/kampf.js"></script>
-<script src="nacht/nacht.js"></script>
-<script src="nacht/mobil.js"></script>
+<script src="nacht/kern.js?v=202609181627"></script>
+<script src="nacht/bild.js?v=202609181627"></script>
+<script src="nacht/ton.js?v=202609181627"></script>
+<script src="nacht/stand.js?v=202609181627"></script>
+<script src="nacht/welt.js?v=202609181627"></script>
+<script src="nacht/kampf.js?v=202609181627"></script>
+<script src="nacht/nacht.js?v=202609181627"></script>
+<script src="nacht/mobil.js?v=202609181627"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -325,6 +325,15 @@ function druckAktion(){
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   if(S.modus==='pause') return;
   aktionPuffer.push(S.t);
+}
+/* Knopf-Aufschriften fuer nacht/mobil.js: Leertaste ist hier die Rolle,
+   nicht der Sprung, und ohne block:true fehlte am Handy der Blockknopf. */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:'WEITER', zwei:null};
+  if(S.modus==='pause')    return {aktion:null, zwei:null};
+  return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
 }
 let linksAn=false, rechtsAn=false, hochAn=false, runterAn=false, rolleGedrueckt=false;
 
@@ -711,6 +720,10 @@ function zeichneArena(){
   if(b){
     zeichnungen.push({t:b.t, mal:()=>{
       let rows=SPR.bossSteh, kopf=SPR.bossKopf;
+      /* Gehzyklus aus der echten Bewegung - vorher glitt er mit festen
+         Beinen auf dich zu. */
+      const lauf=laufBild(b);
+      if(lauf>=0&&(b.zustand==='frei'||b.zustand==='block')) rows=gehBeine(rows,lauf);
       if(b.zustand==='ausholen') rows=SPR.bossWind;
       else if(b.zustand==='schlag') rows=SPR.bossSchlag;
       const blinkt=b.zustand==='getroffen'&&Math.floor(S.t*20)%2===0;
@@ -728,6 +741,8 @@ function zeichneArena(){
   /* ---- Spieler ---- */
   zeichnungen.push({t:s.t, mal:()=>{
     let rows=SPR.steh;
+    const lauf=laufBild(s);
+    if(lauf>=0&&(s.zustand==='frei'||s.zustand==='block')) rows=gehBeine(rows,lauf);
     if(s.zustand==='getroffen') rows=SPR.treffer;
     else if(s.zustand==='schlag'||s.zustand==='ausholen') rows=SPR.konter;
     const fuss=bodenY(s.t);
