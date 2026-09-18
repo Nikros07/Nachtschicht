@@ -75,6 +75,12 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   kleine Schlägerei und der Rausschmiss. Bäume nachgemessen: ein Ja kommt bei
   etwa 5–15 % der möglichen Gesprächswege heraus, betrunken hat man bei Kira
   keine Chance.
+- **Level 7 (Späti)**: Geld zählt (Wasser 2 €, Snack 3 €). Wer pleite ist,
+  sammelt Pfand im Wettrennen gegen Heinz. Nachtmenschen mit Gesprächen:
+  Herr Özdemir, Taxifahrer (`taxiTipp` fürs Finale), Nele (Handy aus Level 1
+  hilft), Tobi (geht in die Crew). Crew mit Beziehung ≤ −5 ist heim und fliegt
+  per `entferneCrew` aus der Liste. Entscheidung am Ende: `endeHeim`,
+  `endeWeiter` oder `endeSonne`.
 - **Level 6 (Afterhour)**: Erschöpfung als Gegner (Kondition fällt, Sofas
   helfen, bei null wegknicken und am Sofa aufwachen, Wert geht an Level 7/8).
   Traumlogik: Raum 101 wiederholt sich, bis die Chemie-Erinnerung gefunden
@@ -104,7 +110,7 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Level 7 (Späti)** ist als nächstes dran, danach Level 8 (Heimweg, Enden).
+**Level 8 (Heimweg)** ist als nächstes dran: die Enden aus allen Flags erzählen.
 
 Offen aus Level 1, wenn Zeit ist:
 

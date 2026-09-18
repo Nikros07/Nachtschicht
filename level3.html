@@ -105,15 +105,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181645"></script>
-<script src="nacht/bild.js?v=202609181645"></script>
-<script src="nacht/ton.js?v=202609181645"></script>
-<script src="nacht/stand.js?v=202609181645"></script>
-<script src="nacht/welt.js?v=202609181645"></script>
-<script src="nacht/nacht.js?v=202609181645"></script>
-<script src="nacht/dialog.js?v=202609181645"></script>
-<script src="nacht/kampf.js?v=202609181645"></script>
-<script src="nacht/mobil.js?v=202609181645"></script>
+<script src="nacht/kern.js?v=202609181651"></script>
+<script src="nacht/bild.js?v=202609181651"></script>
+<script src="nacht/ton.js?v=202609181651"></script>
+<script src="nacht/stand.js?v=202609181651"></script>
+<script src="nacht/welt.js?v=202609181651"></script>
+<script src="nacht/nacht.js?v=202609181651"></script>
+<script src="nacht/dialog.js?v=202609181651"></script>
+<script src="nacht/kampf.js?v=202609181651"></script>
+<script src="nacht/mobil.js?v=202609181651"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -1536,8 +1536,8 @@ function titelbild(){
   textC('LEVEL 3',44,P.dim);
   const zeilen=['DIE LETZTE BAHN FAEHRT GLEICH','KEIN TICKET. KONTROLLEURE AN BORD.','NICHT ERWISCHEN LASSEN.'];
   zeilen.forEach((z,i)=>textC(z,64+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['< >','LAUFEN'],['SPR','SPRINGEN'],['E','VERSTECKEN']]
-                   :[['A D','LAUFEN'],['LEER','SPRINGEN'],['E','VERSTECKEN']];
+  const st=IS_TOUCH?[['STICK','LAUFEN, AUCH NACH HINTEN'],['SPRUNG','SPRINGEN'],['KNOPF','REDEN, VERSTECKEN']]
+                   :[['WASD','LAUFEN, W S NACH HINTEN'],['LEER','SPRINGEN'],['E','REDEN, VERSTECKEN']];
   st.forEach((z,i)=>{ text(z[0],70,104+i*9,P.gold); text(z[1],104,104+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),136,P.neon2);

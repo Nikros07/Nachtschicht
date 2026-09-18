@@ -118,14 +118,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181645"></script>
-<script src="nacht/bild.js?v=202609181645"></script>
-<script src="nacht/ton.js?v=202609181645"></script>
-<script src="nacht/stand.js?v=202609181645"></script>
-<script src="nacht/welt.js?v=202609181645"></script>
-<script src="nacht/nacht.js?v=202609181645"></script>
-<script src="nacht/dialog.js?v=202609181645"></script>
-<script src="nacht/mobil.js?v=202609181645"></script>
+<script src="nacht/kern.js?v=202609181651"></script>
+<script src="nacht/bild.js?v=202609181651"></script>
+<script src="nacht/ton.js?v=202609181651"></script>
+<script src="nacht/stand.js?v=202609181651"></script>
+<script src="nacht/welt.js?v=202609181651"></script>
+<script src="nacht/nacht.js?v=202609181651"></script>
+<script src="nacht/dialog.js?v=202609181651"></script>
+<script src="nacht/mobil.js?v=202609181651"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -2009,11 +2009,11 @@ function titelbild(){
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
   if(IS_TOUCH){
-    const st=[['< >','LAUFEN'],['LEISE','SCHLEICHEN'],['AUF AB','TREPPE'],
-              ['E','TUER, SPIND, DURCHSUCHEN']];
+    const st=[['STICK','LAUFEN, AUCH NACH HINTEN'],['SANFT','SCHLEICHEN'],['AN TREPPE','HOCH ODER RUNTER'],
+              ['KNOPF','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],86,y,P.dim); });
   } else {
-    const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','TREPPE'],
+    const st=[['WASD','LAUFEN, W S NACH HINTEN'],['SHIFT','SCHLEICHEN'],['W S','AN DER TREPPE'],
               ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
               ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
