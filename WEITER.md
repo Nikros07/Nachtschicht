@@ -66,6 +66,18 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Was schon umgebaut ist
 
+- **Level 5 (Club)** ist das Herzstück: fünf Bereiche mit Tiefe, Stroboskop
+  nur auf der Tanzfläche. Drei Gesprächsbäume mit eigenen Persönlichkeiten
+  (Mia, Sophie, Kira), freigeschaltet über Mut, Ruf, Geld, Pegel, Crew und
+  Flags aus früheren Leveln. Tanzen ist das alte Timing-Minispiel. Bei Erfolg
+  die Ecke (erzählt, abgeblendet). Abfuhren kosten Ruf. Marvin, der Rivale,
+  schnappt einem Leute weg und stellt einen nach einem Erfolg, danach die
+  kleine Schlägerei und der Rausschmiss. Bäume nachgemessen: ein Ja kommt bei
+  etwa 5–15 % der möglichen Gesprächswege heraus, betrunken hat man bei Kira
+  keine Chance.
+- **Level 3 (Nachtbus)**: drei Waggons, Sitzblöcke, Kontrolleure verfolgen,
+  Fahrgäste mit Gesprächen, Ticketautomat, Notbremse, erste Kloppe.
+
 - **Level 2 (Bei Moritz)** hat Tiefe (Reden geht nur, wenn man auch hingeht)
   und am Ende die Entscheidung, wen man mitnimmt. Die Wahl setzt Crew, Flags
   und Beziehungen — und wirkt messbar weiter: Level 4 braucht je nach
@@ -85,8 +97,7 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Level 3 (Nachtbus)** ist als nächstes dran — chronologisch. Danach Level 5
-(Club), der größte Brocken.
+**Level 6 (Afterhour)** ist als nächstes dran, danach Level 7 (Späti).
 
 Offen aus Level 1, wenn Zeit ist:
 

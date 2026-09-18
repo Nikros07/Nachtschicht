@@ -104,11 +104,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181627"></script>
-<script src="nacht/bild.js?v=202609181627"></script>
-<script src="nacht/ton.js?v=202609181627"></script>
-<script src="nacht/stand.js?v=202609181627"></script>
-<script src="nacht/mobil.js?v=202609181627"></script>
+<script src="nacht/kern.js?v=202609181638"></script>
+<script src="nacht/bild.js?v=202609181638"></script>
+<script src="nacht/ton.js?v=202609181638"></script>
+<script src="nacht/stand.js?v=202609181638"></script>
+<script src="nacht/welt.js?v=202609181638"></script>
+<script src="nacht/nacht.js?v=202609181638"></script>
+<script src="nacht/dialog.js?v=202609181638"></script>
+<script src="nacht/kampf.js?v=202609181638"></script>
+<script src="nacht/mobil.js?v=202609181638"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -148,9 +152,9 @@ const TUNE = {
   blackoutBei:    100,
 
   /* (4) DIE UHR */
-  startMinute:   22*60,
-  endMinute:     22*60+45,
-  levelSekunden: 170,
+  startMinute:   22*60+30,
+  endMinute:     25*60,     // um eins geht das Licht an
+  levelSekunden: 600,       // Gespraeche halten die Uhr an - das ist reine Laufzeit
 
   /* (5) REICHWEITE */
   reichweite:      15,
@@ -191,8 +195,33 @@ const TUNE = {
   geknicktTempo:        0.6,
   geknicktReichweite:   0.6,
 
-  /* (11) ZIEL */
-  erfolgeZumSieg:    2,   // von 3 moeglichen
+  /* (11) TIEFE - der Club ist ein Raum. Die Bar steht an der Rueckwand. */
+  tiefeHinten:   122,
+  tiefeVorne:    154,
+  tiefeWelt:      48,
+  tiefeTempo:    1.0,
+  redeTiefe:     0.30,  // so genau muss man vor jemandem stehen
+  barTiefe:      0.35,  // an die Bar kommt nur, wer hinten steht
+
+  /* (12) MARVIN - der Rivale. Er geht dieselben Leute an. Steht er lang
+     genug bei jemandem, mit dem du noch nicht geredet hast, ist sie weg. */
+  marvinKommtNach:  25,   // Sekunden bis er auftaucht
+  marvinTempo:      21,
+  marvinNimmt:     9.0,   // so lange muss er ungestoert bei ihr stehen
+  marvinPause:     5.0,
+  marvinStellt:     22,   // so nah, dann stellt er dich
+
+  /* (13) KLOS - kaltes Wasser drueckt den Pegel */
+  wasserPegel:     -18,
+  wasserPause:      25,
+
+  /* (14) DIE KLEINE SCHLAEGEREI */
+  kloppeLeben:       5,
+  kloppeReich:      17,
+  marvinHp:          5,
+
+  /* (15) ABFUHR - spricht sich rum */
+  abfuhrRuf:        -6,
 };
 
 const P = {
@@ -232,12 +261,22 @@ const SPR={
   ],
 
   /* Die drei Leute, die man ansprechen kann */
-  girlA:[...KOPF,'..nnn..','.nnnnn.','.nnnnn.','..n.n..'],
-  girlB:[...KOPF,'..ccc..','.ccccc.','.ccccc.','..c.c..'],
-  girlC:[...KOPF,'..mmm..','.mmmmm.','.mmmmm.','..m.m..'],
+  /* Volle Groesse. Vorher waren sie acht Pixel hoch und standen wie
+     Kinder neben Marvin und dem Spieler. Kleid, Beine, Schuhe. */
+  girlA:['..hhh..','.hhhhh.','.hsssh.','.hsssh.','..sss..','..nnn..','.nnnnn.','s.nnn.s','..nnn..','.nnnnn.','..s.s..','..s.s..','.kk.kk.'],
+  girlB:['..hhh..','.hsssh.','.sssss.','..sss..','..ccc..','.ccccc.','s.ccc.s','..ccc..','..ppp..','..p.p..','..p.p..','.pp.pp.','.kk.kk.'],
+  girlC:['..hhh..','.hhhhh.','hhsssh.','hhsssh.','h.sss..','..mmm..','.mmmmm.','s.mmm.s','..mmm..','..mmm..','..s.s..','..s.s..','.kk.kk.'],
+
+  lena:['..hhh..','.hsssh.','.sssss.','..sss..','..ggg..','.ggggg.','s.ggg.s','..ggg..','.ggggg.','..s.s..','..s.s..','.kk.kk.'],
+  /* Marvin: dunkle Jacke, Goldkette. Am Ende der Nacht steht er wieder da. */
+  marvin:[...KOPF,'..qgq..','.qqqqq.','k.qqq.k','..qqq..','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
+  handlanger:[...KOPF,'..qqq..','.qqqqq.','k.qqq.k','..ppp..','..p.p..','.pp.pp.','.kk..kk'],
+  waschbecken:['uuuuuu','.uuuu.','..uu..','..uu..','..uu..'],
 
   /* Tanzende Menge - nur Deko, aber im Dunkeln ein Hindernis */
-  tanzer:['.hhh.','.sss.','qqqqq','.qqq.','q...q'],
+  /* Die Menge in voller Groesse, dunkel gefaerbt: sie ist Hintergrund,
+     aber im Stroboskop steht sie einem im Weg. Vorher fuenf Pixel hoch. */
+  tanzer:[...KOPF,'..qqq..','.qqqqq.','q.qqq.q','..qqq..','..q.q..','..q.q..','.qq.qq.'],
 
   /* Bar */
   theke:['bbbbbbbbbbbb','b..........b','b..........b','dddddddddddd'],
@@ -302,25 +341,329 @@ const BODEN=142;
 /* ==========================================================================
    DER CLUB
    ========================================================================== */
-const LEVEL_B=880;
+const LEVEL_B=1400;
+/* Fuenf Bereiche. Das Stroboskop laeuft nur auf der Tanzflaeche - wer reden
+   will, geht an die Bar oder raus zu den Rauchern. */
 const ORTE=[
-  { von:0,   bis:150, name:'EINGANG',       wand:'#241a30', boden:'#1a1322' },
-  { von:150, bis:560, name:'TANZFLAECHE',   wand:'#2c1c38', boden:'#20142a' },
-  { von:560, bis:720, name:'BAR',           wand:'#26303a', boden:'#1a222a' },
-  { von:720, bis:880, name:'RICHTUNG AFTERHOUR', wand:'#141a2c', boden:'#101624' },
+  { von:0,    bis:170,  name:'EINGANG',       wand:'#241a30', boden:'#1a1322', strobe:false },
+  { von:170,  bis:620,  name:'TANZFLAECHE',   wand:'#2c1c38', boden:'#20142a', strobe:true  },
+  { von:620,  bis:860,  name:'BAR',           wand:'#26303a', boden:'#1a222a', strobe:false },
+  { von:860,  bis:1060, name:'RAUCHERECKE',   wand:'#1c2426', boden:'#141a1c', strobe:false },
+  { von:1060, bis:1200, name:'KLOS',          wand:'#20262e', boden:'#181c22', strobe:false },
+  { von:1200, bis:1400, name:'HINTERAUSGANG', wand:'#141a2c', boden:'#101624', strobe:false },
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 
-/* Die drei Leute, die man ansprechen kann. erledigt wird bei neuesSpiel() zurueckgesetzt. */
+/* Die drei Leute. Jede steht in einem anderen Bereich - man muss durch den
+   ganzen Club. stand: offen | ja | nummer | nett | nein | weg (Marvin) */
 const ZIELE=[
-  { id:'mia',    x:235, name:'MIA',    spr:'girlA', erledigt:false },
-  { id:'sophie', x:345, name:'SOPHIE', spr:'girlB', erledigt:false },
-  { id:'kira',   x:455, name:'KIRA',   spr:'girlC', erledigt:false },
+  { id:'mia',    x:330, t:0.42, name:'MIA',    spr:'girlA' },
+  { id:'sophie', x:720, t:0.24, name:'SOPHIE', spr:'girlB' },
+  { id:'kira',   x:960, t:0.58, name:'KIRA',   spr:'girlC' },
 ];
-/* Tanzende Menge - Deko, aber im Dunkeln ein Hindernis (siehe TUNE (7)) */
-const TANZER=[175,205,255,295,365,395,465,500].map((x,i)=>({x,seed:i*1.37}));
-const BARTHEKE={ x:610 };
-const AUSGANG={ x:830 };
+const LENA={ x:346, t:0.50 };
+/* Tanzende Menge - Deko, aber im Dunkeln ein Hindernis. Jetzt ueber die
+   ganze Tiefe verteilt: man muss um sie herum. */
+const TANZER=[190,215,250,280,300,370,395,420,455,490,520,560,590]
+  .map((x,i)=>({x, t:[0.3,0.7,0.5,0.85,0.2,0.6,0.35,0.8,0.5,0.25,0.65,0.45,0.75][i], seed:i*1.37}));
+const BARTHEKE={ x:690, t:0.06 };
+const WASCHBECKEN={ x:1120, t:0.10 };
+const AUSGANG={ x:1350, t:0.30 };
+
+/* ==========================================================================
+   DIE GESPRAECHE IM CLUB
+   Drei Leute, drei Persoenlichkeiten - und jede reagiert anders darauf, WIE
+   man auftritt. Es gibt keine Antwort, die bei allen funktioniert:
+
+     MIA     direkt, testet dich. Mag Ehrlichkeit, hasst Sprueche. Ist wegen
+             Lenas Geburtstag hier - wer Lena ignoriert, hat schon verloren.
+     SOPHIE  laut, lustig, will feiern. Mag Humor und Mut. Kennt man ein
+             gutes Erlebnis von heute Nacht, ist das Gold wert.
+     KIRA    ruhig, beobachtet, wartet auf ihr Taxi. Mag Zuhoeren. Wer
+             betrunken und laut ankommt, ist sofort raus.
+
+   Was freischaltet: Mut, Ruf, Geld, Pegel, wer in der Crew ist, und was
+   in den Leveln davor passiert ist. Die Zuneigung laeuft ueber
+   beziehung('MIA') usw. - das "mag" in den Bedingungen.
+
+   Knoten, die mit @ anfangen, gibt es nicht - dort endet das Gespraech,
+   und gespraechEnde() entscheidet, was passiert:
+     @ja      ihr geht zusammen raus (die Ecke)
+     @nummer  sie gibt dir ihre Nummer
+     @nett    freundlich auseinander, Ruf steigt
+     @nein    Abfuhr - spricht sich im Club rum
+     @tanz    Tanz-Minispiel, danach geht es bei tanzGut / tanzSchlecht weiter
+
+   Schrift: nur A-Z 0-9 . : - ! ? / + , < > * %  - keine Umlaute.
+   (Am Handy steht der Text im Bedienfeld, dort gingen Umlaute - am Rechner
+   laeuft er durch den Pixel-Font.)
+   ========================================================================== */
+
+const MIA_BAUM = {
+  start:{ wer:'MIA', text:'Ja? Kann ich dir helfen?',
+    wahl:[
+      { txt:'Hi. Ich wollte einfach hallo sagen.',          geh:'ehrlich',  tu:{mag:['MIA',8]} },
+      { txt:'Kommst du oefter hierher?',                    geh:'spruch',   tu:{mag:['MIA',-8]} },
+      { txt:'Deine Freundin schaut, als waer ihr langweilig.', wenn:{mut:45}, geh:'lena', tu:{mag:['MIA',4]} },
+      { txt:'Du bist echt die schoenste hier.',              wenn:{pegel:55}, geh:'besoffen' },
+    ], zeit:9, standard:1 },
+
+  spruch:{ wer:'MIA', text:'Ernsthaft? Das ist dein erster Satz?',
+    wahl:[
+      { txt:'Ja. War schlecht. Neuer Versuch?',  wenn:{mut:30}, geh:'ehrlich', tu:{mag:['MIA',10]} },
+      { txt:'Ich hab noch bessere.',             geh:'@nein' },
+    ], zeit:7, standard:1 },
+
+  besoffen:{ wer:'MIA', text:'Und du riechst nach Wodka. Lena, komm.', geh:'@nein' },
+
+  lena:{ wer:'LENA', text:'Hey! Ich hab Geburtstag und keiner tanzt mit mir.',
+    wahl:[
+      { txt:'Alles Gute! Dann tanzen wir doch alle.', geh:'lenaGut', tu:{mag:['MIA',6]} },
+      { txt:'Mein Kumpel tanzt mit dir.', wenn:{crew:'JONAS'}, geh:'kumpel' },
+      { txt:'Mein Kumpel tanzt mit dir.', wenn:{crew:'MAX FERDI'}, geh:'kumpel' },
+    ], zeit:8, standard:0 },
+
+  kumpel:{ wer:'MIA', text:'Okay, das war gut. Jetzt hab ich Zeit.',
+    tu:{mag:['MIA',12], flag:'lenaVersorgt'}, geh:'mitte' },
+
+  lenaGut:{ wer:'MIA', text:'Du hast Lena gratuliert. Das hat heute noch keiner gemacht.', geh:'mitte' },
+
+  ehrlich:{ wer:'MIA', text:'Hallo. Wir feiern Lenas Geburtstag. Das da ist Lena.',
+    wahl:[
+      { txt:'Alles Gute, Lena!',                    geh:'lenaGut', tu:{mag:['MIA',8]} },
+      { txt:'Und warum stehst du dann hier rum?',   wenn:{mut:35}, geh:'dj', tu:{mag:['MIA',3]} },
+      { txt:'Ich hol euch zwei was zu trinken.',    wenn:{geld:8}, geh:'drink', tu:{geld:-8, mag:['MIA',6]} },
+      { txt:'Cool. Und du?',                        geh:'mitte', tu:{mag:['MIA',-3]} },
+    ], zeit:9, standard:3 },
+
+  dj:{ wer:'MIA', text:'Weil der DJ schlecht ist. Kannst du das besser?',
+    wahl:[
+      { txt:'Nein. Aber ich tanz trotzdem.',  geh:'@tanz' },
+      { txt:'Ich kann besser reden als er.',  geh:'mitte', tu:{mag:['MIA',4]} },
+    ], zeit:7, standard:1 },
+
+  drink:{ wer:'MIA', text:'Aufmerksam. Lena, halt mal kurz.', geh:'mitte' },
+
+  mitte:{ wer:'MIA', text:'Und was machst du hier, so ganz allein?',
+    wahl:[
+      { txt:'Mit meinen Jungs unterwegs. Lange Nacht.',  geh:'ende', tu:{mag:['MIA',4]} },
+      { txt:'Ehrlich? Ich wollte dich ansprechen.',      wenn:{mut:40}, geh:'ende', tu:{mag:['MIA',8]} },
+      { txt:'Weiss ich selbst nicht so genau.',          geh:'ende', tu:{mag:['MIA',-2]} },
+    ], zeit:8, standard:2 },
+
+  ende:{ wer:'MIA', text:'Und jetzt?',
+    wahl:[
+      { txt:'Komm kurz raus. Frische Luft.',  wenn:{mag:['MIA',24]}, geh:'ja' },
+      { txt:'Tanzen?',                        geh:'@tanz' },
+      { txt:'Gibst du mir deine Nummer?',     geh:'nummer' },
+      { txt:'Ich lass euch mal feiern.',      geh:'@nett' },
+    ], zeit:9, standard:3 },
+
+  /* Die Nummer gibt es nicht umsonst: wer ihr egal ist, bekommt nur die
+     zweite Antwort zu sehen. */
+  nummer:{ wer:'MIA', text:'Hm. Warum sollte ich?',
+    wahl:[
+      { txt:'Weil ich dir mehr als hey schreiben will.', wenn:{mag:['MIA',10]}, geh:'nummerJa' },
+      { txt:'War nur eine Frage.',                        geh:'@nett' },
+    ], zeit:7, standard:1 },
+  nummerJa:{ wer:'MIA', text:'Gib her. Aber wenn du nur hey schreibst, antworte ich nicht.',
+    geh:'@nummer' },
+
+  ja:{ wer:'MIA', text:'Okay. Aber nur kurz - Lena bringt mich sonst um.', geh:'@ja' },
+
+  tanzGut:{ wer:'MIA', text:'Okay. Du kannst das ja wirklich.', tu:{mag:['MIA',10]},
+    wahl:[
+      { txt:'Komm kurz raus?',               wenn:{mag:['MIA',16]}, geh:'ja' },
+      { txt:'Gibst du mir deine Nummer?',    geh:'nummerJa' },
+    ], zeit:8, standard:1 },
+
+  tanzSchlecht:{ wer:'MIA', text:'Das war... mutig. Lena lacht immer noch.', tu:{mag:['MIA',-4]},
+    wahl:[
+      { txt:'Mit Absicht. Fuer Lena.',       wenn:{mut:35}, geh:'ende', tu:{mag:['MIA',6]} },
+      { txt:'Ich geh dann mal.',             geh:'@nett' },
+    ], zeit:7, standard:1 },
+};
+
+const SOPHIE_BAUM = {
+  start:{ wer:'SOPHIE', text:'Du stehst zwischen mir und der Bar. Das kostet dich einen Shot.',
+    wahl:[
+      { txt:'Deal. Aber du trinkst mit.',       wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:12, mag:['SOPHIE',8]} },
+      { txt:'Ich stand hier zuerst.',           geh:'konter', tu:{mag:['SOPHIE',6]} },
+      { txt:'Oh. Sorry.',                       geh:'langweilig', tu:{mag:['SOPHIE',-6]} },
+    ], zeit:8, standard:2 },
+
+  langweilig:{ wer:'SOPHIE', text:'Sorry? Gott. Na gut, du darfst nochmal.',
+    wahl:[
+      { txt:'Dann trink ich halt zwei.', wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:14, mag:['SOPHIE',10]} },
+      { txt:'Lass mal.',                 geh:'@nein' },
+    ], zeit:7, standard:1 },
+
+  konter:{ wer:'SOPHIE', text:'Frech. Mag ich. Was trinkst du?',
+    wahl:[
+      { txt:'Was du trinkst.',   geh:'witz', tu:{mag:['SOPHIE',4]} },
+      { txt:'Wasser.',           geh:'witz', tu:{mag:['SOPHIE',-4]} },
+    ], zeit:6, standard:0 },
+
+  shot:{ wer:'SOPHIE', text:'Auf ex! ...Okay, du bist in Ordnung.', geh:'witz' },
+
+  witz:{ wer:'SOPHIE', text:'Erzaehl mir was Lustiges. Du hast zehn Sekunden.',
+    wahl:[
+      { txt:'Ich hab heute im Bus die Notbremse gezogen.', wenn:{flag:'notbremse'},        geh:'lacht', tu:{mag:['SOPHIE',14]} },
+      { txt:'Ich hab mit dem Tuersteher geboxt. Und gewonnen.', wenn:{flag:'tuersteherBesiegt'}, geh:'lacht', tu:{mag:['SOPHIE',12], ruf:3} },
+      { txt:'Ich wurde heute in der Schule eingesperrt.',  geh:'lacht', tu:{mag:['SOPHIE',8]} },
+      { txt:'Mir faellt nichts ein.',                       geh:'frage', tu:{mag:['SOPHIE',-5]} },
+    ], zeit:10, standard:3 },
+
+  lacht:{ wer:'SOPHIE', text:'NEIN! Ernsthaft? Du bist ja komplett irre.', geh:'frage' },
+
+  frage:{ wer:'SOPHIE', text:'Okay. Tanzen oder noch einen?',
+    wahl:[
+      { txt:'Tanzen.',                          geh:'@tanz' },
+      { txt:'Noch einen.',                      wenn:{geld:6}, geh:'nochEiner', tu:{geld:-6, pegel:14} },
+      { txt:'Weder noch. Lass raus, reden.',    wenn:{mag:['SOPHIE',18]}, geh:'ja' },
+      { txt:'Gib mir deine Nummer.',            geh:'nummer' },
+    ], zeit:8, standard:0 },
+
+  nochEiner:{ wer:'SOPHIE', text:'Na also! Aber jetzt wird getanzt.', geh:'@tanz' },
+
+  nummer:{ wer:'SOPHIE', text:'Nummer? Wie alt bist du, vierzig?',
+    wahl:[
+      { txt:'Einundvierzig. Also?',  wenn:{mag:['SOPHIE',8]}, geh:'nummerJa' },
+      { txt:'Vergiss es.',           geh:'@nett' },
+    ], zeit:7, standard:1 },
+  nummerJa:{ wer:'SOPHIE', text:'Haha. Na gut, gib her.', geh:'@nummer' },
+
+  ja:{ wer:'SOPHIE', text:'Endlich sagt mal einer was Vernuenftiges. Komm.', geh:'@ja' },
+
+  tanzGut:{ wer:'SOPHIE', text:'JA! So muss das! Du bist mein neuer Lieblingsmensch.', tu:{mag:['SOPHIE',10]},
+    wahl:[
+      { txt:'Dann komm mit raus.',  wenn:{mag:['SOPHIE',16]}, geh:'ja' },
+      { txt:'Nummer?',              geh:'nummer' },
+    ], zeit:8, standard:1 },
+
+  tanzSchlecht:{ wer:'SOPHIE', text:'Okay, tanzen ist nicht deins. Macht nix. Ist lustig.',
+    wahl:[
+      { txt:'Dann reden wir halt draussen.', wenn:{mag:['SOPHIE',20]}, geh:'ja' },
+      { txt:'Nummer als Trostpreis?',        geh:'nummer' },
+      { txt:'Ich geh mich schaemen.',        geh:'@nett' },
+    ], zeit:8, standard:1 },
+};
+
+const KIRA_BAUM = {
+  /* Wer betrunken ankommt, sieht die ruhigen Antworten gar nicht erst -
+     {pegel:-54} heisst "hoechstens 54". Kira ist die eine, bei der Pegel
+     nichts oeffnet, sondern alles schliesst. */
+  start:{ wer:'KIRA', text:'...',
+    wahl:[
+      { txt:'Alles okay bei dir?',               wenn:{pegel:-54}, geh:'okay',   tu:{mag:['KIRA',8]} },
+      { txt:'Hast du Feuer?',                    wenn:{pegel:-54}, geh:'feuer',  tu:{mag:['KIRA',2]} },
+      { txt:'Warum stehst du so allein hier?',   wenn:{mut:40, pegel:-54}, geh:'allein' },
+      { txt:'Heyyy! Laechel doch mal!',          wenn:{pegel:50}, geh:'laut' },
+      { txt:'Du siehst traurig aus. Brauchst du wen?', wenn:{pegel:55}, geh:'laut' },
+    ], zeit:9, standard:1 },
+
+  laut:{ wer:'KIRA', text:'Nein.', geh:'@nein' },
+
+  feuer:{ wer:'KIRA', text:'Ich rauch nicht. Ich steh hier nur, weil es leiser ist.',
+    wahl:[
+      { txt:'Verstehe ich. Drinnen ist es krass.', geh:'okay', tu:{mag:['KIRA',6]} },
+      { txt:'Dann lass ich dich mal.',             geh:'@nett' },
+    ], zeit:8, standard:0 },
+
+  allein:{ wer:'KIRA', text:'Weil meine Leute weg sind. Und ich warte auf ein Taxi.', tu:{mag:['KIRA',3]}, geh:'taxi' },
+
+  okay:{ wer:'KIRA', text:'Geht so. Meine Leute sind weg. Ich warte auf ein Taxi.', geh:'taxi' },
+
+  taxi:{ wer:'KIRA', text:'Dauert noch.',
+    wahl:[
+      { txt:'Ich warte mit dir.',                  geh:'warten', tu:{mag:['KIRA',10]} },
+      { txt:'Komm doch mit uns, wir ziehen weiter.', geh:'mitkommen', tu:{mag:['KIRA',-4]} },
+      { txt:'Schade. Komm gut heim.',              geh:'@nett' },
+    ], zeit:9, standard:2 },
+
+  mitkommen:{ wer:'KIRA', text:'Mit fuenf fremden Jungs? Nein danke.',
+    wahl:[
+      { txt:'Fair. Dann warte ich mit dir.', geh:'warten', tu:{mag:['KIRA',8]} },
+      { txt:'Sei doch nicht so.',            geh:'@nein' },
+    ], zeit:7, standard:1 },
+
+  warten:{ wer:'KIRA', text:'Du musst nicht. ...Aber danke.',
+    wahl:[
+      { txt:'Was machst du eigentlich so?',          geh:'erzaehlt', tu:{mag:['KIRA',6]} },
+      { txt:'Ich wurde heute in der Schule eingesperrt.', geh:'lacht', tu:{mag:['KIRA',5]} },
+    ], zeit:9, standard:0 },
+
+  lacht:{ wer:'KIRA', text:'Wie bitte? Erzaehl.', tu:{mag:['KIRA',3]}, geh:'erzaehlt' },
+
+  erzaehlt:{ wer:'KIRA', text:'Ich zieh naechsten Monat weg. Andere Stadt. Keiner weiss es.',
+    wahl:[
+      { txt:'Das klingt mutig.',                    geh:'schluss', tu:{mag:['KIRA',10]} },
+      { txt:'Und warum erzaehlst du es mir?',       geh:'schluss', tu:{mag:['KIRA',6]} },
+      { txt:'Krass. Egal, willst du was trinken?',  geh:'schluss', tu:{mag:['KIRA',-10]} },
+    ], zeit:10, standard:1 },
+
+  schluss:{ wer:'KIRA', text:'Mein Taxi kommt in zehn Minuten.',
+    wahl:[
+      { txt:'Dann haben wir zehn Minuten.',       wenn:{mag:['KIRA',32]}, geh:'ja' },
+      { txt:'Gibst du mir deine Nummer?',         wenn:{mag:['KIRA',20]}, geh:'nummer' },
+      { txt:'Ich bring dich zum Taxi.',           geh:'@nett', tu:{ruf:3} },
+    ], zeit:10, standard:2 },
+
+  nummer:{ wer:'KIRA', text:'Okay. Aber nur, weil du zugehoert hast.', geh:'@nummer' },
+  ja:{ wer:'KIRA', text:'...Okay. Komm mit raus.', geh:'@ja' },
+
+  /* Tanzen gibt es bei Kira nicht - sie steht draussen. Die Knoten muessen
+     trotzdem existieren, falls gespraechEnde je danach fragt. */
+  tanzGut:{ wer:'KIRA', text:'Du tanzt hier draussen? Okay.', geh:'schluss' },
+  tanzSchlecht:{ wer:'KIRA', text:'...', geh:'schluss' },
+};
+
+const BAUM_FUER={ mia:MIA_BAUM, sophie:SOPHIE_BAUM, kira:KIRA_BAUM };
+
+/* Die Ecke. Erzaehlt, nicht gezeigt: das Bild wird dunkel, die Zeilen
+   kommen einzeln. Jede endet anders, weil jede eine andere Person ist. */
+const ECKE={
+  mia:[
+    'IHR GEHT RAUS AUF DEN HOF.',
+    'ES IST KALT. SIE STEHT TROTZDEM NAH.',
+    'SIE KUESST DICH ZUERST.',
+    '...',
+    'IRGENDWANN RUFT LENA NACH IHR.',
+    'SIE SCHREIBT DIR IHRE NUMMER AUF DIE HAND.',
+  ],
+  sophie:[
+    'SIE ZIEHT DICH AN DER HAND DURCH DIE MENGE.',
+    'HINTER DER GARDEROBE WIRD ES LEISER.',
+    'SIE LACHT. DANN NICHT MEHR.',
+    '...',
+    'ALS IHR ZURUECKKOMMT, GRINST DER BARKEEPER.',
+    'SIE HAT SICH IN DEIN HANDY GESPEICHERT. MIT HERZ.',
+  ],
+  kira:[
+    'IHR WARTET DRAUSSEN AUF IHR TAXI.',
+    'SIE REDET. DU HOERST ZU. LANGE.',
+    'ALS DAS TAXI KOMMT, BLEIBT SIE NOCH KURZ STEHEN.',
+    '...',
+    'DANN STEIGT SIE EIN. AM FENSTER HEBT SIE DIE HAND.',
+    'EINE MINUTE SPAETER VIBRIERT DEIN HANDY.',
+  ],
+};
+
+/* Marvin stellt sich. Das ist der Moment, in dem man sein Gesicht zum
+   ersten Mal sieht - am Ende der Nacht steht er wieder da. */
+const MARVIN_BAUM = {
+  start:{ wer:'MARVIN', text:'Du. Die war mit mir hier. Hast du ein Problem?',
+    wahl:[
+      { txt:'Sie hat sich entschieden. Nicht mein Problem.', wenn:{mut:40}, geh:'kampf' },
+      { txt:'Such dir eine eigene.',                          geh:'kampf', tu:{mut:3} },
+      { txt:'Ist ja gut. Kein Stress.',                       geh:'kneifen' },
+      { txt:'Die Jungs sind hinter mir. Denk nochmal nach.', wenn:{crew:'DENNIS'}, geh:'rueckzug' },
+    ], zeit:8, standard:1 },
+
+  kneifen:{ wer:'MARVIN', text:'Kein Stress. Genau. Lauf.', tu:{ruf:-8, mut:-5, flag:'clubGekniffen'}, geh:'@ende' },
+  rueckzug:{ wer:'MARVIN', text:'...Wir sehen uns noch. Heute Nacht.', tu:{ruf:6, flag:'marvinRueckzug'}, geh:'@ende' },
+  kampf:{ wer:'MARVIN', text:'Dann komm.', geh:'@kampf' },
+};
 
 /* ==========================================================================
    SPEICHERSTAND
@@ -339,35 +682,50 @@ const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return 
    ========================================================================== */
 let S={};
 function neuesSpiel(){
+  if(typeof GESPR!=='undefined') GESPR=null;
   S={
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, blick:1, gehPhase:0, schritte:0,
+    tiefe:0.6, vt:0,
     kamX:0,
     pegel:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
     minute:TUNE.startMinute,
-    erfolge:0,
+    erfolge:0, abfuhren:0, wasserT:0,
     confidenceT:0, geknicktT:0, stolpernT:0,
     dunkel:0, flacker:0,
-    mini:null,
+    mini:null, ecke:null,
+    marvin:{ da:false, x:30, t:0.5, blick:1, ziel:null, beiT:0, pause:0, wut:false, fertig:false, hat:[] },
+    kloppeStand:'offen', ich:null, gegner:[], blockAn:false, rolleGedrueckt:false,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     ruettel:0, blitz:0,
-    szene:0, szeneT:0, skipT:0,
+    szene:0, szeneT:0, skipT:0, szenen:[],
     gewonnen:false, faenger:'', neueBestzeit:false,
   };
-  for(const z of ZIELE) z.erledigt=false;
+  for(const z of ZIELE){ z.stand='offen'; z.weg=false; }
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
+/* Was nur fuer DIESEN Clubbesuch gilt, muss beim Neustart zurueck - sonst
+   bringt ein zweiter Versuch die Zuneigung aus dem ersten schon mit. */
+function clubZuruecksetzen(){
+  ['clubJa_mia','clubJa_sophie','clubJa_kira','schreibt_mia','schreibt_sophie','schreibt_kira',
+   'lenaVersorgt','clubGekniffen','marvinRueckzug','clubKloppeGewonnen','clubKloppeVerloren']
+    .forEach(f=>setzeFlag(f,false));
+  for(const n of ['MIA','SOPHIE','KIRA','LENA']) aendereBeziehung(n,-beziehung(n));
+}
 neuesSpiel();
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
 
 /* ==========================================================================
    EINGABE
    ========================================================================== */
 
-let linksAn=false, rechtsAn=false, aktionGehalten=false;
+let linksAn=false, rechtsAn=false, aktionGehalten=false, hochAn=false, runterAn=false;
 let aktionPuffer=[];
 
 function druckAktion(){
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
+  if(S.modus==='ecke'){ eckeWeiter(); return; }
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='ende'){ if(S.gewonnen){ location.href='level6.html'; return; } neuesSpiel(); return; }
@@ -376,8 +734,17 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
+  if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
+  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
+  if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); S.blockAn=true; }
+  /* Im Kampf ist die Leertaste die Ausweichrolle, sonst wie E. */
+  if(e.code==='Space'&&S.modus==='kloppe'){ e.preventDefault(); S.rolleGedrueckt=true; return; }
   if(['KeyE','Enter','Space'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
@@ -388,8 +755,11 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ArrowDown','KeyS'].includes(e.code)) runterAn=false;
+  if(['ShiftLeft','ShiftRight'].includes(e.code)) S.blockAn=false;
   if(['KeyE','Enter','Space'].includes(e.code)) aktionGehalten=false; });
-addEventListener('blur',()=>{ linksAn=rechtsAn=aktionGehalten=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=aktionGehalten=hochAn=runterAn=false; if(S) S.blockAn=false; });
 
 
 bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
@@ -404,14 +774,16 @@ bind('thit',['touchend','mouseup','touchcancel'],()=>aktionGehalten=false);
    INTRO
    ========================================================================== */
 const INTRO=[
-  { d:2.4, txt:'22:00. DER CLUB.' },
+  { d:2.4, txt:'22:30. DER CLUB.' },
   { d:2.4, txt:'DRINNEN IST ES LAUT UND DUNKEL.' },
-  { d:2.6, txt:'DAS STROBOSKOP MACHT DIE SICHT KAPUTT.' },
-  { d:2.6, txt:'SUCH DIR LEUTE ZUM ANSPRECHEN.' },
-  { d:2.8, txt:'GENUG ERFOLGE, DANN GEHT ES RICHTUNG AFTERHOUR.' },
+  { d:2.6, txt:'AUF DER TANZFLAECHE SIEHT MAN NICHTS.' },
+  { d:2.6, txt:'AN DER BAR UND DRAUSSEN KANN MAN REDEN.' },
+  { d:2.8, txt:'UM EINS GEHT DAS LICHT AN.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ S.modus='spiel'; zeigeHinweis('E ZUM ANSPRECHEN, TRINKEN, TUER',3);
+function starteLevel(){ S.modus='spiel'; clubZuruecksetzen();
+  zeigeHinweis(IS_TOUCH?'STICK AUCH HOCH UND RUNTER - KNOPF ZUM REDEN'
+                       :'W UND S: NACH HINTEN UND VORNE - E ZUM REDEN',3.5);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
@@ -466,7 +838,7 @@ function starteMinigame(art,ziel){
   S.mini={ art, ziel, runden:0, fehler:0, t0:S.t, mitte:0 };
   S.mini.mitte=naechsteMitte();
   S.vx=0;
-  zeigeHinweis(art==='ex'?'E BEIM AUF-EX TREFFEN':'E IM FENSTER TREFFEN',3);
+  zeigeHinweis(art==='ex'?'E BEIM AUF-EX TREFFEN':'IM TAKT: E IM FENSTER TREFFEN',3);
 }
 function pruefeMinigame(){
   const m=S.mini; if(!m) return;
@@ -497,16 +869,14 @@ function beendeMinigame(erfolgreich){
     S.mini=null; S.modus='spiel'; pruefeBlackout();
     return;
   }
-  /* Ansprechen */
-  if(erfolgreich){
-    m.ziel.erledigt=true; S.erfolge++;
-    S.confidenceT=TUNE.confidenceDauer; S.geknicktT=0;
-    meldung('DAS LIEF GUT',1.8); SFX.erledigt();
-    zeigeHinweis('CONFIDENCE',2);
-  } else {
-    S.geknicktT=TUNE.geknicktDauer; S.confidenceT=0;
-    meldung('AUA. ABBLITZEN LASSEN',1.8); SFX.aua();
-  }
+  /* Tanzen - danach geht das Gespraech weiter, je nachdem wie es lief. */
+  const z=m.ziel;
+  S.mini=null; S.modus='spiel';
+  if(erfolgreich){ SFX.erledigt(); S.confidenceT=TUNE.confidenceDauer; }
+  else SFX.aua();
+  speicherePegel(S.pegel);
+  starteGespraech(BAUM_FUER[z.id], erfolgreich?'tanzGut':'tanzSchlecht', e=>gespraechEnde(z,e));
+  return;
   S.mini=null; S.modus='spiel';
 }
 /* Stroboskop - reine Funktion von t, siehe TUNE (6). Lange, sanfte
@@ -523,6 +893,241 @@ function stroboskop(){
   return { dunkel:0, flacker:0 };
 }
 
+
+/* ==========================================================================
+   WAS IN REICHWEITE IST
+   Eine Stelle, die alle fragen: die Aktion, die Knopf-Aufschrift am Handy
+   und das blinkende E. Sonst steht auf dem Knopf etwas anderes, als er tut.
+   ========================================================================== */
+function naechstesZiel(){
+  const r=reichweiteAktuell();
+  let bestes=null, d0=1e9;
+  const pruefe=(obj,art,tiefeOk)=>{
+    if(!tiefeOk) return;
+    const d=Math.abs(obj.x-S.x);
+    if(d<r&&d<d0){ bestes={art,obj}; d0=d; }
+  };
+  for(const z of ZIELE){
+    if(z.stand!=='offen') continue;
+    pruefe(z,'reden',Math.abs(z.t-S.tiefe)<=TUNE.redeTiefe);
+  }
+  pruefe(BARTHEKE,'bar',S.tiefe<=TUNE.barTiefe);
+  pruefe(WASCHBECKEN,'wasser',S.tiefe<=TUNE.barTiefe);
+  pruefe(AUSGANG,'tuer',true);
+  return bestes;
+}
+
+/* ==========================================================================
+   GESPRAECHE UND IHRE FOLGEN
+   Die Baeume setzen Zuneigung und Flags. Was danach im Club passiert,
+   steht hier an einer Stelle.
+   ========================================================================== */
+function redeMit(z){
+  /* Der Pegel lebt in diesem Level in S.pegel, die Bedingungen der Baeume
+     lesen ihn aus dem Speicher. Vorher abgleichen, sonst gilt der Wert vom
+     Levelstart - und "betrunken" waere nie freigeschaltet. */
+  speicherePegel(S.pegel);
+  S.vx=0; S.vt=0;
+  starteGespraech(BAUM_FUER[z.id],'start',e=>gespraechEnde(z,e));
+}
+function gespraechEnde(z,e){
+  S.pegel=ladePegel();        // Shots aus dem Gespraech zaehlen
+  const m=S.marvin;
+  if(e==='@tanz'){ starteMinigame('tanz',z); return; }
+  if(e==='@ja'){
+    if(m.ziel===z) m.wut=true;
+    starteEcke(z); return;
+  }
+  if(e==='@nummer'){
+    z.stand='nummer'; S.erfolge++;
+    wirke({ruf:4, flag:'schreibt_'+z.id});
+    if(m.ziel===z) m.wut=true;
+    S.confidenceT=TUNE.confidenceDauer;
+    meldung('NUMMER VON '+z.name,2); SFX.erledigt(); return;
+  }
+  if(e==='@nett'){
+    z.stand='nett'; wirke({ruf:2});
+    meldung('FREUNDLICH AUSEINANDER',1.6); return;
+  }
+  if(e==='@nein'){
+    /* Eine Abfuhr bleibt nicht unter vier Augen. Der Ruf sinkt - und mit
+       ihm die Antworten, die bei den anderen noch gehen. */
+    z.stand='nein'; S.abfuhren++;
+    wirke({ruf:TUNE.abfuhrRuf, mut:-4});
+    S.geknicktT=TUNE.geknicktDauer; S.confidenceT=0;
+    meldung(S.abfuhren>1?'DAS SPRICHT SICH RUM':'AUA. ABFUHR',1.8); SFX.aua(); return;
+  }
+  /* Neutral beendet: man darf nochmal hin. */
+}
+
+/* ==========================================================================
+   DIE ECKE
+   Erzaehlt statt gezeigt. Das Bild wird dunkel, die Zeilen kommen einzeln,
+   man tippt weiter. Danach ist der Abend ein anderer.
+   ========================================================================== */
+function starteEcke(z){
+  S.modus='ecke'; S.ecke={ z, i:0, t:0 }; S.vx=0;
+}
+function eckeWeiter(){
+  const e=S.ecke; if(!e) return;
+  if(e.t<0.35) return;              // kein versehentliches Durchtippen
+  e.i++; e.t=0;
+  if(e.i>=ECKE[e.z.id].length) eckeVorbei();
+}
+function eckeTakt(dt){
+  const e=S.ecke; if(!e) return;
+  e.t+=dt;
+  if(e.t>3.4) eckeWeiter();
+  aktionPuffer.length=0;
+}
+function eckeVorbei(){
+  const z=S.ecke.z;
+  S.ecke=null; S.modus='spiel';
+  z.stand='ja'; S.erfolge++;
+  wirke({ruf:8, mut:6, flag:'clubJa_'+z.id, mag:[z.name,15]});
+  setzeFlag('schreibt_'+z.id);
+  /* Kira faehrt mit dem Taxi - danach ist sie weg. */
+  if(z.id==='kira') z.weg=true;
+  S.confidenceT=TUNE.confidenceDauer; S.geknicktT=0;
+  meldung('DER ABEND IST EIN ANDERER',2.4); SFX.sieg();
+  /* Marvin hat es gesehen. Erfolg zieht den Rivalen an - so bricht die
+     Schlaegerei aus, die im Plan steht, und zwar als Folge von etwas, das
+     man selbst getan hat. */
+  const m=S.marvin;
+  if(m.da&&!m.fertig){ m.wut=true; m.ziel=null; zeigeHinweis('MARVIN HAT DAS GESEHEN',2.6); }
+}
+
+/* ==========================================================================
+   MARVIN
+   Geht dieselben Leute an wie du. Steht er lange genug ungestoert bei
+   jemandem, mit dem du noch nicht geredet hast, ist sie fuer heute weg.
+   Er zoegert, solange du daneben stehst - Konkurrenz sieht man.
+   Nimmst du ihm eine weg, auf die er zuging, wird er sauer und stellt dich.
+   ========================================================================== */
+function marvinTakt(dt){
+  const m=S.marvin;
+  if(m.fertig) return;
+  if(!m.da){
+    if(S.zeit<TUNE.marvinKommtNach) return;
+    m.da=true; m.x=30; m.t=0.5; setzeFlag('marvinKennt');
+    meldung('MARVIN IST DA',1.8);
+  }
+  /* Wut: er kommt direkt auf dich zu. */
+  if(m.wut){
+    const dx=S.x-m.x;
+    m.blick=Math.sign(dx)||1;
+    m.x+=m.blick*TUNE.marvinTempo*1.8*dt;
+    m.t+=(S.tiefe-m.t)*Math.min(1,2*dt);
+    if(Math.abs(dx)<TUNE.marvinStellt&&S.modus==='spiel') marvinStellt();
+    return;
+  }
+  if(m.pause>0){ m.pause-=dt; return; }
+  if(!m.ziel||m.ziel.stand!=='offen'){
+    const frei=ZIELE.filter(z=>z.stand==='offen'&&Math.abs(z.x-S.x)>40);
+    frei.sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x));
+    m.ziel=frei[0]||null; m.beiT=0;
+  }
+  if(!m.ziel) return;
+  const zx=m.ziel.x+11, dx=zx-m.x;
+  if(Math.abs(dx)>3){
+    m.blick=Math.sign(dx); m.x+=m.blick*TUNE.marvinTempo*dt;
+    m.t+=(m.ziel.t+0.06-m.t)*Math.min(1,2*dt);
+    return;
+  }
+  m.blick=-1;
+  if(Math.abs(S.x-m.ziel.x)<34){ m.beiT=Math.max(0,m.beiT-dt); return; }
+  m.beiT+=dt;
+  if(m.beiT>=TUNE.marvinNimmt){
+    m.ziel.stand='weg'; m.hat.push(m.ziel.id);
+    meldung(m.ziel.name+' IST JETZT MIT MARVIN UNTERWEGS',2.4); SFX.aua();
+    m.ziel=null; m.pause=TUNE.marvinPause;
+  }
+}
+function marvinStellt(){
+  const m=S.marvin; m.wut=false;
+  S.vx=0; S.vt=0;
+  starteGespraech(MARVIN_BAUM,'start',e=>{
+    if(e==='@kampf') starteKloppe();
+    else { m.fertig=true; meldung(flag('marvinRueckzug')?'ER ZIEHT AB':'ER LACHT DICH AUS',1.8); }
+  });
+}
+
+/* ==========================================================================
+   DIE KLEINE SCHLAEGEREI
+   Der Vorgeschmack aufs Finale. Im Stroboskop sieht man das Ausholen oft
+   nicht - Blocken und Ausweichen in die Tiefe werden wichtiger als Kontern.
+   Gewinnen ist nicht noetig: danach fliegen beide raus.
+   ========================================================================== */
+function starteKloppe(){
+  S.modus='kloppe'; S.kloppeStand='kampf';
+  S.ich=kaempfer({ x:S.x, t:S.tiefe, blick:1, hp:TUNE.kloppeLeben, maxHp:TUNE.kloppeLeben });
+  const mv=gegner('schlaeger', S.x+26, S.tiefe);
+  mv.hp=mv.maxHp=TUNE.marvinHp; mv.marvin=true;
+  S.gegner=[ mv, gegner('flitzer', S.x-30, Math.min(1,S.tiefe+0.25)) ];
+  S.marvin.fertig=true;
+  zeigeHinweis('E SCHLAEGT - UMSCHALT BLOCKT - LEERTASTE WEICHT AUS',4);
+  SFX.aua();
+}
+function kloppeVorbei(gewonnen){
+  S.kloppeStand=gewonnen?'gewonnen':'verloren';
+  wirke(gewonnen?{mut:8,ruf:6,flag:'clubKloppeGewonnen'}:{ruf:-4,flag:'clubKloppeVerloren'});
+  S.ich=null; S.gegner=[];
+  starteCutscene('rausschmiss');
+}
+function kloppe(dt){
+  kampfStopTakt(dt);
+  const z=kampfZeitFaktor(); if(z===0) return;
+  const d=dt*z, ich=S.ich;
+  kaempferTakt(ich,d);
+  const richtung=(rechtsAn?1:0)-(linksAn?1:0);
+  const rt=(runterAn?1:0)-(hochAn?1:0);
+  if(ich.zustand==='frei'||ich.zustand==='block'){
+    if(richtung){ ich.x+=richtung*TUNE.gehTempo*0.62*d; ich.blick=richtung; }
+    if(rt) bewegeTiefe(ich,rt,d,TIEFE.tempo*0.8,16);
+  }
+  ich.x=Math.max(14,Math.min(LEVEL_B-14,ich.x));
+  S.x=ich.x; S.tiefe=ich.t;
+  if(S.rolleGedrueckt){ S.rolleGedrueckt=false; rolle(ich, rt||(ich.t<0.5?1:-1)); }
+  blocke(ich, !!S.blockAn && aktionPuffer.length===0);
+  while(aktionPuffer.length){
+    aktionPuffer.shift();
+    let gekontert=false;
+    for(const g of S.gegner){ if(g.hp<=0) continue;
+      if(konterVersuch(ich,g,{reichweite:TUNE.kloppeReich})){ gekontert=true; SFX.hit(); break; } }
+    if(!gekontert) schlage(ich);
+  }
+  if(ich.zustand==='schlag'){
+    for(const g of S.gegner){ if(g.hp<=0) continue;
+      const was=spielerTrifft(ich,g,{reichweite:TUNE.kloppeReich,schaden:1});
+      if(was==='treffer'||was==='konter'||was==='gardebruch'){ SFX.hit(); break; } }
+  }
+  for(const g of S.gegner){ if(g.hp<=0) continue;
+    gegnerTakt(g,d,ich);
+    if(g.zustand==='schlag'){
+      const was=loeseTreffer(g,ich,{reichweite:g.reichweite,schaden:1});
+      if(was==='treffer'){ S.ruettel=7; S.blitz=.3; SFX.aua(); }
+    }
+  }
+  if(S.gegner.every(g=>g.hp<=0)) kloppeVorbei(true);
+  else if(ich.hp<=0) kloppeVorbei(false);
+  kamera(dt);
+}
+
+/* ==========================================================================
+   WAS DIE KNOEPFE AM HANDY GERADE TUN
+   ========================================================================== */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro'||S.modus==='cutscene'||S.modus==='ecke') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
+  if(S.modus==='pause')    return {aktion:null, zwei:null};
+  if(S.modus==='mini')     return {aktion:'JETZT', zwei:null};
+  if(S.modus==='kloppe')   return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
+  const z=naechstesZiel();
+  const txt=!z?null:z.art==='reden'?'REDEN':z.art==='bar'?'AUF EX':z.art==='wasser'?'WASSER':'RAUS';
+  return {aktion:txt, zwei:null};
+}
+
 /* ==========================================================================
    AKTUALISIEREN
    ========================================================================== */
@@ -534,38 +1139,47 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
   if(S.modus==='intro'){ intro(dt); return; }
+  /* Waehrend eines Gespraechs steht der Club - auch die Uhr und Marvin. */
+  if(gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
   if(S.modus==='ende'){ return; }
+  if(S.modus==='ecke'){ eckeTakt(dt); return; }
 
   S.zeit+=dt;
   const spanne=TUNE.endMinute-TUNE.startMinute;
   S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
-  if(S.minute>=TUNE.endMinute){ S.modus='ende'; S.gewonnen=false;
-    S.faenger='DIE MUSIK HOERT AUF. ZU SPAET.'; SFX.aua(); return; }
+  /* Um eins geht das Licht an. Keine Niederlage mehr - die Nacht geht
+     weiter, nur mit dem, was man bis dahin geschafft hat. */
+  if(S.minute>=TUNE.endMinute&&S.modus==='spiel'){ starteCutscene('licht'); return; }
 
-  const st=stroboskop(); S.dunkel=st.dunkel; S.flacker=st.flacker;
+  /* Stroboskop nur auf der Tanzflaeche */
+  if(ortBei(S.x).strobe){ const st=stroboskop(); S.dunkel=st.dunkel; S.flacker=st.flacker; }
+  else { S.dunkel=Math.max(0,S.dunkel-dt*3); S.flacker=0; }
 
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
-
   S.confidenceT=Math.max(0,S.confidenceT-dt);
   S.geknicktT=Math.max(0,S.geknicktT-dt);
   if(S.stolpernT>0) S.stolpernT=Math.max(0,S.stolpernT-dt);
+  if(S.wasserT>0) S.wasserT-=dt;
 
-  /* --- Minispiel laeuft --- */
+  if(S.modus==='kloppe'){ kloppe(dt); return; }
   if(S.modus==='mini'){
     while(aktionPuffer.length){ aktionPuffer.shift(); pruefeMinigame(); }
     kamera(dt); return;
   }
 
-  /* --- Anrempeln im Dunkeln --- */
+  /* Anrempeln im Dunkeln - jetzt in der Flaeche: man kann auch hinter der
+     Menge vorbei. */
   if(S.dunkel>TUNE.strobeGefahrAb&&S.stolpernT<=0&&S.confidenceT<=0){
-    for(const tz of TANZER){ if(Math.abs(tz.x-S.x)<9){
-      S.stolpernT=TUNE.stolpernDauer; S.vx=0; S.ruettel=4;
-      SFX.stolper(); meldung('ANGERANNT',1.2); break; } }
+    for(const tz of TANZER){
+      if(Math.abs(tz.x-S.x)<8&&Math.abs(tz.t-S.tiefe)<0.14){
+        S.stolpernT=TUNE.stolpernDauer; S.vx=0; S.vt=0; S.ruettel=4;
+        SFX.stolper(); meldung('ANGERANNT',1.2); break; } }
   }
 
-  /* --- Bewegung --- */
+  /* Bewegung. Tiefe ausgeschrieben statt bewegeTiefe(S,...): S.t ist die
+     Spielzeit, siehe WEITER.md. */
   if(S.stolpernT<=0){
     const richtung=(rechtsAn?1:0)-(linksAn?1:0);
     if(richtung) S.blick=richtung;
@@ -577,33 +1191,34 @@ function update(dt){
       const brems=TUNE.bremsung*dt;
       S.vx=Math.abs(S.vx)<=brems?0:S.vx-Math.sign(S.vx)*brems;
     }
-  }
+    const rt=(runterAn?1:0)-(hochAn?1:0);
+    S.vt+=(rt*TUNE.tiefeTempo*tempoMultiplikator()-S.vt)*Math.min(1,14*dt);
+  } else S.vt=0;
   S.x+=S.vx*dt;
   S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
+  S.tiefe=Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
 
-  if(Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+  if(tempo2D(S.vx,S.vt)>12){
+    S.gehPhase+=tempo2D(S.vx,S.vt)*dt*.09;
     const n=Math.floor(S.gehPhase);
     if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
   }
 
-  /* --- Aktion --- */
+  marvinTakt(dt);
+  if(gespraechAktiv()) return;      // Marvin hat dich gerade gestellt
+
   while(aktionPuffer.length){
     aktionPuffer.shift();
-    let beste=null, bestD=1e9, art=null;
-    for(const z of ZIELE){ if(z.erledigt) continue;
-      const d=Math.abs(z.x-S.x);
-      if(d<reichweiteAktuell()&&d<bestD){ beste=z; bestD=d; art='ansprechen'; } }
-    const dBar=Math.abs(BARTHEKE.x-S.x);
-    if(dBar<reichweiteAktuell()&&dBar<bestD){ beste=BARTHEKE; bestD=dBar; art='ex'; }
-    const dTuer=Math.abs(AUSGANG.x-S.x);
-    if(dTuer<reichweiteAktuell()&&dTuer<bestD){ beste=AUSGANG; bestD=dTuer; art='tuer'; }
-    if(art==='ansprechen') starteMinigame('ansprechen',beste);
-    else if(art==='ex') starteMinigame('ex',beste);
-    else if(art==='tuer'){
-      if(S.erfolge>=TUNE.erfolgeZumSieg) starteCutscene();
-      else { meldung('NOCH NICHT GENUG MUT',1.6); SFX.nichts(); }
+    const z=naechstesZiel();
+    if(!z){ meldung('HIER IST NICHTS',0.8); SFX.nichts(); continue; }
+    if(z.art==='reden'){ redeMit(z.obj); return; }
+    if(z.art==='bar'){ starteMinigame('ex',z.obj); return; }
+    if(z.art==='wasser'){
+      if(S.wasserT>0){ meldung('GERADE ERST',0.9); SFX.nichts(); continue; }
+      S.pegel=Math.max(0,S.pegel+TUNE.wasserPegel); S.wasserT=TUNE.wasserPause;
+      meldung('KALTES WASSER INS GESICHT',1.6); SFX.schluck(); continue;
     }
+    if(z.art==='tuer'){ starteCutscene('hinten'); return; }
   }
   kamera(dt);
 }
@@ -617,18 +1232,37 @@ function kamera(dt){
 /* ==========================================================================
    CUTSCENE / SIEG
    ========================================================================== */
-const SZENEN=[
-  { d:1.0, txt:'' },
-  { d:2.2, txt:'DU HAST GENUG LEUTE KENNENGELERNT' },
-  { d:2.2, txt:'DRAUSSEN WARTET SCHON DIE NAECHSTE RUNDE' },
-  { d:2.4, txt:'AN DER TUER STEHT SEMIH' },
-  { d:2.4, txt:'SEMIH KENNT JEDEN HIER' },
-  { d:2.0, txt:'MIT IHM KOMMST DU UEBERALL REIN' },
-  { d:2.4, txt:'LEVEL 5 GESCHAFFT' },
-];
-function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; SFX.sieg(); }
+/* Semih kommt nur mit, wenn die Nacht im Club etwas hergegeben hat. Er
+   kennt jeden - und er haengt sich nicht an jemanden, der leer ausgeht. */
+const semihKommt=()=>S.erfolge>=1||flag('clubKloppeGewonnen')||wert('ruf')>=60;
+
+/* Wie der Club endet, haengt davon ab, wie man rauskommt. */
+function starteCutscene(grund){
+  const z=[{ d:0.8, txt:'' }];
+  if(grund==='rausschmiss') z.push(
+    { d:2.4, txt:'DIE TUERSTEHER SIND SCHNELLER ALS GEDACHT.' },
+    { d:2.4, txt:'ZWEI GREIFEN DICH. ZWEI GREIFEN MARVIN.' },
+    { d:2.4, txt:flag('clubKloppeGewonnen')?'ER BLUTET. DU NICHT.':'DEINE LIPPE BLUTET.' },
+    { d:2.4, txt:'UND DANN STEHST DU DRAUSSEN.' });
+  else if(grund==='licht') z.push(
+    { d:2.4, txt:'UM EINS GEHT DAS LICHT AN.' },
+    { d:2.6, txt:'ALLE SEHEN PLOETZLICH SO AUS, WIE SIE SIND.' },
+    { d:2.2, txt:'RAUS HIER.' });
+  else z.push(
+    { d:2.4, txt:'DU GEHST HINTEN RAUS.' },
+    { d:2.2, txt:'DIE LUFT IST KALT UND TUT GUT.' });
+  if(semihKommt()) z.push(
+    { d:2.4, txt:'AN DER TUER STEHT SEMIH.' },
+    { d:2.4, txt:'SEMIH KENNT JEDEN. AUCH DIE AFTERHOUR.' });
+  else z.push(
+    { d:2.6, txt:'KEINER WARTET AUF DICH. ALSO WEITER.' });
+  z.push({ d:2.4, txt:'LEVEL 5 GESCHAFFT' });
+  S.szenen=z;
+  S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; SFX.sieg();
+}
 function levelGeschafft(){
-  speichereCrew('SEMIH');
+  if(semihKommt()) speichereCrew('SEMIH');
+  setzeKapitel(6);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -641,9 +1275,9 @@ function cutscene(dt){
     if(S.skipT>0.7){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); return; }
   } else S.skipT=Math.max(0,S.skipT-dt*2);
   S.szeneT+=dt;
-  if(S.szeneT>=SZENEN[S.szene].d){
+  if(S.szeneT>=S.szenen[S.szene].d){
     S.szene++; S.szeneT=0;
-    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
+    if(S.szene>=S.szenen.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
   }
 }
 
@@ -669,8 +1303,26 @@ function draw(dt){
   if(S.flacker>0){ ctx.fillStyle=`rgba(255,255,255,${S.flacker.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
 
   hud();
+  zeichneGespraech();
+  if(S.modus==='ecke') zeichneEcke();
   if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.4).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   bildschirme();
+}
+
+/* Die Ecke: das Bild wird schwarz, die Zeilen kommen einzeln. */
+function zeichneEcke(){
+  const e=S.ecke; if(!e) return;
+  ctx.fillStyle='#030208'; ctx.fillRect(0,0,W,H);
+  const zeilen=ECKE[e.z.id];
+  const y0=Math.round(H/2-zeilen.length*6);
+  for(let i=0;i<=e.i&&i<zeilen.length;i++){
+    const alpha=i<e.i?0.45:Math.min(1,e.t*2);
+    ctx.globalAlpha=alpha;
+    textC(zeilen[i],y0+i*12,i===e.i?P.weiss:P.dim);
+  }
+  ctx.globalAlpha=1;
+  textC(e.z.name,y0-18,P.neon);
+  if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN':'E',H-14,P.dunkel);
 }
 
 function zeichneClub(){
@@ -678,19 +1330,19 @@ function zeichneClub(){
   ctx.save(); ctx.translate(-kx,0);
 
   for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,BODEN-20);
+    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,TIEFE.hinten-20);
     ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,BODEN-20);
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,BODEN,o.bis-o.von,H-BODEN);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,BODEN,o.bis-o.von,1);
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
+    ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
+    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
     ctx.fillStyle='#00000033';
-    for(let x=o.von;x<o.bis;x+=14) ctx.fillRect(x,BODEN+5,7,1);
+    for(let y=TIEFE.hinten+8;y<H;y+=9) for(let x=o.von+((y>>1)%14);x<o.bis;x+=14) ctx.fillRect(x,y,7,1);
     text(o.name,o.von+6,26,'#ffffff18');
   }
 
-  /* Partylicht - mehrere Farben, gedaempft, nie reines Weiss */
-  const lichter=[[220,'#ff3d8b',5.4,0],[330,'#42d9ff',4.1,1.4],[470,'#ffd447',6.2,.6]];
-  for(const [lx,col,freq,off] of lichter){
+  /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
+  const lichter=[[240,'#ff3d8b',0],[390,'#42d9ff',1.4],[540,'#ffd447',.6]];
+  for(const [lx,col,off] of lichter){
     const puls=(Math.sin(S.t*1+off)*.5+.5);
     ctx.globalAlpha=.08+puls*.09;
     ctx.drawImage(verlauf('licht'+col,180,110,g=>{
@@ -700,55 +1352,101 @@ function zeichneClub(){
       g.fillStyle=gr; g.fillRect(0,0,180,110); }),lx-90,20);
   }
   ctx.globalAlpha=1;
+  /* Raucherecke: eine Laterne statt Discolicht */
+  ctx.globalAlpha=.12; ctx.fillStyle='#ffd447'; ctx.fillRect(900,30,120,TIEFE.hinten-30); ctx.globalAlpha=1;
 
-  /* DJ-Pult */
-  sprite(SPR.dj,90,BODEN-14);
+  sprite(SPR.dj,120,TIEFE.hinten-14);
 
-  /* Tanzende Menge */
+  const naechst=S.modus==='spiel'?naechstesZiel():null;
+  const blink=Math.floor(S.t*4)%2===0;
+  const liste=[];
+  const schatten=(x,t)=>{ ctx.globalAlpha=.24; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(x-3),Math.round(bodenY(t)),7,1); ctx.globalAlpha=1; };
+
   for(const tz of TANZER){
-    const y=BODEN-5+Math.round(Math.sin(S.t*3+tz.seed)*1);
-    sprite(SPR.tanzer,tz.x,y);
+    liste.push({t:tz.t, mal:()=>{
+      const y=bodenY(tz.t)-SPR.tanzer.length+Math.round(Math.sin(S.t*6+tz.seed));
+      sprite(SPR.tanzer,tz.x-3,y,1,'#3a3052');
+    }});
   }
 
-  /* Theke */
-  outline(SPR.theke,BARTHEKE.x-6,BODEN-4,1,.5); sprite(SPR.theke,BARTHEKE.x-6,BODEN-4);
-  text('BAR',BARTHEKE.x-textW('BAR')/2,BODEN-14,P.dim);
-  if(Math.abs(BARTHEKE.x-S.x)<reichweiteAktuell()&&S.modus==='spiel'&&Math.floor(S.t*4)%2===0)
-    text('E',BARTHEKE.x-3,BODEN-22,P.gold);
+  /* Bar und Waschbecken stehen an der Rueckwand */
+  liste.push({t:BARTHEKE.t, mal:()=>{
+    const y=bodenY(BARTHEKE.t)-4;
+    outline(SPR.theke,BARTHEKE.x-6,y,1,.5); sprite(SPR.theke,BARTHEKE.x-6,y);
+    text('BAR',BARTHEKE.x-textW('BAR')/2+0,y-10,P.dim);
+    if(naechst&&naechst.obj===BARTHEKE&&blink) text('E',BARTHEKE.x-2,y-18,P.gold);
+  }});
+  liste.push({t:WASCHBECKEN.t, mal:()=>{
+    const y=bodenY(WASCHBECKEN.t)-SPR.waschbecken.length;
+    sprite(SPR.waschbecken,WASCHBECKEN.x-3,y);
+    if(naechst&&naechst.obj===WASCHBECKEN&&blink) text('E',WASCHBECKEN.x-1,y-8,P.gold);
+  }});
+  liste.push({t:AUSGANG.t, mal:()=>{
+    const y=bodenY(AUSGANG.t)-SPR.tuer.length;
+    sprite(SPR.tuer,AUSGANG.x-4,y);
+    text('AFTERHOUR',AUSGANG.x-textW('AFTERHOUR')/2,y-8,P.gold);
+    if(naechst&&naechst.obj===AUSGANG&&blink) text('E',AUSGANG.x-1,y-16,P.gold);
+  }});
 
-  /* Tuer Richtung Afterhour */
-  const bereit=S.erfolge>=TUNE.erfolgeZumSieg;
-  sprite(SPR.tuer,AUSGANG.x,BODEN-12);
-  text('AFTERHOUR',AUSGANG.x+6-textW('AFTERHOUR')/2,BODEN-22,bereit?P.gold:P.dunkel);
-  if(Math.abs(AUSGANG.x-S.x)<reichweiteAktuell()&&S.modus==='spiel'&&Math.floor(S.t*4)%2===0)
-    text('E',AUSGANG.x+4,BODEN-14,bereit?P.gold:P.dunkel);
-
-  /* Die drei Leute */
   for(const z of ZIELE){
-    const rows=SPR[z.spr];
-    const y=BODEN-rows.length;
-    outline(rows,z.x-3,y,1,.55); sprite(rows,z.x-3,y);
-    text(z.name,z.x+3-textW(z.name)/2,y-9,z.erledigt?P.gruen:P.dim);
-    if(z.erledigt) text('OK',z.x+3-textW('OK')/2,y-16,P.gruen);
-    else if(Math.abs(z.x-S.x)<reichweiteAktuell()&&S.modus==='spiel'&&Math.floor(S.t*4)%2===0)
-      text('E',z.x+2,y-16,P.gold);
+    if(z.weg) continue;
+    liste.push({t:z.t, mal:()=>{
+      const rows=SPR[z.spr], y=bodenY(z.t)-rows.length;
+      schatten(z.x,z.t);
+      outline(rows,z.x-3,y,1,.55); sprite(rows,z.x-3,y);
+      /* Name nur in der Naehe - sonst ist das Bild voller Beschriftung */
+      if(Math.abs(z.x-S.x)<60){
+        const farbe={offen:P.weiss,ja:P.gold,nummer:P.gruen,nett:P.dim,nein:P.rot,weg:P.dunkel}[z.stand];
+        text(z.name,z.x+3-textW(z.name)/2,y-9,farbe);
+        if(z.stand==='weg') text('MIT MARVIN',z.x+3-textW('MIT MARVIN')/2,y-16,P.dunkel);
+      }
+      if(naechst&&naechst.obj===z&&blink) text('E',z.x+2,y-16,P.gold);
+    }});
+  }
+  liste.push({t:LENA.t, mal:()=>{
+    const rows=SPR.lena, y=bodenY(LENA.t)-rows.length;
+    schatten(LENA.x,LENA.t); sprite(rows,LENA.x-3,y);
+    if(Math.abs(LENA.x-S.x)<40) text('LENA',LENA.x+3-textW('LENA')/2,y-9,P.dunkel);
+  }});
+
+  const m=S.marvin;
+  if(m.da&&!m.fertig&&S.modus!=='kloppe'){
+    liste.push({t:m.t, mal:()=>{
+      const lauf=laufBild(m);
+      const rows=lauf>=0?gehBeine(SPR.marvin,lauf):SPR.marvin, y=bodenY(m.t)-rows.length;
+      schatten(m.x,m.t);
+      outline(rows,m.x-3,y,1,.6);
+      if(m.blick<0) spriteFlip(rows,m.x-3,y,1,m.wut?'#ff8080':null);
+      else sprite(rows,m.x-3,y,1,m.wut?'#ff8080':null);
+      /* Eine Zeile hoeher als die Namen der anderen - er steht meistens
+         direkt neben jemandem, und dann lagen beide Namen uebereinander. */
+      if(Math.abs(m.x-S.x)<80) text('MARVIN',m.x+3-textW('MARVIN')/2,y-17,m.wut?P.rot:P.dim);
+      /* Wie lange er schon bei ihr steht - man soll sehen, dass es eng wird */
+      if(m.beiT>0&&m.ziel){
+        const f=Math.min(1,m.beiT/TUNE.marvinNimmt);
+        ctx.fillStyle='#2a2440'; ctx.fillRect(Math.round(m.x-5),y-8,11,2);
+        ctx.fillStyle=P.rot; ctx.fillRect(Math.round(m.x-5),y-8,Math.round(11*f),2);
+      }
+    }});
   }
 
-  /* Spieler */
-  let rows;
-  if(S.stolpernT>0) rows=SPR.steh;
-  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
-  else rows=SPR.steh;
-  const tintSpieler=S.stolpernT>0?'#ff4d4d':(S.confidenceT>0?'#ffd447':null);
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length,1,tintSpieler);
-  else sprite(rows,S.x-3,S.y-rows.length,1,tintSpieler);
-  ctx.globalAlpha=.28; ctx.fillStyle='#000';
-  ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
+  if(S.modus==='kloppe') zeichneKloppe(liste);
+  else liste.push({t:S.tiefe, mal:()=>{
+    let rows;
+    if(S.stolpernT>0) rows=SPR.steh;
+    else if(tempo2D(S.vx,S.vt)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+    else rows=SPR.steh;
+    const tint=S.stolpernT>0?'#ff4d4d':(S.confidenceT>0?'#ffd447':null);
+    const y=bodenY(S.tiefe)-rows.length;
+    schatten(S.x,S.tiefe);
+    outline(rows,S.x-3,y,1,.6);
+    if(S.blick<0) spriteFlip(rows,S.x-3,y,1,tint); else sprite(rows,S.x-3,y,1,tint);
+  }});
 
+  zeichneNachTiefe(liste);
   ctx.restore();
 
-  /* Vignette, staerker mit steigendem Pegel */
   const p=S.pegel/100;
   ctx.globalAlpha=Math.min(1,.5+p*.4);
   ctx.drawImage(verlauf('vig',W,H,g=>{
@@ -756,6 +1454,28 @@ function zeichneClub(){
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
   ctx.globalAlpha=1;
+}
+
+/* Die Schlaegerei. Im Stroboskop ist das Ausholen oft nicht zu sehen -
+   das ist Absicht und steht so im Plan: schlechte Sicht, Leute im Weg. */
+function zeichneKloppe(liste){
+  const malK=(k,steh,grund)=>liste.push({t:k.t, mal:()=>{
+    const lauf=laufBild(k);
+    let rows=steh;
+    if(lauf>=0&&(k.zustand==='frei'||k.zustand==='block')) rows=steh===SPR.steh?SPR.geh[lauf]:gehBeine(steh,lauf);
+    const y=bodenY(k.t)-rows.length+(k.zustand==='rolle'?3:0);
+    const blinkt=k.unverwundbar>0&&Math.floor(S.t*18)%2===0;
+    const tint=k.zustand==='block'?'#42d9ff':k.zustand==='ausholen'?P.gold:
+               k.zustand==='getroffen'?'#ff8080':blinkt?'#ffffff':grund;
+    ctx.globalAlpha=.24; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(k.x-3),Math.round(bodenY(k.t)),7,1); ctx.globalAlpha=1;
+    outline(rows,k.x-3,y,1,.6);
+    if(k.blick<0) spriteFlip(rows,k.x-3,y,1,tint); else sprite(rows,k.x-3,y,1,tint);
+    if(k!==S.ich) for(let i=0;i<k.maxHp;i++){
+      ctx.fillStyle=i<k.hp?P.rot:'#2a2440'; ctx.fillRect(Math.round(k.x-4+i*3),y-6,2,2); }
+  }});
+  for(const g of S.gegner) if(g.hp>0) malK(g, g.marvin?SPR.marvin:SPR.handlanger, null);
+  if(S.ich) malK(S.ich, SPR.steh, null);
 }
 
 /* ---- HUD ---- */
@@ -775,12 +1495,21 @@ function hud(){
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
-  /* Erfolge */
-  text('ERFOLGE '+S.erfolge+'/'+TUNE.erfolgeZumSieg,6,6,P.weiss);
+  /* Erfolge und Ruf - der Ruf entscheidet, welche Antworten noch gehen */
+  text('ERFOLGE '+S.erfolge,6,6,P.weiss);
+  text('RUF '+Math.round(wert('ruf')),6,14,wert('ruf')<40?P.rot:P.dim);
+  if(S.modus==='kloppe'&&S.ich){
+    for(let i=0;i<S.ich.maxHp;i++){ ctx.fillStyle=i<S.ich.hp?P.rot:'#2a2440'; ctx.fillRect(6+i*7,24,5,4); }
+    ctx.fillStyle='#2a2440'; ctx.fillRect(6,31,54,3);
+    ctx.fillStyle=S.ich.ausdauer<KAMPF.ausdauerSchlag?P.rot:P.neon2;
+    ctx.fillRect(6,31,Math.round(54*S.ich.ausdauer/KAMPF.ausdauerMax),3);
+  }
 
   /* Status */
-  if(S.confidenceT>0&&Math.floor(S.t*3)%2===0) text('CONFIDENCE',6,22,P.gold);
-  if(S.geknicktT>0&&Math.floor(S.t*3)%2===0) text('GEKNICKT',6,22,P.rot);
+  if(S.modus!=='kloppe'){
+    if(S.confidenceT>0&&Math.floor(S.t*3)%2===0) text('CONFIDENCE',6,24,P.gold);
+    if(S.geknicktT>0&&Math.floor(S.t*3)%2===0) text('GEKNICKT',6,24,P.rot);
+  }
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
@@ -794,7 +1523,7 @@ function hud(){
     const bx2=Math.round((W-breite)/2), by2=H-24;
     ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-44,W,44);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-44,W,1);
-    text(m.art==='ex'?'AUF EX':'ANSPRECHEN',8,H-38,P.neon2);
+    text(m.art==='ex'?'AUF EX':'TANZEN MIT '+m.ziel.name,8,H-38,P.neon2);
     const rundenZiel=m.art==='ex'?1:TUNE.ansprechRunden;
     text('RUNDE '+(m.runden+1)+'/'+rundenZiel,W-textW('RUNDE '+(m.runden+1)+'/'+rundenZiel)-6,H-38,P.dim);
     ctx.fillStyle='#2a2440'; ctx.fillRect(bx2,by2,breite,6);
@@ -811,10 +1540,10 @@ function titelbild(){
     ctx.fillRect((i*83)%W,(i*47)%H,1,1); }
   textGlowC('CLUB',22,P.neon,3);
   textC('LEVEL 5 - STROBOSKOP',44,P.dim);
-  const zeilen=['DIE SICHT FLACKERT DEN GANZEN ABEND','SPRICH LEUTE AN ODER GEH AN DIE BAR','GENUG ERFOLGE UND DIE TUER GEHT AUF'];
+  const zeilen=['AUF DER TANZFLAECHE SIEHT MAN NICHTS','WAS DU SAGST, ENTSCHEIDET','UND MARVIN IST AUCH HIER'];
   zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['< >','LAUFEN'],['E','ANSPRECHEN, TRINKEN, TUER']]
-                   :[['A D','LAUFEN'],['E','ANSPRECHEN, TRINKEN, TUER']];
+  const st=IS_TOUCH?[['STICK','LAUFEN'],['KNOPF','REDEN, TRINKEN, TUER']]
+                   :[['WASD','LAUFEN'],['E','REDEN, TRINKEN, TUER']];
   st.forEach((z,i)=>{ text(z[0],70,112+i*9,P.gold); text(z[1],104,112+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
@@ -858,7 +1587,7 @@ function bildschirme(){
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
-    const s=SZENEN[S.szene];
+    const s=S.szenen[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
     if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
   }
@@ -870,7 +1599,7 @@ function bildschirme(){
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
       textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),74,S.neueBestzeit?P.gold:P.dim);
       if(S.neueBestzeit) textC('NEUE BESTZEIT',84,P.gold);
-      textC('ERFOLGE  '+S.erfolge+'/'+TUNE.erfolgeZumSieg,96,P.dim);
+      textC('ERFOLGE  '+S.erfolge+'   RUF  '+Math.round(wert('ruf')),96,P.dim);
       textC('PEGEL  '+Math.round(S.pegel),106,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
