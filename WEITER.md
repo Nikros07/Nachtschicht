@@ -3,7 +3,7 @@
 Diese Datei ist die Übergabe. Wenn Du "continue" sagst, liest Claude hier
 nach, wo es stand, und macht genau dort weiter.
 
-**Stand:** Phase 0, 1, 2 fertig. Phase 3 läuft — Level 1 und 2 umgebaut.
+**Stand:** Phase 0–2 fertig. Phase 3: alle acht Level umgebaut. Handy-Fassung eigenständig. Neun Enden.
 **Zuletzt aktualisiert:** 2026-09-17
 
 ---
@@ -75,6 +75,16 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   kleine Schlägerei und der Rausschmiss. Bäume nachgemessen: ein Ja kommt bei
   etwa 5–15 % der möglichen Gesprächswege heraus, betrunken hat man bei Kira
   keine Chance.
+- **Level 8 (Heimweg)**: vor dem großen Fight ein Gespräch. Der Anführer
+  ist MARVIN, wenn man ihn im Club gesehen hat, und er erinnert sich (Sieg,
+  Kneifen, Rückzug). Seltener Weg ohne Kampf ab Mut 60 und Ruf 65.
+  `angstZugegeben` aus dem Traum ergibt ein Leben mehr, `taxiTipp` macht sein
+  Ausholen 15 % lesbarer. **Neun Enden**: Heim/Weiterziehen/Sonnenaufgang ×
+  Sieg/Niederlage/Frieden, dazu Zeilen aus der ganzen Nacht. `NACHT.gesehen`
+  zählt sie und überlebt den Neustart.
+- **Neuanfang**: Level 1 setzt beim Start die Nacht zurück
+  (`nachtZuruecksetzen`, gesehene Enden bleiben). Vorher schleppte ein zweiter
+  Durchlauf alles aus dem ersten mit.
 - **Level 7 (Späti)**: Geld zählt (Wasser 2 €, Snack 3 €). Wer pleite ist,
   sammelt Pfand im Wettrennen gegen Heinz. Nachtmenschen mit Gesprächen:
   Herr Özdemir, Taxifahrer (`taxiTipp` fürs Finale), Nele (Handy aus Level 1
@@ -110,7 +120,14 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Level 8 (Heimweg)** ist als nächstes dran: die Enden aus allen Flags erzählen.
+Phase 3 ist durch. Als Nächstes aus dem Plan (Phase 4 und 5):
+
+- [ ] Stadtkarte zwischen den Leveln
+- [ ] Handy als eigenes System (Nachrichten von denen mit `schreibt_*`)
+- [ ] Nebenaufgaben, Schwierigkeitsgrade
+- [ ] Level 1: Lehrer-Routinen, Keller, Spind mit Zahlencode
+- [ ] runner.html läuft noch auf der alten, eingebauten Engine
+- [ ] Mehr Mädels- und Crew-Sprites mit echten Gesichtern (braucht Nick)
 
 Offen aus Level 1, wenn Zeit ist:
 

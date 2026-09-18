@@ -114,6 +114,9 @@ function wirke(w){
 
 /* Fuer Testlaeufe und einen sauberen Neuanfang. */
 function nachtZuruecksetzen(){
-  NACHT=tiefKopie(STAND_VORLAGE); speichereStand();
+  /* Die gesehenen Enden ueberleben den Neuanfang - sie sind der Grund,
+     die Nacht nochmal zu spielen. */
+  const gesehen=(NACHT&&NACHT.gesehen)||[];
+  NACHT=tiefKopie(STAND_VORLAGE); NACHT.gesehen=gesehen; speichereStand();
   try{ localStorage.removeItem(CREW_KEY); localStorage.removeItem(PEGEL_KEY); }catch(e){}
 }

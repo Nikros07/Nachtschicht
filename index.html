@@ -118,14 +118,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181651"></script>
-<script src="nacht/bild.js?v=202609181651"></script>
-<script src="nacht/ton.js?v=202609181651"></script>
-<script src="nacht/stand.js?v=202609181651"></script>
-<script src="nacht/welt.js?v=202609181651"></script>
-<script src="nacht/nacht.js?v=202609181651"></script>
-<script src="nacht/dialog.js?v=202609181651"></script>
-<script src="nacht/mobil.js?v=202609181651"></script>
+<script src="nacht/kern.js?v=202609181654"></script>
+<script src="nacht/bild.js?v=202609181654"></script>
+<script src="nacht/ton.js?v=202609181654"></script>
+<script src="nacht/stand.js?v=202609181654"></script>
+<script src="nacht/welt.js?v=202609181654"></script>
+<script src="nacht/nacht.js?v=202609181654"></script>
+<script src="nacht/dialog.js?v=202609181654"></script>
+<script src="nacht/mobil.js?v=202609181654"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -610,7 +610,11 @@ function introText(i){
   return i===INTRO.length-2 ? 'IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.'
                             : 'DURCHSUCH DIE RAEUME. ZETTEL HELFEN.';
 }
-function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+/* Level 1 ist der Anfang der Nacht. Vorher setzte nichts den Speicherstand
+   zurueck: ein zweiter Durchlauf brachte Crew, Geld, Flags und Beziehungen
+   aus dem ersten mit - und damit waeren die Enden nicht mehr erreichbar
+   gewesen, die von einer frischen Nacht ausgehen. */
+function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){ S.modus='spiel';
   setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('W UND S: NACH HINTEN UND VORNE - DAMIT KOMMST DU VORBEI',4); },4200);
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }

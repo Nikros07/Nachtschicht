@@ -109,14 +109,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181651"></script>
-<script src="nacht/bild.js?v=202609181651"></script>
-<script src="nacht/ton.js?v=202609181651"></script>
-<script src="nacht/stand.js?v=202609181651"></script>
-<script src="nacht/welt.js?v=202609181651"></script>
-<script src="nacht/kampf.js?v=202609181651"></script>
-<script src="nacht/nacht.js?v=202609181651"></script>
-<script src="nacht/mobil.js?v=202609181651"></script>
+<script src="nacht/kern.js?v=202609181654"></script>
+<script src="nacht/bild.js?v=202609181654"></script>
+<script src="nacht/ton.js?v=202609181654"></script>
+<script src="nacht/stand.js?v=202609181654"></script>
+<script src="nacht/welt.js?v=202609181654"></script>
+<script src="nacht/kampf.js?v=202609181654"></script>
+<script src="nacht/nacht.js?v=202609181654"></script>
+<script src="nacht/dialog.js?v=202609181654"></script>
+<script src="nacht/mobil.js?v=202609181654"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -379,6 +380,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
@@ -393,6 +395,10 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
@@ -460,7 +466,7 @@ const INTRO=[
   { d:2.4, txt:'ALSO LOS. NACH HAUSE. VOR DER SONNE.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ starteGrossenKampf(); return;
+function starteLevel(){ starteKonfrontation(); return;
   /* alter Direkteinstieg, bleibt fuer Tests erreichbar */
   S.modus='spiel'; zeigeHinweis('LAUF NACH HAUSE - MEIDE DIE SONNE',3);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
@@ -476,6 +482,9 @@ const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
    ========================================================================== */
 function pruefeSonne(){
   if(S.licht<100||S.modus==='ende') return false;
+  /* Wer auf den Sonnenaufgang wartet, verliert nicht gegen die Sonne - er
+     sieht sie. Die Nacht endet dann genau hier. */
+  if(endeWeg()==='sonne'){ if(S.modus!=='cutscene') starteCutscene(); return true; }
   S.modus='ende'; S.gewonnen=false;
   S.faenger='DIE SONNE HAT DICH ERWISCHT.'; SFX.erwischt();
   return true;
@@ -488,6 +497,7 @@ function pruefeZiel(){
 
 function update(dt){
   S.t+=dt; musik();
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
@@ -568,15 +578,11 @@ function kamera(dt){
 /* ==========================================================================
    ZIEL-CUTSCENE
    ========================================================================== */
-const SZENEN=[
-  { d:1.0, txt:'' },
-  { d:2.4, txt:'*DU SCHLIESST LEISE DIE HAUSTUER*' },
-  { d:2.2, txt:'DRAUSSEN WIRD ES HELL.' },
-  { d:2.2, txt:'ABER DU BIST DRIN.' },
-  { d:2.4, txt:'DIE NACHT IST VORBEI.' },
-];
-function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.vx=0; SFX.sieg(); }
+function starteCutscene(){ S.szenen=baueEnde(); S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.vx=0; SFX.sieg(); }
 function levelGeschafft(){
+  /* Gesehene Enden zaehlen - neun gibt es. */
+  const titel=endeTitel();
+  if(!NACHT.gesehen.includes(titel)){ NACHT.gesehen.push(titel); speichereStand(); }
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -589,9 +595,9 @@ function cutscene(dt){
     if(S.skipT>0.7){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); return; }
   } else S.skipT=Math.max(0,S.skipT-dt*2);
   S.szeneT+=dt;
-  if(S.szeneT>=SZENEN[S.szene].d){
+  if(S.szeneT>=S.szenen[S.szene].d){
     S.szene++; S.szeneT=0;
-    if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
+    if(S.szene>=S.szenen.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
   }
 }
 
@@ -635,6 +641,7 @@ function draw(dt){
   ctx.restore();
 
   hud();
+  zeichneGespraech();
   /* Die Sonne holt dich ein - je hoeher das Licht, desto mehr wird das Bild
      ausgewaschen. Bewusst kein hartes Weiss, sonst ist der letzte Moment
      nicht mehr lesbar. */
@@ -845,7 +852,7 @@ function bildschirme(){
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
-    const s=SZENEN[S.szene];
+    const s=S.szenen[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
     if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
   }
@@ -853,13 +860,14 @@ function bildschirme(){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
     if(S.gewonnen){
       textGlowC('DURCHGESPIELT',30,P.gold,2);
-      textC('DU BIST ZUHAUSE. DIE SONNE WAR ZU LANGSAM.',52,P.weiss);
+      textC('ENDE: '+endeTitel(),52,P.weiss);
+      textC('ENDEN GESEHEN: '+NACHT.gesehen.length+' VON 9',62,P.gold);
       const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
       textC('ZEIT  '+min+':'+String(sek).padStart(2,'0'),70,S.neueBestzeit?P.gold:P.dim);
       if(S.neueBestzeit) textC('NEUE BESTZEIT',80,P.gold);
       const crew=ladeCrew();
       textC(crew.length?'MIT DABEI: '+crew.join(', '):'GANZ ALLEIN DURCH DIE NACHT',94,P.neon2);
-      textC('DIE NACHT IST VORBEI.',108,P.dim);
+      textC('SPIEL NOCHMAL - ANDERE ENTSCHEIDUNGEN, ANDERE NACHT.',108,P.dim);
       if(Math.floor(S.t*2)%2===0)
         textGlowC(IS_TOUCH?'TIPPEN: GANZES SPIEL NEU STARTEN':'E: GANZES SPIEL NEU STARTEN',132,P.gruen,1);
       text(IS_TOUCH?'ODER TIPPEN (SPR): NUR DIESES LEVEL':'ODER LEERTASTE: NUR DIESES LEVEL',
@@ -872,6 +880,99 @@ function bildschirme(){
   }
 }
 
+
+
+/* ==========================================================================
+   VOR DEM KAMPF
+   Wer Marvin im Club gesehen hat, trifft ihn wieder, und er weiss noch,
+   wie es lief. Wer nicht, trifft einen Fremden, der seit dem Club hinter
+   einem her ist.
+   ========================================================================== */
+const anfuehrerName=()=>flag('marvinKennt')?'MARVIN':'DER ANFUEHRER';
+function vorDemKampf(){
+  const wer=anfuehrerName();
+  const auftakt =
+      flag('clubKloppeGewonnen') ? 'Du schon wieder. Im Club hattest du Glueck.'
+    : flag('clubGekniffen')      ? 'Der, der im Club gekniffen hat. Diesmal laeufst du nicht.'
+    : flag('marvinRueckzug')     ? 'Deine Jungs sehen muede aus. Heute Nacht zaehlt das.'
+    : flag('marvinKennt')        ? 'Wir haben noch was offen, du und ich.'
+    :                              'Ihr lauft seit dem Club durch unsere Strasse.';
+  return {
+    start:{ wer, text:auftakt,
+      wahl:[
+        { txt:'Ich hab Angst. Aber ich geh nicht weg.', wenn:{flag:'angstZugegeben'}, geh:'ehrlich' },
+        /* Der seltene Weg: wer mutig UND angesehen ist, redet ihn runter.
+           Ohne Kampf nach Hause ist ein eigenes Ende. */
+        { txt:'Heute nicht. Geh nach Hause, Marvin.', wenn:{mut:60, ruf:65, flag:'marvinKennt'}, geh:'frieden' },
+        { txt:'Lass uns einfach vorbei.',              geh:'lacht' },
+        { txt:'Dann los.',                             geh:'@kampf', tu:{mut:2} },
+      ], zeit:9, standard:3 },
+    ehrlich:{ wer, text:'...Das hat noch keiner zu mir gesagt. Egal. Komm.',
+      tu:{flag:'mutigerKopf'}, geh:'@kampf' },
+    lacht:{ wer, text:'Vorbei. Klar. Erst durch mich.', geh:'@kampf' },
+    frieden:{ wer, text:'...Weisst du was. Du hast recht. Ich bin auch muede.',
+      tu:{flag:'friedlich', ruf:10}, geh:'@frieden' },
+  };
+}
+function starteKonfrontation(){
+  /* Nur fuer diesen Versuch - sonst zaehlt ein Sieg von vorhin auch fuers
+     Ende nach einer Niederlage jetzt. */
+  ['fightGewonnen','fightVerloren','fightFrieden','friedlich','mutigerKopf'].forEach(f=>setzeFlag(f,false));
+  S.modus='reden';
+  starteGespraech(vorDemKampf(),'start',e=>{
+    if(e==='@frieden'){
+      setzeFlag('fightFrieden');
+      S.modus='spiel'; meldung(anfuehrerName()+' GEHT EINFACH',2.4);
+      zeigeHinweis('JETZT NACH HAUSE',3);
+      return;
+    }
+    starteGrossenKampf();
+  });
+}
+
+/* ==========================================================================
+   DIE ENDEN
+   Drei Wege (Level 7) mal drei Ausgaenge des Kampfes. Dazu Zeilen aus der
+   ganzen Nacht - wer schreibt, wem man geholfen hat, wer fehlt.
+   ========================================================================== */
+const ENDE_WEG={ heim:'HEIM', weiter:'WEITERZIEHEN', sonne:'SONNENAUFGANG' };
+const ENDE_KAMPF={ gewonnen:'MIT SCHRAMMEN', verloren:'MIT BLAUEM AUGE', frieden:'OHNE EINEN SCHLAG' };
+const endeWeg=()=>flag('endeSonne')?'sonne':flag('endeWeiter')?'weiter':'heim';
+const endeKampf=()=>flag('fightFrieden')?'frieden':flag('fightGewonnen')?'gewonnen':'verloren';
+const endeTitel=()=>ENDE_WEG[endeWeg()]+' - '+ENDE_KAMPF[endeKampf()];
+
+function baueEnde(){
+  const z=[{ d:1.0, txt:'' }];
+  const weg=endeWeg();
+  if(weg==='heim') z.push(
+    { d:2.4, txt:'*DU SCHLIESST LEISE DIE HAUSTUER*' },
+    { d:2.2, txt:'DRAUSSEN WIRD ES HELL. ABER DU BIST DRIN.' });
+  else if(weg==='weiter') z.push(
+    { d:2.4, txt:'IHR LAUFT AN DEINEM HAUS VORBEI.' },
+    { d:2.4, txt:'IRGENDWO HAT NOCH WAS OFFEN. IRGENDWO IST IMMER WAS OFFEN.' });
+  else z.push(
+    { d:2.4, txt:'OBEN AUF DER BRUECKE SETZT IHR EUCH HIN.' },
+    { d:2.6, txt:'DIE SONNE KOMMT. KEINER SAGT WAS.' });
+
+  const k=endeKampf();
+  if(k==='frieden') z.push({ d:2.4, txt:anfuehrerName()+' IST EINFACH GEGANGEN. DAS REICHT.' });
+  else if(k==='gewonnen') z.push({ d:2.4, txt:'DEINE HAND TUT WEH. SIE WIRD HEILEN.' });
+  else z.push({ d:2.4, txt:'DEIN AUGE WIRD MORGEN BLAU SEIN. DU WIRST ES ERKLAEREN MUESSEN.' });
+
+  /* Wer schreibt - aus Level 5 und dem Traum in Level 6 */
+  for(const n of ['mia','sophie','kira']){
+    const name=n.toUpperCase();
+    if(flag('versprochen_'+n)) z.push({ d:2.6, txt:'DEIN HANDY VIBRIERT. '+name+': BIST DU GUT HEIMGEKOMMEN?' });
+    else if(flag('schreibt_'+n)) z.push({ d:2.6, txt:'EINE NACHRICHT VON '+name+'. DU LIEST SIE ERST MITTAGS.' });
+  }
+  if(!flag('handyZurueck')) z.push({ d:2.4, txt:'DEIN HANDY LIEGT NOCH IM LEHRERZIMMER. MONTAG.' });
+  if(flag('neleGeholfen'))  z.push({ d:2.2, txt:'NELE IST AUCH HEIMGEKOMMEN.' });
+  if(flag('tobiDabei'))     z.push({ d:2.2, txt:'TOBI HAT JETZT EINE NEUE CREW.' });
+  const crew=ladeCrew();
+  z.push({ d:2.4, txt:crew.length?'MIT DABEI: '+crew.join(', '):'GANZ ALLEIN DURCH DIE NACHT.' });
+  z.push({ d:2.6, txt:'ENDE: '+endeTitel() });
+  return z;
+}
 
 /* ==========================================================================
    DER GROSSE FIGHT
@@ -937,15 +1038,19 @@ function starteGrossenKampf(){
   S.modus='kampf';
   document.documentElement.classList.add('kampf');
   setzeTiefenband(KAMPF8.tiefeHinten,KAMPF8.tiefeVorne);
-  S.spielerK=kaempfer({ x:70, t:0.5, blick:1, hp:3, maxHp:3 });
+  /* Wer im Traum die Angst zugegeben und es ihm gesagt hat, steht
+     fester. Ein Leben mehr ist viel in diesem Kampf - gemessen. */
+  const leben=flag('mutigerKopf')?4:3;
+  S.spielerK=kaempfer({ x:70, t:0.5, blick:1, hp:leben, maxHp:leben });
   S.gegner=kaempfer({ x:210, t:0.5, blick:-1, art:'anfuehrer',
     hp:KAMPF8.anfuehrerHp, maxHp:KAMPF8.anfuehrerHp,
     reichweite:KAMPF8.anfuehrerReich, pauseT:1.2, vorZustand:'frei' });
   S.handlanger=[]; S.flaschen=[]; S.arena=0; S.arenaWechselT=0;
   S.hilfeT=KAMPF8.hilfeIntervall; S.hilfeText='';
   S.blockAn=false;
-  zeigeHinweis('E SCHLAGEN - SHIFT BLOCKEN - LEER AUSWEICHEN',4);
-  meldung('DIE HABEN AUF EUCH GEWARTET',2);
+  zeigeHinweis(flag('taxiTipp')?'DER TAXIFAHRER HATTE RECHT: STEHENBLEIBEN, BLOCKEN, KONTERN'
+                              :'E SCHLAGEN - SHIFT BLOCKEN - LEER AUSWEICHEN',4);
+  meldung(anfuehrerName()==='MARVIN'?'MARVIN UND SEINE LEUTE':'DIE HABEN AUF EUCH GEWARTET',2);
 }
 
 function wechsleArena(neu){
@@ -978,7 +1083,9 @@ function naechsterAngriff8(g){
 }
 function starteAngriff8(g,art){
   const ph=phase8();
-  const k=1-(ph-1)*KAMPF8.windupKuerzerProPhase;
+  /* Mit dem Tipp vom Taxifahrer kennt man sein Muster - sein Ausholen
+     ist eine Spur laenger lesbar. */
+  const k=(1-(ph-1)*KAMPF8.windupKuerzerProPhase)*(flag('taxiTipp')?1.15:1);
   g.art=art;
   g.ausholenDauer=(art==='schwung'?KAMPF8.schwungWindup
                   :art==='jab'?KAMPF8.jabWindup
@@ -1218,7 +1325,7 @@ function hudKampf8(){
   const gw=70,gx=Math.round(W/2-gw/2);
   ctx.fillStyle='#000a'; ctx.fillRect(gx-1,5,gw+2,6);
   ctx.fillStyle=P.rot; ctx.fillRect(gx,6,Math.round(gw*Math.max(0,g.hp)/g.maxHp),4);
-  textC('DER ANFUEHRER',14,P.dim);
+  textC(anfuehrerName(),14,P.dim);
   const ph='PHASE '+phase8()+'  '+ARENEN[S.arena].name;
   text(ph,W-textW(ph)-6,6,phase8()>1?P.gold:P.dunkel);
 
