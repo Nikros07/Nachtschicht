@@ -105,11 +105,14 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181638"></script>
-<script src="nacht/bild.js?v=202609181638"></script>
-<script src="nacht/ton.js?v=202609181638"></script>
-<script src="nacht/stand.js?v=202609181638"></script>
-<script src="nacht/mobil.js?v=202609181638"></script>
+<script src="nacht/kern.js?v=202609181645"></script>
+<script src="nacht/bild.js?v=202609181645"></script>
+<script src="nacht/ton.js?v=202609181645"></script>
+<script src="nacht/stand.js?v=202609181645"></script>
+<script src="nacht/welt.js?v=202609181645"></script>
+<script src="nacht/nacht.js?v=202609181645"></script>
+<script src="nacht/dialog.js?v=202609181645"></script>
+<script src="nacht/mobil.js?v=202609181645"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 6: AFTERHOUR
@@ -162,6 +165,25 @@ const TUNE = {
   /* (5) SUCHEN UND REDEN */
   reichweite:      15,
   suchDauer:        0.6,
+  redeTiefe:       0.32,
+
+  /* (6) TIEFE */
+  tiefeHinten:    120,
+  tiefeVorne:     152,
+  tiefeWelt:       46,
+  tiefeTempo:     1.0,
+
+  /* (7) ERSCHOEPFUNG - der eigentliche Gegner in diesem Level.
+     Gemessen am Weg: 1600 Pixel bei ~90 px/s sind 18 Sekunden reines
+     Laufen, dazu die Schleife im Raum 101 und die Wege zurueck. Mit diesen
+     Werten reicht eine volle Kondition knapp fuer eine Strecke - wer
+     troedelt oder voll ist, braucht die Sofas. */
+  konditionAbbau:   1.0,   // pro Sekunde, immer
+  konditionPegel:   1.4,   // pro Sekunde zusaetzlich bei Pegel 100
+  konditionRennen:  0.5,   // zusaetzlich bei vollem Tempo
+  sofaErholung:    24,     // pro Sekunde auf dem Sofa
+  aufwachenMit:    45,     // Kondition nach dem Wegknicken
+  schwereAb:       30,     // darunter wird man langsamer und das Bild zieht zu
 };
 
 const P = {
@@ -210,6 +232,8 @@ const SPR={
   tisch: ['zzzzzzzz','z......z','dd....dd','d......d','d......d','d......d'],
   regal: ['zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','zbbbbbz','zzzzzzz','ddddddd'],
   tafel: ['zzzzzzzzzz','zjjjjjjjjz','zj.w..w.jz','zjjjjjjjjz','zzzzzzzzzz'],
+  sofa:  ['.bbbbbbbbbb.','bddddddddddb','bddddddddddb','bbbbbbbbbbbb','b..........b'],
+  wand:  ['zz','zz','zz','zz','zz','zz','zz','zz','zz','zz','zz','zz','zz','zz'],
   tuer:  ['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz',
           'zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
 };
@@ -257,29 +281,32 @@ const BODEN=142;
    Die Unordnung liegt im Bild, nicht in der Navigation: immer nur
    links oder rechts, nie eine Sackgasse.
    ========================================================================== */
-const LEVEL_B=900;
+const LEVEL_B=1600;
 const ORTE=[
-  { von:0,   bis:120, name:'FLUR',       wand:'#241c30', boden:'#170f20' },
-  { von:120, bis:300, name:'RAUM 101',   wand:'#2c2440', boden:'#1c1730' },
-  { von:300, bis:460, name:'CHEMIE',     wand:'#1d3028', boden:'#12201a' },
-  { von:460, bis:620, name:'RAUM 101',   wand:'#332a4a', boden:'#221c38', wiederholt:true },
-  { von:620, bis:780, name:'BIBLIOTHEK', wand:'#302038', boden:'#1f1526' },
-  { von:780, bis:900, name:'FLUR',       wand:'#241c30', boden:'#170f20' },
+  { von:0,    bis:140,  name:'FLUR',        wand:'#241c30', boden:'#170f20' },
+  { von:140,  bis:340,  name:'RAUM 101',    wand:'#2c2440', boden:'#1c1730' },
+  { von:340,  bis:520,  name:'CHEMIE',      wand:'#1d3028', boden:'#12201a' },
+  { von:520,  bis:700,  name:'RAUM 101',    wand:'#332a4a', boden:'#221c38', wiederholt:true },
+  { von:700,  bis:880,  name:'TURNHALLE',   wand:'#2a2030', boden:'#1d1624' },
+  { von:880,  bis:1080, name:'BIBLIOTHEK',  wand:'#302038', boden:'#1f1526' },
+  { von:1080, bis:1260, name:'KELLER',      wand:'#120e16', boden:'#0c0910' },
+  { von:1260, bis:1440, name:'EINE KUECHE', wand:'#2e2a22', boden:'#201c16' },
+  { von:1440, bis:1600, name:'FLUR',        wand:'#241c30', boden:'#170f20' },
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 const GLITCH_NAMEN=['RAUM ???','????','FALSCH.','DAS HIER NICHT.'];
 const raumName=o=>Math.sin(S.t*3+o.von)>0.985?pick(GLITCH_NAMEN):o.name;
 
-/* Erinnerungen zum Finden - feste Plaetze, keine Zufallssuche.
-   Ein surreales Level, das ZUSAETZLICH random ist, waere nicht mehr lesbar. */
+/* Erinnerungen zum Finden - feste Plaetze, keine Zufallssuche. Ein
+   surreales Level, das ZUSAETZLICH random ist, waere nicht mehr lesbar. */
 const DINGE=[
-  { x:150, art:'spind',      moebel:'spind' },
-  { x:380, art:'labortisch', moebel:'tisch' },
-  { x:700, art:'buecher',    moebel:'regal' },
+  { x:200, t:0.10, art:'spind',      moebel:'spind' },
+  { x:430, t:0.14, art:'labortisch', moebel:'tisch' },
+  { x:960, t:0.08, art:'buecher',    moebel:'regal' },
 ];
 const ERINNERUNGEN={
   spind:      'DU UND MORITZ. ZU SPAET WIE IMMER.',
-  labortisch: 'EIN FEUERALARM. ECHT ODER NICHT.',
+  labortisch: 'DER FEUERALARM. DU WARST DAS.',
   buecher:    'HIER HAST DU MAL GESCHLAFEN. IM UNTERRICHT.',
 };
 const AUFGABEN=[
@@ -289,19 +316,145 @@ const AUFGABEN=[
 ];
 const alleErinnerungen=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
 
-/* Echos - Figuren aus Level 1, aber haengengeblieben. Reine Atmosphaere,
-   nie ein Hindernis, immer derselbe Satz. */
+/* Sofas: der einzige Ort, an dem die Erschoepfung zurueckgeht - und der
+   Punkt, an dem man nach dem Wegknicken aufwacht. */
+const SOFAS=[ { x:70, t:0.16 }, { x:790, t:0.12 }, { x:1340, t:0.18 } ];
+
+/* TRAUMLOGIK. Eine Regel, die man lernen kann: am Ende des zweiten
+   Raum 101 steht eine Wand. Wer weitergeht, steht wieder am Anfang
+   desselben Raums - bis man weiss, was im Chemieraum passiert ist. */
+const SCHLEIFE={ x:698, zurueck:540, braucht:'labortisch' };
+
+/* Tueren an der Rueckwand. Eine davon luegt. */
+const TUEREN=[
+  { x:1056, t:0.05, name:'RAUS', ziel:100,  luegt:true },
+  { x:1420, t:0.05, name:'FLUR', ziel:1470, luegt:false },
+];
+
+/* Echos - Figuren aus Level 1, haengengeblieben. Atmosphaere. */
 const ECHOS=[
-  { id:'hausmeister', x:60,  name:'ECHO: HAUSMEISTER', tint:'#6b8a5d',
+  { id:'hausmeister', x:40,   t:0.55, name:'ECHO: HAUSMEISTER', tint:'#6b8a5d',
     zeilen:['HAST DU MEINEN SCHLUESSEL GESEHEN.','HAST DU MEINEN SCHLUESSEL GESEHEN.'] },
-  { id:'lehrer', x:200, name:'ECHO: LEHRER', tint:'#5d6b8a',
+  { id:'lehrer',      x:180,  t:0.60, name:'ECHO: LEHRER',      tint:'#5d6b8a',
     zeilen:['SETZEN.','SETZEN.','SETZEN.'] },
-  { id:'direktor', x:560, name:'ECHO: DIREKTOR', tint:'#8a5d6b',
+  { id:'direktor',    x:600,  t:0.50, name:'ECHO: DIREKTOR',    tint:'#8a5d6b',
     zeilen:['ICH KOMME GLEICH VORBEI.','ICH KOMME GLEICH VORBEI.'] },
 ];
-const LEA={ x:860, name:'LEA' };
-const LEA_OFFEN=['DU SIEHST NOCH GANZ VERWASCHEN AUS.','GEH ZURUECK UND HOL DIR DEINE ERINNERUNGEN.'];
-const LEA_FERTIG=['HEY. SCHAU MICH AN.','DAS HIER IST NICHT ECHT.','ABER DU BIST ES.','KOMM. ICH BRING DICH RAUS.'];
+
+/* Die Nacht als Echo. Wer auftaucht und was er fragt, haengt an dem, was
+   heute passiert ist - die Flags aus Level 2 bis 5. Die Antworten gehen
+   ins Ende der Nacht ein. */
+const NACHTECHOS=[
+  { id:'moritz', x:270,  t:0.45, name:'MORITZ', tint:'#7fd1b0' },
+  { id:'sie',    x:1000, t:0.50, name:'',       tint:'#ff9fc8' },
+  { id:'marvin', x:1170, t:0.40, name:'',       tint:'#9a8ab8' },
+];
+const LEA={ x:1560, t:0.40, name:'LEA' };
+
+
+/* ==========================================================================
+   DIE GESPRAECHE IM TRAUM
+   ========================================================================== */
+/* Ein Baum aus einfachen Zeilen - fuer die alten Echos, die immer nur
+   denselben Satz sagen. */
+function zeilenBaum(wer,zeilen){
+  const b={};
+  zeilen.forEach((z,i)=>{ b['z'+i]={ wer, text:z, geh:i+1<zeilen.length?'z'+(i+1):'@ende' }; });
+  b.start=b.z0; return b;
+}
+
+const MORITZ_ECHO = {
+  start:{ wer:'MORITZ', text:'Hast du mich heute eigentlich gefragt, ob ich mitwill? Oder einfach entschieden?',
+    wahl:[
+      { txt:'Ich hab alle mitgenommen. Das war fuer dich.', wenn:{flag:'gruppeGross'}, geh:'gut', tu:{mag:['MORITZ',6]} },
+      { txt:'Ich wollte nur mit dir los. Nicht mit allen.', wenn:{flag:'gruppeKlein'}, geh:'gut', tu:{mag:['MORITZ',6]} },
+      { txt:'Ehrlich? Ich hab nicht drueber nachgedacht.',  geh:'ehrlich' },
+      { txt:'Du warst doch dabei. Was willst du.',          geh:'kalt', tu:{mag:['MORITZ',-6]} },
+    ], zeit:10, standard:2 },
+  gut:{ wer:'MORITZ', text:'Okay. Dann ist ja gut. Ich pass auf dich auf, wenn du gleich umkippst.',
+    tu:{flag:'traumMoritz'}, geh:'@kraft' },
+  ehrlich:{ wer:'MORITZ', text:'Wenigstens ehrlich. Das warst du schon immer.',
+    tu:{flag:'traumMoritz', mag:['MORITZ',2]}, geh:'@kraft' },
+  kalt:{ wer:'MORITZ', text:'Alles klar.', geh:'@ende' },
+};
+
+/* Sie - die aus dem Club. Welche es ist, steht im Speicherstand. */
+function sieEcho(){
+  const ja=['mia','sophie','kira'].find(n=>flag('clubJa_'+n)||flag('schreibt_'+n));
+  if(ja){
+    const name=ja.toUpperCase();
+    return { name, baum:{
+      start:{ wer:name, text:'Schreibst du mir morgen? Oder war das nur heute Nacht?',
+        wahl:[
+          { txt:'Ich schreib dir. Versprochen.',          geh:'ja',   tu:{flag:'versprochen_'+ja, mag:[name,6]} },
+          { txt:'Mal sehen.',                              geh:'mal' },
+          { txt:'Ich weiss nicht mal, ob ich mich erinnere.', geh:'nein', tu:{mut:-3} },
+        ], zeit:10, standard:1 },
+      ja:{ wer:name, text:'Dann halt dich dran.', geh:'@kraft' },
+      mal:{ wer:name, text:'Mal sehen. Klar.', geh:'@ende' },
+      nein:{ wer:name, text:'Dann erinner dich wenigstens daran.', geh:'@ende' },
+    }};
+  }
+  const abfuhr=['mia','sophie','kira'].some(n=>beziehung(n.toUpperCase())<0);
+  if(abfuhr) return { name:'DIE, DIE NEIN GESAGT HAT', baum:{
+    start:{ wer:'SIE', text:'Du hast dich nicht getraut. Und dann zu sehr.',
+      wahl:[
+        { txt:'Ja. War nicht mein Abend.',       geh:'ok', tu:{mut:5, flag:'traumEinsicht'} },
+        { txt:'Du hast mich nicht verstanden.',  geh:'@ende' },
+      ], zeit:9, standard:1 },
+    ok:{ wer:'SIE', text:'Naechstes Mal. Ehrlich gemeint.', geh:'@kraft' },
+  }};
+  return { name:'NIEMAND', baum:{
+    start:{ wer:'NIEMAND', text:'Du hast mit keinem geredet. Wolltest du ueberhaupt?',
+      wahl:[
+        { txt:'Naechstes Mal.',           geh:'ok', tu:{mut:3} },
+        { txt:'Ich war mit den Jungs da.', geh:'@ende' },
+      ], zeit:9, standard:1 },
+    ok:{ wer:'NIEMAND', text:'Das sagen alle.', geh:'@ende' },
+  }};
+}
+
+/* Marvin - oder, wenn man ihn nie gesehen hat, nur ein Schatten. Hier
+   entscheidet sich, mit welchem Kopf man ins Finale geht. */
+function marvinEcho(){
+  if(!flag('marvinKennt')) return { name:'EIN SCHATTEN', baum:{
+    start:{ wer:'SCHATTEN', text:'Ich warte am Ende der Nacht auf dich.', geh:'@ende' } }};
+  return { name:'MARVIN', baum:{
+    start:{ wer:'MARVIN', text:'Du hast Angst vor mir. Ich seh das.',
+      wahl:[
+        { txt:'Ja. Und?',                 geh:'zugegeben', tu:{mut:6, flag:'angstZugegeben'} },
+        { txt:'Nein.',     wenn:{mut:50}, geh:'hart',      tu:{mut:3} },
+        { txt:'Lass mich in Ruhe.',       geh:'@ende',     tu:{mut:-4} },
+      ], zeit:9, standard:2 },
+    zugegeben:{ wer:'MARVIN', text:'...Dann bist du ehrlicher als ich.', geh:'@kraft' },
+    hart:{ wer:'MARVIN', text:'Wir werden sehen.', geh:'@ende' },
+  }};
+}
+
+/* Lea sagt am Ende, wo man wirklich ist. */
+const LEA_BAUM = {
+  start:{ wer:'LEA', text:'Hey. Schau mich an.', geh:'zwei' },
+  zwei:{ wer:'LEA', text:'Das hier ist nicht echt. Aber du bist es.',
+    wahl:[
+      { txt:'Wo bin ich eigentlich?',       geh:'wo' },
+      { txt:'Bring mich einfach raus.',      geh:'raus' },
+    ], zeit:0 },
+  wo:{ wer:'LEA', text:'Auf der Afterhour. Du bist vor einer Stunde auf dem Sofa weggeknickt.', geh:'raus' },
+  raus:{ wer:'LEA', text:'Komm. Wir holen uns was am Spaeti.', geh:'@fertig' },
+};
+const LEA_NOCH_NICHT = {
+  start:{ wer:'LEA', text:'Du siehst noch ganz verwaschen aus. Hol dir erst deine Erinnerungen.', geh:'@ende' },
+};
+
+/* Nach einem Traumgespraech, das gut ausgeht, bekommt man Kraft zurueck -
+   das ist der Grund, mit den Echos ueberhaupt zu reden. */
+function traumEnde(e){
+  if(e==='@kraft'){
+    S.kondition=Math.min(100,S.kondition+30);
+    meldung('DU FUEHLST DICH WACHER',1.8); SFX.erledigt();
+  }
+  if(e==='@fertig') starteCutscene();
+}
 
 /* ==========================================================================
    ZUSTAND
@@ -317,9 +470,13 @@ const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return 
 
 let S={};
 function neuesSpiel(){
+  if(typeof GESPR!=='undefined') GESPR=null;
   S={
     modus:'titel', t:0, zeit:0,
     x:30, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
+    tiefe:0.5, vt:0,
+    kondition:Math.max(35,wert('kondition')), ruht:null, sofa:SOFAS[0],
+    weggeknickt:0, schwarzT:0, geredetMit:{}, schleifen:0,
     kamX:0,
     pegel: parseFloat(localStorage.getItem(PEGEL_KEY))||0,
     erledigt:{}, durchsucht:{},
@@ -333,6 +490,7 @@ function neuesSpiel(){
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
 neuesSpiel();
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
 
 /* Zwei Hilfs-Canvas fuer die Verzerrung:
    warpCV  - die Szene dieses Bildes, unverzerrt gezeichnet
@@ -349,6 +507,7 @@ function sicherTrail(reset){
    EINGABE
    ========================================================================== */
 
+let hochAn=false, runterAn=false;
 let linksAn=false, rechtsAn=false, sprungAn=false, aktionGehalten=false;
 let sprungPuffer=[], aktionPuffer=[];
 
@@ -362,6 +521,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
@@ -371,6 +531,12 @@ function druckAktion(){
 }
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
+  if(gespraechAktiv()){
+    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
+    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
+  }
+  if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
+  if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
@@ -382,9 +548,11 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
   if(['ArrowRight','KeyD'].includes(e.code)) rechtsAn=false;
+  if(['ArrowUp','KeyW'].includes(e.code)) hochAn=false;
+  if(['ArrowDown','KeyS'].includes(e.code)) runterAn=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false; });
-addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=false; });
+addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=aktionGehalten=hochAn=runterAn=false; });
 
 
 bind('tleft',['touchstart','mousedown'],()=>linksAn=true);
@@ -409,7 +577,7 @@ const INTRO=[
   { d:2.6, txt:'DAS KANN NICHT SEIN. ODER?' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; sicherTrail(true); piep(300,.12,'sine',.035); }
-function starteLevel(){ S.modus='spiel'; zeigeHinweis('FIND DEINE ERINNERUNGEN. GEH DANN ZU LEA.',4);
+function starteLevel(){ S.modus='spiel'; zeigeHinweis('FIND DEINE ERINNERUNGEN. BLEIB WACH. SOFAS HELFEN.',4);
   piep(600,.09,'sine'); setTimeout(()=>piep(900,.13,'sine'),90); }
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
@@ -429,29 +597,37 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel') return;
   if(S.modus==='intro'){ intro(dt); return; }
+  if(gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   if(S.modus==='cutscene'){ cutscene(dt); kamera(dt); return; }
   if(S.modus==='ende'){ return; }
+  if(S.modus==='schwarz'){ S.schwarzT+=dt; if(S.schwarzT>2.2) aufwachen(); return; }
 
   S.zeit+=dt;
-  /* Der Pegel baut sich hier zuegig ab - die Nacht geht ihrem Ende zu. */
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbauProSek*dt);
 
-  /* Die Sache mit dem Raum, den es schon gab */
+  /* --- Erschoepfung --- */
+  if(S.ruht){
+    S.kondition=Math.min(100,S.kondition+TUNE.sofaErholung*dt);
+    if(linksAn||rechtsAn||hochAn||runterAn||S.kondition>=100){
+      S.ruht=null; meldung(S.kondition>=100?'AUSGERUHT':'AUFGESTANDEN',1);
+    }
+    aktionPuffer.length=0; kamera(dt); return;
+  }
+  const renntAnteil=Math.min(1,Math.abs(S.vx)/TUNE.gehTempo);
+  S.kondition-=(TUNE.konditionAbbau+TUNE.konditionPegel*S.pegel/100
+               +TUNE.konditionRennen*renntAnteil)*dt;
+  if(S.kondition<=0){ S.kondition=0; wegknicken(); return; }
+
   const ort=ortBei(S.x);
   if(ort&&ort.wiederholt&&!S.wiederholungGezeigt){
     S.wiederholungGezeigt=true; zeigeHinweis('DIESEN RAUM GAB ES SCHON EINMAL',3);
   }
 
-  if(S.reden){
-    S.redeT+=dt;
-    while(aktionPuffer.length){ aktionPuffer.shift(); naechsteZeile(); }
-    kamera(dt); return;
-  }
-
   /* --- Bewegung --- */
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
   if(richtung) S.blick=richtung;
-  const langsam = S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1;
+  const langsam = (S.pegel>TUNE.langsamAb ? 1-(S.pegel-TUNE.langsamAb)/100 : 1)
+                * (S.kondition<TUNE.schwereAb ? 0.55+0.45*S.kondition/TUNE.schwereAb : 1);
   const hoechst = TUNE.gehTempo*langsam;
   const kontrolle = S.amBoden?1:TUNE.luftKontrolle;
   if(richtung){
@@ -463,9 +639,21 @@ function update(dt){
   }
   S.x+=S.vx*dt;
   S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
+  /* Tiefe ausgeschrieben - S.t ist die Spielzeit (siehe WEITER.md). */
+  const rt=(runterAn?1:0)-(hochAn?1:0);
+  S.vt+=(rt*TUNE.tiefeTempo*langsam-S.vt)*Math.min(1,14*dt);
+  S.tiefe=Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
 
-  if(S.amBoden&&Math.abs(S.vx)>12){
-    S.gehPhase+=Math.abs(S.vx)*dt*.09;
+  /* --- Die Schleife im Raum 101 --- */
+  if(S.x>SCHLEIFE.x&&S.x<SCHLEIFE.x+12&&!S.erledigt[SCHLEIFE.braucht]){
+    S.x=SCHLEIFE.zurueck; S.kamX=Math.max(0,S.x-W/2); S.schleifen++; S.blitz=.4;
+    SFX.nichts();
+    meldung(S.schleifen===1?'DIESEN RAUM GAB ES SCHON EINMAL':
+            S.schleifen===2?'SCHON WIEDER RAUM 101':'WAS IST IM CHEMIERAUM PASSIERT?',2.4);
+  }
+
+  if(S.amBoden&&tempo2D(S.vx,S.vt)>12){
+    S.gehPhase+=tempo2D(S.vx,S.vt)*dt*.09;
     const n=Math.floor(S.gehPhase);
     if(n!==S.schritte){ S.schritte=n; if(n%2===0) SFX.schritt(); }
   }
@@ -480,28 +668,92 @@ function update(dt){
   if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
-  /* --- Suchen laeuft --- */
   if(S.suchT>0){
     S.suchT-=dt;
     if(S.suchT<=0) suchErgebnis();
     kamera(dt); return;
   }
 
-  /* --- Aktion: das Naehere gewinnt, egal ob Ding oder Figur - siehe
-     Level 2 fuer die Begruendung, warum das noetig ist. --- */
   while(aktionPuffer.length){
     aktionPuffer.shift();
-    const kandidaten=[];
-    for(const e of ECHOS){ const d=Math.abs(e.x-S.x); if(d<TUNE.reichweite) kandidaten.push({typ:'echo',obj:e,d}); }
-    { const d=Math.abs(LEA.x-S.x); if(d<TUNE.reichweite) kandidaten.push({typ:'lea',obj:LEA,d}); }
-    for(const d0 of DINGE){ const d=Math.abs(d0.x-S.x); if(d<TUNE.reichweite) kandidaten.push({typ:'ding',obj:d0,d}); }
-    if(kandidaten.length){
-      kandidaten.sort((a,b)=>a.d-b.d);
-      const k=kandidaten[0];
-      if(k.typ==='ding') benutze(k.obj); else rede(k.obj,k.typ);
+    const z=naechstesZiel();
+    if(!z) continue;
+    if(z.art==='ding'){ benutze(z.obj); break; }
+    if(z.art==='sofa'){
+      S.ruht=z.obj; S.sofa=z.obj; S.vx=0; S.vt=0;
+      meldung('DU LEGST DICH KURZ HIN',1.4); break;
     }
+    if(z.art==='tuer'){
+      S.x=z.obj.ziel; S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2)); S.blitz=.6; SFX.nichts();
+      meldung(z.obj.luegt?'DAS WAR NICHT RAUS':'DURCH DIE TUER',1.8); break;
+    }
+    redeImTraum(z); break;
   }
   kamera(dt);
+}
+
+
+/* ==========================================================================
+   WAS IN REICHWEITE IST - eine Stelle fuer Aktion, Knopf und Anzeige.
+   ========================================================================== */
+function naechstesZiel(){
+  let bestes=null, d0=1e9;
+  const pruefe=(obj,art,tiefe)=>{
+    if(Math.abs(tiefe-S.tiefe)>TUNE.redeTiefe) return;
+    const d=Math.abs(obj.x-S.x);
+    if(d<TUNE.reichweite&&d<d0){ bestes={art,obj}; d0=d; }
+  };
+  for(const d of DINGE) pruefe(d,'ding',d.t);
+  for(const so of SOFAS) pruefe(so,'sofa',so.t);
+  for(const t of TUEREN) pruefe(t,'tuer',t.t);
+  for(const e of ECHOS) pruefe(e,'echo',e.t);
+  for(const e of NACHTECHOS) if(!S.geredetMit[e.id]) pruefe(e,'nachtecho',e.t);
+  pruefe(LEA,'lea',LEA.t);
+  return bestes;
+}
+
+function redeImTraum(z){
+  S.vx=0; S.vt=0; S.ruht=null; SFX.reden();
+  if(z.art==='echo'){ starteGespraech(zeilenBaum(z.obj.name,z.obj.zeilen),'start',traumEnde); return; }
+  if(z.art==='lea'){
+    starteGespraech(alleErinnerungen()?LEA_BAUM:LEA_NOCH_NICHT,'start',traumEnde); return;
+  }
+  const e=z.obj;
+  S.geredetMit[e.id]=true;
+  let baum;
+  if(e.id==='moritz') baum=MORITZ_ECHO;
+  else if(e.id==='sie') baum=sieEcho().baum;
+  else baum=marvinEcho().baum;
+  starteGespraech(baum,'start',traumEnde);
+}
+/* Wer das Echo ist, steht erst zur Laufzeit fest - der Name haengt an den
+   Flags aus dem Club. */
+const echoName=e=>e.id==='moritz'?'MORITZ':e.id==='sie'?sieEcho().name:marvinEcho().name;
+
+/* Wegknicken. Kein Game Over - man wacht am letzten Sofa auf, Zeit ist
+   vergangen, und der Pegel ist ein Stueck runter. */
+function wegknicken(){
+  S.modus='schwarz'; S.schwarzT=0; S.weggeknickt++; S.vx=0; S.vt=0;
+  SFX.nichts();
+}
+function aufwachen(){
+  S.modus='spiel'; S.x=S.sofa.x+8; S.tiefe=S.sofa.t+0.1;
+  S.kondition=TUNE.aufwachenMit; S.pegel=Math.max(0,S.pegel-10);
+  S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
+  meldung(S.weggeknickt>1?'SCHON WIEDER WEGGEKNICKT':'DU BIST WEGGEKNICKT',2.2);
+  zeigeHinweis('AUF DEM SOFA AUFGEWACHT',2.4);
+}
+
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
+  if(S.modus==='pause'||S.modus==='schwarz') return {aktion:null, zwei:null};
+  if(S.ruht)               return {aktion:'AUFSTEHEN', zwei:null};
+  const z=naechstesZiel();
+  const txt=!z?null:{ding:S.durchsucht[z.obj.art]?'LEER':'SUCHEN',sofa:'AUSRUHEN',tuer:'TUER',
+                     echo:'REDEN',nachtecho:'REDEN',lea:'LEA'}[z.art];
+  return {aktion:txt, zwei:'SPRUNG'};
 }
 
 /* ---- Erinnerungen suchen ---- */
@@ -524,27 +776,6 @@ function suchErgebnis(){
   SFX.nichts(); meldung(pick(['NICHTS','NUR STAUB','LEER','KALT']),1);
 }
 
-/* ---- Reden ---- */
-function rede(p,typ){
-  S.reden=p; S.redeZeile=0; S.redeT=0; S.vx=0; SFX.reden();
-  if(typ==='lea'){
-    if(alleErinnerungen()){ p._zeilen=LEA_FERTIG; p._loest=true; }
-    else {
-      const fehlt=AUFGABEN.length-AUFGABEN.filter(a=>S.erledigt[a.id]).length;
-      p._zeilen=[...LEA_OFFEN,'NOCH '+fehlt+' ERINNERUNGEN FEHLEN']; p._loest=false;
-    }
-  } else { p._zeilen=p.zeilen; p._loest=false; }
-}
-function naechsteZeile(){
-  const p=S.reden;
-  S.redeZeile++;
-  if(S.redeZeile>=p._zeilen.length){
-    const loest=p._loest; S.reden=null;
-    if(loest) starteCutscene();
-    return;
-  }
-  SFX.reden();
-}
 
 /* ---- Kamera ---- */
 function kamera(dt){
@@ -557,18 +788,19 @@ function kamera(dt){
    ========================================================================== */
 const SZENEN=[
   { d:1.0, txt:'' },
-  { d:2.4, txt:'LEA: HEY. SCHAU MICH AN.' },
-  { d:2.2, txt:'LEA: DAS HIER IST NICHT ECHT.' },
-  { d:2.2, txt:'DU: ABER ES FUEHLT SICH ECHT AN.' },
-  { d:2.4, txt:'LEA: ICH WEISS. KOMM MIT.' },
-  { d:1.6, txt:'' },
-  { d:2.6, txt:'DIE FLURE WERDEN DUENNER.' },
-  { d:2.6, txt:'LEA BLEIBT DIE GANZE NACHT KLAR.' },
+  { d:2.4, txt:'DU MACHST DIE AUGEN AUF.' },
+  { d:2.4, txt:'EIN SOFA. EINE FREMDE WOHNUNG. MUSIK AUS DER KUECHE.' },
+  { d:2.4, txt:'LEA SITZT NEBEN DIR UND GRINST.' },
+  { d:2.4, txt:'LEA: GUTEN MORGEN. ES IST HALB VIER.' },
+  { d:2.6, txt:'LEA: DIE ANDEREN SIND SCHON UNTEN. SPAETI.' },
   { d:2.4, txt:'LEVEL 6 GESCHAFFT' },
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; SFX.sieg(); }
 function levelGeschafft(){
   speichereCrew('LEA');
+  /* Wie wach man aus der Afterhour rauskommt, traegt man in den Heimweg. */
+  setzeWert('kondition',Math.round(S.kondition));
+  setzeKapitel(7);
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -638,89 +870,82 @@ function zeichneFlur(){
   ctx.translate(-kx,0);
 
   for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,BODEN-20);
+    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,TIEFE.hinten-20);
     ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,BODEN-20);
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,BODEN,o.bis-o.von,H-BODEN);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,BODEN,o.bis-o.von,1);
-    ctx.fillStyle='#00000033';
-    for(let x=o.von;x<o.bis;x+=14) ctx.fillRect(x,BODEN+5,7,1);
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
+    ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
+    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
     text(raumName(o),o.von+6,26,'#ffffff18');
   }
-
   /* Dieselbe Tafel, zweimal - der Raum wiederholt sich absichtlich */
-  sprite(SPR.tafel,260,BODEN-30);
-  sprite(SPR.tafel,490,BODEN-30);
-
-  /* Tuer am Ende - rein optisch, LEA ist der eigentliche Ausgang */
-  sprite(SPR.tuer,880,BODEN-12);
-  text('AUSGANG',880+4-textW('AUSGANG')/2,BODEN-20,alleErinnerungen()?P.gold:P.dunkel);
-
-  /* Erinnerungsstuecke */
-  for(const d of DINGE){
-    const rows=SPR[d.moebel]; if(!rows) continue;
-    const y=BODEN-rows.length;
-    outline(rows,d.x,y,1,.5); sprite(rows,d.x,y);
+  sprite(SPR.tafel,260,TIEFE.hinten-34);
+  sprite(SPR.tafel,640,TIEFE.hinten-34);
+  /* Die Wand am Ende des zweiten Raum 101 - sichtbar, solange sie gilt */
+  if(!S.erledigt[SCHLEIFE.braucht]){
+    ctx.globalAlpha=.35+Math.sin(S.t*3)*.15;
+    for(let y=TIEFE.hinten-10;y<H;y+=14) sprite(SPR.wand,SCHLEIFE.x+4,y-14);
+    ctx.globalAlpha=1;
   }
 
-  /* Echos - verwaschene Silhouetten */
-  for(const e of ECHOS){
-    const rows=SPR.steh, y=BODEN-rows.length;
-    outline(rows,e.x-3,y,1,.4);
-    sprite(rows,e.x-3,y,1,e.tint,.8);
-    text(e.name,e.x+2-textW(e.name)/2,y-9,P.dim);
-  }
+  const liste=[];
+  for(const d of DINGE){ const rows=SPR[d.moebel];
+    liste.push({t:d.t, mal:()=>{ const y=bodenY(d.t)-rows.length;
+      outline(rows,d.x,y,1,.5); sprite(rows,d.x,y,1,S.durchsucht[d.art]?'#3a3350':null); }}); }
+  for(const so of SOFAS) liste.push({t:so.t, mal:()=>{
+    const y=bodenY(so.t)-SPR.sofa.length; sprite(SPR.sofa,so.x-6,y);
+    if(S.ruht===so){ const rows=SPR.fall; spriteFlip(rows,so.x-4,y-6); } }});
+  for(const tu of TUEREN) liste.push({t:tu.t, mal:()=>{
+    const y=bodenY(tu.t)-SPR.tuer.length; sprite(SPR.tuer,tu.x-4,y);
+    text(tu.name,tu.x-textW(tu.name)/2,y-8,P.dim); }});
+  for(const e of ECHOS) liste.push({t:e.t, mal:()=>{
+    const rows=SPR.steh, y=bodenY(e.t)-rows.length;
+    outline(rows,e.x-3,y,1,.4); sprite(rows,e.x-3,y,1,e.tint,.8);
+    if(Math.abs(e.x-S.x)<60) text(e.name,e.x+2-textW(e.name)/2,y-9,P.dim); }});
+  for(const e of NACHTECHOS){ if(S.geredetMit[e.id]) continue;
+    liste.push({t:e.t, mal:()=>{
+      const rows=SPR.steh, y=bodenY(e.t)-rows.length+Math.round(Math.sin(S.t*2+e.x)*1);
+      sprite(rows,e.x-3,y,1,e.tint,.7);
+      if(Math.abs(e.x-S.x)<70){ const n=echoName(e); text(n,e.x+2-textW(n)/2,y-9,e.tint); } }}); }
+  liste.push({t:LEA.t, mal:()=>{
+    const rows=SPR.lea, y=bodenY(LEA.t)-rows.length;
+    outline(rows,LEA.x-3,y,1,.7); sprite(rows,LEA.x-3,y);
+    textGlow('LEA',LEA.x+2-textW('LEA')/2,y-9,P.neon2); }});
 
-  /* LEA - die einzige klare Gestalt hier drin */
-  { const rows=SPR.lea, y=BODEN-rows.length;
-    outline(rows,LEA.x-3,y,1,.7);
-    sprite(rows,LEA.x-3,y);
-    textGlow('LEA',LEA.x+2-textW('LEA')/2,y-9,P.neon2); }
-
-  /* Spieler */
-  let rows;
-  if(S.suchT>0) rows=SPR.suchen;
-  else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
-  else if(Math.abs(S.vx)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
-  else rows=SPR.steh;
-  outline(rows,S.x-3,S.y-rows.length,1,.6);
-  if(S.blick<0) spriteFlip(rows,S.x-3,S.y-rows.length); else sprite(rows,S.x-3,S.y-rows.length);
-  ctx.globalAlpha=.28; ctx.fillStyle='#000';
-  ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
-
+  if(!S.ruht&&S.modus!=='schwarz') liste.push({t:S.tiefe, mal:()=>{
+    let rows;
+    if(S.suchT>0) rows=SPR.suchen;
+    else if(!S.amBoden) rows=S.vy<0?SPR.sprung:SPR.fall;
+    else if(tempo2D(S.vx,S.vt)>12) rows=SPR.geh[Math.floor(S.gehPhase)%4];
+    else rows=SPR.steh;
+    const versatz=BODEN-bodenY(S.tiefe), y=S.y-versatz-rows.length;
+    ctx.globalAlpha=.28; ctx.fillStyle='#000';
+    ctx.fillRect(Math.round(S.x-3),Math.round(bodenY(S.tiefe)),7,1); ctx.globalAlpha=1;
+    outline(rows,S.x-3,y,1,.6);
+    if(S.blick<0) spriteFlip(rows,S.x-3,y); else sprite(rows,S.x-3,y);
+  }});
+  zeichneNachTiefe(liste);
   ctx.restore();
 
-  ctx.globalAlpha=.5;
+  /* Erschoepfung zieht das Bild von den Raendern zu */
+  const muede=Math.max(0,1-S.kondition/TUNE.schwereAb);
+  ctx.globalAlpha=Math.min(1,.5+muede*.5);
   ctx.drawImage(verlauf('vig',W,H,g=>{
     const gr=g.createRadialGradient(W/2,H*.55,44,W/2,H*.55,W*.6);
     gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,1)');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
+  if(muede>0){ ctx.globalAlpha=muede*.45*(0.6+0.4*Math.sin(S.t*1.3)); ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); }
   ctx.globalAlpha=1;
 }
 
 /* ---- Scharfe Overlay-Ebene: alles was man bedienen kann, bleibt lesbar,
    auch wenn die Welt darunter gerade stark wabert. ---- */
 function zeichnePrompts(){
-  if(S.modus!=='spiel'||S.reden||S.suchT>0) return;
+  if(S.modus!=='spiel'||S.suchT>0||S.ruht||gespraechAktiv()) return;
   if(Math.floor(S.t*4)%2!==0) return;
-  const kx=Math.round(S.kamX);
-  for(const d of DINGE){
-    if(Math.abs(d.x-S.x)>=TUNE.reichweite) continue;
-    const rows=SPR[d.moebel]; const sx=d.x-kx, sy=BODEN-(rows?rows.length:8)-9;
-    if(sx<-10||sx>W+10) continue;
-    const t=S.durchsucht[d.art]?'OK':'E';
-    text(t,sx-textW(t)/2,sy,S.durchsucht[d.art]?P.dunkel:P.gold);
-  }
-  for(const e of ECHOS){
-    if(Math.abs(e.x-S.x)>=TUNE.reichweite) continue;
-    const sx=e.x+2-kx, sy=BODEN-SPR.steh.length-9;
-    if(sx<-10||sx>W+10) continue;
-    text('E',sx,sy,P.gold);
-  }
-  if(Math.abs(LEA.x-S.x)<TUNE.reichweite){
-    const sx=LEA.x+2-kx, sy=BODEN-SPR.lea.length-9;
-    text('E',sx,sy,P.gold);
-  }
+  const z=naechstesZiel(); if(!z) return;
+  const sx=Math.round(z.obj.x-S.kamX), sy=Math.round(bodenY(z.obj.t))-26;
+  const t=z.art==='ding'&&S.durchsucht[z.obj.art]?'OK':'E';
+  text(t,sx-textW(t)/2,sy,t==='OK'?P.dunkel:P.gold);
 }
 
 /* ---- HUD ---- */
@@ -735,6 +960,15 @@ function hud(){
   const zeitStr=Math.floor(S.zeit/60)+':'+String(Math.floor(S.zeit%60)).padStart(2,'0');
   text(zeitStr,W-textW(zeitStr)-6,6,P.dunkel);
 
+  /* Wachheit - der eigentliche Gegner in diesem Level */
+  { const kw=54, kx=W-kw-6, ky=15, k=S.kondition/100;
+    ctx.fillStyle='#000a'; ctx.fillRect(kx-2,ky-2,kw+4,7);
+    ctx.fillStyle='#2a2440'; ctx.fillRect(kx,ky,kw,3);
+    const knapp=S.kondition<TUNE.schwereAb;
+    ctx.fillStyle=knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.neon2);
+    ctx.fillRect(kx,ky,Math.round(kw*k),3);
+    text(S.ruht?'AUSRUHEN':'WACH',kx+kw-textW(S.ruht?'AUSRUHEN':'WACH'),ky+6,P.dunkel); }
+
   let y=16;
   for(const a of AUFGABEN){
     const ok=!!S.erledigt[a.id];
@@ -743,21 +977,15 @@ function hud(){
     y+=8;
   }
   if(alleErinnerungen()&&Math.floor(S.t*2)%2===0) textC('GEH ZU LEA',H-42,P.gold);
+  zeichneGespraech();
+  if(S.modus==='schwarz'){ ctx.fillStyle=`rgba(0,0,0,${Math.min(1,S.schwarzT*1.5).toFixed(3)})`;
+    ctx.fillRect(0,0,W,H); if(S.schwarzT>0.8) textC('...',H/2,P.dunkel); }
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
     textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
 
-  if(S.reden){
-    const p2=S.reden;
-    ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-44,W,44);
-    ctx.fillStyle=P.neon; ctx.fillRect(0,H-44,W,1);
-    text(p2.name,8,H-38,P.neon2);
-    const zeile=p2._zeilen[S.redeZeile]||'';
-    textC(zeile,H-24,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E',W-12,H-12,P.dunkel);
-  }
 }
 
 /* ---- Bildschirme ---- */

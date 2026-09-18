@@ -75,6 +75,13 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   kleine Schlägerei und der Rausschmiss. Bäume nachgemessen: ein Ja kommt bei
   etwa 5–15 % der möglichen Gesprächswege heraus, betrunken hat man bei Kira
   keine Chance.
+- **Level 6 (Afterhour)**: Erschöpfung als Gegner (Kondition fällt, Sofas
+  helfen, bei null wegknicken und am Sofa aufwachen, Wert geht an Level 7/8).
+  Traumlogik: Raum 101 wiederholt sich, bis die Chemie-Erinnerung gefunden
+  ist. Eine Tür „RAUS“ lügt. Echos der Nacht: Moritz, das Mädchen aus dem
+  Club (oder die Abfuhr oder niemand) und Marvin. Antworten setzen Flags fürs
+  Ende (`versprochen_*`, `angstZugegeben`, `traumMoritz`). Lea verrät, dass
+  man auf dem Sofa der Afterhour weggeknickt ist.
 - **Level 3 (Nachtbus)**: drei Waggons, Sitzblöcke, Kontrolleure verfolgen,
   Fahrgäste mit Gesprächen, Ticketautomat, Notbremse, erste Kloppe.
 
@@ -97,7 +104,7 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-**Level 6 (Afterhour)** ist als nächstes dran, danach Level 7 (Späti).
+**Level 7 (Späti)** ist als nächstes dran, danach Level 8 (Heimweg, Enden).
 
 Offen aus Level 1, wenn Zeit ist:
 
