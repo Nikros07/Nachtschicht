@@ -56,7 +56,10 @@ function betrete(name){
   wirke(k.tu);
   GESPR.knoten=k; GESPR.name=name; GESPR.gewaehlt=0; GESPR.tippT=0;
   GESPR.wahlen=(k.wahl||[]).filter(w=>bedingungErfuellt(w.wenn));
-  GESPR.zeitRest=(k.zeit&&GESPR.wahlen.length)?k.zeit:0;
+  /* Bedenkzeit nach Schwierigkeit - auf LOCKER anderthalbmal so lang. */
+  const zf=(typeof schwer==='function')?schwer().zeit:1;
+  GESPR.zeitGesamt=k.zeit?k.zeit*zf:0;
+  GESPR.zeitRest=(k.zeit&&GESPR.wahlen.length)?GESPR.zeitGesamt:0;
 }
 
 function starteGespraech(baum,start='start',fertig=null){
@@ -115,7 +118,7 @@ function zeichneGespraech(){
 
   /* Zeitbalken - nur wenn der Knoten Zeitdruck hat */
   if(GESPR.zeitRest>0&&k.zeit){
-    const bw=Math.round((W-16)*(GESPR.zeitRest/k.zeit));
+    const bw=Math.round((W-16)*(GESPR.zeitRest/(GESPR.zeitGesamt||k.zeit)));
     ctx.fillStyle=D_FARBE.zeitBalken; ctx.fillRect(8,y0+12,bw,1);
   }
 

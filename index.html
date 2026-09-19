@@ -118,14 +118,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181654"></script>
-<script src="nacht/bild.js?v=202609181654"></script>
-<script src="nacht/ton.js?v=202609181654"></script>
-<script src="nacht/stand.js?v=202609181654"></script>
-<script src="nacht/welt.js?v=202609181654"></script>
-<script src="nacht/nacht.js?v=202609181654"></script>
-<script src="nacht/dialog.js?v=202609181654"></script>
-<script src="nacht/mobil.js?v=202609181654"></script>
+<script src="nacht/kern.js?v=202609191348"></script>
+<script src="nacht/bild.js?v=202609191348"></script>
+<script src="nacht/ton.js?v=202609191348"></script>
+<script src="nacht/stand.js?v=202609191348"></script>
+<script src="nacht/welt.js?v=202609191348"></script>
+<script src="nacht/nacht.js?v=202609191348"></script>
+<script src="nacht/dialog.js?v=202609191348"></script>
+<script src="nacht/mobil.js?v=202609191348"></script>
+<script src="nacht/handy.js?v=202609191348"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -561,7 +562,8 @@ function druckAktion(){
    sie sich hier an - und nur dort, wo sie auch etwas bewirken.
    ========================================================================== */
 function mobilKontext(){
-  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null,
+    extras:[{txt:'LEICHTER',code:'ArrowLeft'},{txt:'SCHWERER',code:'ArrowRight'}]};
   if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
   if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
   if(S.modus==='gefangen') return {aktion:'WEITER', zwei:null};
@@ -693,6 +695,9 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   /* Levelauswahl auf dem Titelbild. Ohne das kommt man nur zu Level 2,
      wenn man Level 1 gewinnt - und sieht bis dahin nicht, dass es da ist. */
+  /* Schwierigkeit waehlen - nur auf dem Titelbild. */
+  if(S.modus==='titel'&&['ArrowLeft','KeyA'].includes(e.code)){ wechsleSchwierigkeit(-1); piep(440,.05); }
+  if(S.modus==='titel'&&['ArrowRight','KeyD'].includes(e.code)){ wechsleSchwierigkeit(1); piep(660,.05); }
   if(S.modus==='titel'&&(e.code==='Digit2'||e.code==='Numpad2')){
     e.preventDefault(); location.href='level2.html'; }
   if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
@@ -1238,7 +1243,7 @@ function lehrerLogik(dt){
     const sichtbar = S.modus==='spiel' && S.imSpind<0 && L.e===S.etage
       && imSichtkegel(wache,{x:S.x,t:S.tiefe},reichweite,TUNE.kegelOeffnung||0.5);
     if(sichtbar){
-      L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*dt);
+      L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*schwer().verdacht*dt);
       if(!L.gesehenPiep&&L.verdacht>.25){ L.gesehenPiep=true; SFX.gesehen(); }
       if(L.verdacht>=1&&L.jagd<=0){ L.jagd=dauer; SFX.alarm(); S.ruettel=L.chef?6:4;
         meldung(L.chef?'DER DIREKTOR HAT DICH':'ER HAT DICH',1.6); }
@@ -2022,8 +2027,12 @@ function titelbild(){
               ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   }
-  const crew=ladeCrew();
-  if(crew.length) textC('DABEI: '+crew.join(', ')+'  +15% TEMPO',60,P.neon2);
+  /* Schwierigkeit. Die alte Crew-Zeile stand hier - aber ein Start setzt
+     die Nacht zurueck, die angezeigte Crew war also nie die, mit der man
+     losging. */
+  const sw=schwer().name;
+  textC((IS_TOUCH?'':'< ')+'SCHWIERIGKEIT: '+sw+(IS_TOUCH?'':' >'),58,
+        sw==='HART'?P.rot:sw==='LOCKER'?P.gruen:P.gold);
   if(Math.floor(S.t*1.6)%2===0) textGlowC(IS_TOUCH?'TIPPEN ZUM START':'LEERTASTE ODER E',H-19,P.weiss,1);
   /* Levelauswahl - ohne die sieht man nie, dass es Level 2 gibt.
      Am Handy uebernimmt die #levelbar unter dem Bild das - Tastenhinweise

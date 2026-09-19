@@ -64,6 +64,12 @@ const kampfZeitFaktor = () => kampfStop > 0 ? 0 : 1;
 function kampfStopTakt(dt){ if(kampfStop > 0) kampfStop = Math.max(0, kampfStop - dt); }
 
 function kaempfer(o){
+  /* Auf LOCKER haelt der Spieler einen Treffer mehr aus - hier zentral,
+     damit es in allen vier Kaempfen gilt. */
+  if(!o||!o.art||o.art==='spieler'){
+    const plus=(typeof schwer==='function')?schwer().leben:0;
+    if(plus&&o&&o.hp){ o=Object.assign({},o,{hp:o.hp+plus,maxHp:(o.maxHp||o.hp)+plus}); }
+  }
   return Object.assign({
     x:0, t:0.5, h:0, blick:1, vt:0,
     hp:3, maxHp:3,
@@ -104,6 +110,10 @@ function rolle(k,richtung){
 
 /* ---- Automat ---- */
 function kaempferTakt(k,dt){
+  /* Die Gegner laufen auf ihrer eigenen Uhr: die Schwierigkeit streckt oder
+     staucht Ausholen, Schlag und Erholung auf einmal. Weil alles an zT
+     haengt, bleiben Konterfenster und Anzeigen automatisch stimmig. */
+  if(k.art!=='spieler'&&typeof schwer==='function') dt*=schwer().gegner;
   k.zT += dt;
   if(k.unverwundbar > 0) k.unverwundbar -= dt;
   if(k.betaeubt > 0){

@@ -105,15 +105,16 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181654"></script>
-<script src="nacht/bild.js?v=202609181654"></script>
-<script src="nacht/ton.js?v=202609181654"></script>
-<script src="nacht/stand.js?v=202609181654"></script>
-<script src="nacht/welt.js?v=202609181654"></script>
-<script src="nacht/nacht.js?v=202609181654"></script>
-<script src="nacht/dialog.js?v=202609181654"></script>
-<script src="nacht/kampf.js?v=202609181654"></script>
-<script src="nacht/mobil.js?v=202609181654"></script>
+<script src="nacht/kern.js?v=202609191348"></script>
+<script src="nacht/bild.js?v=202609191348"></script>
+<script src="nacht/ton.js?v=202609191348"></script>
+<script src="nacht/stand.js?v=202609191348"></script>
+<script src="nacht/welt.js?v=202609191348"></script>
+<script src="nacht/nacht.js?v=202609191348"></script>
+<script src="nacht/dialog.js?v=202609191348"></script>
+<script src="nacht/kampf.js?v=202609191348"></script>
+<script src="nacht/mobil.js?v=202609191348"></script>
+<script src="nacht/handy.js?v=202609191348"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -1171,8 +1172,8 @@ function bus(dt){
       jagdRate=Math.max(jagdRate, nah?TUNE.jagdVerdachtNah:TUNE.jagdVerdacht);
     }
     if(jagdRate)
-      S.verdacht=Math.min(100,S.verdacht+jagdRate*verdachtMultiplikator()*dt);
-    if(gesehen) S.verdacht=Math.min(100,S.verdacht+TUNE.verdachtProSek*verdachtMultiplikator()*dt);
+      S.verdacht=Math.min(100,S.verdacht+jagdRate*verdachtMultiplikator()*schwer().verdacht*dt);
+    if(gesehen) S.verdacht=Math.min(100,S.verdacht+TUNE.verdachtProSek*verdachtMultiplikator()*schwer().verdacht*dt);
     else S.verdacht=Math.max(0,S.verdacht-TUNE.verdachtAbbau*dt);
   } else if(S.versteckt){
     S.verdacht=Math.max(0,S.verdacht-TUNE.verdachtAbbauVersteckt*dt);

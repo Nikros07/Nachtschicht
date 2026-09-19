@@ -78,7 +78,9 @@ let bildDt=1/60;
 function bild(jetzt){
   const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
   bildDt=dt;
-  update(dt); draw(dt);
+  /* Solange das Handy offen ist, steht die Welt (nacht/handy.js). */
+  if(!(window.HANDY&&window.HANDY.offen)) update(dt);
+  draw(dt);
   requestAnimationFrame(bild);
 }
 function starteSchleife(){ letzte=performance.now(); requestAnimationFrame(bild); }

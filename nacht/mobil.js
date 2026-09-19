@@ -178,6 +178,7 @@ deck.innerHTML=[
   '  <button id="mb-pause">PAUSE</button>',
   '  <button id="mb-ton">TON</button>',
   '  <button id="mb-voll">VOLL</button>',
+  '  <button id="mb-handy">HANDY</button>',
   '  <button id="mb-menu">LEVEL</button>',
   '</div>',
   '<div id="mstick"><div class="mring"></div><div id="mknopf"></div></div>',
@@ -312,6 +313,7 @@ function klick(id,fn){ const e=document.getElementById(id); if(!e) return;
 klick('mb-pause',function(){ tipp('KeyP'); });
 klick('mb-ton',  function(){ ensureAudio(); tipp('KeyM'); });
 klick('mb-voll', function(){ vollbild(); });
+klick('mb-handy',function(){ if(typeof handyAuf==='function') handyAuf(); });
 
 /* Das Levelmenue baut sich aus #levelbar - der Leiste, die am Rechner unter
    dem Bild steht und am Handy ausgeblendet ist. Damit gibt es die Liste nur
@@ -357,7 +359,7 @@ function talkPflege(){
   const k=GESPR.knoten, w=GESPR.wahlen;
   const kennung=GESPR.name+'|'+w.length;
   if(k.zeit&&GESPR.zeitRest>0){
-    talk.querySelector('.uhr').style.width=Math.round(100*GESPR.zeitRest/k.zeit)+'%';
+    talk.querySelector('.uhr').style.width=Math.round(100*GESPR.zeitRest/(GESPR.zeitGesamt||k.zeit))+'%';
   } else talk.querySelector('.uhr').style.width='0';
   if(kennung===talkStand) return;
   talkStand=kennung;

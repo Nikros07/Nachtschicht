@@ -25,6 +25,7 @@ const STAND_VORLAGE={
   inventar:{},        // {'PFAND':3,'FEUERZEUG':1}
   flags:{},           // {'clubDrin':true} - Entscheidungen, die spaeter zaehlen
   gesehen:[],         // welche Enden schon erreicht wurden
+  nachrichten:[],     // was aufs Handy kam, siehe handy.js
 };
 
 function tiefKopie(o){ return JSON.parse(JSON.stringify(o)); }
@@ -40,6 +41,7 @@ function ladeStand(){
   st.inventar={...(s.inventar||{})};
   st.flags={...(s.flags||{})};
   st.gesehen=s.gesehen||[];
+  st.nachrichten=s.nachrichten||[];
   return st;
 }
 let NACHT=ladeStand();

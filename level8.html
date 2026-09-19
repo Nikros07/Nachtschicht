@@ -109,15 +109,16 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609181654"></script>
-<script src="nacht/bild.js?v=202609181654"></script>
-<script src="nacht/ton.js?v=202609181654"></script>
-<script src="nacht/stand.js?v=202609181654"></script>
-<script src="nacht/welt.js?v=202609181654"></script>
-<script src="nacht/kampf.js?v=202609181654"></script>
-<script src="nacht/nacht.js?v=202609181654"></script>
-<script src="nacht/dialog.js?v=202609181654"></script>
-<script src="nacht/mobil.js?v=202609181654"></script>
+<script src="nacht/kern.js?v=202609191348"></script>
+<script src="nacht/bild.js?v=202609191348"></script>
+<script src="nacht/ton.js?v=202609191348"></script>
+<script src="nacht/stand.js?v=202609191348"></script>
+<script src="nacht/welt.js?v=202609191348"></script>
+<script src="nacht/kampf.js?v=202609191348"></script>
+<script src="nacht/nacht.js?v=202609191348"></script>
+<script src="nacht/dialog.js?v=202609191348"></script>
+<script src="nacht/mobil.js?v=202609191348"></script>
+<script src="nacht/handy.js?v=202609191348"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -965,7 +966,14 @@ function baueEnde(){
     if(flag('versprochen_'+n)) z.push({ d:2.6, txt:'DEIN HANDY VIBRIERT. '+name+': BIST DU GUT HEIMGEKOMMEN?' });
     else if(flag('schreibt_'+n)) z.push({ d:2.6, txt:'EINE NACHRICHT VON '+name+'. DU LIEST SIE ERST MITTAGS.' });
   }
-  if(!flag('handyZurueck')) z.push({ d:2.4, txt:'DEIN HANDY LIEGT NOCH IM LEHRERZIMMER. MONTAG.' });
+  if(!flag('handyZurueck')){
+    const n=(NACHT.nachrichten||[]).length;
+    z.push({ d:2.4, txt:'DEIN HANDY LIEGT NOCH IM LEHRERZIMMER. '+n+' NACHRICHTEN.' });
+  }
+  /* Mama - aus den Nachrichten in handy.js */
+  if(flag('mamaBescheid'))       z.push({ d:2.4, txt:'MAMA HAT GESCHLAFEN. DU HAST IHR JA GESCHRIEBEN.' });
+  else if(flag('mamaAngelogen')) z.push({ d:2.6, txt:'MAMA SITZT IN DER KUECHE. UM ZWOELF, HAST DU GESAGT.' });
+  else                           z.push({ d:2.6, txt:'IN DER KUECHE BRENNT NOCH LICHT. MAMA HAT GEWARTET.' });
   if(flag('neleGeholfen'))  z.push({ d:2.2, txt:'NELE IST AUCH HEIMGEKOMMEN.' });
   if(flag('tobiDabei'))     z.push({ d:2.2, txt:'TOBI HAT JETZT EINE NEUE CREW.' });
   const crew=ladeCrew();
