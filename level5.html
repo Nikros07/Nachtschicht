@@ -104,16 +104,16 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609191348"></script>
-<script src="nacht/bild.js?v=202609191348"></script>
-<script src="nacht/ton.js?v=202609191348"></script>
-<script src="nacht/stand.js?v=202609191348"></script>
-<script src="nacht/welt.js?v=202609191348"></script>
-<script src="nacht/nacht.js?v=202609191348"></script>
-<script src="nacht/dialog.js?v=202609191348"></script>
-<script src="nacht/kampf.js?v=202609191348"></script>
-<script src="nacht/mobil.js?v=202609191348"></script>
-<script src="nacht/handy.js?v=202609191348"></script>
+<script src="nacht/kern.js?v=202609191357"></script>
+<script src="nacht/bild.js?v=202609191357"></script>
+<script src="nacht/ton.js?v=202609191357"></script>
+<script src="nacht/stand.js?v=202609191357"></script>
+<script src="nacht/welt.js?v=202609191357"></script>
+<script src="nacht/nacht.js?v=202609191357"></script>
+<script src="nacht/dialog.js?v=202609191357"></script>
+<script src="nacht/kampf.js?v=202609191357"></script>
+<script src="nacht/mobil.js?v=202609191357"></script>
+<script src="nacht/handy.js?v=202609191357"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -729,7 +729,7 @@ function druckAktion(){
   if(S.modus==='ecke'){ eckeWeiter(); return; }
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='level6.html'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=5'; return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
@@ -1009,7 +1009,9 @@ function marvinTakt(dt){
   const m=S.marvin;
   if(m.fertig) return;
   if(!m.da){
-    if(S.zeit<TUNE.marvinKommtNach) return;
+    /* Wer ihn vor der Tuer angepampt hat (Umweg auf der Karte), den sucht
+       er frueher. */
+    if(S.zeit<TUNE.marvinKommtNach*(flag('marvinGereizt')?0.4:1)) return;
     m.da=true; m.x=30; m.t=0.5; setzeFlag('marvinKennt');
     meldung('MARVIN IST DA',1.8);
   }

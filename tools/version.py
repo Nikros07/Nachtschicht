@@ -10,7 +10,7 @@ Die Nummer im Pfad zwingt den Browser, die passende Fassung zu holen.
 """
 import io, re, time
 V = time.strftime('%Y%m%d%H%M')
-for f in ['index.html'] + ['level%d.html' % i for i in range(2, 9)]:
+for f in ['index.html', 'karte.html'] + ['level%d.html' % i for i in range(2, 9)]:
     s = io.open(f, encoding='utf-8').read()
     s = re.sub(r'<script src="nacht/([a-z]+)\.js(\?v=[0-9]+)?"></script>',
                r'<script src="nacht/\1.js?v=' + V + '"></script>', s)

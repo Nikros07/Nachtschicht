@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>NACHTSCHICHT - DIE STADT</title>
+<meta name="description" content="Zwischen den Leveln: die Stadtkarte mit Uhrzeit, Werten, Crew und Umwegen.">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:#04030a; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-family:monospace; touch-action:none; -webkit-tap-highlight-color:transparent;
+    background-image:radial-gradient(ellipse at 50% 40%,#1b1030 0%,#04030a 70%); }
+  #cab { position:relative; padding:10px 12px 14px; border-radius:10px;
+    background:linear-gradient(#1b1730,#0e0b1a 60%,#17132a);
+    box-shadow:0 0 0 2px #2a2246,0 0 60px rgba(120,60,220,.2),0 30px 60px rgba(0,0,0,.8); }
+  #marquee { text-align:center; font:700 11px/1 monospace; letter-spacing:5px; color:#ff3d8b;
+    text-shadow:0 0 8px #ff3d8b99,0 0 18px #ff3d8b55; padding:2px 0 8px; user-select:none; }
+  #base { display:flex; justify-content:space-between; font:700 8px/1 monospace; letter-spacing:2px;
+    color:#4a4363; padding-top:8px; user-select:none; }
+  #screen { position:relative; line-height:0; border-radius:6px; overflow:hidden;
+    box-shadow:inset 0 0 0 2px #000,0 0 24px rgba(255,80,180,.08); }
+  canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#000; }
+  #crt { position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(105deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 38%),
+      radial-gradient(ellipse at center,rgba(0,0,0,0) 54%,rgba(0,0,0,.6) 100%),
+      repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,rgba(0,0,0,0) 1px 3px); }
+  #crt::after { content:''; position:absolute; inset:0;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.8),inset 0 0 90px rgba(0,0,0,.5); }
+  #touch { position:absolute; inset:0; display:none; }
+  #touch .btn { position:absolute; border-radius:50%;
+    background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.13);
+    color:#ffffff55; font:700 11px/1 monospace; letter-spacing:1px;
+    display:flex; align-items:center; justify-content:center; user-select:none; }
+  #touch .btn:active { background:rgba(255,61,139,.3); border-color:#ff3d8b; color:#fff; }
+  #tleft  { left:3%;  bottom:8%; width:17%; aspect-ratio:1; }
+  #tright { left:22%; bottom:8%; width:17%; aspect-ratio:1; }
+  #thit   { right:3%; bottom:8%; width:17%; aspect-ratio:1; }
+  #tjump  { right:22%;bottom:8%; width:17%; aspect-ratio:1; }
+  #fs { position:absolute; top:6px; right:8px; z-index:5;
+    background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
+    border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
+  #fs:hover { color:#ffd447; border-color:#ffd447; }
+
+  /* Ausstieg aus dem Vollbild am Handy - siehe index.html fuer die Begruendung. */
+  #texit { position:absolute; top:8px; left:8px; z-index:6; width:30px; height:30px;
+    border-radius:50%; background:rgba(20,16,34,.75); border:1px solid #2a2246;
+    color:#8d86a8; display:none; align-items:center; justify-content:center;
+    font:700 13px monospace; }
+  html.touch #cab:fullscreen #texit { display:flex; }
+
+  /* Levelauswahl als echte Links - funktioniert ohne Tastatur-Fokus
+     und am Handy. */
+  #levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
+  #levelbar a { flex:1; text-align:center; text-decoration:none;
+    font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+    color:#8d86a8; background:rgba(255,255,255,.04);
+    border:1px solid #2a2246; border-radius:5px; }
+  #levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
+  #levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+  html.touch #levelbar { padding:6px 8px; }
+  html.touch #levelbar a { padding:11px 4px; font-size:11px; }
+  #cab:fullscreen #levelbar { display:none; }
+  html.touch #touch { display:block; }
+  html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
+  html.touch #cab { padding:0; border-radius:0; box-shadow:none; background:#000; }
+  #cab:fullscreen { padding:0; border-radius:0; box-shadow:none; background:#000;
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  #cab:fullscreen #marquee, #cab:fullscreen #base { display:none; }
+  #rotate { position:fixed; inset:0; z-index:99; display:none; background:#06050c; color:#f4f0ff;
+    flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px; }
+  #rotate .ph { width:52px; height:88px; border:3px solid #ff3d8b; border-radius:8px;
+    animation:tip 1.8s ease-in-out infinite; }
+  #rotate b { font:700 13px monospace; letter-spacing:3px; color:#ff3d8b; }
+  #rotate span { font:400 10px monospace; letter-spacing:1px; color:#8d86a8; }
+  @keyframes tip { 0%,35%{transform:rotate(0)} 65%,100%{transform:rotate(-90deg)} }
+  @media (orientation:portrait){ html.touch #rotate{display:flex;} }
+</style>
+</head>
+<body>
+<div id="cab">
+  <div id="marquee">D I E &nbsp; S T A D T</div>
+  <div id="screen">
+    <canvas id="c" width="320" height="180"></canvas>
+    <div id="crt"></div>
+    <div id="texit">&#10005;</div>
+  </div>
+  <button id="fs">VOLLBILD</button>
+  <div id="levelbar">
+    <a href="index.html">1 &middot; DIE SCHULE</a>
+    <a href="level2.html">2 &middot; BEI MORITZ</a>
+    <a href="level3.html">3 &middot; DER NACHTBUS</a>
+    <a href="level4.html">4 &middot; DIE SCHLANGE</a>
+    <a href="level5.html">5 &middot; CLUB</a>
+    <a href="level6.html">6 &middot; AFTERHOUR</a>
+    <a href="level7.html">7 &middot; SPAETI</a>
+    <a href="level8.html">8 &middot; HEIMWEG</a>
+  </div>
+  <div id="base"><span>DIE STADT - ZWISCHEN DEN LEVELN</span><span>M TON &nbsp; T HANDY &nbsp; F VOLLBILD</span></div>
+</div>
+
+<script src="nacht/kern.js?v=202609191357"></script>
+<script src="nacht/bild.js?v=202609191357"></script>
+<script src="nacht/ton.js?v=202609191357"></script>
+<script src="nacht/stand.js?v=202609191357"></script>
+<script src="nacht/nacht.js?v=202609191357"></script>
+<script src="nacht/dialog.js?v=202609191357"></script>
+<script src="nacht/mobil.js?v=202609191357"></script>
+<script src="nacht/handy.js?v=202609191357"></script>
+<script>
+/* ============================================================================
+   NACHTSCHICHT - DIE STADTKARTE
+   Zwischen zwei Leveln. Zeigt, wo man ist, wie spaet es ist, was die Nacht
+   bisher gekostet hat - und bietet einen Umweg an.
+
+   Die Umwege sind die Nebenaufgaben: ein Doenerladen, ein Geldautomat, ein
+   Strassenmusiker, ein Typ mit Kette, der nach Feuer fragt. Jeder ist ein
+   kleines Gespraech mit Folgen - und jeder kostet Zeit. In Level 8 kommt
+   die Sonne pro Umweg ein Stueck frueher.
+
+   Aufruf: karte.html?nach=N  (N = das Level, das gerade geschafft wurde)
+   ========================================================================== */
+
+const NACH=Math.max(1,Math.min(7,+(new URLSearchParams(location.search).get('nach')||1)));
+
+const P = {
+  ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
+  neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
+};
+
+/* Die Stationen der Nacht - Lage auf der Karte als Anteil von Breite und
+   Hoehe, damit sie auf breiten Handys mitwachsen. */
+const STATIONEN=[
+  { n:1, name:'DIE SCHULE',   zeit:'17:30', x:0.08, y:0.72, seite:'index.html' },
+  { n:2, name:'BEI MORITZ',   zeit:'21:40', x:0.20, y:0.40, seite:'level2.html' },
+  { n:3, name:'NACHTBUS',     zeit:'22:15', x:0.34, y:0.66, seite:'level3.html' },
+  { n:4, name:'DIE SCHLANGE', zeit:'22:25', x:0.47, y:0.34, seite:'level4.html' },
+  { n:5, name:'CLUB',         zeit:'22:30', x:0.58, y:0.58, seite:'level5.html' },
+  { n:6, name:'AFTERHOUR',    zeit:'02:00', x:0.71, y:0.30, seite:'level6.html' },
+  { n:7, name:'SPAETI',       zeit:'03:30', x:0.82, y:0.62, seite:'level7.html' },
+  { n:8, name:'HEIMWEG',      zeit:'04:10', x:0.93, y:0.80, seite:'level8.html' },
+];
+
+/* ==========================================================================
+   DIE UMWEGE - eine pro Wegstueck. Gespraechsbaeume wie in den Leveln.
+   ========================================================================== */
+const UMWEGE={
+  1:{ name:'DOENERLADEN', baum:{
+    start:{ wer:'ALI', text:'Einmal alles?',
+      wahl:[
+        { txt:'Einmal alles. 4 EURO',  wenn:{geld:4}, tu:{geld:-4, kondition:20}, geh:'satt' },
+        { txt:'Nur ne Cola. 2 EURO',   wenn:{geld:2}, tu:{geld:-2, mut:1},        geh:'cola' },
+        { txt:'Nee, danke.',           geh:'@ende' },
+      ], zeit:0 },
+    satt:{ wer:'ALI', text:'Grundlage. Deine Mutter waere stolz.', geh:'@ende' },
+    cola:{ wer:'ALI', text:'Cola. Wie ein Kind. Na gut.', geh:'@ende' },
+  }},
+  2:{ name:'GELDAUTOMAT', baum:{
+    start:{ wer:'GELDAUTOMAT', text:'Deine Karte. Das Konto fuer die Klassenfahrt. Guthaben: 140 Euro.',
+      wahl:[
+        { txt:'20 Euro abheben. Merkt keiner.', tu:{geld:20, flag:'klassenfahrtGeld'}, geh:'ab' },
+        { txt:'Lass stecken.',                   tu:{mut:3}, geh:'@ende' },
+      ], zeit:0 },
+    ab:{ wer:'GELDAUTOMAT', text:'Bitte entnehmen Sie Ihr Geld. Guten Abend.', geh:'@ende' },
+  }},
+  3:{ name:'STRASSENMUSIKER', baum:{
+    start:{ wer:'MUSIKER', text:'Er spielt Wonderwall. Schon wieder.',
+      wahl:[
+        { txt:'2 Euro in den Koffer.', wenn:{geld:2}, tu:{geld:-2, ruf:4}, geh:'nickt' },
+        { txt:'Laut mitsingen.',       wenn:{mut:40}, tu:{ruf:6, mut:3, flag:'mitgesungen'}, geh:'singt' },
+        { txt:'Weitergehen.',          geh:'@ende' },
+      ], zeit:0 },
+    nickt:{ wer:'MUSIKER', text:'Er nickt dir zu und spielt weiter. Natuerlich Wonderwall.', geh:'@ende' },
+    singt:{ wer:'MUSIKER', text:'Die halbe Schlange singt mit. Irgendwer filmt.', geh:'@ende' },
+  }},
+  4:{ name:'DER TYP MIT DER KETTE', baum:{
+    start:{ wer:'EIN TYP', text:'Hast du Feuer?',
+      wahl:[
+        { txt:'Wer bist du?',     geh:'name' },
+        { txt:'Hab keins.',       geh:'@ende' },
+        { txt:'Frag wen anders.', wenn:{mut:40}, tu:{mut:2}, geh:'frech' },
+      ], zeit:0 },
+    name:{ wer:'MARVIN', text:'Marvin. Merk dir das. Wir sehen uns drinnen.',
+      tu:{flag:'marvinKennt'}, geh:'@ende' },
+    frech:{ wer:'EIN TYP', text:'...Merk ich mir.', tu:{flag:'marvinGereizt'}, geh:'@ende' },
+  }},
+  5:{ name:'PIZZA UM EINS', baum:{
+    start:{ wer:'PIZZAMANN', text:'Das Stueck kostet drei.',
+      wahl:[
+        { txt:'Eins fuer mich. 3 EURO',          wenn:{geld:3}, tu:{geld:-3, kondition:25, pegel:-10}, geh:'@ende' },
+        { txt:'Eine ganze fuer alle. 9 EURO',    wenn:{geld:9}, tu:{geld:-9, kondition:20, pegel:-8}, geh:'@teilen' },
+        { txt:'Nee.',                            geh:'@ende' },
+      ], zeit:0 },
+  }},
+  6:{ name:'DER BRUNNEN', baum:{
+    start:{ wer:'', text:'Ein Brunnen. Kaltes Wasser. Keiner schaut.',
+      wahl:[
+        { txt:'Kopf rein.',   tu:{pegel:-15, kondition:10}, geh:'nass' },
+        { txt:'Nur Haende.',  tu:{pegel:-5}, geh:'@ende' },
+        { txt:'Weiter.',      geh:'@ende' },
+      ], zeit:0 },
+    nass:{ wer:'', text:'Das war kalt. Das war richtig.', geh:'@ende' },
+  }},
+  7:{ name:'MAMA ANRUFEN', baum:{
+    start:{ wer:'', text:'Du koenntest Mama anrufen.',
+      wahl:[
+        { txt:'Anrufen.',                        wenn:{flag:'handyZurueck'}, geh:'anruf' },
+        { txt:'Telefonzelle. 1 EURO',             wenn:{geld:1, nichtFlag:'handyZurueck'}, tu:{geld:-1}, geh:'anruf' },
+        { txt:'Lieber nicht.',                   geh:'@ende' },
+      ], zeit:0 },
+    anruf:{ wer:'MAMA', text:'Endlich. Weisst du, wie spaet es ist?',
+      wahl:[
+        { txt:'Mir gehts gut. Ich bin bald da.', tu:{flag:'mamaBescheid'}, geh:'gut' },
+        { txt:'Ich hab dich lieb. Tschuess.',    tu:{flag:'mamaBescheid', mut:3}, geh:'lieb' },
+      ], zeit:0 },
+    gut:{ wer:'MAMA', text:'Gott sei Dank. Pass auf dich auf.', geh:'@ende' },
+    lieb:{ wer:'MAMA', text:'...Ich dich auch. Komm heim.', geh:'@ende' },
+  }},
+};
+
+/* ==========================================================================
+   ZUSTAND
+   ========================================================================== */
+const S={ t:0, weg:0, wahl:0, modus:'fahrt', meldung:'', meldungT:0 };
+const umweg=()=>UMWEGE[NACH];
+const umwegOffen=()=>umweg()&&!flag('umweg_'+NACH);
+const optionen=()=>{
+  const o=[{ art:'weiter', txt:'WEITER: '+STATIONEN[NACH].name }];
+  if(umwegOffen()) o.push({ art:'umweg', txt:'UMWEG: '+umweg().name });
+  return o;
+};
+const meldung=(t,d=1.8)=>{ S.meldung=t; S.meldungT=d; };
+
+function weiter(){
+  location.href=STATIONEN[NACH].seite;
+}
+function machUmweg(){
+  const u=umweg();
+  S.modus='umweg';
+  starteGespraech(u.baum,'start',e=>{
+    setzeFlag('umweg_'+NACH);
+    /* Jeder Umweg kostet Zeit - Level 8 zaehlt die Flags umweg_* und
+       laesst die Sonne entsprechend frueher kommen. */
+    if(e==='@teilen'){
+      for(const n of ladeCrew()) aendereBeziehung(n,5);
+      meldung('DIE JUNGS FEIERN DICH',2.2);
+    } else meldung('ZEIT VERGEHT',1.6);
+    S.modus='wahl'; S.wahl=0;
+  });
+}
+
+/* ==========================================================================
+   EINGABE
+   ========================================================================== */
+let aktionGehalten=false;
+function druckAktion(){
+  ensureAudio();
+  if(gespraechAktiv()){ gespraechBestaetigen(); return; }
+  if(S.modus==='fahrt'){ S.weg=1; return; }
+  if(S.modus!=='wahl') return;
+  const o=optionen()[S.wahl];
+  if(o.art==='weiter') weiter(); else machUmweg();
+}
+function waehle(r){
+  if(gespraechAktiv()){ gespraechWaehle(r); return; }
+  const n=optionen().length; S.wahl=(S.wahl+r+n)%n; piep(520,.03,'sine',.03);
+}
+addEventListener('keydown',e=>{
+  if(keys[e.code]) return; keys[e.code]=true;
+  if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); waehle(-1); }
+  if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); waehle(1); }
+  if(['KeyE','Enter','Space'].includes(e.code)){ e.preventDefault(); druckAktion(); }
+  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
+  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
+});
+addEventListener('keyup',e=>{ keys[e.code]=false; });
+
+function mobilKontext(){
+  if(S.modus==='fahrt') return {aktion:'WEITER', zwei:null};
+  return {aktion:'LOS', zwei:null};
+}
+
+/* ==========================================================================
+   AKTUALISIEREN UND ZEICHNEN
+   ========================================================================== */
+function update(dt){
+  S.t+=dt;
+  if(S.meldungT>0) S.meldungT-=dt;
+  if(gespraechAktiv()){ gespraechTakt(dt); return; }
+  if(S.modus==='fahrt'){
+    S.weg=Math.min(1,S.weg+dt/2.6);
+    if(S.weg>=1){ S.modus='wahl'; piep(660,.06); }
+  }
+}
+
+const px=s=>Math.round(s.x*W), py=s=>Math.round(20+s.y*(H-56));
+
+function draw(){
+  ctx.fillStyle='#07060d'; ctx.fillRect(0,0,W,H);
+  /* Stadt-Raster: Blocks in zwei Tiefen */
+  for(let i=0;i<70;i++){
+    const bx=(i*47)%W, by=16+(i*29)%(H-60), bw=14+(i*7)%18, bh=8+(i*11)%14;
+    ctx.fillStyle=i%3?'#110e1c':'#161226'; ctx.fillRect(bx,by,bw,bh);
+    if(i%5===0){ ctx.fillStyle='#ffd44722'; ctx.fillRect(bx+3,by+3,2,2); }
+  }
+  /* Der Weg der Nacht */
+  for(let i=0;i<STATIONEN.length-1;i++){
+    const a=STATIONEN[i], b=STATIONEN[i+1];
+    const gegangen=i<NACH-1, jetzt=i===NACH-1;
+    ctx.strokeStyle=gegangen?'#ff3d8b88':jetzt?'#ffd44788':'#2a2440';
+    ctx.lineWidth=1; ctx.setLineDash(gegangen?[]:[2,2]);
+    ctx.beginPath(); ctx.moveTo(px(a)+.5,py(a)+.5); ctx.lineTo(px(b)+.5,py(b)+.5); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  /* Umweg-Markierung am aktuellen Wegstueck */
+  if(umwegOffen()){
+    const a=STATIONEN[NACH-1], b=STATIONEN[NACH];
+    const ux=Math.round((px(a)+px(b))/2), uy=Math.round((py(a)+py(b))/2)-12;
+    ctx.fillStyle=S.wahl===1&&S.modus==='wahl'?P.gold:'#8d86a8';
+    ctx.fillRect(ux-1,uy-1,3,3);
+    ctx.strokeStyle='#8d86a8'; ctx.setLineDash([1,2]);
+    ctx.beginPath(); ctx.moveTo(ux+.5,uy+.5); ctx.lineTo(ux+.5,uy+12.5); ctx.stroke(); ctx.setLineDash([]);
+  }
+  /* Stationen */
+  for(const s of STATIONEN){
+    const fertig=s.n<=NACH, naechste=s.n===NACH+1;
+    ctx.fillStyle=fertig?P.neon:naechste?P.gold:'#2a2440';
+    ctx.fillRect(px(s)-2,py(s)-2,5,5);
+    if(fertig||naechste){
+      const t=s.name, tx=Math.max(2,Math.min(W-textW(t)-2,px(s)-textW(t)/2));
+      text(t,tx,py(s)+6,naechste?P.gold:P.dim);
+      text(s.zeit,Math.max(2,Math.min(W-textW(s.zeit)-2,px(s)-textW(s.zeit)/2)),py(s)-9,P.dunkel);
+    }
+  }
+  /* Du - unterwegs zwischen zwei Stationen */
+  { const a=STATIONEN[NACH-1], b=STATIONEN[NACH];
+    const f=S.modus==='fahrt'?S.weg:1;
+    const x=px(a)+(px(b)-px(a))*f, y=py(a)+(py(b)-py(a))*f;
+    if(Math.floor(S.t*4)%2===0){ ctx.fillStyle=P.weiss; ctx.fillRect(Math.round(x)-1,Math.round(y)-1,3,3); } }
+
+  /* Was die Nacht bisher gekostet hat */
+  const w=n=>Math.round(wert(n));
+  text('MUT '+w('mut')+'  RUF '+w('ruf')+'  GELD '+w('geld')+'  WACH '+w('kondition')+'  PEGEL '+Math.round(ladePegel()),4,4,P.dim);
+  const crew=ladeCrew();
+  text(crew.length?'DABEI: '+crew.join(', '):'ALLEIN UNTERWEGS',4,12,P.neon2);
+  const sw=schwer().name; text(sw,W-textW(sw)-4,4,sw==='HART'?P.rot:sw==='LOCKER'?P.gruen:P.dunkel);
+
+  /* Auswahl unten */
+  ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-30,W,30);
+  ctx.fillStyle=P.neon; ctx.fillRect(0,H-30,W,1);
+  if(S.modus==='fahrt'){
+    textC('UNTERWEGS ZU: '+STATIONEN[NACH].name,H-20,P.weiss);
+  } else if(!gespraechAktiv()){
+    optionen().forEach((o,i)=>{
+      const an=i===S.wahl, y=H-24+i*9;
+      if(an) text('>',8,y,P.gold);
+      text(o.txt,16,y,an?P.gold:P.dim);
+    });
+    if(Math.floor(S.t*2)%2===0) text(IS_TOUCH?'KNOPF':'E',W-(IS_TOUCH?26:10),H-10,P.dunkel);
+  }
+  if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2); textGlowC(S.meldung,H-44,P.weiss,1); ctx.globalAlpha=1; }
+  zeichneGespraech();
+}
+
+starteSchleife();
+</script>
+</body>
+</html>

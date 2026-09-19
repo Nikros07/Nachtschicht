@@ -118,15 +118,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609191348"></script>
-<script src="nacht/bild.js?v=202609191348"></script>
-<script src="nacht/ton.js?v=202609191348"></script>
-<script src="nacht/stand.js?v=202609191348"></script>
-<script src="nacht/welt.js?v=202609191348"></script>
-<script src="nacht/nacht.js?v=202609191348"></script>
-<script src="nacht/dialog.js?v=202609191348"></script>
-<script src="nacht/mobil.js?v=202609191348"></script>
-<script src="nacht/handy.js?v=202609191348"></script>
+<script src="nacht/kern.js?v=202609191357"></script>
+<script src="nacht/bild.js?v=202609191357"></script>
+<script src="nacht/ton.js?v=202609191357"></script>
+<script src="nacht/stand.js?v=202609191357"></script>
+<script src="nacht/welt.js?v=202609191357"></script>
+<script src="nacht/nacht.js?v=202609191357"></script>
+<script src="nacht/dialog.js?v=202609191357"></script>
+<script src="nacht/mobil.js?v=202609191357"></script>
+<script src="nacht/handy.js?v=202609191357"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -544,11 +544,13 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
+  /* Nach gewonnenem Level geht es ueber die Stadtkarte weiter. Dieser Zweig
+     stand frueher HINTER dem Neustart-Zweig darunter und wurde nie erreicht:
+     wer Level 1 geschafft hatte und E drueckte, fing Level 1 von vorn an. */
+  if(S.modus==='ende'&&S.gewonnen){ location.href='karte.html?nach=1'; return; }
   if(S.modus==='ende'){ neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
-  /* Nach gewonnenem Level fuehrt E direkt ins naechste */
-  if(S.modus==='ende'&&S.gewonnen){ location.href='level2.html'; return; }
   aktionPuffer.push(S.t);
 }
 /* ==========================================================================
