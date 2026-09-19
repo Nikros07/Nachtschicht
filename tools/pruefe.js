@@ -10,7 +10,7 @@ const module_fuer=h=>['kern','bild','ton','stand']
   .concat(h.includes('nacht/handy.js')?['handy']:[]);
 let fehler=0;
 for(const f of ['index.html','level2.html','level3.html','level4.html',
-                'level5.html','level6.html','level7.html','level8.html','karte.html']){
+                'level5.html','level6.html','level7.html','level8.html','karte.html','runner.html']){
   const h=fs.readFileSync(f,'utf8');
   const m=h.match(/<script>([\s\S]*?)<\/script>/);
   if(!m){ console.log(f.padEnd(13)+'KEIN Level-Script'); fehler++; continue; }

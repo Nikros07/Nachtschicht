@@ -102,6 +102,11 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
+<script src="nacht/kern.js?v=202609191402"></script>
+<script src="nacht/bild.js?v=202609191402"></script>
+<script src="nacht/ton.js?v=202609191402"></script>
+<script src="nacht/stand.js?v=202609191402"></script>
+<script src="nacht/mobil.js?v=202609191402"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT  v0.3
@@ -250,70 +255,10 @@ const SAY = {
     'DIE SONNE':['ES WIRD HELL','ZU SPAET','GEH SCHLAFEN'],
   },
 };
-const pick = a => a[Math.floor(Math.random()*a.length)];
 
 /* ==========================================================================
    3x5 BITMAP-FONT
    ========================================================================== */
-const F = {
- A:'010,101,111,101,101', B:'110,101,110,101,110', C:'011,100,100,100,011',
- D:'110,101,101,101,110', E:'111,100,110,100,111', F:'111,100,110,100,100',
- G:'011,100,101,101,011', H:'101,101,111,101,101', I:'111,010,010,010,111',
- J:'001,001,001,101,010', K:'101,110,100,110,101', L:'100,100,100,100,111',
- M:'101,111,111,101,101', N:'101,111,101,101,101', O:'010,101,101,101,010',
- P:'110,101,110,100,100', Q:'010,101,101,110,011', R:'110,101,110,101,101',
- S:'011,100,010,001,110', T:'111,010,010,010,010', U:'101,101,101,101,111',
- V:'101,101,101,101,010', W:'101,101,111,111,101', X:'101,101,010,101,101',
- Y:'101,101,010,010,010', Z:'111,001,010,100,111',
- 0:'111,101,101,101,111', 1:'010,110,010,010,111', 2:'111,001,111,100,111',
- 3:'111,001,111,001,111', 4:'101,101,111,001,001', 5:'111,100,111,001,111',
- 6:'111,100,111,101,111', 7:'111,001,001,001,001', 8:'111,101,111,101,111',
- 9:'111,101,111,001,111',
- ' ':'000,000,000,000,000', '.':'000,000,000,000,010', ':':'000,010,000,010,000',
- '-':'000,000,111,000,000', '!':'010,010,010,000,010', '?':'110,001,010,000,010',
- '/':'001,001,010,100,100', '%':'101,001,010,100,101', '+':'000,010,111,010,000',
- '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
- ',':'000,000,000,010,100',
-};
-const GLYPH = {}; for (const k in F) GLYPH[k] = F[k].split(',');
-/* Zeichnet auf eine beliebige Leinwand - noetig, um Schrift vorzubacken. */
-function textTo(g,str,x,y,col,s){
-  g.fillStyle=col; str=String(str).toUpperCase();
-  for(let i=0;i<str.length;i++){ const gl=GLYPH[str[i]]||GLYPH['?'];
-    for(let r=0;r<5;r++) for(let c=0;c<3;c++)
-      if(gl[r][c]==='1') g.fillRect(x+(i*4+c)*s, y+r*s, s, s); }
-}
-/* Jedes Zeichen wird einmal gebacken. Es gibt nur 43 Glyphen, also bleibt
-   der Cache winzig - selbst bei einem Punktestand, der sich staendig aendert. */
-const _glyphCache=new Map();
-function text(str,x,y,col,s=1){
-  str=String(str).toUpperCase();
-  for(let i=0;i<str.length;i++){
-    const ch=str[i]; if(ch===' ') continue;
-    const k=ch+col+s;
-    let c=_glyphCache.get(k);
-    if(!c){ const [cc,xx]=leinwand(3*s,5*s); textTo(xx,ch,0,0,col,s); c=cc; _glyphCache.set(k,c); }
-    ctx.drawImage(c,Math.round(x+i*4*s),Math.round(y));
-  }
-}
-const textW=(s0,s=1)=>String(s0).length*4*s-s;
-const textC=(s0,y,col,s=1)=>text(s0,Math.round((320-textW(s0,s))/2),y,col,s);
-/* Leuchtschrift malte den Text fuenfmal. Jetzt einmal gebacken, dann kopiert. */
-function textGlow(str,x,y,col,s=1){
-  str=String(str).toUpperCase();
-  const k=str+'|'+col+'|'+s;
-  let c=_texts.get(k);
-  if(!c){
-    const pad=s, [cc,xx]=leinwand(textW(str,s)+2*pad, 5*s+2*pad);
-    xx.globalAlpha=.25;
-    textTo(xx,str,pad-s,pad,col,s); textTo(xx,str,pad+s,pad,col,s);
-    textTo(xx,str,pad,pad-s,col,s); textTo(xx,str,pad,pad+s,col,s);
-    xx.globalAlpha=1; textTo(xx,str,pad,pad,col,s);
-    c=cc; if(_texts.size>400) _texts.clear();
-    _texts.set(k,c);
-  }
-  ctx.drawImage(c,Math.round(x)-s,Math.round(y)-s);
-}
 function textShadow(str,x,y,col,s=1){ text(str,x+1,y+1,'#000',s); text(str,x,y,col,s); }
 
 /* ==========================================================================
@@ -332,62 +277,6 @@ const KEY = {
    einmal auf eine eigene kleine Leinwand gebacken und danach nur noch
    als fertiges Bild kopiert. Aus ~2800 Aufrufen pro Bild werden ~150.
    ========================================================================== */
-const _ids=new WeakMap(); let _nextId=0;
-const _sprites=new Map(), _outlines=new Map(), _texts=new Map(), _grads=new Map();
-
-/* Farbverlaeufe sind teuer und aendern sich fast nie - einmal backen. */
-function verlauf(key,w,h,mal){
-  let c=_grads.get(key);
-  if(!c){ const [cc,xx]=leinwand(w,h); mal(xx); c=cc; _grads.set(key,c); }
-  return c;
-}
-function rowsId(rows){
-  let id=_ids.get(rows);
-  if(id===undefined){ id=++_nextId; _ids.set(rows,id); }
-  return id;
-}
-function leinwand(w,h){
-  const c=document.createElement('canvas');
-  c.width=Math.max(1,w); c.height=Math.max(1,h);
-  const x=c.getContext('2d'); x.imageSmoothingEnabled=false;
-  return [c,x];
-}
-function backeSprite(rows,sc,tint){
-  let bw=0; for(const r of rows) if(r.length>bw) bw=r.length;
-  const [c,x]=leinwand(bw*sc, rows.length*sc);
-  for(let r=0;r<rows.length;r++){ const row=rows[r];
-    for(let i=0;i<row.length;i++){ const ch=row[i]; if(ch==='.') continue;
-      x.fillStyle=tint||KEY[ch]||'#fff'; x.fillRect(i*sc,r*sc,sc,sc); } }
-  return c;
-}
-function holeSprite(rows,sc,tint){
-  const k=rowsId(rows)+'|'+sc+'|'+(tint||'-');
-  let c=_sprites.get(k);
-  if(!c){ c=backeSprite(rows,sc,tint); _sprites.set(k,c); }
-  return c;
-}
-function sprite(rows,x,y,sc=1,tint=null,alpha=1){
-  const c=holeSprite(rows,sc,tint);
-  if(alpha!==1) ctx.globalAlpha=alpha;
-  ctx.drawImage(c,Math.round(x),Math.round(y));
-  if(alpha!==1) ctx.globalAlpha=1;
-}
-/* Kontur: einmal als schwarzer, um 1 Pixel aufgeblasener Umriss backen.
-   Vorher waren das vier volle Sprite-Durchlaeufe pro Objekt und Bild. */
-function outline(rows,x,y,sc=1,a=.8){
-  const k=rowsId(rows)+'|'+sc;
-  let c=_outlines.get(k);
-  if(!c){
-    const s=holeSprite(rows,sc,'#000');
-    const [cc,xx]=leinwand(s.width+2*sc, s.height+2*sc);
-    xx.drawImage(s,0,sc); xx.drawImage(s,2*sc,sc);
-    xx.drawImage(s,sc,0); xx.drawImage(s,sc,2*sc);
-    c=cc; _outlines.set(k,c);
-  }
-  ctx.globalAlpha=a;
-  ctx.drawImage(c,Math.round(x)-sc,Math.round(y)-sc);
-  ctx.globalAlpha=1;
-}
 const HEAD=['..hhh..','.hsssh.','.sssss.','..sss..'];
 const mkRun = legs => [...HEAD,'..ttt..',...legs];
 
@@ -484,10 +373,6 @@ const BOSS_SPR = { 'DER TUERSTEHER':'bossTuer','DIE MEUTE':'bossMeute',
 /* ==========================================================================
    AUDIO
    ========================================================================== */
-let AC=null, muted=false;
-function ensureAudio(){ if(AC) return AC;
-  try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MUS.next=AC.currentTime+.05; }
-  catch(e){ AC=null; } return AC; }
 function tone(f,when,dur,type='square',vol=.05){
   if(!AC||muted) return;
   const o=AC.createOscillator(), g=AC.createGain();
@@ -527,7 +412,6 @@ const SFX = {
 };
 const BASS=[110,0,164.8,0, 130.8,0,164.8,0, 98,0,146.8,0, 110,0,164.8,196];
 const BASS_BOSS=[73.4,73.4,0,98, 73.4,0,87.3,0, 65.4,65.4,0,87.3, 65.4,0,98,110];
-const MUS={step:0,next:0};
 function musicTick(){
   if(!AC||muted||!TUNE.musicOn||S.mode==='pause') return;
   const boss=!!S.boss;
@@ -548,19 +432,16 @@ function musicTick(){
 /* ==========================================================================
    SETUP
    ========================================================================== */
-const cv=document.getElementById('c'), ctx=cv.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-const W=320,H=180,GROUND=152;
+/* Canvas, W und H kommen aus nacht/kern.js. */
+const GROUND=152;
 const PX=42;                                 // Startposition, S.px ist die echte
-
-/* Touch-Geraet? maxTouchPoints ist verlaesslicher als pointer:coarse.
-   ?touch=1 erzwingt es, damit man es am Rechner testen kann. */
-const IS_TOUCH = navigator.maxTouchPoints>0 || 'ontouchstart' in window
-              || /[?&]touch=1/.test(location.search);
-if(IS_TOUCH) document.documentElement.classList.add('touch');
 
 function isFs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
 function fit(){
+  /* Dieses Level ist fuer genau 320 Pixel gebaut. Die Engine laesst W auf
+     breiten Schirmen wachsen - hier wird es danach zurueckgesetzt. fit()
+     ist als letzter Resize-Handler registriert und gewinnt. */
+  W=320; if(cv.width!==320){ cv.width=320; ctx.imageSmoothingEnabled=false; }
   const pad = (isFs()||IS_TOUCH) ? 0 : 46;
   const raw = Math.min((innerWidth-pad)/W,(innerHeight-pad)/H);
   /* Ganzzahlig skalieren haelt die Pixel scharf. Auf kleinen Schirmen waere
@@ -572,20 +453,6 @@ addEventListener('resize',fit);
 addEventListener('orientationchange',()=>setTimeout(fit,120));
 ['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>setTimeout(fit,60)));
 fit();
-
-/* ---- Vollbild ---- */
-function toggleFullscreen(){
-  const root=document.getElementById('cab');
-  if(isFs()){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
-  const req=root.requestFullscreen||root.webkitRequestFullscreen;
-  if(!req) return;
-  Promise.resolve(req.call(root)).then(()=>{
-    /* Am Handy zusaetzlich ins Querformat zwingen, wo der Browser es zulaesst */
-    if(screen.orientation&&screen.orientation.lock)
-      screen.orientation.lock('landscape').catch(()=>{});
-  }).catch(()=>{});
-}
-document.getElementById('fs').addEventListener('click',e=>{ e.preventDefault(); toggleFullscreen(); });
 
 const SKEY='nachtschicht.scores.v1';
 const loadScores=()=>{ try{ return JSON.parse(localStorage.getItem(SKEY))||[]; }catch(e){ return []; } };
@@ -626,7 +493,6 @@ function drawFx(){
 /* ==========================================================================
    INPUT  -  3 Aktionen: Sprung, Ducken, Schlag
    ========================================================================== */
-const keys={};
 let jumpQueue=[], hitQueue=[], duckHeld=false, jumpHeld=false;
 let leftHeld=false, rightHeld=false;
 function pressJump(){
@@ -650,7 +516,7 @@ addEventListener('keydown',e=>{
   /* E ist die Kampftaste. X, J und Shift laufen als Alternative mit. */
   if(['KeyE','KeyX','KeyJ','ShiftLeft','ControlLeft'].includes(e.code)){ e.preventDefault(); pressHit(); }
   if(e.code==='Enter'&&S.mode!=='initials'){ e.preventDefault(); pressJump(); }
-  if(e.code==='KeyF'){ e.preventDefault(); toggleFullscreen(); }
+  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
   if(e.code==='KeyP'&&(S.mode==='play'||S.mode==='pause')) S.mode=S.mode==='play'?'pause':'play';
   if(S.mode==='initials') initialsKey(e);
@@ -663,7 +529,6 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
 /* Fenster verlassen -> alles loslassen, sonst laeuft man ewig weiter */
 addEventListener('blur',()=>{ leftHeld=rightHeld=duckHeld=jumpHeld=false; });
 
-const el=id=>document.getElementById(id);
 const on=(n,evs,fn)=>evs.forEach(ev=>el(n).addEventListener(ev,e=>{e.preventDefault();fn();},{passive:false}));
 on('tjump',['touchstart','mousedown'],pressJump);
 on('tjump',['touchend','mouseup','touchcancel'],releaseJump);
@@ -674,9 +539,12 @@ on('tleft',['touchstart','mousedown'],()=>leftHeld=true);
 on('tleft',['touchend','mouseup','touchcancel'],()=>leftHeld=false);
 on('tright',['touchstart','mousedown'],()=>rightHeld=true);
 on('tright',['touchend','mouseup','touchcancel'],()=>rightHeld=false);
-/* Erste Beruehrung am Handy geht direkt ins Vollbild */
-if(matchMedia('(pointer:coarse)').matches)
-  addEventListener('touchstart',function once(){ toggleFullscreen(); removeEventListener('touchstart',once); },{once:true});
+/* Die erste Beruehrung schaltet schon kern.js ins Vollbild. Ein zweiter
+   Handler hier haette es im selben Moment wieder ausgeschaltet. */
+
+/* Knopf-Aufschriften fuer die Handy-Fassung (nacht/mobil.js). Runter auf
+   dem Stick ist Ducken. */
+function mobilKontext(){ return {aktion:'SCHLAG', zwei:'SPRUNG'}; }
 
 /* ==========================================================================
    STATE

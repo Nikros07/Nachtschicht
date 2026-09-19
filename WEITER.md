@@ -3,7 +3,7 @@
 Diese Datei ist die Übergabe. Wenn Du "continue" sagst, liest Claude hier
 nach, wo es stand, und macht genau dort weiter.
 
-**Stand:** Phase 0–2 fertig. Phase 3: alle acht Level umgebaut. Handy-Fassung eigenständig. Neun Enden.
+**Stand:** Phase 0–5 gebaut. Alle acht Level, Stadtkarte, Handy, Schwierigkeitsgrade, neun Enden.
 **Zuletzt aktualisiert:** 2026-09-17
 
 ---
@@ -120,13 +120,23 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
 
 ## Nächster Schritt
 
-Phase 3 ist durch. Als Nächstes aus dem Plan (Phase 4 und 5):
+Phase 3, 4 und 5 sind gebaut:
 
-- [ ] Stadtkarte zwischen den Leveln
-- [ ] Handy als eigenes System (Nachrichten von denen mit `schreibt_*`)
-- [ ] Nebenaufgaben, Schwierigkeitsgrade
-- [ ] Level 1: Lehrer-Routinen, Keller, Spind mit Zahlencode
-- [ ] runner.html läuft noch auf der alten, eingebauten Engine
+- [x] **Schwierigkeitsgrade** – `stand.js` (`schwer()`), gewählt auf dem
+      Titelbild von Level 1. Wirkt zentral in `kampf.js` (Gegner-Uhr, Leben),
+      `dialog.js` (Bedenkzeit), Level 1/3 (Verdacht), Level 6 (Erschöpfung).
+- [x] **Handy** – `nacht/handy.js`. Drehbuch `HANDY_DREHBUCH`, Taste T oder
+      Knopf HANDY, Spiel pausiert solange offen. Antworten setzen Flags, Level 8
+      erzählt davon (Mama).
+- [x] **Stadtkarte** – `karte.html?nach=N` zwischen allen Leveln, mit einem
+      Umweg (Nebenaufgabe) pro Wegstück. Umwege kosten Licht in Level 8.
+- [x] **Level 1** – Lehrer-Routinen, Keller mit Sicherung, Ferdis Spind mit
+      Code, Direktor am Ausgang.
+- [x] **runner.html** läuft auf der gemeinsamen Engine, mit Handy-Fassung,
+      feste Breite 320 bleibt.
+
+Noch offen:
+
 - [ ] Mehr Mädels- und Crew-Sprites mit echten Gesichtern (braucht Nick)
 
 Offen aus Level 1, wenn Zeit ist:
@@ -145,6 +155,9 @@ Gesprächsbäumen, Trinkspiele, und die Entscheidung wen man mitnimmt.
 Hauptwunsch hin: das Ansprechen als echter Entscheidungsbaum, dazu die
 kleine Schlägerei aus Phase 2 (die ist bewusst noch nicht gebaut, damit die
 Datei nicht zweimal angefasst wird).
+
+- **Neue Seiten** (`karte.html`, `runner.html`) stehen in `tools/pruefe.js`
+  und `tools/version.py` – wer eine Seite ergänzt, trägt sie dort ein.
 
 ## Testen
 
