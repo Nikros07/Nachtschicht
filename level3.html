@@ -105,16 +105,16 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/dialog.js?v=202609201245"></script>
-<script src="nacht/kampf.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/dialog.js?v=202609282136"></script>
+<script src="nacht/kampf.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -160,13 +160,17 @@ const TUNE = {
   busLaenge:       1680,
   einstiegX:         24,
   ausstiegX:       1600,
-  sichtWeite:        50,   // wie weit ein Kontrolleur nach vorn sieht
-  verdachtProSek:    58,   // Fuellrate im Sichtkegel
+  /* Neu abgestimmt, seit der Bus flach ist: ohne Tiefe gibt es keine
+     Fluchtspur mehr an der Rueckwand. Dafuer sieht ein Kontrolleur
+     kuerzer, der Verdacht steigt langsamer, und die Verstecke stehen
+     dichter - aus Ausweichen wird Timing. */
+  sichtWeite:        40,   // wie weit ein Kontrolleur nach vorn sieht
+  verdachtProSek:    42,   // Fuellrate im Sichtkegel
   verdachtAbbau:     26,   // Abbau pro Sekunde ausserhalb
   verdachtAbbauVersteckt: 70, // schnellerer Abbau beim Verstecken
   kontrolleurTempo:  24,
   patrouillePause:    0.8,
-  versteckReichweite: 22,   // grosszuegig: im Laufen muss man ein Versteck
+  versteckReichweite: 26,   // grosszuegig: im Laufen muss man ein Versteck
                             // treffen koennen, ohne stehenzubleiben
   erwischtRueckstoss: 46,  // Ruecksetzung nach einer Kontrolle
   unverwundbarDauer:  1.6,
@@ -213,15 +217,15 @@ const TUNE = {
      Also: wer gesehen wird, wird verfolgt. Dann faellt auch der
      Geschwindigkeitsvorteil weg, weil ein Verfolger hinter einem bleibt
      und die naechste Luecke schon besetzt ist. */
-  jagdTempo:        74,   // so schnell kommt ein alarmierter hinterher
-  jagdDauer:       3.5,   // so lange bleibt er dran, nachdem er dich verlor
-  jagdNah:          34,   // ab hier wird es schnell eng
-  jagdVerdacht:     18,   // Fuellrate, solange er dran ist. Bewusst so
+  jagdTempo:        64,   // so schnell kommt ein alarmierter hinterher
+  jagdDauer:       3.0,   // so lange bleibt er dran, nachdem er dich verlor
+  jagdNah:          26,   // ab hier wird es schnell eng
+  jagdVerdacht:     14,   // Fuellrate, solange er dran ist. Bewusst so
                           // niedrig, dass eine Verfolgung allein den Balken
                           // NICHT vollmacht - sonst waere jedes Gesehen-
                           // werden automatisch eine Kontrolle, und Weglaufen
                           // haette keinen Sinn.
-  jagdVerdachtNah: 105,   // Fuellrate, wenn er direkt neben dir steht
+  jagdVerdachtNah:  72,   // Fuellrate, wenn er direkt neben dir steht
 
   /* (4c) DREI WAGGONS. Die Grenzen sind die Durchgaenge. */
   waggonGrenzen: [540, 1080],
@@ -397,15 +401,22 @@ function erzeugeKontrolleure(){
 }
 /* Verstecke - manche liegen in einer Patrouillenzone (riskant, Timing noetig),
    manche in einer Luecke dazwischen (sicherer Rueckzugsort). */
+/* Dichter gesetzt, seit die Tiefe weg ist: ein Versteck muss von jeder
+   Stelle aus erreichbar sein, sonst ist ein Alarm gleichbedeutend mit
+   einer Kontrolle. */
 const VERSTECKE=[
-  { id:'v1', x:  96, art:'sitz',    t:0.18 },
-  { id:'v2', x: 300, art:'gepaeck', t:0.12 },
-  { id:'v3', x: 500, art:'sitz',    t:0.20 },
-  { id:'v4', x: 660, art:'gepaeck', t:0.10 },
-  { id:'v5', x: 860, art:'sitz',    t:0.16 },
-  { id:'v6', x:1060, art:'gepaeck', t:0.12 },
-  { id:'v7', x:1190, art:'sitz',    t:0.18 },
-  { id:'v8', x:1420, art:'gepaeck', t:0.10 },
+  { id:'v1',  x:  96, art:'sitz',    t:0.18 },
+  { id:'v2',  x: 230, art:'gepaeck', t:0.12 },
+  { id:'v3',  x: 330, art:'sitz',    t:0.20 },
+  { id:'v4',  x: 480, art:'gepaeck', t:0.10 },
+  { id:'v5',  x: 600, art:'sitz',    t:0.16 },
+  { id:'v6',  x: 720, art:'gepaeck', t:0.12 },
+  { id:'v7',  x: 860, art:'sitz',    t:0.18 },
+  { id:'v8',  x: 990, art:'gepaeck', t:0.10 },
+  { id:'v9',  x:1110, art:'sitz',    t:0.16 },
+  { id:'v10', x:1240, art:'gepaeck', t:0.12 },
+  { id:'v11', x:1360, art:'sitz',    t:0.18 },
+  { id:'v12', x:1450, art:'gepaeck', t:0.10 },
 ];
 
 /* ==========================================================================
@@ -550,7 +561,7 @@ const BAUM_FUER={ betrunkener:BETRUNKENER, frau:FRAU, jonas:JONAS_GESPRAECH,
 function naherFahrgast(){
   let bester=null, d0=1e9;
   for(const f of FAHRGAESTE){
-    if(Math.abs(f.t-S.tiefe)>0.3) continue;
+    if(!tiefeNah(f.t,S.tiefe)) continue;
     const d=Math.abs(f.x-S.x);
     if(d<TUNE.redeReichweite&&d<d0){ bester=f; d0=d; }
   }
@@ -619,6 +630,8 @@ const DIE_DREI = {
 /* Der Kampf selbst. Zwei Gegner, unterschiedlich schnell - damit man lernt,
    dass ein Konter auf den Flitzer anders getimt ist als auf den Schlaeger. */
 function starteKloppe(){
+  /* Jetzt zaehlt die Tiefe: im Kampf ist sie das Ausweichen. */
+  setzeTiefe(true);
   S.modus='kloppe'; S.kloppeStand='kampf';
   S.ich=kaempfer({ x:S.x, t:TUNE.kloppeTiefe, blick:1,
                    hp:TUNE.kloppeLeben, maxHp:TUNE.kloppeLeben });
@@ -637,6 +650,7 @@ function starteKloppe(){
 }
 
 function kloppeVorbei(gewonnen){
+  setzeTiefe(false);
   S.kloppeStand = gewonnen ? 'gewonnen' : 'verloren';
   S.modus='spiel'; S.gegner=[]; S.ich=null;
   S.tiefe=TUNE.gangTiefe; S.unverwundbarT=TUNE.unverwundbarDauer;
@@ -665,7 +679,7 @@ function kloppe(dt){
   const rt=(runterAn?1:0)-(hochAn?1:0);
   if(ich.zustand==='frei'||ich.zustand==='block'){
     if(richtung){ ich.x+=richtung*TUNE.gehTempo*0.62*d; ich.blick=richtung; }
-    if(rt) bewegeTiefe(ich,rt,d,TIEFE.tempo*0.8,16);
+    if(rt) kampfTiefe(ich,rt,d);
   }
   ich.x=Math.max(TUNE.kloppeX-40,Math.min(BUS_B-14,ich.x));
   S.x=ich.x;
@@ -678,6 +692,9 @@ function kloppe(dt){
      ganze Fenster. Steht so auch in kampf.js. */
   while(aktionPuffer.length){
     aktionPuffer.shift();
+    /* Erst auf die Hoehe des naechsten Gegners einrasten - wer knapp
+       daneben steht, soll nicht ins Leere hauen, ohne zu wissen warum. */
+    rasteAufGegner(ich,S.gegner,TUNE.kloppeReich);
     let gekontert=false;
     for(const g of S.gegner){
       if(g.hp<=0) continue;
@@ -711,6 +728,8 @@ function kloppe(dt){
 }
 
 function zeichneKloppe(){
+  zeichneTiefenlinien(Math.round(S.kamX)-4,Math.round(S.kamX)+W+4);
+  for(const g of S.gegner) zeichneTiefenMarke(g,S.ich);
   const liste=[];
   for(const g of S.gegner){
     if(g.hp<=0) continue;
@@ -820,7 +839,9 @@ function neuesSpiel(){
   S.kamX=Math.max(0,Math.min(SPRINT_B-W,S.x-W/2));
 }
 neuesSpiel();
-setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
+/* Flach unterwegs, Tiefe nur in der Kloppe - siehe TIEFE_PRO_SEITE in
+   welt.js. Der vierte Wert ist die Bodenlinie fuer den flachen Fall. */
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt,BODEN);
 
 /* ==========================================================================
    EINGABE
@@ -1020,7 +1041,7 @@ function naheVersteck(){
   for(const v of VERSTECKE){
     /* Verstecke liegen alle in der Sitzreihe - wer im Gang steht, greift
        ins Leere. Damit ist auch das Verstecken eine Bewegung. */
-    if(Math.abs((v.t!=null?v.t:TUNE.sitzTiefe)-S.tiefe)>0.3) continue;
+    if(!tiefeNah(v.t!=null?v.t:TUNE.sitzTiefe,S.tiefe)) continue;
     const d=Math.abs(v.x-S.x);
     if(d<TUNE.versteckReichweite&&d<d0){ besten=v; d0=d; }
   }
@@ -1068,12 +1089,11 @@ function bus(dt){
   /* Tiefe. Ausgeschrieben statt bewegeTiefe(S,...): die Engine-Funktion
      schreibt auf obj.t - und S.t ist hier die Spielzeit. Der Aufruf wuerde
      jeden Frame die Uhr ueberschreiben, ohne dass etwas abstuerzt. */
-  if(!S.versteckt){
+  if(!S.versteckt&&tiefeAn()){
     const rt=(runterAn?1:0)-(hochAn?1:0);
     S.vt += (rt*TUNE.tiefeTempo-S.vt)*Math.min(1,14*dt);
     S.tiefe = Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
-    /* Wo Sitze stehen, kommt man nicht hinten durch. Man wird in den Gang
-       gedrueckt - und der Gang ist die Gefahr. */
+    /* Wo Sitze stehen, kommt man nicht hinten durch. */
     for(const b of TUNE.sitzbloecke){
       if(S.x>b.von&&S.x<b.bis&&S.tiefe<b.tiefe){ S.tiefe=b.tiefe; S.vt=0; }
     }
@@ -1427,7 +1447,7 @@ function zeichneBus(){
       ctx.fillRect(Math.round(f.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;
       outline(rows,f.x-3,y,1,.55); sprite(rows,f.x-3,y);
       const nah=Math.abs(f.x-S.x)<TUNE.redeReichweite
-               &&Math.abs(f.t-S.tiefe)<=0.3&&S.modus==='spiel'&&!S.versteckt;
+               &&tiefeNah(f.t,S.tiefe)&&S.modus==='spiel'&&!S.versteckt;
       /* Namen nur in der Naehe - sonst stehen bei 320 Pixeln Breite fuenf
          Beschriftungen gleichzeitig im Bild und man sieht den Bus nicht. */
       if(Math.abs(f.x-S.x)<46){
@@ -1537,8 +1557,8 @@ function titelbild(){
   textC('LEVEL 3',44,P.dim);
   const zeilen=['DIE LETZTE BAHN FAEHRT GLEICH','KEIN TICKET. KONTROLLEURE AN BORD.','NICHT ERWISCHEN LASSEN.'];
   zeilen.forEach((z,i)=>textC(z,64+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['STICK','LAUFEN, AUCH NACH HINTEN'],['SPRUNG','SPRINGEN'],['KNOPF','REDEN, VERSTECKEN']]
-                   :[['WASD','LAUFEN, W S NACH HINTEN'],['LEER','SPRINGEN'],['E','REDEN, VERSTECKEN']];
+  const st=IS_TOUCH?[['STICK','LAUFEN'],['SPRUNG','SPRINGEN'],['KNOPF','REDEN, VERSTECKEN']]
+                   :[['A D','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, VERSTECKEN']];
   st.forEach((z,i)=>{ text(z[0],70,104+i*9,P.gold); text(z[1],104,104+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),136,P.neon2);

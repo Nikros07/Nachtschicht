@@ -118,15 +118,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/dialog.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/dialog.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -621,7 +621,7 @@ function mobilKontext(){
   /* Korridor. Reihenfolge wie in der Aktionsaufloesung weiter unten -
      sonst steht auf dem Knopf etwas anderes, als er dann macht. */
   const hm=S.lehrer.find(L=>L.hausmeister&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<14);
-  const zuWeitVorne=S.tiefe>TUNE.tuerTiefe;
+  const zuWeitVorne=tiefeAn()&&S.tiefe>TUNE.tuerTiefe;
   let was=null;
   if(S.codeOffen)            return {aktion:'PROBIEREN', zwei:null};
   if(amCodespind())          was=flag('ferdiSpindOffen')?'LEER':'CODE';
@@ -660,7 +660,7 @@ function introText(i){
    gewesen, die von einer frischen Nacht ausgehen. */
 function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){ S.modus='spiel';
-  setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('W UND S: NACH HINTEN UND VORNE - DAMIT KOMMST DU VORBEI',4); },4200);
+  setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('LEISE GEHEN HALBIERT IHRE SICHTWEITE',4); },4200);
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){
   S.szeneT+=dt;
@@ -1009,7 +1009,10 @@ function update(dt){
      hat die Uhr jeden Frame ueberschrieben und auf 0..1 geklemmt, wodurch
      alle Animationen praktisch stehen blieben. Deshalb hier ausgeschrieben
      auf S.tiefe. */
-  if(!treppe){
+  /* In diesem Level ist die Tiefe aus (siehe TIEFE_PRO_SEITE in welt.js):
+     die Schule lebt von Sicht, Laerm und Timing, nicht vom Ausweichen zur
+     Seite. W und S sind hier nur noch die Treppe. */
+  if(!treppe&&tiefeAn()){
     const rt=(runterAn?1:0)-(hochAn?1:0);
     const langsam=S.schleicht?0.55:1;
     const zielVt=rt*TUNE.tiefeTempo*langsam;
@@ -1051,11 +1054,11 @@ function update(dt){
       } else { meldung('ER SCHAUT DIREKT HIN'); SFX.nichts(); }
     } else if(ri>=0){
       /* Tueren liegen an der Rueckwand - man muss hin. */
-      if(S.tiefe>TUNE.tuerTiefe){ meldung('ZU WEIT VORNE - NACH HINTEN'); SFX.nichts(); }
+      if(tiefeAn()&&S.tiefe>TUNE.tuerTiefe){ meldung('ZU WEIT VORNE - NACH HINTEN'); SFX.nichts(); }
       else betreteRaum(ri);
     }
     else if(si>=0){
-      if(S.tiefe>TUNE.tuerTiefe){ meldung('ZU WEIT VORNE - NACH HINTEN'); SFX.nichts(); }
+      if(tiefeAn()&&S.tiefe>TUNE.tuerTiefe){ meldung('ZU WEIT VORNE - NACH HINTEN'); SFX.nichts(); }
       else
       if(S.spindAbkuehlung>0){ meldung('NOCH '+Math.ceil(S.spindAbkuehlung)+' SEKUNDEN'); SFX.nichts(); }
       else rein(si);
@@ -1405,7 +1408,8 @@ function starteHausmeisterGespraech(hm){
    Links/rechts waehlt die Stelle, hoch/runter die Ziffer, E probiert.
    Falsche Versuche machen Laerm - das ist der Preis fuers Raten.
    ========================================================================== */
-const amCodespind=()=>S.etage===CODESPIND.e&&Math.abs(S.x-(CODESPIND.x+3))<12&&S.tiefe<=TUNE.tuerTiefe;
+const amCodespind=()=>S.etage===CODESPIND.e&&Math.abs(S.x-(CODESPIND.x+3))<12
+  &&(!tiefeAn()||S.tiefe<=TUNE.tuerTiefe);
 function codeOeffnen(){
   if(flag('ferdiSpindOffen')){ meldung('SCHON LEER',1); SFX.nichts(); return; }
   S.codeOffen=true; S.codeStelle=0; S.vx=0; S.vt=0;
@@ -1663,7 +1667,8 @@ function draw(dt){
 /* ---- Korridor ---- */
 /* Wie weit eine Figur wegen ihrer Tiefe nach oben rutscht.
    t=0 ist ganz hinten an der Wand, t=1 ganz vorne am Betrachter. */
-const tiefeVersatz = t => Math.round(TUNE.tiefeBand*(1-Math.max(0,Math.min(1,t))));
+/* Ohne Tiefe stehen alle auf der Bodenlinie - kein Versatz. */
+const tiefeVersatz = t => tiefeAn()?Math.round(TUNE.tiefeBand*(1-Math.max(0,Math.min(1,t)))):0;
 
 function zeichneKorridor(){
   const kx=Math.round(S.kamX), ky=Math.round(S.kamY);
@@ -2191,11 +2196,11 @@ function titelbild(){
   ];
   zeilen.forEach((z,i)=>textC(z,72+i*10,i===2?P.rot:P.weiss));
   if(IS_TOUCH){
-    const st=[['STICK','LAUFEN, AUCH NACH HINTEN'],['SANFT','SCHLEICHEN'],['AN TREPPE','HOCH ODER RUNTER'],
+    const st=[['STICK','LAUFEN'],['SANFT','SCHLEICHEN'],['AN TREPPE','HOCH ODER RUNTER'],
               ['KNOPF','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],86,y,P.dim); });
   } else {
-    const st=[['WASD','LAUFEN, W S NACH HINTEN'],['SHIFT','SCHLEICHEN'],['W S','AN DER TREPPE'],
+    const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','AN DER TREPPE'],
               ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
               ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });

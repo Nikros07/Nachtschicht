@@ -112,15 +112,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/kampf.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/kampf.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -521,7 +521,7 @@ function kampf(dt){
     const langsamer=s.zustand==='block'?0.45:1;
     if(rx){ s.x+=rx*TUNE.gehTempo*langsamer*zdt; s.blick=rx; }
     const rt=(runterAn?1:0)-(hochAn?1:0);
-    bewegeTiefe(s,rt,zdt,TIEFE.tempo*langsamer);
+    kampfTiefe(s,rt,zdt,langsamer);
   }
   s.x=Math.max(TUNE.arenaLinks,Math.min(W-TUNE.arenaRechtsRand,s.x));
 
@@ -531,6 +531,7 @@ function kampf(dt){
   while(aktionPuffer.length){
     aktionPuffer.shift();
     if(S.erholungT>0) continue;
+    rasteAufGegner(s,[b],KAMPF.reichweite);
     if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); continue; }
     if(konterVersuch(s,b,{konterAnteil:b.fensterAnteil,schaden:1,
                           unblockbar:b.unblockbarJetzt})){
@@ -705,6 +706,8 @@ function zeichneKulisse(){
 function zeichneArena(){
   zeichneKulisse();
   const b=S.boss, s=S.spieler;
+  zeichneTiefenlinien(0,W);
+  zeichneTiefenMarke(b,s);
 
   /* Das Laufband sichtbar machen - ohne das schwebt bei Tiefe alles. */
   ctx.fillStyle='#1a1526';

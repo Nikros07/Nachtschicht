@@ -108,15 +108,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/dialog.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/dialog.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -396,15 +396,9 @@ function neuesSpiel(){
 }
 neuesSpiel();
 
-/* ==========================================================================
-   KEINE TIEFE IN DIESEM LEVEL
-   Hier gibt es niemanden, an dem man vorbeimuss, und keinen Kampf, in dem
-   man ausweicht - die dritte Achse waere nur ein Knopf mehr. Die Zahlen im
-   TUNE-Block bleiben stehen: sie regeln jetzt nur noch, wer beim Zeichnen
-   vor wem steht.
-   ========================================================================== */
-const TIEFE_AN=false;
-setzeTiefenband(TIEFE_AN?TUNE.tiefeHinten:BODEN,TIEFE_AN?TUNE.tiefeVorne:BODEN,TUNE.tiefeWelt);
+/* Die Tiefe entscheidet nacht/welt.js (TIEFE_PRO_SEITE). Der vierte
+   Wert ist die Bodenlinie fuer den flachen Fall. */
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt,BODEN);
 /* Die Leute verteilen sich in der Tiefe, sonst steht die Wohnung wieder
    auf einer Linie. */
 LEUTE.forEach((l,i)=>{ l.t=[0.25,0.62,0.8,0.4][i%4]; });
@@ -563,7 +557,7 @@ function update(dt){
   /* Tiefe. Ausgeschrieben statt bewegeTiefe(S,...), weil S.t hier die
      Spielzeit ist - der Engine-Aufruf wuerde sie ueberschreiben. */
   {
-    const rt=TIEFE_AN?((runterAn?1:0)-(hochAn?1:0)):0;
+    const rt=tiefeAn()?((runterAn?1:0)-(hochAn?1:0)):0;
     const zielVt=rt*TUNE.tiefeTempo;
     S.vt += (zielVt-S.vt)*Math.min(1,14*dt);
     S.tiefe = Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
@@ -605,7 +599,7 @@ function update(dt){
     for(const l of LEUTE){
       /* Wer in einer anderen Tiefe steht, ist nicht in Reichweite -
          man muss zu den Leuten hin, nicht nur an ihnen vorbei. */
-      if(TIEFE_AN&&Math.abs((l.t||0.5)-S.tiefe)>0.3) continue;
+      if(!tiefeNah(l.t||0.5,S.tiefe)) continue;
       const d=Math.abs(l.x-S.x);
       if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; } }
     let ding=null, dDing=1e9;
@@ -918,7 +912,7 @@ function zeichneWohnung(){
       if(erledigt) text('OK',l.x+3-textW('OK')/2,y-9,P.gruen);
       else {
         const nah=Math.abs(l.x-S.x)<TUNE.reichweite
-                 &&(!TIEFE_AN||Math.abs((l.t||0.5)-S.tiefe)<=0.3)
+                 &&tiefeNah(l.t||0.5,S.tiefe)
                  &&S.modus==='spiel'&&!S.reden;
         if(nah&&Math.floor(S.t*4)%2===0) text('E',l.x+2,y-9,P.gold);
       }

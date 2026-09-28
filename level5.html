@@ -104,16 +104,16 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/dialog.js?v=202609201245"></script>
-<script src="nacht/kampf.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/dialog.js?v=202609282136"></script>
+<script src="nacht/kampf.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -714,7 +714,8 @@ function clubZuruecksetzen(){
   for(const n of ['MIA','SOPHIE','KIRA','LENA']) aendereBeziehung(n,-beziehung(n));
 }
 neuesSpiel();
-setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt);
+/* Flach im Club, Tiefe nur in der Schlaegerei - siehe TIEFE_PRO_SEITE. */
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt,BODEN);
 
 /* ==========================================================================
    EINGABE
@@ -783,8 +784,8 @@ const INTRO=[
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){ S.modus='spiel'; clubZuruecksetzen();
-  zeigeHinweis(IS_TOUCH?'STICK AUCH HOCH UND RUNTER - KNOPF ZUM REDEN'
-                       :'W UND S: NACH HINTEN UND VORNE - E ZUM REDEN',3.5);
+  zeigeHinweis(IS_TOUCH?'STICK ZUM LAUFEN - KNOPF ZUM REDEN'
+                       :'A UND D ZUM LAUFEN - E ZUM REDEN',3.5);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
@@ -910,10 +911,10 @@ function naechstesZiel(){
   };
   for(const z of ZIELE){
     if(z.stand!=='offen') continue;
-    pruefe(z,'reden',Math.abs(z.t-S.tiefe)<=TUNE.redeTiefe);
+    pruefe(z,'reden',tiefeNah(z.t,S.tiefe,TUNE.redeTiefe));
   }
-  pruefe(BARTHEKE,'bar',S.tiefe<=TUNE.barTiefe);
-  pruefe(WASCHBECKEN,'wasser',S.tiefe<=TUNE.barTiefe);
+  pruefe(BARTHEKE,'bar',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
+  pruefe(WASCHBECKEN,'wasser',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(AUSGANG,'tuer',true);
   return bestes;
 }
@@ -1062,6 +1063,9 @@ function marvinStellt(){
    Gewinnen ist nicht noetig: danach fliegen beide raus.
    ========================================================================== */
 function starteKloppe(){
+  /* Im Stroboskop ist Ausweichen in die Tiefe die halbe Miete - hier geht
+     sie an, sonst ist der Club flach. */
+  setzeTiefe(true); S.tiefe=0.5;
   S.modus='kloppe'; S.kloppeStand='kampf';
   S.ich=kaempfer({ x:S.x, t:S.tiefe, blick:1, hp:TUNE.kloppeLeben, maxHp:TUNE.kloppeLeben });
   const mv=gegner('schlaeger', S.x+26, S.tiefe);
@@ -1072,6 +1076,7 @@ function starteKloppe(){
   SFX.aua();
 }
 function kloppeVorbei(gewonnen){
+  setzeTiefe(false);
   S.kloppeStand=gewonnen?'gewonnen':'verloren';
   wirke(gewonnen?{mut:8,ruf:6,flag:'clubKloppeGewonnen'}:{ruf:-4,flag:'clubKloppeVerloren'});
   S.ich=null; S.gegner=[];
@@ -1086,7 +1091,7 @@ function kloppe(dt){
   const rt=(runterAn?1:0)-(hochAn?1:0);
   if(ich.zustand==='frei'||ich.zustand==='block'){
     if(richtung){ ich.x+=richtung*TUNE.gehTempo*0.62*d; ich.blick=richtung; }
-    if(rt) bewegeTiefe(ich,rt,d,TIEFE.tempo*0.8,16);
+    if(rt) kampfTiefe(ich,rt,d);
   }
   ich.x=Math.max(14,Math.min(LEVEL_B-14,ich.x));
   S.x=ich.x; S.tiefe=ich.t;
@@ -1094,6 +1099,7 @@ function kloppe(dt){
   blocke(ich, !!S.blockAn && aktionPuffer.length===0);
   while(aktionPuffer.length){
     aktionPuffer.shift();
+    rasteAufGegner(ich,S.gegner,TUNE.kloppeReich);
     let gekontert=false;
     for(const g of S.gegner){ if(g.hp<=0) continue;
       if(konterVersuch(ich,g,{reichweite:TUNE.kloppeReich})){ gekontert=true; SFX.hit(); break; } }
@@ -1176,7 +1182,7 @@ function update(dt){
      Menge vorbei. */
   if(S.dunkel>TUNE.strobeGefahrAb&&S.stolpernT<=0&&S.confidenceT<=0){
     for(const tz of TANZER){
-      if(Math.abs(tz.x-S.x)<8&&Math.abs(tz.t-S.tiefe)<0.14){
+      if(Math.abs(tz.x-S.x)<8&&tiefeNah(tz.t,S.tiefe,0.14)){
         S.stolpernT=TUNE.stolpernDauer; S.vx=0; S.vt=0; S.ruettel=4;
         SFX.stolper(); meldung('ANGERANNT',1.2); break; } }
   }
@@ -1462,6 +1468,8 @@ function zeichneClub(){
 /* Die Schlaegerei. Im Stroboskop ist das Ausholen oft nicht zu sehen -
    das ist Absicht und steht so im Plan: schlechte Sicht, Leute im Weg. */
 function zeichneKloppe(liste){
+  zeichneTiefenlinien(Math.round(S.kamX)-4,Math.round(S.kamX)+W+4);
+  for(const g of S.gegner) zeichneTiefenMarke(g,S.ich);
   const malK=(k,steh,grund)=>liste.push({t:k.t, mal:()=>{
     const lauf=laufBild(k);
     let rows=steh;

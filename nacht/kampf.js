@@ -51,7 +51,17 @@ const KAMPF = {
   rolleWeite:        0.42,   // Anteil des Tiefenbandes
   rolleUnverwundbar: 0.22,
 
-  /* (6) TREFFER */
+  /* (6) TIEFE IM KAMPF
+     Im Kampf soll die dritte Achse sich anfuehlen wie ein Schritt zur
+     Seite, nicht wie Schieben: direkter als beim Herumlaufen.
+     rastenBis: so weit darf ein Schlag die eigene Tiefe an die des Gegners
+     angleichen. Ohne das schlaegt man ins Leere, weil man ein Hundertstel
+     danebensteht - und sieht nicht, warum. */
+  tiefeTempo:      1.45,
+  tiefeTraegheit:    22,
+  rastenBis:       0.16,
+
+  /* (7) TREFFER */
   unverwundbarNachTreffer: 0.55,
   rueckstoss:   22,
   hitStop:    0.07,   // kurzer Zeitstopp, macht Treffer wuchtig
@@ -85,6 +95,37 @@ const hatAusdauer = (k,n) => k.ausdauer >= n;
 function verbrauche(k,n){
   k.ausdauer = Math.max(0, k.ausdauer - n);
   k.ausdauerPause = KAMPF.ausdauerPause;
+}
+
+/* ---- Tiefe im Kampf ----
+   Eine Stelle fuer alle vier Kaempfe: gleiche Traegheit, gleiches Tempo. */
+function kampfTiefe(k,richtung,dt,faktor){
+  bewegeTiefe(k,richtung,dt,KAMPF.tiefeTempo*(faktor===undefined?1:faktor),KAMPF.tiefeTraegheit);
+}
+/* Beim Zuschlagen auf die Tiefe des naechsten Gegners einrasten, wenn man
+   knapp daneben steht. Liefert den Gegner, auf den gerastet wurde. */
+function rasteAufGegner(s,gegner,reichweite){
+  if(!tiefeAn()) return null;
+  let bester=null,d0=1e9;
+  for(const g of (gegner||[])){
+    if(!g||g.hp<=0) continue;
+    const vor=(g.x-s.x)*s.blick;
+    if(vor<-4||vor>(reichweite||KAMPF.reichweite)+6) continue;
+    const d=Math.abs((g.t||0)-(s.t||0));
+    if(d<d0){ d0=d; bester=g; }
+  }
+  if(bester) tiefeRasten(s,bester,KAMPF.rastenBis);
+  return bester;
+}
+/* Zeigt, dass man auf gleicher Hoehe steht - der Strich unter dem Gegner
+   ist die Antwort auf "warum treffe ich nicht?". */
+function zeichneTiefenMarke(g,s){
+  if(!tiefeAn()||!g||g.hp<=0) return;
+  const gleich=tiefeNah(g.t,s.t,KAMPF.tiefeToleranz);
+  ctx.globalAlpha=gleich?.85:.3;
+  ctx.fillStyle=gleich?'#ffd447':'#4a4363';
+  ctx.fillRect(Math.round(g.x-4),Math.round(bodenY(g.t))+2,9,1);
+  ctx.globalAlpha=1;
 }
 
 /* ---- Aktionen ---- */
@@ -159,7 +200,8 @@ function imKonterfenster(g, anteil){
 function trifftRaeumlich(a, z, reichweite){
   const vor = (z.x - a.x) * a.blick;
   if(vor < 0 || vor > reichweite) return false;
-  return Math.abs((z.t || 0) - (a.t || 0)) <= KAMPF.tiefeToleranz;
+  /* Ohne Tiefe zaehlt nur die Waagerechte - tiefeNah() ist dann immer wahr. */
+  return tiefeNah(z.t, a.t, KAMPF.tiefeToleranz);
 }
 
 /* ---- Treffer aufloesen ----

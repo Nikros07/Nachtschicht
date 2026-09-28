@@ -105,15 +105,15 @@
 </div>
 <div id="rotate"><div class="ph"></div><b>HANDY DREHEN</b><span>NACHTSCHICHT LAEUFT IM QUERFORMAT</span></div>
 
-<script src="nacht/kern.js?v=202609201245"></script>
-<script src="nacht/bild.js?v=202609201245"></script>
-<script src="nacht/ton.js?v=202609201245"></script>
-<script src="nacht/stand.js?v=202609201245"></script>
-<script src="nacht/welt.js?v=202609201245"></script>
-<script src="nacht/nacht.js?v=202609201245"></script>
-<script src="nacht/dialog.js?v=202609201245"></script>
-<script src="nacht/mobil.js?v=202609201245"></script>
-<script src="nacht/handy.js?v=202609201245"></script>
+<script src="nacht/kern.js?v=202609282136"></script>
+<script src="nacht/bild.js?v=202609282136"></script>
+<script src="nacht/ton.js?v=202609282136"></script>
+<script src="nacht/stand.js?v=202609282136"></script>
+<script src="nacht/welt.js?v=202609282136"></script>
+<script src="nacht/nacht.js?v=202609282136"></script>
+<script src="nacht/dialog.js?v=202609282136"></script>
+<script src="nacht/mobil.js?v=202609282136"></script>
+<script src="nacht/handy.js?v=202609282136"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -482,15 +482,9 @@ function spaetiZuruecksetzen(){
 }
 neuesSpiel();
 
-/* ==========================================================================
-   KEINE TIEFE IN DIESEM LEVEL
-   Hier gibt es niemanden, an dem man vorbeimuss, und keinen Kampf, in dem
-   man ausweicht - die dritte Achse waere nur ein Knopf mehr. Die Zahlen im
-   TUNE-Block bleiben stehen: sie regeln jetzt nur noch, wer beim Zeichnen
-   vor wem steht.
-   ========================================================================== */
-const TIEFE_AN=false;
-setzeTiefenband(TIEFE_AN?TUNE.tiefeHinten:BODEN,TIEFE_AN?TUNE.tiefeVorne:BODEN,TUNE.tiefeWelt);
+/* Die Tiefe entscheidet nacht/welt.js (TIEFE_PRO_SEITE). Der vierte
+   Wert ist die Bodenlinie fuer den flachen Fall. */
+setzeTiefenband(TUNE.tiefeHinten,TUNE.tiefeVorne,TUNE.tiefeWelt,BODEN);
 
 /* ==========================================================================
    EINGABE
@@ -610,7 +604,7 @@ function update(dt){
   S.x+=S.vx*dt;
   S.x=Math.max(14,Math.min(LEVEL_B-14,S.x));
   /* Tiefe ausgeschrieben - S.t ist die Spielzeit. */
-  const rt=TIEFE_AN?((runterAn?1:0)-(hochAn?1:0)):0;
+  const rt=tiefeAn()?((runterAn?1:0)-(hochAn?1:0)):0;
   S.vt+=(rt*TUNE.tiefeTempo*langsam-S.vt)*Math.min(1,14*dt);
   S.tiefe=Math.max(0,Math.min(1,S.tiefe+S.vt*dt));
 
@@ -672,7 +666,7 @@ function update(dt){
 function naechstesZiel(){
   let bestes=null, d0=1e9;
   const pruefe=(obj,art,tiefe,reich)=>{
-    if(TIEFE_AN&&Math.abs(tiefe-S.tiefe)>TUNE.redeTiefe) return;
+    if(!tiefeNah(tiefe,S.tiefe,TUNE.redeTiefe)) return;
     const d=Math.abs(obj.x-S.x);
     if(d<(reich||TUNE.reichweite)&&d<d0){ bestes={art,obj}; d0=d; }
   };

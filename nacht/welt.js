@@ -34,25 +34,74 @@ const TIEFE={
                 // ueber das ganze Band - dann bringt Ausweichen in die Tiefe
                 // gar nichts mehr, und genau davon lebt das Schleichen.
 };
-function setzeTiefenband(hinten,vorne,welt){
+/* ==========================================================================
+   WO DIE TIEFE UEBERHAUPT GILT - eine Stelle fuer das ganze Spiel.
+
+   Die dritte Achse ist nicht ueberall ein Gewinn. Beim Herumlaufen ist sie
+   nur ein Knopf mehr; im Kampf ist sie das, was Ausweichen erst moeglich
+   macht. Deshalb steht hier pro Seite, was gilt:
+
+     false   flach. Hoch/runter bewegt nichts, und KEINE Abfrage im Spiel
+             fragt nach der Tiefe: Sichtkegel, Reichweiten, Treffer und
+             Abstaende rechnen dann rein waagerecht.
+     'kampf' flach beim Laufen, Tiefe nur im Kampf. Das Level schaltet mit
+             setzeTiefe(true/false) um.
+     true    immer Tiefe.
+
+   Wer ein Level umstellen will, aendert genau diese Zeile.
+   ========================================================================== */
+const TIEFE_PRO_SEITE={
+  'index.html':  false,    // Schule - Schleichen laeuft ueber Sicht und Laerm
+  'level2.html': false,    // Wohnung
+  'level3.html': 'kampf',  // Bus - flach, Tiefe nur in der Kloppe am Ende
+  'level4.html': true,     // Tuersteher - ein reiner Kampf
+  'level5.html': 'kampf',  // Club - flach, Tiefe nur in der Schlaegerei
+  'level6.html': false,    // Afterhour
+  'level7.html': false,    // Spaeti
+  'level8.html': true,     // Heimweg - der grosse Fight
+  'karte.html':  false,
+  'runner.html': false,
+};
+/* Ohne Browser (test/kampf.test.js laeuft in node) gibt es kein location.
+   Dort gilt Tiefe an - die Kampftests pruefen ja genau sie. */
+TIEFE.seite=(typeof location!=='undefined')
+  ? (location.pathname.split('/').pop()||'index.html').toLowerCase() : '';
+TIEFE.modus=TIEFE_PRO_SEITE.hasOwnProperty(TIEFE.seite)?TIEFE_PRO_SEITE[TIEFE.seite]
+           :(TIEFE.seite===''?true:false);
+TIEFE.an=(TIEFE.modus===true);
+TIEFE.flach=152;          // Boden-Y, solange die Tiefe aus ist
+
+/* Sagt allen anderen Teilen, ob die Tiefe gerade zaehlt. */
+const tiefeAn=()=>TIEFE.an;
+/* Level mit 'kampf' schalten damit um. Wo die Tabelle false sagt, bleibt es
+   aus - ein Level kann sich die Tiefe nicht selbst zurueckholen. */
+function setzeTiefe(an){ TIEFE.an=!!an&&TIEFE.modus!==false; }
+
+/* flachY: wo die Figuren stehen, wenn die Tiefe aus ist. Das ist die
+   Bodenlinie, die das Level vor der Tiefe benutzt hat - sonst rutscht
+   beim Abschalten alles ein paar Pixel nach unten. */
+function setzeTiefenband(hinten,vorne,welt,flachY){
   TIEFE.hinten=hinten; TIEFE.vorne=vorne;
   if(welt!==undefined) TIEFE.welt=welt;
+  TIEFE.flach=(flachY!==undefined)?flachY:vorne;
 }
 
 /* Boden-Y fuer eine Tiefe. t wird geklemmt, damit niemand aus dem Band faellt. */
 function bodenY(t){
+  if(!TIEFE.an) return TIEFE.flach;
   const k=Math.max(0,Math.min(1,t));
   return TIEFE.hinten+k*(TIEFE.vorne-TIEFE.hinten);
 }
 /* Bildschirm-Y einer Figur, Sprunghoehe eingerechnet. */
 const figurY=e=>bodenY(e.t)-(e.h||0);
 /* Tiefe in Weltmass - fuer Abstaende und Sichtkegel. */
-const tWelt=t=>t*TIEFE.welt;
+const tWelt=t=>TIEFE.an?t*TIEFE.welt:0;
 
 /* ---- Bewegung in die Tiefe ----
    richtung: -1 nach hinten, +1 nach vorne, 0 nichts.
    traegheit macht es weich statt an/aus; 0 waere sofortiges Stoppen. */
 function bewegeTiefe(e,richtung,dt,tempo,traegheit=14){
+  if(!TIEFE.an){ e.vt=0; return; }
   const ziel=(richtung||0)*(tempo||TIEFE.tempo);
   e.vt=(e.vt||0)+(ziel-(e.vt||0))*Math.min(1,traegheit*dt);
   e.t=Math.max(0,Math.min(1,(e.t||0)+e.vt*dt));
@@ -67,6 +116,20 @@ function abstand2D(a,b){
 }
 const nah2D=(a,b,r)=>abstand2D(a,b)<=r;
 
+/* Sind zwei Tiefen nah genug beieinander? Bei abgeschalteter Tiefe immer.
+   Diese eine Funktion ersetzt die Abfragen, die frueher in jedem Level
+   standen (Math.abs(a-b)>0.3 -> weiter). */
+const tiefeNah=(a,b,tol)=>!TIEFE.an||Math.abs((a||0)-(b||0))<=(tol===undefined?0.3:tol);
+
+/* Im Kampf soll ein Schlag nicht daran scheitern, dass man ein Hundertstel
+   daneben steht. Wer zuschlaegt und nah genug dran ist, rastet auf die
+   Tiefe des Ziels ein - kleiner Schritt, keine Teleportation. */
+function tiefeRasten(a,z,maxSchritt){
+  if(!TIEFE.an||!z) return;
+  const d=(z.t||0)-(a.t||0), m=maxSchritt===undefined?0.16:maxSchritt;
+  if(Math.abs(d)<=m){ a.t=z.t; a.vt=0; }
+}
+
 /* ---- Sichtkegel in der Flaeche ----
    Die Wache schaut in Blickrichtung (blick: -1 oder +1). Getroffen wird, wer
    vor ihr steht, innerhalb der Reichweite, und nicht zu weit seitlich -
@@ -75,6 +138,7 @@ const nah2D=(a,b,r)=>abstand2D(a,b)<=r;
 function imSichtkegel(wache,ziel,weite,oeffnung=0.5){
   const vor=(ziel.x-wache.x)*(wache.blick||1);
   if(vor<=0||vor>weite) return false;
+  /* Ohne Tiefe ist der Kegel eine Linie: tWelt liefert dann 0. */
   const seit=Math.abs(tWelt((ziel.t||0)-(wache.t||0)));
   /* Der Kegel waechst mit der Entfernung, aber nicht unbegrenzt: seitlich
      ist bei kegelMax Schluss. Wer weit genug hinten oder vorne laeuft, ist
@@ -92,6 +156,17 @@ function zeichneNachTiefe(liste){
     .map((o,i)=>[o,i])
     .sort((a,b)=> (a[0].t-b[0].t) || (a[1]-b[1]))
     .forEach(([o])=>o.mal());
+}
+
+/* ---- Die Spuren auf dem Boden ----
+   Ohne sichtbare Linien raet man, wie weit hinten man steht. Drei Striche
+   ueber die Arena genuegen: hinten, Mitte, vorne. */
+function zeichneTiefenlinien(x0,x1,farbe='#ffffff12',n=3){
+  if(!TIEFE.an) return;
+  for(let i=0;i<n;i++){
+    const y=Math.round(bodenY(n===1?0:i/(n-1)));
+    ctx.fillStyle=farbe; ctx.fillRect(x0,y,x1-x0,1);
+  }
 }
 
 /* ---- Schatten unter einer Figur ----
