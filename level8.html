@@ -28,17 +28,17 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609282203"></script>
-<script src="nacht/bild.js?v=202609282203"></script>
-<script src="nacht/ton.js?v=202609282203"></script>
-<script src="nacht/stand.js?v=202609282203"></script>
-<script src="nacht/welt.js?v=202609282203"></script>
-<script src="nacht/kampf.js?v=202609282203"></script>
-<script src="nacht/nacht.js?v=202609282203"></script>
-<script src="nacht/dialog.js?v=202609282203"></script>
-<script src="nacht/eingabe.js?v=202609282203"></script>
-<script src="nacht/mobil.js?v=202609282203"></script>
-<script src="nacht/handy.js?v=202609282203"></script>
+<script src="nacht/kern.js?v=202609282206"></script>
+<script src="nacht/bild.js?v=202609282206"></script>
+<script src="nacht/ton.js?v=202609282206"></script>
+<script src="nacht/stand.js?v=202609282206"></script>
+<script src="nacht/welt.js?v=202609282206"></script>
+<script src="nacht/kampf.js?v=202609282206"></script>
+<script src="nacht/nacht.js?v=202609282206"></script>
+<script src="nacht/dialog.js?v=202609282206"></script>
+<script src="nacht/eingabe.js?v=202609282206"></script>
+<script src="nacht/mobil.js?v=202609282206"></script>
+<script src="nacht/handy.js?v=202609282206"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -1182,9 +1182,6 @@ function beendeGrossenKampf(gewonnen){
 /* ---- Zeichnen ---- */
 function zeichneKampf8(){
   const A=ARENEN[S.arena], s=S.spielerK, g=S.gegner;
-  zeichneTiefenlinien(0,W);
-  zeichneTiefenMarke(g,s);
-  for(const h of S.handlanger) zeichneTiefenMarke(h,s);
   ctx.fillStyle=A.himmel; ctx.fillRect(0,0,W,H);
 
   /* Kulisse je Arena - grob, aber klar unterscheidbar */
@@ -1201,6 +1198,11 @@ function zeichneKampf8(){
   ctx.fillStyle=A.boden; ctx.fillRect(0,bodenY(0)-2,W,H-bodenY(0)+2);
   ctx.fillStyle=A.kante; ctx.fillRect(0,bodenY(0)-2,W,1);
   ctx.fillStyle='#00000044'; ctx.fillRect(0,bodenY(1)+3,W,H-bodenY(1));
+
+  /* Erst nach dem Boden, sonst uebermalt ihn die Arena wieder. */
+  zeichneTiefenlinien(0,W);
+  zeichneTiefenMarke(g,s);
+  for(const h of S.handlanger) zeichneTiefenMarke(h,s);
 
   const liste=[];
   const malKaempfer=(k,steh,tintBlock,grundTint)=>({t:k.t, mal:()=>{
