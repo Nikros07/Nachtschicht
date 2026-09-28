@@ -123,7 +123,7 @@ _hs.textContent=[
 document.head.appendChild(_hs);
 
 const _fenster=document.createElement('div'); _fenster.id='hfenster';
-_fenster.innerHTML='<div id="hgeraet"><div id="hkopf"><span>HANDY_DREHBUCH</span><span id="huhr"></span></div>'+
+_fenster.innerHTML='<div id="hgeraet"><div id="hkopf"><span>NACHRICHTEN</span><span id="huhr"></span></div>'+
   '<div id="hliste"></div><button id="hzu">WEGLEGEN</button></div>';
 document.body.appendChild(_fenster);
 const _toast=document.createElement('div'); _toast.id='htoast'; document.body.appendChild(_toast);
@@ -148,10 +148,10 @@ function handyZeichnen(){
   const l=document.getElementById('hliste'); l.innerHTML='';
   if(!handyDa()){
     l.innerHTML='<div id="hleer">DEIN HANDY LIEGT IM LEHRERZIMMER.<br><br>'+
-      handyListe().length+' HANDY_DREHBUCH, DIE DU NICHT SIEHST.</div>'; return;
+      handyListe().length+' NACHRICHTEN, DIE DU NICHT SIEHST.</div>'; return;
   }
   const liste=handyListe();
-  if(!liste.length){ l.innerHTML='<div id="hleer">KEINE HANDY_DREHBUCH.<br>NOCH NICHT.</div>'; return; }
+  if(!liste.length){ l.innerHTML='<div id="hleer">KEINE NACHRICHTEN.<br>NOCH NICHT.</div>'; return; }
   for(const e of liste.slice().reverse()){
     const n=HANDY_DREHBUCH.find(x=>x.id===e.id); if(!n) continue;
     const d=document.createElement('div'); d.className='hmsg'+(e.gelesen?'':' neu');
