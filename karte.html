@@ -28,14 +28,15 @@
   <div id="base"><span>DIE STADT - ZWISCHEN DEN LEVELN</span><span>M TON &nbsp; T HANDY &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609282136"></script>
-<script src="nacht/bild.js?v=202609282136"></script>
-<script src="nacht/ton.js?v=202609282136"></script>
-<script src="nacht/stand.js?v=202609282136"></script>
-<script src="nacht/nacht.js?v=202609282136"></script>
-<script src="nacht/dialog.js?v=202609282136"></script>
-<script src="nacht/mobil.js?v=202609282136"></script>
-<script src="nacht/handy.js?v=202609282136"></script>
+<script src="nacht/kern.js?v=202609282203"></script>
+<script src="nacht/bild.js?v=202609282203"></script>
+<script src="nacht/ton.js?v=202609282203"></script>
+<script src="nacht/stand.js?v=202609282203"></script>
+<script src="nacht/nacht.js?v=202609282203"></script>
+<script src="nacht/dialog.js?v=202609282203"></script>
+<script src="nacht/eingabe.js?v=202609282203"></script>
+<script src="nacht/mobil.js?v=202609282203"></script>
+<script src="nacht/handy.js?v=202609282203"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - DIE STADTKARTE
@@ -199,8 +200,6 @@ addEventListener('keydown',e=>{
   if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); waehle(-1); }
   if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); waehle(1); }
   if(['KeyE','Enter','Space'].includes(e.code)){ e.preventDefault(); druckAktion(); }
-  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
-  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
 });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 

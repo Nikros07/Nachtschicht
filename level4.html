@@ -28,15 +28,16 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609282136"></script>
-<script src="nacht/bild.js?v=202609282136"></script>
-<script src="nacht/ton.js?v=202609282136"></script>
-<script src="nacht/stand.js?v=202609282136"></script>
-<script src="nacht/welt.js?v=202609282136"></script>
-<script src="nacht/kampf.js?v=202609282136"></script>
-<script src="nacht/nacht.js?v=202609282136"></script>
-<script src="nacht/mobil.js?v=202609282136"></script>
-<script src="nacht/handy.js?v=202609282136"></script>
+<script src="nacht/kern.js?v=202609282203"></script>
+<script src="nacht/bild.js?v=202609282203"></script>
+<script src="nacht/ton.js?v=202609282203"></script>
+<script src="nacht/stand.js?v=202609282203"></script>
+<script src="nacht/welt.js?v=202609282203"></script>
+<script src="nacht/kampf.js?v=202609282203"></script>
+<script src="nacht/nacht.js?v=202609282203"></script>
+<script src="nacht/eingabe.js?v=202609282203"></script>
+<script src="nacht/mobil.js?v=202609282203"></script>
+<script src="nacht/handy.js?v=202609282203"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -254,6 +255,11 @@ function mobilKontext(){
 }
 let linksAn=false, rechtsAn=false, hochAn=false, runterAn=false, rolleGedrueckt=false;
 
+/* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
+function pauseTaste(){
+  if(S.modus==='kampf'||S.modus==='pause') S.modus=S.modus==='kampf'?'pause':'kampf';
+}
+
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
@@ -263,9 +269,6 @@ addEventListener('keydown',e=>{
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); S.blockAn=true; }
   if(e.code==='Space'){ e.preventDefault(); rolleGedrueckt=true; }
-  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
-  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(e.code==='KeyP'&&(S.modus==='kampf'||S.modus==='pause')) S.modus=S.modus==='kampf'?'pause':'kampf';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;

@@ -6,6 +6,7 @@ const module_fuer=h=>['kern','bild','ton','stand']
   .concat(h.includes('nacht/kampf.js')?['kampf']:[])
   .concat(h.includes('nacht/nacht.js')?['nacht']:[])
   .concat(h.includes('nacht/dialog.js')?['dialog']:[])
+  .concat(h.includes('nacht/eingabe.js')?['eingabe']:[])
   .concat(h.includes('nacht/mobil.js')?['mobil']:[])
   .concat(h.includes('nacht/handy.js')?['handy']:[]);
 let fehler=0;

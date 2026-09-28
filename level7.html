@@ -28,15 +28,16 @@
   <div id="base"><span>LEVEL 7 - RUHEPAUSE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609282136"></script>
-<script src="nacht/bild.js?v=202609282136"></script>
-<script src="nacht/ton.js?v=202609282136"></script>
-<script src="nacht/stand.js?v=202609282136"></script>
-<script src="nacht/welt.js?v=202609282136"></script>
-<script src="nacht/nacht.js?v=202609282136"></script>
-<script src="nacht/dialog.js?v=202609282136"></script>
-<script src="nacht/mobil.js?v=202609282136"></script>
-<script src="nacht/handy.js?v=202609282136"></script>
+<script src="nacht/kern.js?v=202609282203"></script>
+<script src="nacht/bild.js?v=202609282203"></script>
+<script src="nacht/ton.js?v=202609282203"></script>
+<script src="nacht/stand.js?v=202609282203"></script>
+<script src="nacht/welt.js?v=202609282203"></script>
+<script src="nacht/nacht.js?v=202609282203"></script>
+<script src="nacht/dialog.js?v=202609282203"></script>
+<script src="nacht/eingabe.js?v=202609282203"></script>
+<script src="nacht/mobil.js?v=202609282203"></script>
+<script src="nacht/handy.js?v=202609282203"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -434,21 +435,19 @@ function druckAktion(){
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   aktionPuffer.push(S.t);
 }
+/* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
+function pauseTaste(){
+  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
+}
+
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
-  if(gespraechAktiv()){
-    if(['ArrowLeft','KeyA','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); gespraechWaehle(-1); return; }
-    if(['ArrowRight','KeyD','ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); gespraechWaehle(1); return; }
-  }
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
   if(['ArrowRight','KeyD'].includes(e.code)){ e.preventDefault(); rechtsAn=true; }
   if(e.code==='Space'){ e.preventDefault(); druckSprung(); }
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
-  if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); }
-  if(e.code==='KeyF'){ e.preventDefault(); vollbild(); }
-  if(e.code==='KeyP'&&(S.modus==='spiel'||S.modus==='pause')) S.modus=S.modus==='spiel'?'pause':'spiel';
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['ArrowLeft','KeyA'].includes(e.code)) linksAn=false;
