@@ -1,0 +1,75 @@
+/* ============================================================================
+   NACHTSCHICHT - das Gehaeuse
+
+   Jede Seite sah gleich aus und trug denselben Stil trotzdem als eigene
+   Kopie mit sich: zehn Dateien, je ueber siebzig Zeilen, und die einzigen
+   echten Unterschiede waren zwei Farbtoene. Jetzt steht es einmal hier.
+
+   Eine Seite bindet es ein und faerbt sich ueber zwei Variablen:
+
+     <link rel="stylesheet" href="nacht/stil.css?v=...">
+     <style>:root{ --raum:#140f26; --glanz:rgba(80,200,255,.08); }</style>
+
+   Die Handy-Fassung (nacht/mobil.js) legt ihre eigenen Regeln zur Laufzeit
+   darueber - die alte Knopfleiste (#touch) und die Dreh-Aufforderung sind
+   ersatzlos weg.
+   ========================================================================== */
+
+:root{
+  --raum:  #1b1030;                 /* Schimmer hinter dem Geraet */
+  --glanz: rgba(255,80,180,.08);    /* Farbe des Bildschirm-Leuchtens */
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html,body { height:100%; background:#04030a; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-family:monospace; touch-action:none; -webkit-tap-highlight-color:transparent;
+  background-image:radial-gradient(ellipse at 50% 40%,var(--raum) 0%,#04030a 70%); }
+
+/* Das Geraet, in dem das Bild steckt */
+#cab { position:relative; padding:10px 12px 14px; border-radius:10px;
+  background:linear-gradient(#1b1730,#0e0b1a 60%,#17132a);
+  box-shadow:0 0 0 2px #2a2246,0 0 60px rgba(120,60,220,.2),0 30px 60px rgba(0,0,0,.8); }
+#marquee { text-align:center; font:700 11px/1 monospace; letter-spacing:5px; color:#ff3d8b;
+  text-shadow:0 0 8px #ff3d8b99,0 0 18px #ff3d8b55; padding:2px 0 8px; user-select:none; }
+#base { display:flex; justify-content:space-between; font:700 8px/1 monospace; letter-spacing:2px;
+  color:#4a4363; padding-top:8px; user-select:none; }
+
+/* Der Bildschirm: Pixel bleiben Pixel, darueber liegt die Roehren-Scheibe */
+#screen { position:relative; line-height:0; border-radius:6px; overflow:hidden;
+  box-shadow:inset 0 0 0 2px #000,0 0 24px var(--glanz); }
+canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#000; }
+#crt { position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(105deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 38%),
+    radial-gradient(ellipse at center,rgba(0,0,0,0) 54%,rgba(0,0,0,.6) 100%),
+    repeating-linear-gradient(to bottom,rgba(0,0,0,.28) 0 1px,rgba(0,0,0,0) 1px 3px); }
+#crt::after { content:''; position:absolute; inset:0;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.8),inset 0 0 90px rgba(0,0,0,.5); }
+
+#fs { position:absolute; top:6px; right:8px; z-index:5;
+  background:rgba(20,16,34,.75); color:#8d86a8; border:1px solid #2a2246;
+  border-radius:5px; font:700 9px monospace; letter-spacing:1px; padding:4px 7px; cursor:pointer; }
+#fs:hover { color:#ffd447; border-color:#ffd447; }
+
+/* Levelauswahl als echte Links. Die Tastenbelegung allein reichte nicht:
+   ohne Klick ins Bild hat die Seite keinen Tastatur-Fokus, und am Handy
+   gibt es gar keine Taste 2. */
+#levelbar { display:flex; gap:6px; justify-content:center; padding-top:8px; }
+#levelbar a { flex:1; text-align:center; text-decoration:none;
+  font:700 9px/1 monospace; letter-spacing:1px; padding:7px 4px;
+  color:#8d86a8; background:rgba(255,255,255,.04);
+  border:1px solid #2a2246; border-radius:5px; }
+#levelbar a:hover { color:#ffd447; border-color:#ffd447; background:rgba(255,212,71,.08); }
+#levelbar a.aktiv { color:#ff3d8b; border-color:#ff3d8b; background:rgba(255,61,139,.10); }
+
+/* Vollbild: nur das Bild, kein Rahmen, keine Leisten */
+#cab:fullscreen { padding:0; border-radius:0; box-shadow:none; background:#000;
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+#cab:fullscreen #marquee, #cab:fullscreen #base, #cab:fullscreen #levelbar { display:none; }
+#cab:fullscreen #screen { border-radius:0; }
+
+/* Am Handy uebernimmt nacht/mobil.js das Layout. Was es nicht selbst
+   ausblendet, steht hier: Schriftzug, Fussleiste, Vollbild-Knopf. */
+html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
