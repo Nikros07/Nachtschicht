@@ -21,6 +21,23 @@ Der große Plan steht in [PLAN.md](PLAN.md) — was gebaut wird und warum.
 | 4 | Stadtkarte, Handy, Verzweigungen, Enden | ⬜ offen |
 | 5 | Nebenaufgaben, Balancing, Schwierigkeitsgrade | ⬜ offen |
 
+## Wie der Code aufgebaut ist
+
+Die Karte steht in [ARCHITEKTUR.md](ARCHITEKTUR.md): welche Datei wofür
+zuständig ist, die vier zentralen Tabellen (Tiefe, Schwierigkeit,
+Handy-Nachrichten, Startwerte), Rezepte für typische Änderungen und die
+Fallgruben.
+
+**Die Tiefe steht in einer Tabelle** — `TIEFE_PRO_SEITE` in `nacht/welt.js`:
+
+| Level | Tiefe |
+|:--|:--|
+| 1 Schule, 2 Wohnung, 6 Afterhour, 7 Späti | aus |
+| 3 Bus, 5 Club | nur im Kampf |
+| 4 Türsteher, 8 Heimweg | an |
+
+Umstellen heißt: eine Zeile ändern.
+
 ## Die Engine (`nacht/`)
 
 | Datei | Inhalt |
@@ -31,6 +48,10 @@ Der große Plan steht in [PLAN.md](PLAN.md) — was gebaut wird und warum.
 | `stand.js` | Crew, Pegel, Bestzeiten (die alten Schlüssel) |
 | `nacht.js` | Werte, Beziehungen, Inventar, Flags, Kapitel |
 | `dialog.js` | Gesprächsbäume mit Bedingungen, Wirkungen, Zeitdruck |
+| `eingabe.js` | Tasten, die überall dasselbe tun (Gespräch, Ton, Vollbild, Pause, Sprungmarken) |
+| `mobil.js` | Die Handy-Fassung |
+| `handy.js` | Nachrichten im Spiel |
+| `stil.css` | Das Gehäuse aller Seiten |
 | `welt.js` | Tiefenachse, Tiefensortierung, Abstand, Sichtkegel |
 | `kampf.js` | Nahkampf, Konter, Blocken, Ausdauer, Ausweichrolle, Gegner-KI |
 
