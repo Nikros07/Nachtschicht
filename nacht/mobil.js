@@ -76,100 +76,158 @@ document.addEventListener('visibilitychange',function(){ if(document.hidden) all
    AUFBAU
    -------------------------------------------------------------------------- */
 const stil=document.createElement('style');
-stil.textContent=[
-  '/* Die alte Knopfleiste und die Dreh-Aufforderung sind abgeloest. */',
-  'html.touch #touch, html.touch #rotate { display:none !important; }',
-  '/* Die Levelleiste wandert in die kleine Leiste oben - als Textlinks unter',
-  '   dem Bild war sie am Handy ein Stolperdraht direkt neben dem Daumen. */',
-  'html.touch #levelbar, html.touch #fs, html.touch #texit { display:none !important; }',
-  '/* html UND body sind im Level als Flex-Box zentriert. Bleibt html dabei,',
-  '   wird body nur so breit wie sein Inhalt - und das ganze Bedienfeld',
-  '   sitzt dann in einer 320 Pixel breiten Spalte statt auf dem Schirm. */',
-  'html.touch, html.touch body { height:100%; overflow:hidden; display:block; }',
-  'html.touch #cab { display:flex; flex-direction:column; width:100%; height:100%;',
-  '  padding:0; background:#05040c; }',
-  'html.touch #screen { flex:0 0 auto; align-self:center; }',
-  '/* Etwas Luft ueber dem Bild: hoch gehalten liegt das Handy tief in der',
-  '   Hand, und ganz oben am Rand schaut man staendig nach oben. */',
-  'html.touch:not(.mobil-quer) #screen { margin-top:5vh; }',
-  '#mdeck { position:relative; flex:1 1 auto; min-height:0;',
-  '  touch-action:none; user-select:none; -webkit-user-select:none; }',
-  '/* Quer liegt das Bedienfeld ueber dem Bild - sonst bliebe vom Bild nichts.',
-  '   Hoch steht es darunter und verdeckt nie etwas. */',
-  'html.touch.mobil-quer #cab { display:block; position:relative; }',
-  'html.touch.mobil-quer #screen { position:absolute; inset:0; display:flex;',
-  '  align-items:center; justify-content:center; }',
-  'html.touch.mobil-quer #mdeck { position:absolute; inset:0; }',
-  'html.touch.mobil-quer .mtaste, html.touch.mobil-quer #mstick { opacity:.55; }',
-  'html.touch.mobil-quer .mtaste:active, html.touch.mobil-quer #mstick.zieht { opacity:1; }',
-  '#mstick { position:absolute; left:4%; bottom:8%; width:38vw; max-width:190px;',
-  '  aspect-ratio:1; border-radius:50%;',
-  '  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.07),rgba(255,255,255,.02) 70%);',
-  '  border:2px solid rgba(255,255,255,.14); }',
-  '#mknopf { position:absolute; left:50%; top:50%; width:42%; aspect-ratio:1;',
-  '  margin:-21% 0 0 -21%; border-radius:50%;',
-  '  background:rgba(255,61,139,.30); border:2px solid #ff3d8b;',
-  '  transition:background .12s; pointer-events:none; }',
-  '#mstick.zieht #mknopf { background:rgba(255,61,139,.55); }',
-  '#mstick .mring { position:absolute; inset:26%; border-radius:50%;',
-  '  border:1px dashed rgba(255,255,255,.12); pointer-events:none; }',
-  '.mtaste { position:absolute; border-radius:50%;',
-  '  background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.16);',
-  '  color:#cfc8e6; font:700 11px/1.1 monospace; letter-spacing:1px;',
-  '  display:flex; align-items:center; justify-content:center; text-align:center;',
-  '  padding:4px; }',
-  '.mtaste:active { background:rgba(255,61,139,.34); border-color:#ff3d8b; color:#fff; }',
-  '.mtaste.aus { display:none; }',
-  '#mb-aktion { right:4%;  bottom:7%;  width:30vw; max-width:150px; aspect-ratio:1;',
-  '  border-color:#ffd447; color:#ffd447; font-size:13px; }',
-  '#mb-aktion:active { background:rgba(255,212,71,.34); border-color:#ffd447; color:#fff; }',
-  '#mb-zwei   { right:36%; bottom:11%; width:21vw; max-width:104px; aspect-ratio:1; }',
-  '/* Zusatzknoepfe: was nur dieses Level kann. Sie liegen ueber dem',
-  '   Aktionsknopf, damit der Daumen sie erreicht ohne umzugreifen. */',
-  '.mx { position:absolute; right:8%; width:19vw; max-width:92px; aspect-ratio:1;',
-  '  font-size:10px; }',
-  '#mb-x1 { bottom:40%; }',
-  '#mb-x2 { right:34%; bottom:44%; }',
-  '#mb-block  { right:6%;  bottom:40%; width:21vw; max-width:104px; aspect-ratio:1;',
-  '  border-color:#42d9ff; color:#42d9ff; }',
-  '#mb-block:active { background:rgba(66,217,255,.30); border-color:#42d9ff; color:#fff; }',
-  '/* Die kleine Leiste oben: Pause, Ton, Vollbild, Level. Absichtlich klein',
-  '   und weit weg von den Daumen - man trifft sie nicht aus Versehen. */',
-  '#mbar { position:absolute; top:0; left:0; right:0; display:flex; gap:6px;',
-  '  padding:6px 8px; }',
-  '#mbar button, #mbar a { flex:1; text-decoration:none; text-align:center;',
-  '  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);',
-  '  border-radius:6px; color:#8d86a8; font:700 10px/1 monospace; letter-spacing:1px;',
-  '  padding:8px 2px; }',
-  'html.touch.mobil-quer #mbar { width:auto; left:auto; right:8px; top:8px; opacity:.5; }',
-  'html.touch.mobil-quer #mbar button, html.touch.mobil-quer #mbar a { padding:6px 8px; }',
-  '/* Gespraech: die Antworten sind hier Flaechen, keine Liste zum Blaettern. */',
-  '#mtalk { position:absolute; inset:0; display:none; flex-direction:column;',
-  '  gap:7px; padding:10px 10px 12px; background:#05040c; z-index:4; }',
-  '#mtalk.an { display:flex; }',
-  '#mtalk .wer { font:700 10px/1 monospace; letter-spacing:2px; color:#42d9ff; }',
-  '#mtalk .was { font:400 12px/1.45 monospace; color:#f2f0ff; flex:0 0 auto; }',
-  '#mtalk .liste { flex:1; display:flex; flex-direction:column; gap:7px;',
-  '  justify-content:flex-end; overflow:hidden; }',
-  '#mtalk .opt { background:rgba(255,255,255,.05); border:1px solid #2a2246;',
-  '  border-left:3px solid #ff3d8b; border-radius:6px; color:#cfc8e6;',
-  '  font:400 12px/1.3 monospace; padding:11px 10px; text-align:left; }',
-  '#mtalk .opt:active { background:rgba(255,61,139,.26); color:#fff; }',
-  '#mtalk .weiter { background:rgba(255,212,71,.10); border:1px solid #ffd447;',
-  '  border-radius:6px; color:#ffd447; font:700 11px/1 monospace; letter-spacing:2px;',
-  '  padding:14px; }',
-  '#mtalk .uhr { height:3px; background:#ff3d8b; border-radius:2px; align-self:flex-start; }',
-  '/* Levelmenue - baut sich aus der Leiste, die am Rechner unter dem Bild steht. */',
-  '#mmenu { position:absolute; inset:0; display:none; flex-direction:column; gap:6px;',
-  '  padding:10px; background:#05040c; overflow:auto; z-index:5; }',
-  '#mmenu.an { display:flex; }',
-  '#mmenu a { text-decoration:none; text-align:left; color:#cfc8e6;',
-  '  background:rgba(255,255,255,.05); border:1px solid #2a2246; border-radius:6px;',
-  '  font:700 12px/1 monospace; letter-spacing:1px; padding:13px 12px; }',
-  '#mmenu a.aktiv { color:#ff3d8b; border-color:#ff3d8b; }',
-  '#mmenu .zu { background:rgba(255,212,71,.10); border:1px solid #ffd447; color:#ffd447;',
-  '  border-radius:6px; font:700 11px/1 monospace; letter-spacing:2px; padding:13px; }'
-].join('\n');
+stil.textContent=`
+/* Die alte Knopfleiste, der Vollbild-Ausstieg und die Dreh-Aufforderung
+   sind abgeloest - falls eine Seite sie noch mitbringt, bleiben sie aus. */
+html.touch #touch, html.touch #rotate, html.touch #texit,
+html.touch #levelbar, html.touch #fs { display:none !important; }
+
+/* html UND body sind im Level als Flex-Box zentriert. Bleibt html dabei,
+   wird body nur so breit wie sein Inhalt - und das ganze Bedienfeld sitzt
+   in einer 320 Pixel breiten Spalte statt auf dem Schirm.
+   overscroll-behavior verhindert das Gummiband beim Wischen. */
+html.touch, html.touch body { height:100%; overflow:hidden; display:block;
+  overscroll-behavior:none; -webkit-touch-callout:none; }
+html.touch #cab { display:flex; flex-direction:column; width:100%; height:100%;
+  padding:0; background:#05040c; }
+@supports (height:100dvh){ html.touch #cab { height:100dvh; } }
+
+/* Hochkant: Bild oben, Bedienfeld darunter. Das Bild bekommt die volle
+   Breite (siehe lage()), oben bleibt Platz fuer die Kamera-Kerbe. */
+html.touch #screen { flex:0 0 auto; align-self:center;
+  margin-top:calc(env(safe-area-inset-top,0px) + 8px); }
+#mdeck { position:relative; flex:1 1 auto; min-height:0;
+  touch-action:none; user-select:none; -webkit-user-select:none; }
+
+/* Quer liegt das Bedienfeld ueber dem Bild - sonst bliebe vom Bild nichts. */
+html.touch.mobil-quer #cab { display:block; position:relative; }
+html.touch.mobil-quer #screen { position:absolute; inset:0; display:flex;
+  align-items:center; justify-content:center; margin:0; }
+html.touch.mobil-quer #mdeck { position:absolute; inset:0; }
+html.touch.mobil-quer .mtaste { opacity:.6; }
+html.touch.mobil-quer .mtaste:active { opacity:1; }
+
+/* ---- Der Stick ----
+   Er steht nicht mehr fest: wo der Daumen die linke Haelfte beruehrt, dort
+   erscheint er. Ein fester Kreis ist auf einem 812 Pixel hohen Schirm
+   entweder zu weit unten oder zu weit oben - je nachdem, wie man haelt. */
+#mzone { position:absolute; left:0; top:0; width:52%; height:100%; }
+html.touch.mobil-quer #mzone { width:45%; }
+#mstick { position:absolute; width:38vw; max-width:180px; aspect-ratio:1;
+  margin-left:-19vw; margin-top:-19vw; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.07),rgba(255,255,255,.02) 70%);
+  border:2px solid rgba(255,255,255,.14); opacity:.32; transition:opacity .15s; }
+@media (min-width:520px){ #mstick { margin-left:-90px; margin-top:-90px; } }
+#mstick.zieht { opacity:1; }
+#mknopf { position:absolute; left:50%; top:50%; width:40%; aspect-ratio:1;
+  margin:-20% 0 0 -20%; border-radius:50%;
+  background:rgba(255,61,139,.32); border:2px solid #ff3d8b;
+  transition:background .12s; }
+#mstick.zieht #mknopf { background:rgba(255,61,139,.6); }
+#mstick .mring { position:absolute; inset:24%; border-radius:50%;
+  border:1px dashed rgba(255,255,255,.12); }
+
+/* ---- Die Knoepfe rechts ----
+   Gross, weit unten, mit Abstand zum Rand: so liegt der rechte Daumen ohne
+   Umgreifen darauf, und unter dem Home-Balken sitzt nichts. */
+.mtaste { position:absolute; border-radius:50%;
+  background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.18);
+  color:#cfc8e6; font:700 12px/1.1 monospace; letter-spacing:1px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:4px; transition:transform .06s, background .06s; }
+.mtaste:active { background:rgba(255,61,139,.34); border-color:#ff3d8b; color:#fff;
+  transform:scale(.94); }
+.mtaste.aus { display:none; }
+#mb-aktion { right:5%;  bottom:calc(env(safe-area-inset-bottom,0px) + 9%);
+  width:34vw; max-width:170px; aspect-ratio:1;
+  border-color:#ffd447; color:#ffd447; font-size:14px; }
+#mb-aktion:active { background:rgba(255,212,71,.34); border-color:#ffd447; color:#fff; }
+#mb-zwei { right:39%; bottom:calc(env(safe-area-inset-bottom,0px) + 15%);
+  width:24vw; max-width:118px; aspect-ratio:1; }
+#mb-block { right:6%; bottom:calc(env(safe-area-inset-bottom,0px) + 40%);
+  width:24vw; max-width:118px; aspect-ratio:1;
+  border-color:#42d9ff; color:#42d9ff; }
+#mb-block:active { background:rgba(66,217,255,.30); border-color:#42d9ff; color:#fff; }
+/* Zusatzknoepfe: was nur dieses Level kann. */
+.mx { position:absolute; right:8%; width:21vw; max-width:100px; aspect-ratio:1;
+  font-size:11px; }
+#mb-x1 { bottom:calc(env(safe-area-inset-bottom,0px) + 40%); }
+#mb-x2 { right:38%; bottom:calc(env(safe-area-inset-bottom,0px) + 44%); }
+
+/* Quer bemisst sich alles an der HOEHE. Nach der Breite gerechnet wird
+   der Aktionsknopf auf einem liegenden Handy fast halb so hoch wie der
+   Schirm und deckt das halbe Bild zu. */
+html.touch.mobil-quer #mstick { width:44vh; margin-left:-22vh; margin-top:-22vh; max-width:none; }
+html.touch.mobil-quer #mb-aktion { width:26vh; max-width:none; bottom:6%; right:3%; }
+html.touch.mobil-quer #mb-zwei   { width:19vh; max-width:none; bottom:10%; right:26%; }
+html.touch.mobil-quer #mb-block  { width:19vh; max-width:none; bottom:44%; right:4%; }
+html.touch.mobil-quer .mx        { width:17vh; max-width:none; right:5%; }
+html.touch.mobil-quer #mb-x1 { bottom:44%; }
+html.touch.mobil-quer #mb-x2 { bottom:48%; right:24%; }
+
+/* ---- Die Tafel in der Mitte ----
+   Hochkant bleibt unter dem Bild Platz, den kein Spielinhalt braucht.
+   Dort steht gross, was auf dem kleinen Bild klein ist. */
+#minfo { position:absolute; left:0; right:0; top:8px; padding:0 14px;
+  text-align:center; pointer-events:none; z-index:1; }
+#minfo .titel { font:700 11px/1.3 monospace; letter-spacing:3px; color:#4a4363; }
+#minfo .hinweis { margin-top:10px; font:700 14px/1.45 monospace; color:#ffd447;
+  min-height:42px; text-wrap:balance; }
+#minfo .werte { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px 10px;
+  justify-content:center; font:700 10px/1 monospace; letter-spacing:1px; color:#4a4363; }
+#minfo .werte b { color:#8d86a8; font-weight:700; }
+#minfo .crew { margin-top:9px; font:400 10px/1.4 monospace; color:#42d9ff99; }
+html.touch.mobil-quer #minfo { display:none; }
+
+/* ---- Die kleine Leiste ----
+   Sie sass direkt unter dem Bild und nahm den besten Platz weg. Jetzt ist
+   sie eine schmale Zeile ganz unten, weit weg von den Daumen. */
+#mbar { position:absolute; left:0; right:0; bottom:0; display:flex; gap:5px;
+  padding:5px 8px calc(env(safe-area-inset-bottom,0px) + 5px); z-index:3; }
+#mbar button, #mbar a { flex:1; text-decoration:none; text-align:center;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+  border-radius:6px; color:#8d86a8; font:700 9px/1 monospace; letter-spacing:1px;
+  padding:7px 2px; }
+/* Quer nimmt die Leiste die Ecke weg, in der das Spiel seine Anzeige hat.
+   Deshalb steckt sie dort hinter einem Knopf. */
+#mtoggle { display:none; position:absolute; right:6px; top:6px; z-index:4;
+  background:rgba(20,16,34,.8); border:1px solid #2a2246; border-radius:6px;
+  color:#8d86a8; font:700 9px/1 monospace; letter-spacing:1px; padding:7px 9px; }
+html.touch.mobil-quer #mtoggle { display:block; }
+html.touch.mobil-quer #mbar { display:none; flex-direction:column; width:auto;
+  left:auto; right:6px; top:34px; bottom:auto; padding:0; gap:4px; opacity:.9; }
+html.touch.mobil-quer #mbar.auf { display:flex; }
+html.touch.mobil-quer #mbar button, html.touch.mobil-quer #mbar a { padding:7px 10px; }
+
+/* Gespraech: die Antworten sind hier Flaechen, keine Liste zum Blaettern. */
+#mtalk { position:absolute; inset:0; display:none; flex-direction:column;
+  gap:7px; padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:#05040c; z-index:4; }
+#mtalk.an { display:flex; }
+#mtalk .wer { font:700 10px/1 monospace; letter-spacing:2px; color:#42d9ff; }
+#mtalk .was { font:400 13px/1.45 monospace; color:#f2f0ff; flex:0 0 auto; }
+#mtalk .liste { flex:1; display:flex; flex-direction:column; gap:8px;
+  justify-content:flex-end; overflow:hidden; }
+#mtalk .opt { background:rgba(255,255,255,.05); border:1px solid #2a2246;
+  border-left:3px solid #ff3d8b; border-radius:8px; color:#cfc8e6;
+  font:400 13px/1.35 monospace; padding:13px 11px; text-align:left; }
+#mtalk .opt:active { background:rgba(255,61,139,.26); color:#fff; }
+#mtalk .weiter { background:rgba(255,212,71,.10); border:1px solid #ffd447;
+  border-radius:8px; color:#ffd447; font:700 12px/1 monospace; letter-spacing:2px;
+  padding:16px; }
+#mtalk .uhr { height:3px; background:#ff3d8b; border-radius:2px; align-self:flex-start; }
+
+/* Levelmenue - baut sich aus der Leiste, die am Rechner unter dem Bild steht. */
+#mmenu { position:absolute; inset:0; display:none; flex-direction:column; gap:6px;
+  padding:10px; background:#05040c; overflow:auto; z-index:5; }
+#mmenu.an { display:flex; }
+#mmenu a { text-decoration:none; text-align:left; color:#cfc8e6;
+  background:rgba(255,255,255,.05); border:1px solid #2a2246; border-radius:6px;
+  font:700 12px/1 monospace; letter-spacing:1px; padding:14px 12px; }
+#mmenu a.aktiv { color:#ff3d8b; border-color:#ff3d8b; }
+#mmenu .zu { background:rgba(255,212,71,.10); border:1px solid #ffd447; color:#ffd447;
+  border-radius:6px; font:700 11px/1 monospace; letter-spacing:2px; padding:14px; }
+`;
 document.head.appendChild(stil);
 
 const deck=document.createElement('div'); deck.id='mdeck';
@@ -181,6 +239,10 @@ deck.innerHTML=[
   '  <button id="mb-handy">HANDY</button>',
   '  <button id="mb-menu">LEVEL</button>',
   '</div>',
+  '<button id="mtoggle">MENUE</button>',
+  '<div id="minfo"><div class="titel"></div><div class="hinweis"></div>',
+  '  <div class="werte"></div><div class="crew"></div></div>',
+  '<div id="mzone"></div>',
   '<div id="mstick"><div class="mring"></div><div id="mknopf"></div></div>',
   '<div class="mtaste mx" id="mb-x1">X</div>',
   '<div class="mtaste mx" id="mb-x2">X</div>',
@@ -194,6 +256,7 @@ deck.innerHTML=[
 (document.getElementById('cab')||document.body).appendChild(deck);
 
 const stick=document.getElementById('mstick');
+const zone=document.getElementById('mzone');
 const knopf=document.getElementById('mknopf');
 const bAktion=document.getElementById('mb-aktion');
 const bZwei=document.getElementById('mb-zwei');
@@ -262,23 +325,41 @@ function stickAus(e){
   if(len>1){ dx/=len; dy/=len; }
   stickSetzen(dx,dy,Math.min(1,len));
 }
-/* Pointer statt Touch: derselbe Code bedient Finger, Stift und Maus. Das
-   ist nicht nur zum Testen am Rechner gut - es gibt genug Geraete, die
-   beides koennen. setPointerCapture sorgt dafuer, dass der Stick weiter
-   Meldungen bekommt, wenn der Daumen ueber den Rand rutscht. */
-stick.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
+
+/* Der Stick geht dorthin, wo der Daumen aufsetzt. Sonst passt seine feste
+   Stelle immer nur zu einer Handhaltung - und die halbe linke Flaeche ist
+   tot. Geklemmt wird er so, dass er nicht halb aus dem Bild ragt. */
+function stickAn(x,y){
+  const z=zone.getBoundingClientRect(), b=stick.offsetWidth||140;
+  const lx=Math.max(b*0.45,Math.min(z.width -b*0.45,x-z.left));
+  const ly=Math.max(b*0.45,Math.min(z.height-b*0.45,y-z.top));
+  stick.style.left=lx+'px'; stick.style.top=ly+'px';
+  stick.classList.add('zieht');
+}
+/* Ruhestellung, wenn keiner ihn anfasst: unten links, gut sichtbar. */
+function stickHeim(){
+  const z=zone.getBoundingClientRect(), b=stick.offsetWidth||140;
+  stick.style.left=Math.round(Math.min(z.width*0.36,z.width-b*0.5))+'px';
+  stick.style.top =Math.round(z.height-b*0.55)+'px';
+}
+
+/* Pointer statt Touch: derselbe Code bedient Finger, Stift und Maus - das
+   ist nicht nur zum Testen gut, es gibt genug Geraete, die beides koennen.
+   setPointerCapture haelt die Meldungen, wenn der Daumen ueber den Rand
+   der Zone hinausrutscht. */
+zone.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
   if(stickId!==null) return;
   stickId=e.pointerId;
-  try{ stick.setPointerCapture(e.pointerId); }catch(err){}
-  stick.classList.add('zieht'); stickAus(e);
+  try{ zone.setPointerCapture(e.pointerId); }catch(err){}
+  stickAn(e.clientX,e.clientY); stickAus(e);
 });
-stick.addEventListener('pointermove',function(e){
+zone.addEventListener('pointermove',function(e){
   if(e.pointerId!==stickId) return;
   e.preventDefault(); stickAus(e);
 });
-['pointerup','pointercancel'].forEach(function(ev){ stick.addEventListener(ev,function(e){
+['pointerup','pointercancel'].forEach(function(ev){ zone.addEventListener(ev,function(e){
   if(e.pointerId!==stickId) return;
-  e.preventDefault(); stickLos();
+  e.preventDefault(); stickLos(); stickHeim();
 }); });
 
 /* --------------------------------------------------------------------------
@@ -287,6 +368,7 @@ stick.addEventListener('pointermove',function(e){
 function halte(elm,code){
   elm.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
     try{ elm.setPointerCapture(e.pointerId); }catch(err){}
+    mobilVibriere(8);              // kurzer Tick, damit der Druck ankommt
     taste(code,true); });
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
     elm.addEventListener(ev,function(e){ e.preventDefault(); taste(code,false); }); });
@@ -314,6 +396,7 @@ klick('mb-pause',function(){ tipp('KeyP'); });
 klick('mb-ton',  function(){ ensureAudio(); tipp('KeyM'); });
 klick('mb-voll', function(){ vollbild(); });
 klick('mb-handy',function(){ if(typeof handyAuf==='function') handyAuf(); });
+klick('mtoggle',function(){ document.getElementById('mbar').classList.toggle('auf'); });
 
 /* Das Levelmenue baut sich aus #levelbar - der Leiste, die am Rechner unter
    dem Bild steht und am Handy ausgeblendet ist. Damit gibt es die Liste nur
@@ -384,6 +467,39 @@ function talkPflege(){
 }
 
 /* --------------------------------------------------------------------------
+   DIE TAFEL
+   Spiegelt Hinweis und Werte gross unter das Bild. Sie liest nur, was da
+   ist - fehlt nacht.js, bleibt die Werte-Zeile eben leer.
+   -------------------------------------------------------------------------- */
+const info=document.getElementById('minfo');
+let infoStand='';
+function infoPflege(){
+  if(window.MOBIL.hoch===false) return;
+  const titel=(document.title||'').replace(/^NACHTSCHICHT\s*-?\s*/,'')||'NACHTSCHICHT';
+  let hinweis='';
+  if(typeof S!=='undefined'&&S){
+    if(S.hinweisT>0&&S.hinweis) hinweis=S.hinweis;
+    else if(S.meldungT>0&&S.meldung) hinweis=S.meldung;
+  }
+  let werte='';
+  if(typeof wert==='function'){
+    const w=[['MUT','mut'],['RUF','ruf'],['GELD','geld'],['WACH','kondition']];
+    werte=w.map(function(e){ return '<span>'+e[0]+' <b>'+Math.round(wert(e[1]))+'</b></span>'; }).join('');
+    if(typeof ladePegel==='function')
+      werte+='<span>PEGEL <b>'+Math.round(ladePegel())+'</b></span>';
+  }
+  let crew='';
+  if(typeof ladeCrew==='function'){ const c=ladeCrew(); if(c.length) crew='DABEI: '+c.join(', '); }
+  const kennung=titel+'|'+hinweis+'|'+werte+'|'+crew;
+  if(kennung===infoStand) return;
+  infoStand=kennung;
+  info.querySelector('.titel').textContent=titel;
+  info.querySelector('.hinweis').textContent=hinweis;
+  info.querySelector('.werte').innerHTML=werte;
+  info.querySelector('.crew').textContent=crew;
+}
+
+/* --------------------------------------------------------------------------
    KONTEXT
    Ein Level darf mobilKontext() definieren:
      { aktion:'REDEN', zwei:'SPRUNG'|null, block:true|false,
@@ -428,10 +544,35 @@ function lage(){
   document.documentElement.classList.toggle('mobil-quer',quer);
   window.MOBIL.hoch=!quer;
   anpassen();
+  /* Hochkant nutzt das Bild die volle Breite. anpassen() rechnet mit
+     ganzen und viertel Stufen und landete auf einem 375er Schirm bei
+     Faktor 1 - also 320 Pixel Bild und 55 Pixel schwarzem Rand. Hier
+     zaehlt jeder Pixel mehr, deshalb die genaue Breite. */
+  if(!quer){
+    const s=innerWidth/W;
+    cv.style.width=Math.round(W*s)+'px';
+    cv.style.height=Math.round(H*s)+'px';
+  }
+  stickHeim();
 }
+
+/* Der Bildschirm soll beim Spielen nicht ausgehen. Geht nur nach einer
+   Beruehrung und nur, wo der Browser es kann - sonst passiert nichts. */
+let wachSchloss=null;
+async function bildschirmWach(){
+  try{
+    if(!navigator.wakeLock||wachSchloss) return;
+    wachSchloss=await navigator.wakeLock.request('screen');
+    wachSchloss.addEventListener('release',function(){ wachSchloss=null; });
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden) bildschirmWach();
+});
+addEventListener('pointerdown',bildschirmWach,{once:true});
 addEventListener('resize',lage);
 addEventListener('orientationchange',function(){ setTimeout(lage,140); });
 lage();
 
-setInterval(function(){ talkPflege(); kontextPflege(); },90);
+setInterval(function(){ talkPflege(); kontextPflege(); infoPflege(); },90);
 })();

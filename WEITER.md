@@ -96,6 +96,11 @@ Deshalb globale Namen: `W`, `H`, `ctx`, `text()`, `sprite()` gelten überall.
   kleine Schlägerei und der Rausschmiss. Bäume nachgemessen: ein Ja kommt bei
   etwa 5–15 % der möglichen Gesprächswege heraus, betrunken hat man bei Kira
   keine Chance.
+- **Handy-Fassung** (`nacht/mobil.js`): Bild nutzt hochkant die volle Breite
+  (vorher 320 von 375 Pixeln), Stick erscheint dort, wo der Daumen aufsetzt,
+  Tafel unter dem Bild mit Hinweis, Werten und Crew, Leiste nach unten bzw.
+  quer hinter den MENUE-Knopf, sichere Ränder (Kerbe/Home-Balken),
+  Bildschirm bleibt wach, Knöpfe mit Druckgefühl.
 - **Level 8 (Heimweg)**: vor dem großen Fight ein Gespräch. Der Anführer
   ist MARVIN, wenn man ihn im Club gesehen hat, und er erinnert sich (Sieg,
   Kneifen, Rückzug). Seltener Weg ohne Kampf ab Mut 60 und Ruf 65.
