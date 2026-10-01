@@ -40,11 +40,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   hat etwas zu tun oder zu sehen (gemessen: `leereProzent` bei Kamera auf dem Bereich,
   oder eine neue Interaktion dort); im Nichtstun-Test passiert über 5 Minuten mehr als
   viermal etwas.
-- [ ] **P1 · Level 2: Die Wahl „wen nimmst du mit" kommt nach dem Kampf** — sie kostet
-  nichts und erspart nichts. Dazu: DER SCHLÄFER und DER TELEFONIERER sind keine Personen.
-  Wo: level2.html (`MITNEHMEN`, `fuehreCrewZusammen`) · Fertig wenn: die Wahl liegt am
-  Anfang, die Aufgabenliste hängt davon ab, beide haben Namen und je drei Sätze.
-
 ### P2
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
@@ -141,6 +136,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   frischer Levelstart, direkt zum Ausgang, E gedrückt -> Modus blieb vorher 'cutscene'
   (sofort offen), jetzt bleibt er 'spiel'. Nach einer Interaktion (Wasser am
   Waschbecken) -> E am Ausgang wechselt zu 'cutscene'.
+
+- [x] 2026-10-01 · P1 · Level 2: Mitnehmen-Wahl kommt nach dem Kampf · `b524a82` ·
+  Wahl steht jetzt am Levelanfang, `aktiveAufgaben()` filtert danach. Gemessen per
+  Headless-Lauf: bei „klein" sind nur jacke+ausweis aktiv, Kampf/Cutscene lösen schon
+  danach aus, Crew danach [MORITZ, MAX FERDI]; bei „alle" bleibt alleFertig() mit nur
+  jacke+ausweis false, nach allen vieren true, Crew danach [MORITZ, MAX FERDI, FINN,
+  DAVID]. DER SCHLÄFER/DER TELEFONIERER heißen jetzt FINN/DAVID, mit je drei Sätzen
+  nach dem Aufwecken/Holen.
 
 ## Blockiert
 
