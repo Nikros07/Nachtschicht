@@ -498,9 +498,14 @@ function naherFahrgast(){
 function gespraechFolgen(f){
   S.geredet[f.id]=true;
   if(f.id==='betrunkener'&&flag('busSzene')){
-    /* Alle lassen alles stehen und gehen zu ihm. Das ist das Fenster. */
+    /* Alle lassen alles stehen. Das Ziel ist bewusst NICHT f.x: man muss
+       nah an ihn heran, um ueberhaupt mit ihm zu reden - ein Ziel an seiner
+       Stelle liefe also auf den gerade stehenden Spieler zu und holte ihn
+       in Sichtweite, statt ihn zu decken. Jeder weicht stattdessen vom
+       Spieler weg aus, weit genug, dass er ihn dabei nicht erst entdeckt. */
     S.ablenkT=TUNE.ablenkDauer;
-    S.kontrolleure.forEach(k=>{ k.zielX=f.x; });
+    S.kontrolleure.forEach(k=>{ const weg=k.x>=S.x?1:-1;
+      k.zielX=Math.max(EINSTIEG_X+10,Math.min(BUS_B-10,S.x+weg*320)); });
     meldung('ER MACHT EINE SZENE - JETZT',2.2);
   }
   if(f.id==='notbremse'&&flag('notbremse')){
