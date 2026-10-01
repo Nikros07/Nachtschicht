@@ -28,16 +28,17 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609291540"></script>
-<script src="nacht/bild.js?v=202609291540"></script>
-<script src="nacht/ton.js?v=202609291540"></script>
-<script src="nacht/stand.js?v=202609291540"></script>
-<script src="nacht/welt.js?v=202609291540"></script>
-<script src="nacht/kampf.js?v=202609291540"></script>
-<script src="nacht/nacht.js?v=202609291540"></script>
-<script src="nacht/eingabe.js?v=202609291540"></script>
-<script src="nacht/mobil.js?v=202609291540"></script>
-<script src="nacht/handy.js?v=202609291540"></script>
+<script src="nacht/kern.js?v=202610011028"></script>
+<script src="nacht/bild.js?v=202610011028"></script>
+<script src="nacht/hud.js?v=202610011028"></script>
+<script src="nacht/ton.js?v=202610011028"></script>
+<script src="nacht/stand.js?v=202610011028"></script>
+<script src="nacht/welt.js?v=202610011028"></script>
+<script src="nacht/kampf.js?v=202610011028"></script>
+<script src="nacht/nacht.js?v=202610011028"></script>
+<script src="nacht/eingabe.js?v=202610011028"></script>
+<script src="nacht/mobil.js?v=202610011028"></script>
+<script src="nacht/handy.js?v=202610011028"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -304,7 +305,12 @@ function starteLevel(){
   zeigeHinweis('E IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
   SFX.warn(); meldung('NA WARTE',1.4);
 }
+const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
+  /* Halten ueberspringt das ganze Intro, Tippen eine Szene. Level 1 hat
+     sieben Szenen - beim zweiten Durchlauf war das siebenmal tippen. */
+  if(aktionGehalten){ S.skipT=(S.skipT||0)+dt; if(S.skipT>INTRO_SKIP){ starteLevel(); return; } }
+  else S.skipT=Math.max(0,(S.skipT||0)-dt*2);
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
 
@@ -678,22 +684,10 @@ function zeichneArena(){
 
   zeichneNachTiefe(zeichnungen);
 
-  /* ---- Ausholbalken mit Konterfenster ---- */
-  if(b&&b.zustand==='ausholen'){
-    const bw=76, bx=Math.round(W/2-bw/2), by=29;
-    const f=Math.min(1,b.zT/b.ausholenDauer);
-    ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,9);
-    ctx.fillStyle='#2a2440'; ctx.fillRect(bx,by,bw,5);
-    if(!b.unblockbarJetzt){
-      const start=1-b.fensterAnteil;
-      ctx.fillStyle='#ffd44766';
-      ctx.fillRect(bx+Math.round(bw*start),by,Math.round(bw*b.fensterAnteil),5);
-    }
-    ctx.fillStyle=b.unblockbarJetzt?P.gold:P.rot;
-    ctx.fillRect(bx,by,Math.round(bw*f),5);
-    const name=b.art==='schwung'?'SCHWUNG':b.art==='jab'?'JAB':'RAMME - AUSWEICHEN';
-    textC(name,by-8,b.unblockbarJetzt?P.gold:P.gold);
-  }
+  /* Ausholbalken - steht seit nacht/hud.js an einer Stelle fuer alle
+     vier Kaempfe im Spiel. */
+  if(b) zeichneAusholbalken(b, b.art==='schwung'?'SCHWUNG'
+                             :b.art==='jab'?'JAB':'RAMME - AUSWEICHEN');
 
   /* ---- Lebensbalken des Tuerstehers ---- */
   if(b){
@@ -785,6 +779,7 @@ function zeichneIntro(){
   ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
   if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
   if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+  zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
 function bildschirme(){
   if(S.modus==='pause'){

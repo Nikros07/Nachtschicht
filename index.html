@@ -29,16 +29,17 @@
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609291540"></script>
-<script src="nacht/bild.js?v=202609291540"></script>
-<script src="nacht/ton.js?v=202609291540"></script>
-<script src="nacht/stand.js?v=202609291540"></script>
-<script src="nacht/welt.js?v=202609291540"></script>
-<script src="nacht/nacht.js?v=202609291540"></script>
-<script src="nacht/dialog.js?v=202609291540"></script>
-<script src="nacht/eingabe.js?v=202609291540"></script>
-<script src="nacht/mobil.js?v=202609291540"></script>
-<script src="nacht/handy.js?v=202609291540"></script>
+<script src="nacht/kern.js?v=202610011028"></script>
+<script src="nacht/bild.js?v=202610011028"></script>
+<script src="nacht/hud.js?v=202610011028"></script>
+<script src="nacht/ton.js?v=202610011028"></script>
+<script src="nacht/stand.js?v=202610011028"></script>
+<script src="nacht/welt.js?v=202610011028"></script>
+<script src="nacht/nacht.js?v=202610011028"></script>
+<script src="nacht/dialog.js?v=202610011028"></script>
+<script src="nacht/eingabe.js?v=202610011028"></script>
+<script src="nacht/mobil.js?v=202610011028"></script>
+<script src="nacht/handy.js?v=202610011028"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -574,13 +575,13 @@ function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=
 function starteLevel(){ S.modus='spiel';
   setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('LEISE GEHEN HALBIERT IHRE SICHTWEITE',4); },4200);
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
-function intro(dt){
-  S.szeneT+=dt;
-  if(S.szeneT>=INTRO[S.szene].d){
-    S.szene++; S.szeneT=0;
-    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03);
-  }
-}
+const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
+function intro(dt){ S.szeneT+=dt;
+  /* Halten ueberspringt das ganze Intro, Tippen eine Szene. */
+  if(aktionGehalten){ S.skipT=(S.skipT||0)+dt; if(S.skipT>INTRO_SKIP){ starteLevel(); return; } }
+  else S.skipT=Math.max(0,(S.skipT||0)-dt*2);
+  if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
+    if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
 function zeichneIntro(){
   const t=S.t;
   ctx.fillStyle='#0a0912'; ctx.fillRect(0,0,W,H);
@@ -624,6 +625,7 @@ function zeichneIntro(){
   ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
   if(S.szene<INTRO.length) textC(introText(S.szene),H-24,P.weiss);
   if(Math.floor(t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+  zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
 function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 

@@ -27,6 +27,8 @@ const F = {
  '/':'001,001,010,100,100', '+':'000,010,111,010,000', ',':'000,000,000,010,100',
  '<':'001,010,100,010,001', '>':'100,010,001,010,100', '*':'101,010,111,010,101',
  '%':'100,001,010,100,001',
+ '(':'001,010,010,010,001', ')':'100,010,010,010,100',
+ "'":'010,010,000,000,000', '\"':'101,101,000,000,000',
 };
 
 const GLYPH={}; for(const k in F) GLYPH[k]=F[k].split(',');
@@ -108,6 +110,8 @@ function textGlow(str,x,y,col,s=1){
 const textGlowC=(s0,y,col,s=1)=>textGlow(s0,Math.round((W-textW(s0,s))/2),y,col,s);
 
 const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+
 
 /* ---- Gehzyklus fuer Figuren ohne eigene Laufbilder ----
    Tuersteher, Fahrgaeste, Schlaeger: die hatten nur ein Stehbild und

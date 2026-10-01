@@ -28,17 +28,18 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202609291540"></script>
-<script src="nacht/bild.js?v=202609291540"></script>
-<script src="nacht/ton.js?v=202609291540"></script>
-<script src="nacht/stand.js?v=202609291540"></script>
-<script src="nacht/welt.js?v=202609291540"></script>
-<script src="nacht/kampf.js?v=202609291540"></script>
-<script src="nacht/nacht.js?v=202609291540"></script>
-<script src="nacht/dialog.js?v=202609291540"></script>
-<script src="nacht/eingabe.js?v=202609291540"></script>
-<script src="nacht/mobil.js?v=202609291540"></script>
-<script src="nacht/handy.js?v=202609291540"></script>
+<script src="nacht/kern.js?v=202610011028"></script>
+<script src="nacht/bild.js?v=202610011028"></script>
+<script src="nacht/hud.js?v=202610011028"></script>
+<script src="nacht/ton.js?v=202610011028"></script>
+<script src="nacht/stand.js?v=202610011028"></script>
+<script src="nacht/welt.js?v=202610011028"></script>
+<script src="nacht/kampf.js?v=202610011028"></script>
+<script src="nacht/nacht.js?v=202610011028"></script>
+<script src="nacht/dialog.js?v=202610011028"></script>
+<script src="nacht/eingabe.js?v=202610011028"></script>
+<script src="nacht/mobil.js?v=202610011028"></script>
+<script src="nacht/handy.js?v=202610011028"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -381,7 +382,12 @@ function starteLevel(){ starteKonfrontation(); return;
   /* alter Direkteinstieg, bleibt fuer Tests erreichbar */
   S.modus='spiel'; zeigeHinweis('LAUF NACH HAUSE - MEIDE DIE SONNE',3);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
+  /* Halten ueberspringt das ganze Intro, Tippen eine Szene. Level 1 hat
+     sieben Szenen - beim zweiten Durchlauf war das siebenmal tippen. */
+  if(aktionGehalten){ S.skipT=(S.skipT||0)+dt; if(S.skipT>INTRO_SKIP){ starteLevel(); return; } }
+  else S.skipT=Math.max(0,(S.skipT||0)-dt*2);
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
 
@@ -754,6 +760,7 @@ function zeichneIntro(){
   ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
   if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
   if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+  zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -1252,6 +1259,11 @@ function hudKampf8(){
   textC(anfuehrerName(),14,P.dim);
   const ph='PHASE '+phase8()+'  '+ARENEN[S.arena].name;
   text(ph,W-textW(ph)-6,6,phase8()>1?P.gold:P.dunkel);
+
+  /* Derselbe Balken wie beim Tuersteher. Dort lernt man das Konterfenster -
+     hier muss man es anwenden koennen, und hier ist es am engsten. */
+  zeichneAusholbalken(g, g.art==='schwung'?'SCHWUNG':g.art==='jab'?'JAB'
+                       :g.art==='ramme'?'RAMME - AUSWEICHEN':'WURF', 30);
 
   if(S.arenaWechselT>0) textGlowC(ARENEN[S.arena].name,H/2-4,P.gold,2);
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);

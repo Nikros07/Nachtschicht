@@ -1,14 +1,10 @@
 /* Prueft alle Level gegen die Engine: Syntax und doppelte Deklarationen.
    Laeuft ohne Browser.   node tools/pruefe.js  */
 const fs=require('fs');
-const module_fuer=h=>['kern','bild','ton','stand']
-  .concat(h.includes('nacht/welt.js')?['welt']:[])
-  .concat(h.includes('nacht/kampf.js')?['kampf']:[])
-  .concat(h.includes('nacht/nacht.js')?['nacht']:[])
-  .concat(h.includes('nacht/dialog.js')?['dialog']:[])
-  .concat(h.includes('nacht/eingabe.js')?['eingabe']:[])
-  .concat(h.includes('nacht/mobil.js')?['mobil']:[])
-  .concat(h.includes('nacht/handy.js')?['handy']:[]);
+/* Welche Engine-Teile die Seite laedt - in IHRER Reihenfolge, direkt aus
+   den Script-Tags. Frueher stand die Liste hier fest, und eine neu
+   eingehaengte Datei wurde stillschweigend nie geprueft. */
+const module_fuer=h=>[...h.matchAll(/<script src="nacht\/([a-z]+)\.js/g)].map(m=>m[1]);
 let fehler=0;
 for(const f of ['index.html','level2.html','level3.html','level4.html',
                 'level5.html','level6.html','level7.html','level8.html','karte.html','runner.html']){
