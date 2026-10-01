@@ -30,12 +30,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P1
 
-- [ ] **P1 · Club zum Ort machen: vier von sechs Bereichen sind leer** — Eingang,
-  Raucherecke, Klos, Hinterausgang enthalten nichts. Nichtstun-Test: nach 107 s ist
-  der Inhalt aufgebraucht, die Uhr läuft 600 s. Der Ausgang ist ab Sekunde 0 offen.
-  Wo: level5.html (`ORTE`, `AUSGANG`, `marvinTakt`) · Fertig wenn: jeder Bereich hat
-  etwas zu tun oder zu sehen; der Ausgang öffnet erst mit einem Grund; im
-  Nichtstun-Test passiert über 5 Minuten mehr als viermal etwas.
+- [ ] **P1 · Club: vier von sechs Bereichen bekommen Inhalt (Eingang, Raucherecke,
+  Hinterausgang + mehr Nichtstun-Ereignisse)** — abgespalten vom größeren Punkt (siehe
+  Blockiert). Braucht neue Sprites/Deko und/oder ambiente, zeitgesteuerte Ereignisse
+  (wie `marvinTakt`, aber ortsbezogen), damit der Nichtstun-Test über 5 Minuten mehr als
+  viermal etwas meldet. Klos hat mit `WASCHBECKEN` schon eine Interaktion - prüfen, ob
+  das für „Klos" mitzählt oder ob der ursprüngliche Befund veraltet ist.
+  Wo: level5.html (`ORTE`, `SPR`, `marvinTakt`) · Fertig wenn: jeder der vier Bereiche
+  hat etwas zu tun oder zu sehen (gemessen: `leereProzent` bei Kamera auf dem Bereich,
+  oder eine neue Interaktion dort); im Nichtstun-Test passiert über 5 Minuten mehr als
+  viermal etwas.
 - [ ] **P1 · Obere Bildhälfte füllen** — 66–77 % der Bildzeilen sind in Level 2, 5, 6,
   7, 8 ohne Inhalt (gemessen als harte Kanten pro Zeile). Decke, Licht, Lautsprecher,
   Galerie, Himmel fehlen. Erst im Club als Vorlage, dann übertragen.
@@ -137,6 +141,21 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Abstand des naechsten Kontrolleurs vorher 85 px, sank auf 0 und loeste Alarm
   (erwischt) aus · nachher (mit Fix) 289/317/322/338/668 px, kein Alarm in 8 s.
 
+- [x] 2026-10-01 · P1 · Club: Ausgang öffnet erst mit einem Grund · `297f845` ·
+  abgespalten von „Club zum Ort machen" (siehe Blockiert). Gemessen per Headless-Lauf:
+  frischer Levelstart, direkt zum Ausgang, E gedrückt -> Modus blieb vorher 'cutscene'
+  (sofort offen), jetzt bleibt er 'spiel'. Nach einer Interaktion (Wasser am
+  Waschbecken) -> E am Ausgang wechselt zu 'cutscene'.
+
 ## Blockiert
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
+
+- **2026-10-01 · P1 · Club zum Ort machen: vier von sechs Bereichen sind leer** — nicht
+  gebaut, kein Code geändert. Grund: der Punkt ist drei verschiedene Dinge in einem
+  (Ausgang-Bedingung, vier Bereiche mit echtem Inhalt, mehr Nichtstun-Ereignisse) und
+  der Inhaltsteil braucht neue Sprites/Deko und geschriebene Szenen - kein kleinster
+  Eingriff, und unter Zeitdruck zusammengeschustert hätte es dem Club eher geschadet
+  als genützt (siehe „Zweifelst du..." in `routinen/nacht.md`). Aufgeteilt in zwei
+  neue, kleinere Punkte unter „Offen": die Ausgang-Bedingung (klein, sicher) und der
+  Inhalt der vier Bereiche (bleibt groß, aber jetzt ohne die Ausgang-Frage vermischt).
