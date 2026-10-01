@@ -1355,8 +1355,12 @@ function zeichneBus(){
     inTiefe.push({ t:v.t, mal:()=>{
       const rows=SPR[v.art], fuss=bodenY(v.t), y=fuss-rows.length;
       outline(rows,v.x,y,1,.6); sprite(rows,v.x,y);
+      /* Dieselbe Tiefenpruefung wie naheVersteck() (tiefeNah statt eines
+         hartkodierten 0.3) - sonst war S.tiefe hier fast immer gangTiefe
+         (0.72, Tiefe ist ausserhalb der Kloppe aus) und jedes Versteck
+         (t 0.10-0.20) lag "zu weit weg", das E blinkte nie. */
       const nah=Math.abs(v.x-S.x)<TUNE.versteckReichweite
-               &&Math.abs(v.t-S.tiefe)<=0.3&&S.modus==='spiel'&&!S.versteckt;
+               &&tiefeNah(v.t,S.tiefe)&&S.modus==='spiel'&&!S.versteckt;
       if(nah&&Math.floor(S.t*4)%2===0) text('E',v.x+2,y-9,P.gold);
       if(S.versteckt===v.id) text('OK',v.x+2,y-9,P.gruen);
     }});
