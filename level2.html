@@ -271,23 +271,31 @@ const LEUTE=[
     zeilen:['ICH FIND MEINEN AUSWEIS NICHT','OHNE KOMM ICH DA NIE REIN','SUCH MAL MIT'],
     braucht:'ausweis',
     danach:['DU BIST EIN HELD','LOS GEHTS'] },
-  { id:'schlaefer', x:256, name:'DER SCHLAEFER', spr:'schlaefer', liegt:true,
+  { id:'schlaefer', x:256, name:'FINN', spr:'schlaefer', liegt:true,
     zeilen:['...','ZZZZZ','...'],
     braucht:'dose',
-    danach:['WAS','WIE SPAET','OKAY OKAY ICH KOMM'] },
-  { id:'telefon', x:920, name:'DER TELEFONIERER', spr:'telefon',
+    danach:['WAS','WIE SPAET IST ES','OKAY OKAY ICH KOMM SCHON'] },
+  { id:'telefon', x:920, name:'DAVID', spr:'telefon',
     zeilen:['NEIN DU HOERST MIR NICHT ZU','...','SEKUNDE JA'],
     brauchtMut:true,
-    danach:['JA GUT. AUFGELEGT.','LASS GEHEN'] },
+    danach:['JA GUT. AUFGELEGT.','WAR SOWIESO LANGWEILIG.','LASS GEHEN'] },
 ];
 
-/* Was du finden musst */
+/* Was du finden musst. schlaefer/telefon sind nur aktiv, wenn die Wahl am
+   Levelanfang (MITNEHMEN) die beiden ueberhaupt mitnimmt - siehe aktiveAufgaben(). */
 const AUFGABEN=[
   { id:'jacke',  text:'DEINE JACKE FINDEN' },
   { id:'ausweis',text:'MORITZ AUSWEIS FINDEN' },
-  { id:'schlaefer',text:'DEN SCHLAEFER WECKEN' },
-  { id:'telefon',text:'DEN TELEFONIERER HOLEN' },
+  { id:'schlaefer',text:'FINN WECKEN' },
+  { id:'telefon',text:'DAVID VOM TELEFON HOLEN' },
 ];
+function aktiveAufgaben(){
+  return AUFGABEN.filter(a=>{
+    if(a.id==='telefon') return flag('gruppeGross');
+    if(a.id==='schlaefer') return !flag('gruppeKlein');
+    return true;
+  });
+}
 
 /* ==========================================================================
    ZUSTAND
@@ -409,8 +417,15 @@ function wohnungZuruecksetzen(){
   ['gruppeGross','gruppeKlein'].forEach(f=>setzeFlag(f,false));
 }
 function starteLevel(){ S.modus='spiel'; wohnungZuruecksetzen();
-  zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
-  piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+  /* Die Wahl zuerst - sie entscheidet, welche Aufgaben ueberhaupt noch
+     anstehen (aktiveAufgaben). Vorher kam sie erst nach dem Kampf an der
+     Tuer, wenn laengst alle erledigt waren - sie kostete nichts und
+     ersparte nichts. */
+  starteGespraech(MITNEHMEN,'start',()=>{
+    zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
+    piep(660,.08); setTimeout(()=>piep(990,.12),90);
+  });
+}
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
   /* Halten ueberspringt das ganze Intro, Tippen eine Szene. */
@@ -427,7 +442,7 @@ function pruefeBlackout(){
 }
 const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
 const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
-const alleFertig=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
+const alleFertig=()=>aktiveAufgaben().every(a=>S.erledigt[a.id]);
 
 /* ==========================================================================
    AKTUALISIEREN
@@ -550,7 +565,7 @@ function benutze(d){
     if(S.inventar.dose){ meldung('HAST SCHON EINE',1); SFX.nichts(); return; }
     S.inventar.dose=true; SFX.fund(); S.blitz=.4;
     meldung('ENERGYDRINK EINGESTECKT',1.8);
-    zeigeHinweis('DAMIT KRIEGST DU DEN SCHLAEFER WACH',3);
+    zeigeHinweis('DAMIT KRIEGST DU FINN WACH',3);
     return;
   }
   if(d.art==='spiegel'){
@@ -691,7 +706,7 @@ const MITNEHMEN = {
     wahl:[
       { txt:'Alle. Wir sind eine gruppe.',        geh:'alle' },
       { txt:'Nur wir zwei. Der rest ist zu drauf.', geh:'klein' },
-      { txt:'Moritz und der schlaefer. Der am telefon bleibt.', geh:'mittel' },
+      { txt:'Moritz und Finn. David bleibt am Telefon.', geh:'mittel' },
     ], zeit:10, standard:0 },
 
   alle:{ wer:'MAX FERDI', text:'Vier mann. Der tuersteher wird uns lieben.',
@@ -702,34 +717,33 @@ const MITNEHMEN = {
     tu:{flag:'gruppeKlein', crew:'MORITZ', ruf:-3, mag:['MORITZ',-4]},
     geh:'ende' },
 
-  mittel:{ wer:'MAX FERDI', text:'Passt. Der telefoniert eh bis morgen frueh.',
+  mittel:{ wer:'MAX FERDI', text:'Passt. David telefoniert eh bis morgen frueh.',
     tu:{crew:'MORITZ', mag:['MORITZ',3]},
     geh:'ende' },
 
   ende:null,
 };
 
-/* Wer in der Gruppe landet, haengt an der Wahl. MORITZ kommt immer mit -
-   er ist der Grund, warum man ueberhaupt hier war. */
+/* Wer in der Gruppe landet, haengt an der Wahl von MITNEHMEN (ganz am
+   Levelanfang, siehe starteLevel). MORITZ kommt immer mit - er ist der
+   Grund, warum man ueberhaupt hier war. */
 function fuehreCrewZusammen(){
   speichereCrew('MAX FERDI');
   speichereCrew('MORITZ');
   if(flag('gruppeGross')){
-    speichereCrew('DER SCHLAEFER');
-    speichereCrew('DER TELEFONIERER');
+    speichereCrew('FINN');
+    speichereCrew('DAVID');
   } else if(!flag('gruppeKlein')){
-    speichereCrew('DER SCHLAEFER');
+    speichereCrew('FINN');
   }
 }
 
 function starteCutscene(){
-  /* Erst die Entscheidung, dann die Cutscene. Vorher kamen automatisch
-     alle mit - das war keine Wahl, das war eine Ansage. */
+  /* Die Wahl ist schon am Levelanfang gefallen (MITNEHMEN in starteLevel) -
+     hier nur noch zusammenfuehren und die Szene starten. */
   S.gegner=null; SFX.sieg();
-  starteGespraech(MITNEHMEN,'start',()=>{
-    fuehreCrewZusammen();
-    S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
-  });
+  fuehreCrewZusammen();
+  S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0;
 }
 function levelGeschafft(){
   /* Die Crew steht schon aus der Entscheidung, siehe fuehreCrewZusammen. */
@@ -933,7 +947,7 @@ function hud(){
 
   /* Aufgabenliste */
   let y=22;
-  for(const a of AUFGABEN){
+  for(const a of aktiveAufgaben()){
     const ok=!!S.erledigt[a.id];
     text(ok?'X':'-',6,y,ok?P.gruen:P.dunkel);
     text(a.text,14,y,ok?P.dunkel:P.weiss);
