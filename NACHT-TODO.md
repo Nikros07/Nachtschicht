@@ -40,6 +40,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   hat etwas zu tun oder zu sehen (gemessen: `leereProzent` bei Kamera auf dem Bereich,
   oder eine neue Interaktion dort); im Nichtstun-Test passiert über 5 Minuten mehr als
   viermal etwas.
+
 ### P2
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
