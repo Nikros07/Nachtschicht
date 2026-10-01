@@ -124,7 +124,13 @@ node tools/pruefe.js      # jede Seite gegen ihre Engine: Syntax, Doppelnamen
 node test/kampf.test.js   # 22 Prüfungen der Kampflogik, ohne Browser
 python tools/version.py   # Engine-Version neu setzen
 node tools/flagcheck.js   # Entscheidungen der Nacht: gesetzt und nie gelesen?
+node tools/nachttest.js   # jede Seite ohne Browser durchspielen (--kurz: 20 s statt 60 s)
 ```
+
+`nachttest.js` setzt Engine und Level in einer Funktion zusammen; `document`,
+Canvas und Speicher sind Attrappen. Es prüft Ausnahmen, NaN, tote Gesprächsverweise,
+Zeichen außerhalb der Schrift, einen 5-Minuten-Nichtstun-Lauf je Level und den Konter
+in Level 2. **Pixel, Ton und Layout kann es nicht** — das bleibt dem Browser.
 
 Im Browser: `python -m http.server 5173`. Für Messungen lässt sich das
 Spiel ohne Bildschirm takten — `update(1/60)` in einer Schleife aufrufen
@@ -133,8 +139,8 @@ entstanden.
 
 ## Die Nachtroutinen
 
-Zwei geplante Aufgaben in Claude (Sidebar → „Scheduled"), die nachts
-unbeaufsichtigt laufen. Sie haben kein Gedächtnis an die Tagessitzung — alles,
+Zwei Routinen in der Cloud (claude.ai → Routinen), die nachts unbeaufsichtigt laufen.
+Sie arbeiten auf dem Branch `claude/nacht`; `main` fassen sie nie an. Sie haben kein Gedächtnis an die Tagessitzung — alles,
 was sie wissen, steht in diesen Dateien:
 
 | Datei | Wer schreibt | Inhalt |
@@ -145,8 +151,11 @@ was sie wissen, steht in diesen Dateien:
 
 - **`nacht-4-testen`** (~4:12): testet alles, ändert keinen Spielcode, trägt Funde in die Liste ein.
 - **`nacht-5-weiterbauen`** (~5:12): arbeitet die Liste von oben ab, prüft jede Änderung, committet je Punkt.
-- Beide committen **nur lokal** und pushen nie. Rückgängig machen: `git log`, dann `git revert`.
+- Beide pushen **nur auf `claude/nacht`**, nie nach `main`. Übernehmen: den Branch ansehen,
+  dann mergen. Verwerfen: den Branch löschen. Einzelnes zurücknehmen: `git revert`.
 - Der Abschnitt „Entscheidung nötig" ist für sie tabu.
 - Der Skill liegt in `.claude/skills/todo-notieren/`; `CLAUDE.md` verlangt, ihn am Ende jeder Aufgabe aufzurufen.
-- Läuft nur, solange die Claude-App offen ist; war sie zu, läuft die Routine beim nächsten Start nach.
+- Laufen in der Cloud, unabhängig davon, ob der Rechner oder die App an ist.
+- Die Zeiten sind in **UTC** eingetragen und kennen keine Sommerzeit: ab dem 25. Oktober 2026
+  (Winterzeit) laufen sie eine Stunde früher, 3 und 4 Uhr Ortszeit.
 

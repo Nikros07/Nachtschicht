@@ -31,11 +31,19 @@ Nachtroutinen selbst, die ihre Liste eigenständig pflegen.
 ```bash
 node tools/pruefe.js        # alle 10 Seiten: Syntax, doppelte Namen
 node test/kampf.test.js     # 22 Prüfungen der Kampflogik
+node tools/nachttest.js     # jede Seite ohne Browser durchspielen (Ausnahmen, NaN,
+                            # tote Gesprächsverweise, Konter in Level 2) - ~2 s
+node tools/flagcheck.js     # Entscheidungen, die nie gelesen werden
 ```
+
+`nachttest.js` kann **keine Pixel** messen und nichts hören — dafür den Browser
+nehmen, wenn einer da ist.
 
 ## Nachtroutinen — Grenzen
 
-Beide Routinen laufen unbeaufsichtigt. Sie committen **lokal** und **pushen nie**.
+Beide Routinen laufen unbeaufsichtigt **in der Cloud** und arbeiten auf dem Branch
+`claude/nacht`. Sie pushen **nur dorthin, nie nach `main`**, nie mit `--force`.
 Sie löschen nichts außer dem, was ein Listenpunkt ausdrücklich verlangt, und sie
 fassen den Abschnitt „Entscheidung nötig" in `NACHT-TODO.md` nicht an.
 Protokoll: `NACHT-LOG.md`. Testbericht: `NACHT-BERICHT.md`.
+Eine Cloud-Sitzung hat **keinen Browser** — Messungen gehen über `tools/nachttest.js`.

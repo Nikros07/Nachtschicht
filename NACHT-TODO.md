@@ -6,9 +6,13 @@ steht hier — und die Routinen holen es nachts ab:
 | Zeit | Routine | Was sie tut |
 |:--|:--|:--|
 | 4:00 | `nacht-4-testen` | Testet alles, schreibt `NACHT-BERICHT.md`, trägt Funde hier ein. Ändert **keinen** Spielcode. |
-| 5:00 | `nacht-5-weiterbauen` | Arbeitet diese Liste von oben ab, testet jede Änderung, committet. Pusht **nicht**. |
+| 5:00 | `nacht-5-weiterbauen` | Arbeitet diese Liste von oben ab, testet jede Änderung, committet je Punkt. |
 
-Morgens: `NACHT-LOG.md` lesen (was passiert ist), dann entscheiden, ob gepusht wird.
+Beide laufen **in der Cloud** (claude.ai → Routinen) und arbeiten auf dem Branch
+**`claude/nacht`**. Nach `main` pushen sie nie — die Live-Seite bleibt, wie sie ist.
+
+Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
+(`git log main..origin/claude/nacht`) und, wenn es passt, nach `main` mergen.
 
 ## Wie ein Eintrag aussieht
 
@@ -27,6 +31,18 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), dann entscheiden, ob gepusht w
 ## Offen
 
 ### P1
+
+- [ ] **P1 · Nachttest: Software-Canvas für Pixelmessung** — `tools/nachttest.js` läuft
+  ohne Browser mit Attrappen und kann deshalb keine Pixel messen. Mehrere Punkte hier
+  verlangen genau das (leere Bildzeilen, „Obere Bildhälfte füllen"). Ein kleiner
+  Software-Canvas (Pixelpuffer; `fillRect`, `drawImage` von Sprite-Canvases mit
+  `translate`/`scale(-1,1)`/`globalAlpha`; Farben als `#rgb`/`#rrggbb`/`#rrggbbaa`/`rgba()`)
+  würde das ermöglichen — und ein PNG je Level zum Ansehen.
+  Wo: tools/nachttest.js (`leinwand()`) · Fertig wenn: `node tools/nachttest.js` meldet
+  je Level „leere Bildzeilen: NN %" und liegt in der Nähe der Browser-Referenz (Wohnung
+  66, Club 73, Afterhour 72, Späti 77, Heimweg 77 — Abweichung höchstens 8 Punkte).
+  *Solange das fehlt: Punkte, deren „Fertig wenn" eine Pixelmessung verlangt,
+  überspringen und als „braucht Software-Canvas" vermerken.*
 
 - [ ] **P1 · Bus: Die Ablenkung zieht alle fünf Kontrolleure auf den Spieler zu** —
   die Szene des Betrunkenen blendet nicht, sie ruft. Das Werkzeug tut das Gegenteil
@@ -96,6 +112,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), dann entscheiden, ob gepusht w
 
 ### P3
 
+- [ ] **P3 · Level 4: Wer nichts tut, wird in 300 s nie getroffen — zu prüfen** —
+  `nachttest.js` meldet im Nichtstun-Lauf von Level 4 null Ereignisse. Möglich, dass der
+  Boss einen untätigen Spieler nie trifft (Kampf ohne Zeitdruck), möglich auch, dass er es
+  tut und nur nichts gemeldet wird. Erst messen: `S.hp` vor und nach 300 s Nichtstun.
+  Wo: level4.html (`bossTakt`, `kampf`) · Fertig wenn: der Befund steht hier, und ein
+  untätiger Spieler verliert entweder, oder es ist als gewollt vermerkt.
 - [ ] **P3 · `tools/level5_baeume.js` löschen** — wortgleiche Zweitkopie der Bäume, wird nur
   von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
 - [ ] **P3 · Bahn oder Bus?** — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
