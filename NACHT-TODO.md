@@ -30,11 +30,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P1
 
-- [ ] **P1 · Bus: Die Ablenkung zieht alle fünf Kontrolleure auf den Spieler zu** —
-  die Szene des Betrunkenen blendet nicht, sie ruft. Das Werkzeug tut das Gegenteil
-  von dem, wofür es da ist.
-  Wo: level3.html (Ablenkung / `laerm`-artige Szene, Notbremse) · Fertig wenn: nach
-  der Ablenkung laufen die Kontrolleure vom Spieler weg, gemessen im Lauf.
 - [ ] **P1 · Club zum Ort machen: vier von sechs Bereichen sind leer** — Eingang,
   Raucherecke, Klos, Hinterausgang enthalten nichts. Nichtstun-Test: nach 107 s ist
   der Inhalt aufgebraucht, die Uhr läuft 600 s. Der Ausgang ist ab Sekunde 0 offen.
@@ -136,6 +131,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Heimweg 76 % (77, Diff 1) — alle innerhalb der geforderten 8 Punkte. Keine echte
   Browser-Messung, sondern ein eigener Software-Rasterizer (fillRect/drawImage/Pfade/
   Verläufe), gegen die Browser-Referenz aus PLAYTEST.md kalibriert.
+
+- [x] 2026-10-01 · P1 · Bus: Ablenkung zieht Kontrolleure auf den Spieler zu ·
+  `5dbf1c1` · Gemessen (Spieler reglos bei x=325, 8 s Ablenkung ab Trigger):
+  Abstand des naechsten Kontrolleurs vorher 85 px, sank auf 0 und loeste Alarm
+  (erwischt) aus · nachher (mit Fix) 289/317/322/338/668 px, kein Alarm in 8 s.
 
 ## Blockiert
 
