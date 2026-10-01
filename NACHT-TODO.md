@@ -56,9 +56,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Phase-3-Jab auf HART mit Pegel liegt unter der Reaktionszeit** —
   Wo: level4.html / `KAMPF`-Werte · Fertig wenn: kleinste Vorwarnzeit ≥ 0,28 s auf
   jeder Schwierigkeit, gemessen.
-- [ ] **P2 · Bus: blinkendes E über den Verstecken erscheint nie** — das Hauptwerkzeug
-  des Levels findet man nur zufällig. Wo: level3.html (`naheVersteck`, Zeichnen) ·
-  Fertig wenn: das E erscheint in Reichweite eines Verstecks.
 - [ ] **P2 · Bus: Ein gekaufter Fahrschein schaltet den Bus für alle späteren Durchläufe ab** —
   Wo: level3.html (`starteBus`, Flag-Reset, `S.ticket`) · Fertig wenn: nach Neustart
   des Levels gilt kein alter Fahrschein mehr.
@@ -144,6 +141,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   jacke+ausweis false, nach allen vieren true, Crew danach [MORITZ, MAX FERDI, FINN,
   DAVID]. DER SCHLÄFER/DER TELEFONIERER heißen jetzt FINN/DAVID, mit je drei Sätzen
   nach dem Aufwecken/Holen.
+
+- [x] 2026-10-01 · P2 · Bus: blinkendes E über den Verstecken erscheint nie · `ba1890b`
+  · Zeichenroutine nutzte eine eigene hartkodierte Tiefenprüfung (<=0.3) statt
+  tiefeNah() wie naheVersteck(). Da S.tiefe im Bus (Tiefe aus) bei gangTiefe (0.72)
+  steht und alle Verstecke t 0.10-0.20 haben, war die Prüfung nie erfüllt. Gemessen:
+  Bedingung für das E an Versteck v1 war false, ist jetzt true - naheVersteck() fand
+  den Spot beide Male.
 
 ## Blockiert
 
