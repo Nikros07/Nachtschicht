@@ -91,6 +91,11 @@ const TUNE = {
   /* (6) DER KRACHER AM ENDE */
   gegnerTreffer:    3,     // so oft musst du kontern
   gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
+  /* Anteil des Ausholens, in dem ein Konter zaehlt - derselbe Wert wie
+     KAMPF.konterAnteil in nacht/kampf.js, damit der erste Kampf dasselbe
+     Timing lehrt, das Level 4 und das Finale spaeter verlangen.
+     0.34 von 0.75 s sind 255 ms: lesbar, aber nicht geschenkt. */
+  konterFenster:    0.34,
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
   leben:            3,
@@ -619,13 +624,21 @@ function kampf(dt){
   const dist=S.x-g.x;
   if(g.zustand==='komm'){
     g.x+=Math.sign(dist)*70*dt;
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; SFX.warn(); }
+    /* Puffer leeren wie in allen anderen Zustaenden. Fehlte das, blieb ein
+       Druck aus dem Heranlaufen liegen und kontert im naechsten Bild von
+       selbst - damit war Dauerdruecken die beste Taktik. */
+    while(aktionPuffer.length) aktionPuffer.shift();
+    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; g.verpasst=false; SFX.warn(); }
   } else if(g.zustand==='wind'){
+    const imFenster = g.t >= TUNE.gegnerWindup*(1-TUNE.konterFenster);
     while(aktionPuffer.length){ aktionPuffer.shift();
-      /* Konter im Ausholen */
+      /* Ein Versuch pro Ausholen. Ohne diese Sperre haette Dauerdruecken
+         irgendwann von selbst ins Fenster getroffen. */
+      if(g.verpasst) break;
+      if(!imFenster){ g.verpasst=true; meldung('ZU FRUEH',1.1); break; }
       g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
       S.ruettel=5; S.blitz=.5; SFX.klatsch();
-      meldung(pick(['SITZT','KONTER','ZU LANGSAM']),1.2);
+      meldung(pick(['SITZT','KONTER','GENAU DA']),1.2);
       break; }
     if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
       /* Treffer, wenn du nicht gekontert hast */
@@ -887,6 +900,14 @@ function zeichneWohnung(){
 
 /* ---- HUD ---- */
 function hud(){
+  /* Der Ausholbalken aus nacht/hud.js. Der Gegner hier ist keine Figur aus
+     nacht/kampf.js - sein Zustand heisst 'wind' - deshalb ein kleiner
+     Uebersetzer auf die Felder, die der Balken liest. */
+  if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='wind'){
+    zeichneAusholbalken({ zustand:'ausholen', zT:S.gegner.t,
+      ausholenDauer:TUNE.gegnerWindup, fensterAnteil:TUNE.konterFenster },
+      S.gegner.verpasst?'ZU FRUEH':'ER HOLT AUS', 30);
+  }
   /* Herzen */
   for(let i=0;i<TUNE.leben;i++){
     const x=6+i*7,y=6, voll=i<S.hp;
