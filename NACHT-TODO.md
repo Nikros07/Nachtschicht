@@ -59,6 +59,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
+- [ ] **P2 · Level 4: Titelbild verspricht E ODER LEERTASTE, die Leertaste startet nichts** —
+  `level4.html` bindet Space nur an die Rolle (`rolleGedrueckt`), der Start geht nur über E/Enter.
+  Wo: level4.html (Titelbild-Text, Tastenbehandlung) · Fertig wenn: Text und Verhalten stimmen
+  überein, `nachttest.js` grün.
+- [ ] **P2 · Lektionen: Übungspuppe für den Kampf (Level 3, 4, 8)** — die Lektion zeigt bisher nur
+  Tasten. Ein regloser Übungsgegner, an dem man Konter, Block und Rolle einmal wirklich ausführt,
+  würde das Timing vor dem Ernstfall lehren. Wo: nacht/lehre.js, nacht/kampf.js (`kaempferTakt`) ·
+  Fertig wenn: die Lektion von Level 4 verlangt einen gelungenen Konter an einer Puppe; im
+  Nachttest per Simulation machbar.
+
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
   Wo: level4.html (`bossPhase`, `naechsteArt`) · Fertig wenn: Phase 2 und 3 verlangen
@@ -100,6 +110,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
 ### P3
+
+- [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
+  oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
+  Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
 
 - [ ] **P3 · Level 4: Wer nichts tut, wird in 300 s nie getroffen — zu prüfen** —
   `nachttest.js` meldet im Nichtstun-Lauf von Level 4 null Ereignisse. Möglich, dass der

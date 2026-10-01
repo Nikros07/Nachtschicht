@@ -78,6 +78,12 @@ let bildDt=1/60;
 function bild(jetzt){
   const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
   bildDt=dt;
+  /* Das Zwischenbild vor dem Level (nacht/lehre.js): solange es laeuft,
+     ruht das Level, und die Tasten gehoeren ihm. */
+  if(window.LEHRE&&window.LEHRE.pruefe()){
+    window.LEHRE.takt(dt); window.LEHRE.zeichne();
+    requestAnimationFrame(bild); return;
+  }
   /* Solange das Handy offen ist, steht die Welt (nacht/handy.js). */
   if(!(window.HANDY&&window.HANDY.offen)) update(dt);
   draw(dt);

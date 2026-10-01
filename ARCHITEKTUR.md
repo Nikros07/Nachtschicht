@@ -43,6 +43,7 @@ Reihenfolge der Script-Tags ist die Ladereihenfolge — `kern.js` zuerst.
 | `dialog.js` | Gesprächsbäume mit Bedingungen, Wirkungen, Zeitdruck |
 | `kampf.js` | Nahkampf: Zustandsautomat, Konter, Blocken, Ausdauer, Rolle, Gegner-KI |
 | `eingabe.js` | Die Tasten, die überall dasselbe tun |
+| `lehre.js` | Das Zwischenbild vor jedem Level: neue Steuerung zum Ausprobieren, Tabelle `LEKTIONEN` |
 | `mobil.js` | Die Handy-Fassung: eigenes Bedienfeld, Stick, Gesprächsflächen |
 | `handy.js` | Das Handy im Spiel: Nachrichten und Antworten |
 
@@ -97,6 +98,8 @@ Bedingungen (`wenn`) und Wirkungen (`tu`) stehen in `nacht/nacht.js`:
 `ab` ist die Levelnummer, ab der sie kommen kann.
 
 **Eine Taste hinzufügen, die überall gilt:** `nacht/eingabe.js`.
+
+**Eine Lektion ändern oder hinzufügen:** ein Eintrag in `LEKTIONEN` in `nacht/lehre.js`. Sie erscheint beim ersten Mal je Level, sobald das Intro beginnt (`?lektion=1` erzwingt, `?lektion=0` schaltet ab). Am Handy zeigt das Bedienfeld während der Lektion genau die Knöpfe ihrer Schritte.
 
 **Ein Level pausieren lassen:** das Level definiert `pauseTaste()`.
 

@@ -245,7 +245,7 @@ function speicher(){ const m=new Map(); return {
 function zufall(seed){ let s=seed>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; }; }
 
 /* ---- Eine Seite laden --------------------------------------------------- */
-function lade(seite){
+function lade(seite,abfrage){
   const h=fs.readFileSync(seite,'utf8');
   const module=[...h.matchAll(/<script src="nacht\/([a-z]+)\.js/g)].map(m=>m[1])
     .filter(n=>n!=='mobil');                       // reine Oberflaeche
@@ -267,7 +267,7 @@ function lade(seite){
   const win={ addEventListener:reg, removeEventListener(){}, innerWidth:800, innerHeight:450,
     HANDY:null, MOBIL:null };
   const nav={ maxTouchPoints:0, userAgent:'node', wakeLock:undefined };
-  const ort={ search:'', pathname:'/'+seite, href:'http://localhost/'+seite };
+  const ort={ search:abfrage||'?lektion=0', pathname:'/'+seite, href:'http://localhost/'+seite };
   const zeit={ jetzt:0 };
   const perf={ now:()=>zeit.jetzt };
   const rng=zufall(12345);
@@ -404,6 +404,26 @@ for(const seite of SEITEN){
     bericht.push('Nichtstun '+NICHTS_SEK+' s: '+ereig.length+' Ereignisse, letztes bei '+letzte+' s'
       +(ereig.length&&ereig.length<=6?' ['+ereig.join('; ')+']':''));
   }catch(e){ meld(seite,'Nichtstun-Lauf: '+e.message); }
+
+  /* 4) Lektion: zeichnet sie ohne Fehler, und sind die Pflichtschritte machbar? */
+  try{
+    const Q=lade(seite,'?lektion=1'), EQ=c=>Q.api.ev(c);
+    if(EQ('typeof LEKTIONEN!=="undefined"&&!!LEKTIONEN["'+seite+'"]')){
+      Q.taste('Space',true); Q.taste('Space',false);
+      EQ('S.modus="intro"');
+      if(!EQ('LEHRE.pruefe()')) meld(seite,'Lektion startet nicht im Intro');
+      for(let i=0;i<3;i++){ EQ('LEHRE.takt(1/60)'); EQ('LEHRE.zeichne()'); }
+      const gr=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.gr.map(g=>g[0]))');
+      for(const grp of gr) for(const code of grp){ Q.taste(code,true); Q.taste(code,false); }
+      EQ('LEHRE.zeichne()');
+      if(!EQ('LEHRE.alleErledigt()')) meld(seite,'Lektion: nicht alle Schritte lassen sich erledigen');
+      const mk=EQ('LEHRE.mobilKontext()');
+      if(!mk.aktion) meld(seite,'Lektion: kein Handy-Knopf zum Weitermachen');
+      Q.taste('Enter',true);
+      if(EQ('LEHRE.aktiv')) meld(seite,'Lektion endet nicht mit ENTER');
+      bericht.push('Lektion ok ('+gr.length+' Schritte)');
+    }
+  }catch(e){ meld(seite,'Lektion: '+String(e.message).slice(0,140)); }
 
   zeile(seite,bericht.join(' | '));
 }

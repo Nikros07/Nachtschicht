@@ -525,6 +525,11 @@ function kontextPflege(){
   if(typeof mobilKontext==='function'){
     try{ k=Object.assign(k,mobilKontext()||{}); }catch(e){}
   }
+  /* Waehrend der Lektion (nacht/lehre.js) zeigt das Bedienfeld genau die
+     Knoepfe, die in ihr vorkommen. */
+  if(window.LEHRE&&window.LEHRE.aktiv){
+    try{ k=Object.assign({aktion:null,zwei:null,block:false,extras:null},window.LEHRE.mobilKontext()); }catch(e){}
+  }
   window.MOBIL.kontext=k;
   beschrifte(bAktion,k.aktion,'KeyE');
   beschrifte(bZwei,k.zwei,'Space');
