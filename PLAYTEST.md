@@ -104,10 +104,10 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 
 | Problem | Warum es nervt | Grad | Lösung |
 |:--|:--|:--|:--|
-| Die Ablenkung zieht alle fünf Kontrolleure **auf den Spieler zu** | Das Werkzeug tut das Gegenteil von dem, wofür es da ist. | kritisch | Ziel vom Spieler weg zeigen lassen |
+| ~~Die Ablenkung zieht alle fünf Kontrolleure auf den Spieler zu~~ | Das Werkzeug tat das Gegenteil von dem, wofür es da ist. | kritisch | ~~Ziel weicht jetzt vom Spieler weg aus~~ |
 | Der Bus zerfällt in „gratis sicher" oder „sicher verloren" | Ein Schleichlevel lebt vom Abwägen; hier ist die richtige Antwort immer dieselbe. | hoch | Der Fahrschein rettet eine Kontrolle, nicht das ganze Level |
 | Der Sprint ist „D halten, sechzehnmal im Takt springen" | Kein Grund, aufmerksam zu sein. | hoch | Eine zweite Entscheidung: Bürgersteig oder Straße |
-| Das blinkende E über den Verstecken erscheint nie | Man findet das Hauptwerkzeug des Levels nur zufällig. | hoch | — |
+| ~~Das blinkende E über den Verstecken erscheint nie~~ | Man fand das Hauptwerkzeug des Levels nur zufällig. | hoch | ~~Dieselbe Tiefenprüfung wie naheVersteck()~~ |
 | Ein einmal gekaufter Fahrschein schaltet den Bus für **alle** späteren Durchläufe ab | — | hoch | Beim Levelstart zurücksetzen |
 | Bahn oder Bus? Das Intro sagt Bahn, das Schild sagt BUS | Erster und letzter Eindruck des Levels. | niedrig | Entscheiden |
 
@@ -115,9 +115,9 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 
 | Problem | Warum es nervt | Grad | Lösung |
 |:--|:--|:--|:--|
-| Die Wahl „wen nimmst du mit" kommt **nach** dem Kampf | Sie kostet nichts und erspart nichts — man darf nur noch wegwerfen, was man schon erarbeitet hat. | hoch | An den Anfang ziehen und die Aufgabenliste davon abhängen lassen |
+| ~~Die Wahl „wen nimmst du mit" kommt nach dem Kampf~~ | Sie kostete nichts und ersparte nichts. | hoch | ~~An den Anfang gezogen, Aufgabenliste hängt dran~~ |
 | Die Wahl hat in Level 2 selbst keine sichtbare Folge | Dieselbe Cutscene, dasselbe Ende, als einziges Feedback eine Zeile „DABEI:". | hoch | Wer dableibt, verabschiedet sich sichtbar |
-| „DER SCHLÄFER" und „DER TELEFONIERER" sind keine Personen | Beide kommen in keiner anderen Datei namentlich vor. Man entscheidet über zwei Listeneinträge. | hoch | Namen und je drei Sätze |
+| ~~„DER SCHLÄFER" und „DER TELEFONIERER" sind keine Personen~~ | Beide kamen in keiner anderen Datei namentlich vor. | hoch | ~~Heißen jetzt FINN und DAVID, je drei Sätze~~ |
 | ~~`gruppeGross`/`gruppeKlein` wurden nie zurückgesetzt~~ | Die Wahl des letzten Durchlaufs fälscht vier spätere Stellen. | hoch | ~~Behoben~~ |
 | Springen, Hoch und Runter werden beigebracht und tun nichts | Drei von sechs Eingaben ohne Zweck. | mittel | — |
 
