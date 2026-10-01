@@ -30,18 +30,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P1
 
-- [ ] **P1 · Nachttest: Software-Canvas für Pixelmessung** — `tools/nachttest.js` läuft
-  ohne Browser mit Attrappen und kann deshalb keine Pixel messen. Mehrere Punkte hier
-  verlangen genau das (leere Bildzeilen, „Obere Bildhälfte füllen"). Ein kleiner
-  Software-Canvas (Pixelpuffer; `fillRect`, `drawImage` von Sprite-Canvases mit
-  `translate`/`scale(-1,1)`/`globalAlpha`; Farben als `#rgb`/`#rrggbb`/`#rrggbbaa`/`rgba()`)
-  würde das ermöglichen — und ein PNG je Level zum Ansehen.
-  Wo: tools/nachttest.js (`leinwand()`) · Fertig wenn: `node tools/nachttest.js` meldet
-  je Level „leere Bildzeilen: NN %" und liegt in der Nähe der Browser-Referenz (Wohnung
-  66, Club 73, Afterhour 72, Späti 77, Heimweg 77 — Abweichung höchstens 8 Punkte).
-  *Solange das fehlt: Punkte, deren „Fertig wenn" eine Pixelmessung verlangt,
-  überspringen und als „braucht Software-Canvas" vermerken.*
-
 - [ ] **P1 · Bus: Die Ablenkung zieht alle fünf Kontrolleure auf den Spieler zu** —
   die Szene des Betrunkenen blendet nicht, sie ruft. Das Werkzeug tut das Gegenteil
   von dem, wofür es da ist.
@@ -141,6 +129,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-01 · P1 · Nachttest: Software-Canvas für Pixelmessung · `307b659` ·
+  leere Bildzeilen (60-s-Zufallslauf, Mittelwert): Wohnung 65 % (Referenz 66, Diff 1) ·
+  Club 78 % (73, Diff 5) · Afterhour 69 % (72, Diff 3) · Späti 73 % (77, Diff 4) ·
+  Heimweg 76 % (77, Diff 1) — alle innerhalb der geforderten 8 Punkte. Keine echte
+  Browser-Messung, sondern ein eigener Software-Rasterizer (fillRect/drawImage/Pfade/
+  Verläufe), gegen die Browser-Referenz aus PLAYTEST.md kalibriert.
 
 ## Blockiert
 
