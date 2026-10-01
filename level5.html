@@ -638,7 +638,7 @@ function neuesSpiel(){
     kamX:0,
     pegel:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
     minute:TUNE.startMinute,
-    erfolge:0, abfuhren:0, wasserT:0,
+    erfolge:0, abfuhren:0, wasserT:0, warAktiv:false,
     confidenceT:0, geknicktT:0, stolpernT:0,
     dunkel:0, flacker:0,
     mini:null, ecke:null,
@@ -857,7 +857,9 @@ function naechstesZiel(){
   }
   pruefe(BARTHEKE,'bar',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(WASCHBECKEN,'wasser',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
-  pruefe(AUSGANG,'tuer',true);
+  /* Der Ausgang zaehlt erst, wenn im Club etwas passiert ist - sonst
+     verlaesst man ihn mit null Interaktionen, kaum dass man drin ist. */
+  pruefe(AUSGANG,'tuer',S.warAktiv);
   return bestes;
 }
 
@@ -991,7 +993,7 @@ function marvinTakt(dt){
 }
 function marvinStellt(){
   const m=S.marvin; m.wut=false;
-  S.vx=0; S.vt=0;
+  S.vx=0; S.vt=0; S.warAktiv=true;
   starteGespraech(MARVIN_BAUM,'start',e=>{
     if(e==='@kampf') starteKloppe();
     else { m.fertig=true; meldung(flag('marvinRueckzug')?'ER ZIEHT AB':'ER LACHT DICH AUS',1.8); }
@@ -1162,6 +1164,7 @@ function update(dt){
     aktionPuffer.shift();
     const z=naechstesZiel();
     if(!z){ meldung('HIER IST NICHTS',0.8); SFX.nichts(); continue; }
+    S.warAktiv=true;
     if(z.art==='reden'){ redeMit(z.obj); return; }
     if(z.art==='bar'){ starteMinigame('ex',z.obj); return; }
     if(z.art==='wasser'){
