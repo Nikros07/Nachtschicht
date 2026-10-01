@@ -28,17 +28,17 @@
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610011028"></script>
-<script src="nacht/bild.js?v=202610011028"></script>
-<script src="nacht/hud.js?v=202610011028"></script>
-<script src="nacht/ton.js?v=202610011028"></script>
-<script src="nacht/stand.js?v=202610011028"></script>
-<script src="nacht/welt.js?v=202610011028"></script>
-<script src="nacht/nacht.js?v=202610011028"></script>
-<script src="nacht/dialog.js?v=202610011028"></script>
-<script src="nacht/eingabe.js?v=202610011028"></script>
-<script src="nacht/mobil.js?v=202610011028"></script>
-<script src="nacht/handy.js?v=202610011028"></script>
+<script src="nacht/kern.js?v=202610011034"></script>
+<script src="nacht/bild.js?v=202610011034"></script>
+<script src="nacht/hud.js?v=202610011034"></script>
+<script src="nacht/ton.js?v=202610011034"></script>
+<script src="nacht/stand.js?v=202610011034"></script>
+<script src="nacht/welt.js?v=202610011034"></script>
+<script src="nacht/nacht.js?v=202610011034"></script>
+<script src="nacht/dialog.js?v=202610011034"></script>
+<script src="nacht/eingabe.js?v=202610011034"></script>
+<script src="nacht/mobil.js?v=202610011034"></script>
+<script src="nacht/handy.js?v=202610011034"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -397,7 +397,14 @@ const INTRO=[
   { d:2.6, txt:'ALSO MACHST DU ES.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
-function starteLevel(){ S.modus='spiel'; zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
+/* Was dieses Level selbst entscheidet, faengt in diesem Level bei null an.
+   Die Crew raeumen wir nicht ab - wer vor Level 2 schon jemanden dabeihat,
+   behaelt ihn. */
+function wohnungZuruecksetzen(){
+  ['gruppeGross','gruppeKlein'].forEach(f=>setzeFlag(f,false));
+}
+function starteLevel(){ S.modus='spiel'; wohnungZuruecksetzen();
+  zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;

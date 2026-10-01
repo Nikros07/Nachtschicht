@@ -28,18 +28,18 @@
   <div id="base"><span>LEVEL 5 - CLUB</span><span>E ANSPRECHEN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610011028"></script>
-<script src="nacht/bild.js?v=202610011028"></script>
-<script src="nacht/hud.js?v=202610011028"></script>
-<script src="nacht/ton.js?v=202610011028"></script>
-<script src="nacht/stand.js?v=202610011028"></script>
-<script src="nacht/welt.js?v=202610011028"></script>
-<script src="nacht/nacht.js?v=202610011028"></script>
-<script src="nacht/dialog.js?v=202610011028"></script>
-<script src="nacht/kampf.js?v=202610011028"></script>
-<script src="nacht/eingabe.js?v=202610011028"></script>
-<script src="nacht/mobil.js?v=202610011028"></script>
-<script src="nacht/handy.js?v=202610011028"></script>
+<script src="nacht/kern.js?v=202610011034"></script>
+<script src="nacht/bild.js?v=202610011034"></script>
+<script src="nacht/hud.js?v=202610011034"></script>
+<script src="nacht/ton.js?v=202610011034"></script>
+<script src="nacht/stand.js?v=202610011034"></script>
+<script src="nacht/welt.js?v=202610011034"></script>
+<script src="nacht/nacht.js?v=202610011034"></script>
+<script src="nacht/dialog.js?v=202610011034"></script>
+<script src="nacht/kampf.js?v=202610011034"></script>
+<script src="nacht/eingabe.js?v=202610011034"></script>
+<script src="nacht/mobil.js?v=202610011034"></script>
+<script src="nacht/handy.js?v=202610011034"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -346,8 +346,11 @@ const MIA_BAUM = {
   lena:{ wer:'LENA', text:'Hey! Ich hab Geburtstag und keiner tanzt mit mir.',
     wahl:[
       { txt:'Alles Gute! Dann tanzen wir doch alle.', geh:'lenaGut', tu:{mag:['MIA',6]} },
-      { txt:'Mein Kumpel tanzt mit dir.', wenn:{crew:'JONAS'}, geh:'kumpel' },
-      { txt:'Mein Kumpel tanzt mit dir.', wenn:{crew:'MAX FERDI'}, geh:'kumpel' },
+      /* Stand zweimal wortgleich untereinander, einmal fuer JONAS und
+         einmal fuer MAX FERDI. MAX FERDI ist seit Level 1 immer dabei, die
+         Zeile also immer sichtbar - wer Jonas dabeihatte, las denselben
+         Satz doppelt. Einer reicht. */
+      { txt:'Einer von meinen Jungs tanzt mit dir.', geh:'kumpel' },
     ], zeit:8, standard:0 },
 
   kumpel:{ wer:'MIA', text:'Okay, das war gut. Jetzt hab ich Zeit.',
@@ -380,7 +383,11 @@ const MIA_BAUM = {
 
   ende:{ wer:'MIA', text:'Und jetzt?',
     wahl:[
-      { txt:'Komm kurz raus. Frische Luft.',  wenn:{mag:['MIA',24]}, geh:'ja' },
+      /* 20 statt 24: 24 war exakt das Maximum des Baums - nur 3 von 169
+         Pfaden erreichten es, zwei davon ueber dieselbe doppelte Zeile.
+         20 laesst vier Punkte Luft wie bei Kira, und die schwache
+         Eroeffnung (Maximum 18) bleibt trotzdem aussen vor. */
+      { txt:'Komm kurz raus. Frische Luft.',  wenn:{mag:['MIA',20], ruf:40}, geh:'ja' },
       { txt:'Tanzen?',                        geh:'@tanz' },
       { txt:'Gibst du mir deine Nummer?',     geh:'nummer' },
       { txt:'Ich lass euch mal feiern.',      geh:'@nett' },
@@ -447,7 +454,7 @@ const SOPHIE_BAUM = {
     wahl:[
       { txt:'Tanzen.',                          geh:'@tanz' },
       { txt:'Noch einen.',                      wenn:{geld:6}, geh:'nochEiner', tu:{geld:-6, pegel:14} },
-      { txt:'Weder noch. Lass raus, reden.',    wenn:{mag:['SOPHIE',18]}, geh:'ja' },
+      { txt:'Weder noch. Lass raus, reden.',    wenn:{mag:['SOPHIE',18], ruf:40}, geh:'ja' },
       { txt:'Gib mir deine Nummer.',            geh:'nummer' },
     ], zeit:8, standard:0 },
 
@@ -487,6 +494,10 @@ const KIRA_BAUM = {
       { txt:'Warum stehst du so allein hier?',   wenn:{mut:40, pegel:-54}, geh:'allein' },
       { txt:'Heyyy! Laechel doch mal!',          wenn:{pegel:50}, geh:'laut' },
       { txt:'Du siehst traurig aus. Brauchst du wen?', wenn:{pegel:55}, geh:'laut' },
+      /* Ab Pegel 55 waren nur noch die zwei lauten Antworten sichtbar, und
+         beide endeten in der Abfuhr - ohne Ausweg. Jetzt kann man gehen,
+         sich am Waschbecken nuechtern machen und wiederkommen. */
+      { txt:'(Lieber nicht. So nicht.)',         wenn:{pegel:50}, geh:'@ende' },
     ], zeit:9, standard:1 },
 
   laut:{ wer:'KIRA', text:'Nein.', geh:'@nein' },
@@ -497,7 +508,12 @@ const KIRA_BAUM = {
       { txt:'Dann lass ich dich mal.',             geh:'@nett' },
     ], zeit:8, standard:0 },
 
-  allein:{ wer:'KIRA', text:'Weil meine Leute weg sind. Und ich warte auf ein Taxi.', tu:{mag:['KIRA',3]}, geh:'taxi' },
+  /* +8 wie bei den sanften Eroeffnungen. Vorher +3 - und weil das die
+     Antwort hinter wenn:{mut:40} ist, war ausgerechnet die mutige die
+     einzige, mit der das beste Ende rechnerisch unerreichbar blieb
+     (hoechstens 31 gegen eine Schwelle von 32). Eine direkte Frage ist ein
+     Risiko; sie darf sich lohnen, wenn sie ankommt. */
+  allein:{ wer:'KIRA', text:'Weil meine Leute weg sind. Und ich warte auf ein Taxi.', tu:{mag:['KIRA',8]}, geh:'taxi' },
 
   okay:{ wer:'KIRA', text:'Geht so. Meine Leute sind weg. Ich warte auf ein Taxi.', geh:'taxi' },
 
@@ -531,7 +547,7 @@ const KIRA_BAUM = {
 
   schluss:{ wer:'KIRA', text:'Mein Taxi kommt in zehn Minuten.',
     wahl:[
-      { txt:'Dann haben wir zehn Minuten.',       wenn:{mag:['KIRA',32]}, geh:'ja' },
+      { txt:'Dann haben wir zehn Minuten.',       wenn:{mag:['KIRA',32], ruf:40}, geh:'ja' },
       { txt:'Gibst du mir deine Nummer?',         wenn:{mag:['KIRA',20]}, geh:'nummer' },
       { txt:'Ich bring dich zum Taxi.',           geh:'@nett', tu:{ruf:3} },
     ], zeit:10, standard:2 },
@@ -584,7 +600,12 @@ const MARVIN_BAUM = {
       { txt:'Sie hat sich entschieden. Nicht mein Problem.', wenn:{mut:40}, geh:'kampf' },
       { txt:'Such dir eine eigene.',                          geh:'kampf', tu:{mut:3} },
       { txt:'Ist ja gut. Kein Stress.',                       geh:'kneifen' },
-      { txt:'Die Jungs sind hinter mir. Denk nochmal nach.', wenn:{crew:'DENNIS'}, geh:'rueckzug' },
+      /* Hing an crew:'DENNIS' - und DENNIS kommt in Level 4 bedingungslos
+         dazu. Die Zeile war also immer sichtbar: den Kampf per Knopfdruck
+         umgehen und dafuer +6 Ruf. Jetzt haengt sie an der Entscheidung
+         aus Level 2, alle mitzunehmen. Wer allein losgezogen ist, muss
+         sich selbst kuemmern. */
+      { txt:'Die Jungs sind hinter mir. Denk nochmal nach.', wenn:{flag:'gruppeGross'}, geh:'rueckzug' },
     ], zeit:8, standard:1 },
 
   kneifen:{ wer:'MARVIN', text:'Kein Stress. Genau. Lauf.', tu:{ruf:-8, mut:-5, flag:'clubGekniffen'}, geh:'@ende' },

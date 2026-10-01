@@ -28,18 +28,18 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610011028"></script>
-<script src="nacht/bild.js?v=202610011028"></script>
-<script src="nacht/hud.js?v=202610011028"></script>
-<script src="nacht/ton.js?v=202610011028"></script>
-<script src="nacht/stand.js?v=202610011028"></script>
-<script src="nacht/welt.js?v=202610011028"></script>
-<script src="nacht/kampf.js?v=202610011028"></script>
-<script src="nacht/nacht.js?v=202610011028"></script>
-<script src="nacht/dialog.js?v=202610011028"></script>
-<script src="nacht/eingabe.js?v=202610011028"></script>
-<script src="nacht/mobil.js?v=202610011028"></script>
-<script src="nacht/handy.js?v=202610011028"></script>
+<script src="nacht/kern.js?v=202610011034"></script>
+<script src="nacht/bild.js?v=202610011034"></script>
+<script src="nacht/hud.js?v=202610011034"></script>
+<script src="nacht/ton.js?v=202610011034"></script>
+<script src="nacht/stand.js?v=202610011034"></script>
+<script src="nacht/welt.js?v=202610011034"></script>
+<script src="nacht/kampf.js?v=202610011034"></script>
+<script src="nacht/nacht.js?v=202610011034"></script>
+<script src="nacht/dialog.js?v=202610011034"></script>
+<script src="nacht/eingabe.js?v=202610011034"></script>
+<script src="nacht/mobil.js?v=202610011034"></script>
+<script src="nacht/handy.js?v=202610011034"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -859,6 +859,60 @@ const endeWeg=()=>flag('endeSonne')?'sonne':flag('endeWeiter')?'weiter':'heim';
 const endeKampf=()=>flag('fightFrieden')?'frieden':flag('fightGewonnen')?'gewonnen':'verloren';
 const endeTitel=()=>ENDE_WEG[endeWeg()]+' - '+ENDE_KAMPF[endeKampf()];
 
+/* ==========================================================================
+   WAS AUS DER NACHT NACHHALLT
+   Entscheidungen, die bisher nur gespeichert wurden. Das Ende las eine
+   Handvoll Flags, der Rest verpuffte - 17 von 59 waren tot.
+
+   Alle auszuspielen waere ein Abspann von einer halben Minute. Also: ein
+   Vorrat mit Gewicht, und baueEnde() nimmt die staerksten vier. Was oben
+   steht, kostet am meisten oder tut am meisten weh.
+   ========================================================================== */
+const NACHHALL_ANZAHL=4;
+const NACHHALL=[
+  /* Level 1 - wie die Schule ausgegangen ist */
+  { g:9, wenn:()=>flag('klassenfahrtGeld'),
+    txt:'DIE ZWANZIG AUS DER KLASSENKASSE FEHLEN AM MONTAG. NICHT DIR.' },
+  { g:8, wenn:()=>flag('direktorMontag'),
+    txt:'MONTAG ERSTE STUNDE. ER HAT ES SICH GEMERKT.' },
+  { g:7, wenn:()=>flag('direktorGeflohen'),
+    txt:'DU BIST AN IHM VORBEIGERANNT. ER WEISS, WER DU BIST.' },
+  { g:5, wenn:()=>flag('direktorVersehen'),
+    txt:'(EIN VERSEHEN), HAT ER GESAGT. IHR WISST BEIDE, DASS ES KEINS WAR.' },
+  /* Level 3 - der Bus */
+  { g:6, wenn:()=>flag('busKloppeVerloren'),
+    txt:'IM BUS HAST DU SCHON EINMAL VERLOREN HEUTE. DAS WAR DIE PROBE.' },
+  { g:4, wenn:()=>flag('busKloppeGewonnen'),
+    txt:'ZWEI SCHLAEGEREIEN IN EINER NACHT. DU ZAEHLST NICHT MEHR MIT.' },
+  { g:3, wenn:()=>flag('spaetDran'),
+    txt:'DIE NOTBREMSE KOSTET ANGEBLICH FUENFZIG EURO. MAL SEHEN.' },
+  { g:2, wenn:()=>flag('busGezahlt'),
+    txt:'DU WARST DER EINZIGE IM BUS MIT EINEM FAHRSCHEIN.' },
+  { g:2, wenn:()=>flag('busAngeblafft'),
+    txt:'DU HAST EINEN KONTROLLEUR ANGEBLAFFT. ER MACHT AUCH NUR SEINEN JOB.' },
+  { g:1, wenn:()=>flag('automatKaputt'),
+    txt:'DER AUTOMAT AN DER HALTESTELLE GEHT IMMER NOCH NICHT.' },
+  /* Level 5 - der Club */
+  { g:6, wenn:()=>flag('lenaVersorgt'),
+    txt:'LENA HAT IHREN GEBURTSTAG UEBERLEBT. AUCH WEGEN DIR.' },
+  { g:5, wenn:()=>flag('clubKloppeVerloren'),
+    txt:'IM CLUB HAST DU EINE KASSIERT, UND KEINER HAT GEHOLFEN.' },
+  /* Level 6 - der Traum */
+  { g:8, wenn:()=>flag('traumEinsicht'),
+    txt:'DU WEISST JETZT, WARUM DU DIE GANZE NACHT GERANNT BIST.' },
+  { g:7, wenn:()=>flag('traumMoritz'),
+    txt:'IM TRAUM HAST DU MORITZ GESAGT, WAS DU SONST NIE SAGST.' },
+  /* Die Karte dazwischen */
+  { g:3, wenn:()=>flag('mitgesungen'),
+    txt:'IRGENDWO IN DER STADT SINGT EINER WEITER.' },
+  /* Der beste Freund - die Zuneigung lief seit Level 2 mit und wurde nie
+     gelesen. Jetzt steht am Ende, wo ihr zwei gelandet seid. */
+  { g:9, wenn:()=>beziehung('MORITZ')>=18,
+    txt:'MORITZ SCHREIBT: WAR GUT MIT DIR HEUTE. SCHLAF GUT, ALTER.' },
+  { g:8, wenn:()=>beziehung('MORITZ')<=-10,
+    txt:'VON MORITZ KOMMT NICHTS. DAS IST NEU.' },
+];
+
 function baueEnde(){
   const z=[{ d:1.0, txt:'' }];
   const weg=endeWeg();
@@ -893,6 +947,10 @@ function baueEnde(){
   else                           z.push({ d:2.6, txt:'IN DER KUECHE BRENNT NOCH LICHT. MAMA HAT GEWARTET.' });
   if(flag('neleGeholfen'))  z.push({ d:2.2, txt:'NELE IST AUCH HEIMGEKOMMEN.' });
   if(flag('tobiDabei'))     z.push({ d:2.2, txt:'TOBI HAT JETZT EINE NEUE CREW.' });
+  /* Die staerksten Nachhall-Zeilen dieses Durchlaufs. */
+  NACHHALL.filter(e=>e.wenn()).sort((a,b)=>b.g-a.g).slice(0,NACHHALL_ANZAHL)
+          .forEach(e=>z.push({ d:2.4, txt:e.txt }));
+
   const crew=ladeCrew();
   z.push({ d:2.4, txt:crew.length?'MIT DABEI: '+crew.join(', '):'GANZ ALLEIN DURCH DIE NACHT.' });
   z.push({ d:2.6, txt:'ENDE: '+endeTitel() });

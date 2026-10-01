@@ -202,4 +202,8 @@ function laufBild(e,dt,tiefe){
 /* Gehtempo in der Flaeche: seitwaerts plus Tiefe, in Weltpixeln pro Sekunde.
    Fuer Level, die vx und vt selbst fuehren (Spielerfigur ausserhalb von
    Kaempfen). */
-const tempo2D=(vx,vt)=>Math.hypot(vx||0,(vt||0)*TIEFE.welt);
+/* Gehtempo ueber beide Achsen. tWelt() statt TIEFE.welt: bei abgeschalteter
+   Tiefe ist der Tiefenanteil 0. Vorher liefen in flachen Leveln Gehanimation
+   und Schrittgeraeusch, waehrend sich nichts bewegte - W und S taten dort
+   genau das. */
+const tempo2D=(vx,vt)=>Math.hypot(vx||0,tWelt(vt||0));
