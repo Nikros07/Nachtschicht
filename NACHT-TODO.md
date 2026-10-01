@@ -40,11 +40,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   hat etwas zu tun oder zu sehen (gemessen: `leereProzent` bei Kamera auf dem Bereich,
   oder eine neue Interaktion dort); im Nichtstun-Test passiert über 5 Minuten mehr als
   viermal etwas.
-- [ ] **P1 · Obere Bildhälfte füllen** — 66–77 % der Bildzeilen sind in Level 2, 5, 6,
-  7, 8 ohne Inhalt (gemessen als harte Kanten pro Zeile). Decke, Licht, Lautsprecher,
-  Galerie, Himmel fehlen. Erst im Club als Vorlage, dann übertragen.
-  Wo: `zeichneClub()` und die Zeichenfunktionen der anderen Level · Fertig wenn:
-  Anteil leerer Zeilen im Club unter 45 %, ohne dass es unruhig wirkt.
 - [ ] **P1 · Level 2: Die Wahl „wen nimmst du mit" kommt nach dem Kampf** — sie kostet
   nichts und erspart nichts. Dazu: DER SCHLÄFER und DER TELEFONIERER sind keine Personen.
   Wo: level2.html (`MITNEHMEN`, `fuehreCrewZusammen`) · Fertig wenn: die Wahl liegt am
@@ -150,6 +145,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Blockiert
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
+
+- **2026-10-01 · P1 · Obere Bildhälfte füllen** — nicht gebaut, kein Code geändert.
+  Grund: das Ziel (Club unter 45 % leere Zeilen, gemessen gerade bei ~78 %) verlangt
+  eine Senkung um über 30 Punkte - das braucht durchgehende neue Deko (Decke, Lichter,
+  Lautsprecher) über weite Teile der 1400 px Levelbreite, nicht ein paar Lampen an
+  einer Stelle. Das ist ein echtes Kunst-/Gestaltungsprojekt, kein kleinster Eingriff,
+  und unter Zeitdruck zusammengeschustert haette es eher ungleichmaessig/unruhig
+  gewirkt als geholfen (siehe „Zweifelst du..." in `routinen/nacht.md`). Bleibt offen,
+  jetzt mit echter Messzahl (vorher geschaetzt, jetzt durch den Software-Canvas von
+  heute Nacht gemessen: 78 % statt der frueheren Browser-Schaetzung 73 %, Naeherung).
 
 - **2026-10-01 · P1 · Club zum Ort machen: vier von sechs Bereichen sind leer** — nicht
   gebaut, kein Code geändert. Grund: der Punkt ist drei verschiedene Dinge in einem
