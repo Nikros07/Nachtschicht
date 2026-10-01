@@ -125,7 +125,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
 - [ ] **P3 · Bahn oder Bus?** — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
   Fertig wenn: ein Wort überall.
-- [ ] **P3 · README: Handy-Steuerung beschreibt den alten Stand** — „Steuerkreuz links,
+- [x] ~~**P3 · README: Handy-Steuerung beschreibt den alten Stand**~~ (erledigt mit der neuen Handy-Fassung) — „Steuerkreuz links,
   Aktionstasten rechts" gibt es nicht mehr. Wo: README.md · Fertig wenn: beschreibt
   Stick, Info-Tafel und MENÜ-Knopf.
 - [ ] **P3 · `TODO.md` ist veraltet** (Stand 17.9., „Level 3–8 Grundversionen") —
@@ -134,6 +134,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ---
 
 ## Entscheidung nötig (die Routinen lassen das liegen)
+
+- [ ] **Handy-Steuerung am echten Gerät beurteilen** — Größen, Bogen und Menü sind nur in der
+  Emulation geprüft (375x812 und 812x375). Daumenreichweite, Knopfgrößen und ob die rechte
+  Hälfte als Hauptknopf zu empfindlich ist, kann nur Nick am Telefon sagen. Die Werte stehen
+  in `platziere()` in `nacht/mobil.js` (k, Bogenwinkel 8/62/30/78, Abstände).
+- [ ] **Sprungknopf an die Hauptposition, wenn kein Hauptknopf da ist?** — in Level 1 und 8 steht
+  der Hauptknopf leer, während SPRUNG im Bogen sitzt. Rechts tippen löst dann den Sprung aus;
+  ob der Knopf trotzdem in die Ecke rücken soll, ist Geschmack.
 
 - [ ] **Echte Namen und Gesichter der Freunde** — Platzhalter sind Jonas, Dennis, Semih,
   Lea, Max Ferdi, Moritz, Tobi. Braucht Eingabe von Nick.

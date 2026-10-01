@@ -1,59 +1,69 @@
 /* ============================================================================
    NACHTSCHICHT - ENGINE: mobil
-   Die Handy-Fassung. Keine anderen Knoepfe - eine andere Bedienung.
+   Die Handy-Fassung, neu gebaut nach dem, was Action-Spiele am Handy tun.
 
-   Was vorher da war: vier runde Knoepfe lagen ueber dem Bild, das Handy
-   musste quer gehalten werden, und die Daumen verdeckten genau die Ecken,
-   in denen etwas passiert. Jede Datei hatte ihre eigene Knopfleiste - in
-   index.html fehlte einmal der Runter-Knopf, und das Level war am Handy
-   nicht mehr spielbar. Neun Kopien, neun Gelegenheiten fuer denselben
-   Fehler.
+   Die Bedienung teilt sich auf die zwei Daumen auf:
 
-   Diese Datei macht daraus eine eigene Fassung:
+     LINKS   Ein Stick, der dort erscheint, wo der Daumen aufsetzt. Sanft
+             gezogen schleicht man, voll gezogen geht man. Auf Wunsch fest.
+     RECHTS  Ein grosser Hauptknopf unten aussen, und die uebrigen Knoepfe
+             liegen im BOGEN um ihn - genau dort, wohin der Daumen ohne
+             Umgreifen kommt. Dazu die Regel aus Spielen wie Brawl Stars:
+             die ganze rechte Haelfte ist der Hauptknopf. Man muss ihn nicht
+             treffen, ein Tippen irgendwo rechts genuegt.
 
-   1. EIN EINGABEMODELL FUER ALLE LEVEL. Die Bedienung schickt synthetische
-      Tastatur-Ereignisse. Jedes Level hat schon eine vollstaendige
-      Tastatursteuerung - also bekommt jedes Level die volle Handy-Steuerung,
-      ohne dass im Level eine Zeile dafuer steht. Ein fehlender Knopf kann
-      strukturell nicht mehr vorkommen.
+   Alles geht als Tastendruck ins Level. Jedes Level hat schon eine volle
+   Tastatursteuerung, also bekommt jedes die volle Handy-Steuerung, ohne dass
+   im Level eine Zeile dafuer steht. Ein Level darf mobilKontext() definieren
+   und sagen, was gerade moeglich ist:
 
-   2. ANALOGER STICK STATT VIER KNOEPFE. Seit es die Tiefenachse gibt, muss
-      man schraeg laufen koennen - mit getrennten Knoepfen geht das nur, wenn
-      man zwei gleichzeitig trifft. Der Stick kann alle acht Richtungen. Und
-      er ist wirklich analog: sanft gezogen schleicht man, voll gezogen geht
-      man.
+     { aktion:'REDEN', zwei:'SPRUNG'|null, block:true|false,
+       extras:[{txt:'LAMPE',code:'KeyQ'}, ...] }
 
-   3. KNOEPFE, DIE WISSEN WAS SIE TUN. Ein Level darf mobilKontext()
-      definieren und sagen, was gerade moeglich ist. Dann steht auf dem
-      Knopf REDEN, SPIND, TUER oder SCHLAG - nicht E.
+   Steht auf dem Hauptknopf eine besondere Aufschrift (REDEN, SPIND, TUER ...), pulsiert er:
+   hier ist jetzt etwas zu tun.
 
-   4. GESPRAECHE WERDEN ANGETIPPT. Am Rechner blaettert man mit links/rechts
-      durch die Antworten. Am Handy stehen sie als echte Flaechen im
-      Bedienfeld und man tippt die an, die man meint.
-
-   5. HOCH- UND QUERFORMAT. Das "HANDY DREHEN" ist weg. Im Hochformat liegt
-      das Bild oben und das Bedienfeld darunter - die Daumen sind nie im
-      Bild. Quer bleibt es eine Auflage, dafuer groesser.
-
-   6. RUECKMELDUNG AM GERAET. Treffer, Bloecke und Fehlschlaege vibrieren
-      unterschiedlich.
+   Was neu ist gegenueber der ersten Fassung:
+   - Hauptknopf plus Bogen statt vier Kreise irgendwo; die ganze rechte
+     Haelfte ist Aktion; unsichtbar vergroesserte Trefferflaechen.
+   - Ein kleines Menue (rechts am Rand) statt der Knopfleiste: Ton, Vollbild,
+     Handy, Levelwahl, Einstellungen. Es haelt das Spiel an.
+   - Einstellungen, die bleiben: Haendigkeit, Groesse, Stick frei oder fest,
+     Tippen rechts, Vibration.
+   - Quer liegt das Gespraech als Leiste unten - das Bild bleibt sichtbar.
+   - Hochkant ein Hinweis, dass quer besser ist.
 
    Einbau ins Level: eine Zeile, nach den anderen Engine-Dateien.
      <script src="nacht/mobil.js"></script>
    ========================================================================== */
 
-window.MOBIL = { an:false, hoch:false, kontext:null };
+window.MOBIL = { an:false, hoch:false, kontext:null, vibration:true };
 
 /* Vibration. Kurz fuer Treffer, laenger fuers Einstecken. Wer das Geraet
    stumm haelt, merkt davon nichts - deshalb ist es nur Zugabe, nie Info. */
 function mobilVibriere(muster){
-  if(!window.MOBIL.an || !navigator.vibrate) return;
+  if(!window.MOBIL.an || !window.MOBIL.vibration || !navigator.vibrate) return;
   try{ navigator.vibrate(muster); }catch(e){}
 }
 
 (function(){
 if(!IS_TOUCH) return;
 window.MOBIL.an=true;
+
+/* --------------------------------------------------------------------------
+   EINSTELLUNGEN - bleiben auf dem Geraet
+   -------------------------------------------------------------------------- */
+const EINST_KEY='nachtschicht.mobil';
+const GROESSEN={ klein:0.85, mittel:1, gross:1.2 };
+const einst=Object.assign({ hand:'rechts', groesse:'mittel', stick:'frei',
+                            tippen:true, vibration:true },
+  (function(){ try{ return JSON.parse(localStorage.getItem(EINST_KEY))||{}; }catch(e){ return {}; } })());
+function speichere(){
+  window.MOBIL.vibration=!!einst.vibration;
+  try{ localStorage.setItem(EINST_KEY,JSON.stringify(einst)); }catch(e){}
+}
+window.MOBIL.vibration=!!einst.vibration;
+window.MOBIL.einst=einst;
 
 /* --------------------------------------------------------------------------
    TASTEN-BRUECKE
@@ -77,97 +87,75 @@ document.addEventListener('visibilitychange',function(){ if(document.hidden) all
    -------------------------------------------------------------------------- */
 const stil=document.createElement('style');
 stil.textContent=`
-/* Die alte Knopfleiste, der Vollbild-Ausstieg und die Dreh-Aufforderung
-   sind abgeloest - falls eine Seite sie noch mitbringt, bleiben sie aus. */
+/* Alte Knopfleisten, Vollbild-Ausstieg und Dreh-Aufforderung sind abgeloest. */
 html.touch #touch, html.touch #rotate, html.touch #texit,
 html.touch #levelbar, html.touch #fs { display:none !important; }
 
-/* html UND body sind im Level als Flex-Box zentriert. Bleibt html dabei,
-   wird body nur so breit wie sein Inhalt - und das ganze Bedienfeld sitzt
-   in einer 320 Pixel breiten Spalte statt auf dem Schirm.
-   overscroll-behavior verhindert das Gummiband beim Wischen. */
+/* html UND body sind im Level als Flex-Box zentriert; hier nicht. Gummiband
+   beim Wischen und Tipp-Aufblitzen aus. */
 html.touch, html.touch body { height:100%; overflow:hidden; display:block;
-  overscroll-behavior:none; -webkit-touch-callout:none; }
+  overscroll-behavior:none; -webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent; }
 html.touch #cab { display:flex; flex-direction:column; width:100%; height:100%;
   padding:0; background:#05040c; }
 @supports (height:100dvh){ html.touch #cab { height:100dvh; } }
 
-/* Hochkant: Bild oben, Bedienfeld darunter. Das Bild bekommt die volle
-   Breite (siehe lage()), oben bleibt Platz fuer die Kamera-Kerbe. */
+/* Hochkant: Bild oben, Bedienfeld darunter - die Daumen sind nie im Bild. */
 html.touch #screen { flex:0 0 auto; align-self:center;
   margin-top:calc(env(safe-area-inset-top,0px) + 8px); }
-#mdeck { position:relative; flex:1 1 auto; min-height:0;
-  touch-action:none; user-select:none; -webkit-user-select:none; }
+#mdeck { position:relative; flex:1 1 auto; min-height:0; touch-action:none;
+  user-select:none; -webkit-user-select:none; direction:ltr; }
 
-/* Quer liegt das Bedienfeld ueber dem Bild - sonst bliebe vom Bild nichts. */
+/* Quer liegt das Bedienfeld ueber dem Bild. Die Flaechen darin schalten
+   ihre Beruehrung selbst ein, damit das Bild darunter nichts verliert. */
 html.touch.mobil-quer #cab { display:block; position:relative; }
 html.touch.mobil-quer #screen { position:absolute; inset:0; display:flex;
   align-items:center; justify-content:center; margin:0; }
-html.touch.mobil-quer #mdeck { position:absolute; inset:0; }
-html.touch.mobil-quer .mtaste { opacity:.6; }
-html.touch.mobil-quer .mtaste:active { opacity:1; }
+html.touch.mobil-quer #mdeck { position:absolute; inset:0; pointer-events:none; }
+#mdeck > * { pointer-events:auto; }
 
-/* ---- Der Stick ----
-   Er steht nicht mehr fest: wo der Daumen die linke Haelfte beruehrt, dort
-   erscheint er. Ein fester Kreis ist auf einem 812 Pixel hohen Schirm
-   entweder zu weit unten oder zu weit oben - je nachdem, wie man haelt. */
-#mzone { position:absolute; left:0; top:0; width:52%; height:100%; }
-html.touch.mobil-quer #mzone { width:45%; }
-#mstick { position:absolute; width:38vw; max-width:180px; aspect-ratio:1;
-  margin-left:-19vw; margin-top:-19vw; border-radius:50%; pointer-events:none;
-  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.07),rgba(255,255,255,.02) 70%);
-  border:2px solid rgba(255,255,255,.14); opacity:.32; transition:opacity .15s; }
-@media (min-width:520px){ #mstick { margin-left:-90px; margin-top:-90px; } }
+/* ---- Die zwei Haelften ---- */
+#mlinks, #mrechts { position:absolute; top:0; bottom:0; width:50%; }
+#mlinks { left:0; }  #mrechts { right:0; }
+html.links #mlinks { left:auto; right:0; }
+html.links #mrechts { right:auto; left:0; }
+
+/* ---- Der Stick ---- */
+#mstick { position:absolute; border-radius:50%; pointer-events:none;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,255,255,.08),rgba(255,255,255,.02) 70%);
+  border:2px solid rgba(255,255,255,.16); opacity:.34; transition:opacity .15s; }
 #mstick.zieht { opacity:1; }
-#mknopf { position:absolute; left:50%; top:50%; width:40%; aspect-ratio:1;
-  margin:-20% 0 0 -20%; border-radius:50%;
-  background:rgba(255,61,139,.32); border:2px solid #ff3d8b;
-  transition:background .12s; }
-#mstick.zieht #mknopf { background:rgba(255,61,139,.6); }
-#mstick .mring { position:absolute; inset:24%; border-radius:50%;
-  border:1px dashed rgba(255,255,255,.12); }
+#mstick .mring { position:absolute; inset:19%; border-radius:50%;
+  border:1px dashed rgba(255,255,255,.14); }
+#mknopf { position:absolute; left:50%; top:50%; width:42%; height:42%;
+  margin:-21% 0 0 -21%; border-radius:50%;
+  background:rgba(255,61,139,.34); border:2px solid #ff3d8b; transition:background .12s; }
+#mstick.zieht #mknopf { background:rgba(255,61,139,.62); }
 
-/* ---- Die Knoepfe rechts ----
-   Gross, weit unten, mit Abstand zum Rand: so liegt der rechte Daumen ohne
-   Umgreifen darauf, und unter dem Home-Balken sitzt nichts. */
-.mtaste { position:absolute; border-radius:50%;
-  background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.18);
+/* ---- Die Knoepfe ----
+   Jeder hat eine unsichtbar groessere Trefferflaeche (::after), damit ein
+   knapper Daumen reicht. Die Anordnung setzt platziere() in Pixeln. */
+.mtaste { position:absolute; border-radius:50%; box-sizing:border-box;
+  background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.24);
   color:#cfc8e6; font:700 12px/1.1 monospace; letter-spacing:1px;
   display:flex; align-items:center; justify-content:center; text-align:center;
-  padding:4px; transition:transform .06s, background .06s; }
-.mtaste:active { background:rgba(255,61,139,.34); border-color:#ff3d8b; color:#fff;
-  transform:scale(.94); }
+  padding:3px; transition:transform .06s, background .06s, opacity .15s; }
+.mtaste::after { content:''; position:absolute; inset:-12px; border-radius:50%; }
+.mtaste.druck { transform:scale(.92); background:rgba(255,61,139,.36);
+  border-color:#ff3d8b; color:#fff; opacity:1 !important; }
 .mtaste.aus { display:none; }
-#mb-aktion { right:5%;  bottom:calc(env(safe-area-inset-bottom,0px) + 9%);
-  width:34vw; max-width:170px; aspect-ratio:1;
-  border-color:#ffd447; color:#ffd447; font-size:14px; }
-#mb-aktion:active { background:rgba(255,212,71,.34); border-color:#ffd447; color:#fff; }
-#mb-zwei { right:39%; bottom:calc(env(safe-area-inset-bottom,0px) + 15%);
-  width:24vw; max-width:118px; aspect-ratio:1; }
-#mb-block { right:6%; bottom:calc(env(safe-area-inset-bottom,0px) + 40%);
-  width:24vw; max-width:118px; aspect-ratio:1;
-  border-color:#42d9ff; color:#42d9ff; }
-#mb-block:active { background:rgba(66,217,255,.30); border-color:#42d9ff; color:#fff; }
-/* Zusatzknoepfe: was nur dieses Level kann. */
-.mx { position:absolute; right:8%; width:21vw; max-width:100px; aspect-ratio:1;
-  font-size:11px; }
-#mb-x1 { bottom:calc(env(safe-area-inset-bottom,0px) + 40%); }
-#mb-x2 { right:38%; bottom:calc(env(safe-area-inset-bottom,0px) + 44%); }
+.mtaste.haupt { border-color:#ffd447; color:#ffd447; background:rgba(255,212,71,.10); }
+.mtaste.haupt.druck { background:rgba(255,212,71,.38); border-color:#ffd447; color:#fff; }
+.mtaste.block { border-color:#42d9ff; color:#42d9ff; background:rgba(66,217,255,.08); }
+.mtaste.block.druck { background:rgba(66,217,255,.34); border-color:#42d9ff; color:#fff; }
+.mtaste.extra { border-color:#b98cff; color:#b98cff; }
+@keyframes mpuls { 0%,100% { box-shadow:0 0 0 0 rgba(255,212,71,.55); }
+                   50%     { box-shadow:0 0 0 12px rgba(255,212,71,0); } }
+.mtaste.haupt.ruf { animation:mpuls 1.1s ease-in-out infinite; }
+html.touch.mobil-quer .mtaste { opacity:.66; }
 
-/* Quer bemisst sich alles an der HOEHE. Nach der Breite gerechnet wird
-   der Aktionsknopf auf einem liegenden Handy fast halb so hoch wie der
-   Schirm und deckt das halbe Bild zu. */
-html.touch.mobil-quer #mstick { width:44vh; margin-left:-22vh; margin-top:-22vh; max-width:none; }
-html.touch.mobil-quer #mb-aktion { width:26vh; max-width:none; bottom:6%; right:3%; }
-html.touch.mobil-quer #mb-zwei   { width:19vh; max-width:none; bottom:10%; right:26%; }
-html.touch.mobil-quer #mb-block  { width:19vh; max-width:none; bottom:44%; right:4%; }
-html.touch.mobil-quer .mx        { width:17vh; max-width:none; right:5%; }
-html.touch.mobil-quer #mb-x1 { bottom:44%; }
-html.touch.mobil-quer #mb-x2 { bottom:48%; right:24%; }
-
-/* ---- Die Tafel in der Mitte ----
-   Hochkant bleibt unter dem Bild Platz, den kein Spielinhalt braucht.
-   Dort steht gross, was auf dem kleinen Bild klein ist. */
+/* ---- Die Tafel in der Mitte (nur hochkant) ---- */
 #minfo { position:absolute; left:0; right:0; top:8px; padding:0 14px;
   text-align:center; pointer-events:none; z-index:1; }
 #minfo .titel { font:700 11px/1.3 monospace; letter-spacing:3px; color:#4a4363; }
@@ -177,143 +165,172 @@ html.touch.mobil-quer #mb-x2 { bottom:48%; right:24%; }
   justify-content:center; font:700 10px/1 monospace; letter-spacing:1px; color:#4a4363; }
 #minfo .werte b { color:#8d86a8; font-weight:700; }
 #minfo .crew { margin-top:9px; font:400 10px/1.4 monospace; color:#42d9ff99; }
+@keyframes mweg { 0%,80% { opacity:1; } 100% { opacity:0; } }
+#minfo .dreh { margin-top:12px; font:700 10px/1.4 monospace; letter-spacing:1px;
+  color:#8d86a8; animation:mweg 14s forwards; }
 html.touch.mobil-quer #minfo { display:none; }
 
-/* ---- Die kleine Leiste ----
-   Sie sass direkt unter dem Bild und nahm den besten Platz weg. Jetzt ist
-   sie eine schmale Zeile ganz unten, weit weg von den Daumen. */
-#mbar { position:absolute; left:0; right:0; bottom:0; display:flex; gap:5px;
-  padding:5px 8px calc(env(safe-area-inset-bottom,0px) + 5px); z-index:3; }
-#mbar button, #mbar a { flex:1; text-decoration:none; text-align:center;
-  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
-  border-radius:6px; color:#8d86a8; font:700 9px/1 monospace; letter-spacing:1px;
-  padding:7px 2px; }
-/* Quer nimmt die Leiste die Ecke weg, in der das Spiel seine Anzeige hat.
-   Deshalb steckt sie dort hinter einem Knopf. */
-#mtoggle { display:none; position:absolute; right:6px; top:6px; z-index:4;
-  background:rgba(20,16,34,.8); border:1px solid #2a2246; border-radius:6px;
-  color:#8d86a8; font:700 9px/1 monospace; letter-spacing:1px; padding:7px 9px; }
-html.touch.mobil-quer #mtoggle { display:block; }
-html.touch.mobil-quer #mbar { display:none; flex-direction:column; width:auto;
-  left:auto; right:6px; top:34px; bottom:auto; padding:0; gap:4px; opacity:.9; }
-html.touch.mobil-quer #mbar.auf { display:flex; }
-html.touch.mobil-quer #mbar button, html.touch.mobil-quer #mbar a { padding:7px 10px; }
+/* ---- Der Menue-Knopf ---- */
+#mmenubtn { position:absolute; z-index:4; background:rgba(20,16,34,.82);
+  border:1px solid #3a3160; border-radius:8px; color:#cfc8e6;
+  font:700 10px/1 monospace; letter-spacing:2px; padding:9px 11px; }
+#mmenubtn::after { content:''; position:absolute; inset:-8px; }
+/* Auf Hoehe von rund einem Viertel: darueber liegt die Anzeige des Spiels (Uhr, Phase), darunter der Bogen der Knoepfe. */
+html.touch.mobil-quer #mmenubtn { right:6px; top:calc(env(safe-area-inset-top,0px) + 24%); }
+html.touch:not(.mobil-quer) #mmenubtn { right:8px; top:6px; }
 
-/* Gespraech: die Antworten sind hier Flaechen, keine Liste zum Blaettern. */
-#mtalk { position:absolute; inset:0; display:none; flex-direction:column;
-  gap:7px; padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 12px);
-  background:#05040c; z-index:4; }
+/* ---- Blaetter: Menue, Levelwahl, Einstellungen ---- */
+#mblatt { position:absolute; inset:0; display:none; flex-direction:column; gap:8px;
+  padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 14px);
+  background:rgba(5,4,12,.96); overflow:auto; z-index:6; }
+#mblatt.an { display:flex; }
+#mblatt h2 { margin:0 0 4px; font:700 12px/1 monospace; letter-spacing:3px; color:#ff3d8b; }
+#mblatt .zeile { display:flex; align-items:center; gap:8px; }
+#mblatt .zeile > span { flex:1; font:700 11px/1.2 monospace; letter-spacing:1px; color:#8d86a8; }
+#mblatt button, #mblatt a.lv { text-decoration:none; text-align:left; color:#cfc8e6;
+  background:rgba(255,255,255,.06); border:1px solid #2a2246; border-radius:8px;
+  font:700 12px/1 monospace; letter-spacing:1px; padding:15px 12px; }
+#mblatt button:active, #mblatt a.lv:active { background:rgba(255,61,139,.26); color:#fff; }
+#mblatt .wahl { display:flex; gap:6px; flex:0 0 auto; }
+#mblatt .wahl button { padding:11px 12px; text-align:center; }
+#mblatt .wahl button.an { border-color:#ffd447; color:#ffd447; background:rgba(255,212,71,.12); }
+#mblatt a.lv.aktiv { color:#ff3d8b; border-color:#ff3d8b; }
+#mblatt .zu { background:rgba(255,212,71,.10); border-color:#ffd447; color:#ffd447;
+  text-align:center; letter-spacing:2px; }
+
+/* Waehrend eines Gespraechs gehoeren die Daumen den Antworten: Stick, Knoepfe
+   und Haelften sind dann weg und nicht beruehrbar. */
+#mdeck.rede .mtaste, #mdeck.rede #mstick { visibility:hidden; }
+#mdeck.rede #mlinks, #mdeck.rede #mrechts { pointer-events:none; }
+
+/* ---- Gespraech: die Antworten sind Flaechen, keine Liste zum Blaettern ---- */
+#mtalk { position:absolute; display:none; flex-direction:column; gap:7px;
+  padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:#05040c; z-index:5; left:0; right:0; bottom:0; top:0; }
 #mtalk.an { display:flex; }
 #mtalk .wer { font:700 10px/1 monospace; letter-spacing:2px; color:#42d9ff; }
 #mtalk .was { font:400 13px/1.45 monospace; color:#f2f0ff; flex:0 0 auto; }
 #mtalk .liste { flex:1; display:flex; flex-direction:column; gap:8px;
-  justify-content:flex-end; overflow:hidden; }
+  justify-content:flex-end; overflow:auto; }
 #mtalk .opt { background:rgba(255,255,255,.05); border:1px solid #2a2246;
   border-left:3px solid #ff3d8b; border-radius:8px; color:#cfc8e6;
   font:400 13px/1.35 monospace; padding:13px 11px; text-align:left; }
 #mtalk .opt:active { background:rgba(255,61,139,.26); color:#fff; }
 #mtalk .weiter { background:rgba(255,212,71,.10); border:1px solid #ffd447;
-  border-radius:8px; color:#ffd447; font:700 12px/1 monospace; letter-spacing:2px;
-  padding:16px; }
+  border-radius:8px; color:#ffd447; font:700 12px/1 monospace; letter-spacing:2px; padding:16px; }
 #mtalk .uhr { height:3px; background:#ff3d8b; border-radius:2px; align-self:flex-start; }
-
-/* Levelmenue - baut sich aus der Leiste, die am Rechner unter dem Bild steht. */
-#mmenu { position:absolute; inset:0; display:none; flex-direction:column; gap:6px;
-  padding:10px; background:#05040c; overflow:auto; z-index:5; }
-#mmenu.an { display:flex; }
-#mmenu a { text-decoration:none; text-align:left; color:#cfc8e6;
-  background:rgba(255,255,255,.05); border:1px solid #2a2246; border-radius:6px;
-  font:700 12px/1 monospace; letter-spacing:1px; padding:14px 12px; }
-#mmenu a.aktiv { color:#ff3d8b; border-color:#ff3d8b; }
-#mmenu .zu { background:rgba(255,212,71,.10); border:1px solid #ffd447; color:#ffd447;
-  border-radius:6px; font:700 11px/1 monospace; letter-spacing:2px; padding:14px; }
+/* Quer ist das Gespraech eine Leiste unten - das Bild bleibt zu sehen. */
+html.touch.mobil-quer #mtalk { top:auto; max-height:80%;
+  background:rgba(5,4,12,.94); border-top:2px solid #ff3d8b; }
+html.touch.mobil-quer #mtalk .opt { padding:10px 11px; }
 `;
 document.head.appendChild(stil);
 
 const deck=document.createElement('div'); deck.id='mdeck';
 deck.innerHTML=[
-  '<div id="mbar">',
-  '  <button id="mb-pause">PAUSE</button>',
-  '  <button id="mb-ton">TON</button>',
-  '  <button id="mb-voll">VOLL</button>',
-  '  <button id="mb-handy">HANDY</button>',
-  '  <button id="mb-menu">LEVEL</button>',
-  '</div>',
-  '<button id="mtoggle">MENUE</button>',
   '<div id="minfo"><div class="titel"></div><div class="hinweis"></div>',
-  '  <div class="werte"></div><div class="crew"></div></div>',
-  '<div id="mzone"></div>',
+  '  <div class="werte"></div><div class="crew"></div>',
+  '  <div class="dreh">QUER SPIELEN IST BESSER - HANDY DREHEN</div></div>',
+  '<div id="mlinks"></div>',
+  '<div id="mrechts"></div>',
   '<div id="mstick"><div class="mring"></div><div id="mknopf"></div></div>',
-  '<div class="mtaste mx" id="mb-x1">X</div>',
-  '<div class="mtaste mx" id="mb-x2">X</div>',
-  '<div class="mtaste" id="mb-block">BLOCK</div>',
-  '<div class="mtaste" id="mb-zwei">SPRUNG</div>',
-  '<div class="mtaste" id="mb-aktion">AKTION</div>',
+  '<div class="mtaste extra aus" id="mb-x1"></div>',
+  '<div class="mtaste extra aus" id="mb-x2"></div>',
+  '<div class="mtaste block aus" id="mb-block"></div>',
+  '<div class="mtaste aus" id="mb-zwei"></div>',
+  '<div class="mtaste haupt" id="mb-aktion"></div>',
+  '<button id="mmenubtn">MENUE</button>',
   '<div id="mtalk"><div class="uhr"></div><div class="wer"></div>',
   '  <div class="was"></div><div class="liste"></div></div>',
-  '<div id="mmenu"></div>'
+  '<div id="mblatt"></div>',
+  '<div id="msafe" style="position:absolute;left:0;top:0;width:0;height:0;visibility:hidden;',
+  'padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)"></div>'
 ].join('');
 (document.getElementById('cab')||document.body).appendChild(deck);
 
-const stick=document.getElementById('mstick');
-const zone=document.getElementById('mzone');
-const knopf=document.getElementById('mknopf');
-const bAktion=document.getElementById('mb-aktion');
-const bZwei=document.getElementById('mb-zwei');
-const bBlock=document.getElementById('mb-block');
-const bX=[document.getElementById('mb-x1'),document.getElementById('mb-x2')];
-const talk=document.getElementById('mtalk');
+const el=function(id){ return document.getElementById(id); };
+const stick=el('mstick'), knopf=el('mknopf');
+const zoneL=el('mlinks'), zoneR=el('mrechts');
+const bAktion=el('mb-aktion'), bZwei=el('mb-zwei'), bBlock=el('mb-block');
+const bX=[el('mb-x1'),el('mb-x2')];
+const talk=el('mtalk'), blatt=el('mblatt');
+const html=document.documentElement;
+html.classList.toggle('links',einst.hand==='links');
+
+/* --------------------------------------------------------------------------
+   ANORDNUNG
+   Hauptknopf unten aussen. Die uebrigen sitzen auf einem Bogen um seine Mitte:
+   so liegen alle im Umkreis des Daumens. Quer richtet sich die Groesse nach
+   der Hoehe, hochkant nach der Breite - nach der Breite gerechnet wuerde auf
+   einem liegenden Handy der Hauptknopf fast den halben Schirm fuellen.
+   -------------------------------------------------------------------------- */
+let mitte={x:0,y:0}, stickGr=130, stickHeimPos={x:0,y:0};
+function setze(elm,x,y,d){
+  elm.style.width=elm.style.height=d+'px';
+  elm.style.left=Math.round(x-d/2)+'px'; elm.style.top=Math.round(y-d/2)+'px';
+  elm.style.fontSize=Math.max(10,Math.round(d*0.14))+'px';
+}
+function platziere(){
+  const r=deck.getBoundingClientRect(), dw=r.width, dh=r.height;
+  if(!dw||!dh) return;
+  const sicher=getComputedStyle(el('msafe'));
+  const sU=parseFloat(sicher.paddingBottom)||0, sL=parseFloat(sicher.paddingLeft)||0,
+        sR=parseFloat(sicher.paddingRight)||0;
+  const quer=!window.MOBIL.hoch, sk=GROESSEN[einst.groesse]||1;
+  const k=Math.round((quer?Math.min(dh*0.27,dw*0.17):Math.min(dw*0.30,150))*sk);
+  const s=Math.round(k*0.72), luecke=Math.round(k*0.12), rand=Math.round(k*0.2);
+  const links=einst.hand==='links', vz=links?-1:1;
+  const cx=links?(rand+sL+k/2):(dw-rand-sR-k/2), cy=dh-rand-sU-k/2;
+  mitte={x:cx,y:cy};
+  setze(bAktion,cx,cy,k);
+  const R=k/2+s/2+luecke, R2=R+s*0.95+luecke;
+  const bogen=function(elm,grad,radius,d){ const a=grad*Math.PI/180;
+    setze(elm,cx-vz*Math.cos(a)*radius,cy-Math.sin(a)*radius,d); };
+  bogen(bZwei,8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
+  bogen(bBlock,62,R,s);               // darueber: Blocken
+  bogen(bX[0],30,R2,Math.round(s*0.9));   // zweiter Ring: nur was dieses Level kann
+  bogen(bX[1],78,R2,Math.round(s*0.9));
+  /* Stick: Groesse und Ruhestellung auf der anderen Seite */
+  stickGr=Math.max(100,Math.round(k*1.15));
+  stick.style.width=stick.style.height=stickGr+'px';
+  const heimX=Math.max(dw*0.17,stickGr*0.6+sL);
+  stickHeimPos={ x:links?(dw-heimX):heimX,
+                 y:dh-Math.max(rand+sU,0)-stickGr*0.62 };
+  if(stickId===null) stickHeim();
+}
 
 /* --------------------------------------------------------------------------
    STICK
-   Ein Finger im Kreis. Richtung gibt die Pfeiltasten, Auslenkung entscheidet
-   zwischen Schleichen und Gehen - das ist der Teil, den vier Knoepfe nicht
-   koennen.
+   Richtung gibt die Pfeiltasten, Auslenkung entscheidet zwischen Schleichen
+   und Gehen - das ist der Teil, den vier Knoepfe nicht koennen.
    -------------------------------------------------------------------------- */
 const TOT=0.22;        // darunter passiert nichts
 const SCHLEICH=0.62;   // darunter wird geschlichen
 let stickId=null;
 
 /* Schleichen liegt in den Leveln auf der Umschalttaste - und im Kampf liegt
-   dort das Blocken. Waere das analoge Schleichen im Kampf aktiv, wuerde ein
-   sanft gezogener Stick die Deckung hochreissen. Deshalb gilt es nur, wenn
-   der Blockknopf gerade NICHT gebraucht wird. */
-const schleichenErlaubt = () =>
-  !(window.MOBIL.kontext && window.MOBIL.kontext.block);
+   dort das Blocken. Deshalb gilt analoges Schleichen nur, wenn der Blockknopf
+   gerade NICHT gebraucht wird. */
+const schleichenErlaubt=function(){ return !(window.MOBIL.kontext&&window.MOBIL.kontext.block); };
 
-/* Richtungen mit Hysterese und Winkelsektoren.
-   Vorher schaltete jede Achse hart bei 0.22 um. Zwei Folgen, beide in der
-   Animation sichtbar:
-   - Wer den Daumen knapp an der Schwelle hielt, liess die Taste jedes Bild
-     an- und ausgehen. Die Figur bremste und beschleunigte staendig und
-     sprang zwischen Steh- und Gehbild hin und her.
-   - Schon 13 Grad neben der Waagerechten kam die Hoch/Runter-Taste dazu -
-     wer "nach rechts" meinte, driftete in die Tiefe.
-   Jetzt: einschalten erst ueber AN, ausschalten erst unter AUS, und eine
-   Achse zaehlt nur, wenn sie mindestens SEKTOR der Auslenkung ausmacht
-   (sin 22.5 Grad - also echte acht Richtungen). */
+/* Richtungen mit Hysterese und Winkelsektoren: einschalten erst ueber AN,
+   ausschalten erst unter AUS - sonst flackert eine Taste an der Schwelle. Eine
+   Achse zaehlt nur ab SEKTOR der Auslenkung (echte acht Richtungen). */
 const AN=0.26, AUS=0.16, SEKTOR=0.38;
 function achse(code,wert,r){
   const war=!!haelt[code];
-  const genug = wert > (war?AUS:AN) && wert >= SEKTOR*r*(war?0.8:1);
-  taste(code,genug);
+  taste(code, wert>(war?AUS:AN) && wert>=SEKTOR*r*(war?0.8:1));
 }
 function stickSetzen(dx,dy,r){
-  const max=stick.clientWidth*0.29;
+  const max=stickGr*0.29;
   knopf.style.transform='translate('+(dx*max).toFixed(1)+'px,'+(dy*max).toFixed(1)+'px)';
-  achse('ArrowLeft',  -dx, r);
-  achse('ArrowRight',  dx, r);
-  achse('ArrowUp',    -dy, r);
-  achse('ArrowDown',   dy, r);
-  /* Auch das Schleichen mit Hysterese, sonst flackert die Figur beim
-     Uebergang zwischen leise und normal. */
-  const schleichtSchon=!!haelt['ShiftLeft'];
-  const grenze=schleichtSchon?SCHLEICH+0.06:SCHLEICH-0.06;
-  taste('ShiftLeft', schleichenErlaubt() && r>TOT && r<grenze);
+  achse('ArrowLeft',-dx,r); achse('ArrowRight',dx,r);
+  achse('ArrowUp',-dy,r);   achse('ArrowDown',dy,r);
+  const grenze=haelt['ShiftLeft']?SCHLEICH+0.06:SCHLEICH-0.06;
+  taste('ShiftLeft',schleichenErlaubt()&&r>TOT&&r<grenze);
 }
 function stickLos(){
-  stickId=null; stick.classList.remove('zieht');
-  knopf.style.transform='';
+  stickId=null; stick.classList.remove('zieht'); knopf.style.transform='';
   ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].forEach(function(c){ taste(c,false); });
   if(schleichenErlaubt()) taste('ShiftLeft',false);
 }
@@ -325,108 +342,153 @@ function stickAus(e){
   if(len>1){ dx/=len; dy/=len; }
   stickSetzen(dx,dy,Math.min(1,len));
 }
-
-/* Der Stick geht dorthin, wo der Daumen aufsetzt. Sonst passt seine feste
-   Stelle immer nur zu einer Handhaltung - und die halbe linke Flaeche ist
-   tot. Geklemmt wird er so, dass er nicht halb aus dem Bild ragt. */
+/* Frei: der Stick geht dorthin, wo der Daumen aufsetzt. Fest: er bleibt in
+   der Ruhestellung. Geklemmt, damit er nicht halb aus dem Bild ragt. */
 function stickAn(x,y){
-  const z=zone.getBoundingClientRect(), b=stick.offsetWidth||140;
-  const lx=Math.max(b*0.45,Math.min(z.width -b*0.45,x-z.left));
-  const ly=Math.max(b*0.45,Math.min(z.height-b*0.45,y-z.top));
-  stick.style.left=lx+'px'; stick.style.top=ly+'px';
+  if(einst.stick==='frei'){
+    const z=zoneL.getBoundingClientRect(), b=stickGr*0.55;
+    stick.style.left=Math.max(b,Math.min(z.width-b,x-z.left))+(parseFloat(zoneL.style.left)||0)+zoneOffset()+'px';
+    stick.style.top =Math.max(b,Math.min(z.height-b,y-z.top))+'px';
+  }
   stick.classList.add('zieht');
 }
-/* Ruhestellung, wenn keiner ihn anfasst: unten links, gut sichtbar. */
+/* Linker Rand der Stick-Haelfte im Deck (bei Linkshaendern rechts). */
+function zoneOffset(){ return zoneL.getBoundingClientRect().left-deck.getBoundingClientRect().left; }
 function stickHeim(){
-  const z=zone.getBoundingClientRect(), b=stick.offsetWidth||140;
-  stick.style.left=Math.round(Math.min(z.width*0.36,z.width-b*0.5))+'px';
-  stick.style.top =Math.round(z.height-b*0.55)+'px';
+  stick.style.left=Math.round(stickHeimPos.x)+'px';
+  stick.style.top =Math.round(stickHeimPos.y)+'px';
 }
-
-/* Pointer statt Touch: derselbe Code bedient Finger, Stift und Maus - das
-   ist nicht nur zum Testen gut, es gibt genug Geraete, die beides koennen.
-   setPointerCapture haelt die Meldungen, wenn der Daumen ueber den Rand
-   der Zone hinausrutscht. */
-zone.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
+zoneL.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
   if(stickId!==null) return;
   stickId=e.pointerId;
-  try{ zone.setPointerCapture(e.pointerId); }catch(err){}
+  try{ zoneL.setPointerCapture(e.pointerId); }catch(err){}
   stickAn(e.clientX,e.clientY); stickAus(e);
 });
-zone.addEventListener('pointermove',function(e){
+zoneL.addEventListener('pointermove',function(e){
   if(e.pointerId!==stickId) return;
   e.preventDefault(); stickAus(e);
 });
-['pointerup','pointercancel'].forEach(function(ev){ zone.addEventListener(ev,function(e){
+['pointerup','pointercancel'].forEach(function(ev){ zoneL.addEventListener(ev,function(e){
   if(e.pointerId!==stickId) return;
   e.preventDefault(); stickLos(); stickHeim();
 }); });
 
 /* --------------------------------------------------------------------------
-   KNOEPFE
+   KNOEPFE UND DIE RECHTE HAELFTE
    -------------------------------------------------------------------------- */
 function halte(elm,code){
-  elm.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
+  let gedrueckt='';
+  const los=function(e){ if(e) e.preventDefault(); elm.classList.remove('druck');
+    if(gedrueckt){ taste(gedrueckt,false); gedrueckt=''; } };
+  elm.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); ensureAudio();
+    const c=code(); if(!c) return;        // ohne Taste gibt es nichts zu druecken
     try{ elm.setPointerCapture(e.pointerId); }catch(err){}
-    mobilVibriere(8);              // kurzer Tick, damit der Druck ankommt
-    taste(code,true); });
-  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
-    elm.addEventListener(ev,function(e){ e.preventDefault(); taste(code,false); }); });
+    mobilVibriere(8);                 // kurzer Tick, damit der Druck ankommt
+    gedrueckt=c; elm.classList.add('druck'); taste(c,true); });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ elm.addEventListener(ev,los); });
 }
-halte(bAktion,'KeyE');
-halte(bZwei,'Space');
-halte(bBlock,'ShiftLeft');
-
+halte(bAktion,function(){ return 'KeyE'; });
+halte(bZwei,  function(){ return 'Space'; });
+halte(bBlock, function(){ return 'ShiftLeft'; });
 /* Die Zusatzknoepfe wechseln ihre Taste mit dem Kontext. Deshalb haengt der
-   Code in einer Zelle, die kontextPflege() neu fuellt - und beim Wechsel
-   wird die alte Taste losgelassen, sonst bliebe sie haengen. */
+   Code in einer Zelle, die kontextPflege() neu fuellt. */
 const xCode=['',''];
-bX.forEach(function(elm,i){
-  elm.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
-    try{ elm.setPointerCapture(e.pointerId); }catch(err){}
-    if(xCode[i]) taste(xCode[i],true); });
-  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
-    elm.addEventListener(ev,function(e){ e.preventDefault();
-      if(xCode[i]) taste(xCode[i],false); }); });
+bX.forEach(function(elm,i){ halte(elm,function(){ return xCode[i]; }); });
+
+/* Die ganze rechte Haelfte ist der Hauptknopf: ein Tippen irgendwo genuegt.
+   Nur wenn dieses Level gerade einen Hauptknopf zeigt. */
+let rechtsId=null, rechtsCode='', rechtsKnopf=null;
+zoneR.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
+  if(!einst.tippen||rechtsId!==null) return;
+  /* Aktion, wenn das Level sie zeigt - sonst Sprung (Laufstrecken wie Level 8). */
+  if(!bAktion.classList.contains('aus')){ rechtsCode='KeyE'; rechtsKnopf=bAktion; }
+  else if(!bZwei.classList.contains('aus')){ rechtsCode='Space'; rechtsKnopf=bZwei; }
+  else return;
+  rechtsId=e.pointerId;
+  try{ zoneR.setPointerCapture(e.pointerId); }catch(err){}
+  mobilVibriere(8); rechtsKnopf.classList.add('druck'); taste(rechtsCode,true);
 });
+['pointerup','pointercancel'].forEach(function(ev){ zoneR.addEventListener(ev,function(e){
+  if(e.pointerId!==rechtsId) return;
+  e.preventDefault(); rechtsId=null; rechtsKnopf.classList.remove('druck'); taste(rechtsCode,false);
+}); });
 
-function klick(id,fn){ const e=document.getElementById(id); if(!e) return;
-  e.addEventListener('pointerdown',function(ev){ ev.preventDefault(); ev.stopPropagation(); fn(); }); }
-klick('mb-pause',function(){ tipp('KeyP'); });
-klick('mb-ton',  function(){ ensureAudio(); tipp('KeyM'); });
-klick('mb-voll', function(){ vollbild(); });
-klick('mb-handy',function(){ if(typeof handyAuf==='function') handyAuf(); });
-klick('mtoggle',function(){ document.getElementById('mbar').classList.toggle('auf'); });
-
-/* Das Levelmenue baut sich aus #levelbar - der Leiste, die am Rechner unter
-   dem Bild steht und am Handy ausgeblendet ist. Damit gibt es die Liste nur
-   einmal pro Datei und kann nicht auseinanderlaufen. */
-const menue=document.getElementById('mmenu');
-klick('mb-menu',function(){
-  if(menue.classList.contains('an')){ menue.classList.remove('an'); return; }
-  if(!menue.childElementCount){
-    const leiste=document.getElementById('levelbar');
-    if(leiste) [].forEach.call(leiste.querySelectorAll('a'),function(a){
-      const k=a.cloneNode(true); k.removeAttribute('style'); menue.appendChild(k);
-    });
-    const zu=document.createElement('button');
-    zu.className='zu'; zu.textContent='ZURUECK';
-    zu.addEventListener('pointerdown',function(e){ e.preventDefault();
-      menue.classList.remove('an'); });
-    menue.appendChild(zu);
-  }
-  menue.classList.add('an');
-});
-
-/* Tippen aufs Bild bestaetigt - Startbildschirme und Zwischentexte wollen
-   nur "weiter", und dafuer soll man nicht den Aktionsknopf suchen muessen. */
-const schirm=document.getElementById('screen');
+/* Hochkant ist das Bild oben: Tippen darauf bestaetigt Startbildschirme und
+   Zwischentexte. Nur Enter - E und Enter loesen im Level dasselbe aus, beide
+   zusammen liessen das Intro zwei Texte ueberspringen. */
+const schirm=el('screen');
 if(schirm) schirm.addEventListener('pointerdown',function(e){
-  /* Nur Enter. Vorher gingen Enter UND E raus - beide loesen in jedem
-     Level dieselbe Aktion aus, also passierte alles doppelt: das Intro
-     sprang zwei Texte weiter, Zwischenbildschirme wurden uebersprungen. */
   e.preventDefault(); ensureAudio(); tipp('Enter');
 });
+deck.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+
+/* --------------------------------------------------------------------------
+   MENUE UND EINSTELLUNGEN
+   -------------------------------------------------------------------------- */
+let selbstPausiert=false;
+function menueAuf(){
+  /* Das Menue haelt das Spiel an - sonst steht man darin mitten im Kampf. */
+  if(typeof pauseTaste==='function'&&typeof S!=='undefined'&&S&&S.modus!=='pause'){
+    pauseTaste(); selbstPausiert=(S.modus==='pause');
+  }
+  zeigeBlatt('menue');
+}
+function menueZu(){
+  blatt.classList.remove('an');
+  if(selbstPausiert&&typeof S!=='undefined'&&S&&S.modus==='pause'&&typeof pauseTaste==='function') pauseTaste();
+  selbstPausiert=false;
+}
+function knopfIn(eltern,txt,fn,klasse){
+  const b=document.createElement('button'); b.textContent=txt; if(klasse) b.className=klasse;
+  b.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); ensureAudio(); fn(b); });
+  eltern.appendChild(b); return b;
+}
+function auswahl(eltern,name,optionen,schluessel,wirkung){
+  const z=document.createElement('div'); z.className='zeile';
+  const t=document.createElement('span'); t.textContent=name; z.appendChild(t);
+  const w=document.createElement('div'); w.className='wahl'; z.appendChild(w);
+  const knoepfe=[];
+  optionen.forEach(function(o){
+    const b=knopfIn(w,o[0],function(){
+      einst[schluessel]=o[1]; speichere(); knoepfe.forEach(function(x){ x.b.classList.toggle('an',x.w===o[1]); });
+      if(wirkung) wirkung();
+    });
+    b.classList.toggle('an',einst[schluessel]===o[1]); knoepfe.push({b:b,w:o[1]});
+  });
+  eltern.appendChild(z);
+}
+function zeigeBlatt(was){
+  blatt.innerHTML=''; blatt.classList.add('an');
+  const h=document.createElement('h2'); blatt.appendChild(h);
+  if(was==='menue'){
+    h.textContent='MENUE';
+    knopfIn(blatt,'WEITER',menueZu,'zu');
+    knopfIn(blatt,typeof muted!=='undefined'&&muted?'TON AN':'TON AUS',function(b){
+      ensureAudio(); tipp('KeyM'); setTimeout(function(){ b.textContent=muted?'TON AN':'TON AUS'; },80); });
+    knopfIn(blatt,'VOLLBILD',function(){ vollbild(); });
+    if(typeof handyAuf==='function') knopfIn(blatt,'HANDY',function(){ menueZu(); handyAuf(); });
+    knopfIn(blatt,'LEVEL WECHSELN',function(){ zeigeBlatt('level'); });
+    knopfIn(blatt,'EINSTELLUNGEN',function(){ zeigeBlatt('einst'); });
+  } else if(was==='level'){
+    h.textContent='LEVEL';
+    const leiste=el('levelbar');
+    if(leiste) [].forEach.call(leiste.querySelectorAll('a'),function(a){
+      const k=a.cloneNode(true); k.removeAttribute('style'); k.className='lv'+(a.classList.contains('aktiv')||a.getAttribute('aria-current')?' aktiv':'');
+      blatt.appendChild(k); });
+    knopfIn(blatt,'ZURUECK',function(){ zeigeBlatt('menue'); },'zu');
+  } else {
+    h.textContent='EINSTELLUNGEN';
+    auswahl(blatt,'HAND',[['LINKS','links'],['RECHTS','rechts']],'hand',function(){
+      html.classList.toggle('links',einst.hand==='links'); platziere(); });
+    auswahl(blatt,'GROESSE',[['KLEIN','klein'],['MITTEL','mittel'],['GROSS','gross']],'groesse',platziere);
+    auswahl(blatt,'STICK',[['FREI','frei'],['FEST','fest']],'stick',function(){ if(stickId===null) stickHeim(); });
+    auswahl(blatt,'TIPPEN RECHTS = AKTION',[['AN',true],['AUS',false]],'tippen');
+    auswahl(blatt,'VIBRATION',[['AN',true],['AUS',false]],'vibration',function(){ mobilVibriere(30); });
+    knopfIn(blatt,'ZURUECK',function(){ zeigeBlatt('menue'); },'zu');
+  }
+}
+el('mmenubtn').addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); ensureAudio();
+  if(blatt.classList.contains('an')) menueZu(); else menueAuf(); });
 
 /* --------------------------------------------------------------------------
    GESPRAECHE ANTIPPEN
@@ -436,14 +498,17 @@ if(schirm) schirm.addEventListener('pointerdown',function(e){
    -------------------------------------------------------------------------- */
 let talkStand='';
 function talkPflege(){
-  const aktiv = typeof gespraechAktiv==='function' && gespraechAktiv();
+  const aktiv=typeof gespraechAktiv==='function'&&gespraechAktiv();
   talk.classList.toggle('an',!!aktiv);
+  if(!!aktiv!==deck.classList.contains('rede')){
+    deck.classList.toggle('rede',!!aktiv);
+    allesLos(); if(stickId!==null){ stickLos(); stickHeim(); }   // nichts bleibt gedrueckt haengen
+  }
   if(!aktiv){ talkStand=''; return; }
   const k=GESPR.knoten, w=GESPR.wahlen;
   const kennung=GESPR.name+'|'+w.length;
-  if(k.zeit&&GESPR.zeitRest>0){
-    talk.querySelector('.uhr').style.width=Math.round(100*GESPR.zeitRest/(GESPR.zeitGesamt||k.zeit))+'%';
-  } else talk.querySelector('.uhr').style.width='0';
+  talk.querySelector('.uhr').style.width=(k.zeit&&GESPR.zeitRest>0)
+    ? Math.round(100*GESPR.zeitRest/(GESPR.zeitGesamt||k.zeit))+'%' : '0';
   if(kennung===talkStand) return;
   talkStand=kennung;
   talk.querySelector('.wer').textContent=k.wer||'';
@@ -451,15 +516,13 @@ function talkPflege(){
   const liste=talk.querySelector('.liste'); liste.innerHTML='';
   if(w.length){
     w.forEach(function(o,i){
-      const b=document.createElement('button');
-      b.className='opt'; b.textContent=o.txt;
+      const b=document.createElement('button'); b.className='opt'; b.textContent=o.txt;
       b.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
         GESPR.gewaehlt=i; gespraechBestaetigen(); talkPflege(); });
       liste.appendChild(b);
     });
   } else {
-    const b=document.createElement('button');
-    b.className='weiter'; b.textContent='WEITER';
+    const b=document.createElement('button'); b.className='weiter'; b.textContent='WEITER';
     b.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
       gespraechBestaetigen(); talkPflege(); });
     liste.appendChild(b);
@@ -467,11 +530,9 @@ function talkPflege(){
 }
 
 /* --------------------------------------------------------------------------
-   DIE TAFEL
-   Spiegelt Hinweis und Werte gross unter das Bild. Sie liest nur, was da
-   ist - fehlt nacht.js, bleibt die Werte-Zeile eben leer.
+   DIE TAFEL - spiegelt Hinweis und Werte gross unter das Bild (hochkant)
    -------------------------------------------------------------------------- */
-const info=document.getElementById('minfo');
+const info=el('minfo');
 let infoStand='';
 function infoPflege(){
   if(window.MOBIL.hoch===false) return;
@@ -485,8 +546,7 @@ function infoPflege(){
   if(typeof wert==='function'){
     const w=[['MUT','mut'],['RUF','ruf'],['GELD','geld'],['WACH','kondition']];
     werte=w.map(function(e){ return '<span>'+e[0]+' <b>'+Math.round(wert(e[1]))+'</b></span>'; }).join('');
-    if(typeof ladePegel==='function')
-      werte+='<span>PEGEL <b>'+Math.round(ladePegel())+'</b></span>';
+    if(typeof ladePegel==='function') werte+='<span>PEGEL <b>'+Math.round(ladePegel())+'</b></span>';
   }
   let crew='';
   if(typeof ladeCrew==='function'){ const c=ladeCrew(); if(c.length) crew='DABEI: '+c.join(', '); }
@@ -500,31 +560,21 @@ function infoPflege(){
 }
 
 /* --------------------------------------------------------------------------
-   KONTEXT
-   Ein Level darf mobilKontext() definieren:
-     { aktion:'REDEN', zwei:'SPRUNG'|null, block:true|false,
-       extras:[{txt:'LAMPE',code:'KeyQ'},{txt:'WERFEN',code:'KeyR'}] }
-   aktion  - Aufschrift des grossen Knopfes, null blendet ihn aus
-   zwei    - zweiter Knopf (Sprung oder Rolle), null blendet ihn aus
-   block   - Blockknopf zeigen (nur im Kampf sinnvoll)
-   extras  - bis zu zwei level-eigene Tasten. Genau dafuer ist das da: die
-             Lampe und der Wurf in Level 1 waren am Handy vorher ueberhaupt
-             nicht erreichbar, weil die feste Knopfleiste sie nicht kannte.
-   Fehlt die Funktion, bleibt es bei der Vorgabe.
+   KONTEXT - was die Knoepfe gerade heissen und welche es gibt
    -------------------------------------------------------------------------- */
 function beschrifte(elm,txt,code){
   const zeigen=!!txt;
   elm.classList.toggle('aus',!zeigen);
   if(zeigen&&elm.textContent!==txt) elm.textContent=txt;
   /* Verschwindet ein Knopf, waehrend er gehalten wird, muss die Taste los -
-     sonst laeuft die Figur ewig weiter. Ohne code ist nichts loszulassen. */
-  if(!zeigen&&code) taste(code,false);
+     sonst laeuft die Figur ewig weiter. */
+  if(!zeigen&&code){ elm.classList.remove('druck'); taste(code,false); }
 }
+/* Diese Aufschriften sind der Dauerzustand - sie sollen nicht pulsieren. */
+const ALLGEMEIN=['AKTION','WEITER','START','SCHLAG','KONTER','TIPPEN'];
 function kontextPflege(){
   let k={aktion:'AKTION',zwei:'SPRUNG',block:false,extras:null};
-  if(typeof mobilKontext==='function'){
-    try{ k=Object.assign(k,mobilKontext()||{}); }catch(e){}
-  }
+  if(typeof mobilKontext==='function'){ try{ k=Object.assign(k,mobilKontext()||{}); }catch(e){} }
   /* Waehrend der Lektion (nacht/lehre.js) zeigt das Bedienfeld genau die
      Knoepfe, die in ihr vorkommen. */
   if(window.LEHRE&&window.LEHRE.aktiv){
@@ -532,6 +582,8 @@ function kontextPflege(){
   }
   window.MOBIL.kontext=k;
   beschrifte(bAktion,k.aktion,'KeyE');
+  /* Pulsiert, sobald dort mehr steht als AKTION oder WEITER: jetzt ist was zu tun. */
+  bAktion.classList.toggle('ruf',!!k.aktion&&!ALLGEMEIN.includes(k.aktion));
   beschrifte(bZwei,k.zwei,'Space');
   beschrifte(bBlock,k.block?'BLOCK':null,'ShiftLeft');
   const ex=k.extras||[];
@@ -543,22 +595,22 @@ function kontextPflege(){
   });
 }
 
-/* Lage. Quer legt sich das Bedienfeld ueber das Bild, hoch darunter. */
+/* --------------------------------------------------------------------------
+   LAGE - hoch oder quer, und die Pixel dazu
+   -------------------------------------------------------------------------- */
 function lage(){
   const quer=innerWidth>innerHeight;
-  document.documentElement.classList.toggle('mobil-quer',quer);
+  html.classList.toggle('mobil-quer',quer);
   window.MOBIL.hoch=!quer;
   anpassen();
-  /* Hochkant nutzt das Bild die volle Breite. anpassen() rechnet mit
-     ganzen und viertel Stufen und landete auf einem 375er Schirm bei
-     Faktor 1 - also 320 Pixel Bild und 55 Pixel schwarzem Rand. Hier
-     zaehlt jeder Pixel mehr, deshalb die genaue Breite. */
+  /* Hochkant nutzt das Bild die volle Breite. anpassen() rechnet mit ganzen
+     und viertel Stufen und landete auf einem 375er Schirm bei Faktor 1 - also
+     320 Pixel Bild und 55 Pixel schwarzem Rand. */
   if(!quer){
     const s=innerWidth/W;
-    cv.style.width=Math.round(W*s)+'px';
-    cv.style.height=Math.round(H*s)+'px';
+    cv.style.width=Math.round(W*s)+'px'; cv.style.height=Math.round(H*s)+'px';
   }
-  stickHeim();
+  platziere();
 }
 
 /* Der Bildschirm soll beim Spielen nicht ausgehen. Geht nur nach einer
@@ -571,13 +623,13 @@ async function bildschirmWach(){
     wachSchloss.addEventListener('release',function(){ wachSchloss=null; });
   }catch(e){}
 }
-document.addEventListener('visibilitychange',function(){
-  if(!document.hidden) bildschirmWach();
-});
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) bildschirmWach(); });
 addEventListener('pointerdown',bildschirmWach,{once:true});
 addEventListener('resize',lage);
 addEventListener('orientationchange',function(){ setTimeout(lage,140); });
+if(window.ResizeObserver) new ResizeObserver(function(){ platziere(); }).observe(deck);
 lage();
+kontextPflege();
 
 setInterval(function(){ talkPflege(); kontextPflege(); infoPflege(); },90);
 })();

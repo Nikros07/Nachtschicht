@@ -40,8 +40,19 @@ der durchs ganze Gebäude wandert — und eine Uhr, die um **17:30** abläuft.
 | **`H`** | Handy stumm schalten |
 | `F` Vollbild · `P` Pause · `M` Ton aus | |
 
-**Am Handy** im Querformat: Steuerkreuz links, Aktionstasten rechts. Die erste
-Berührung schaltet ins Vollbild.
+**Am Handy** — am besten quer:
+
+- **Linker Daumen:** ein Stick, der dort erscheint, wo du ihn aufsetzt. Sanft gezogen
+  schleichst du, voll gezogen gehst du.
+- **Rechter Daumen:** ein großer Hauptknopf unten außen, die übrigen Knöpfe (Sprung,
+  Block, Rolle, Lampe …) liegen im Bogen um ihn. Ein Tippen **irgendwo auf der rechten
+  Hälfte** zählt als Hauptknopf — du musst ihn nicht treffen. Er pulsiert, sobald es
+  etwas zu tun gibt.
+- **Menü** (am rechten Rand): hält das Spiel an, dazu Ton, Vollbild, Levelwahl und
+  **Einstellungen** — Linkshänder, Größe der Knöpfe, Stick frei oder fest, Tippen rechts,
+  Vibration. Die Einstellungen bleiben auf dem Gerät.
+- **Gespräche:** die Antworten sind große Flächen zum Antippen.
+- Die erste Berührung schaltet ins Vollbild.
 
 ---
 

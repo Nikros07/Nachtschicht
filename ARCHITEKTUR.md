@@ -44,7 +44,7 @@ Reihenfolge der Script-Tags ist die Ladereihenfolge — `kern.js` zuerst.
 | `kampf.js` | Nahkampf: Zustandsautomat, Konter, Blocken, Ausdauer, Rolle, Gegner-KI |
 | `eingabe.js` | Die Tasten, die überall dasselbe tun |
 | `lehre.js` | Das Zwischenbild vor jedem Level: neue Steuerung zum Ausprobieren, Tabelle `LEKTIONEN` |
-| `mobil.js` | Die Handy-Fassung: eigenes Bedienfeld, Stick, Gesprächsflächen |
+| `mobil.js` | Die Handy-Fassung: schwebender Stick links, Hauptknopf mit Bogen und Tippfläche rechts, Menü mit Einstellungen, Gesprächsflächen |
 | `handy.js` | Das Handy im Spiel: Nachrichten und Antworten |
 
 ## Die vier zentralen Tabellen
