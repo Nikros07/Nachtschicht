@@ -58,6 +58,10 @@ Nutzer das Ergebnis meldest.
 - Gibt es wirklich nichts Offenes, schreibe das auch: `Nachtliste: nichts offen.`
   Erfinde keine Punkte, um die Liste zu füllen.
 
+## Klein halten
+
+Ein Eintrag ist höchstens eine ~15-Minuten-Aufgabe: ein Bereich, eine Messzahl. Ist er größer, teile ihn, bevor du ihn aufschreibst.
+
 ## Was gute Einträge ausmacht
 
 Ein Eintrag muss in einer **frischen Sitzung ohne diese Unterhaltung** ausführbar

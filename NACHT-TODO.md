@@ -30,16 +30,32 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P1
 
-- [ ] **P1 · Club: vier von sechs Bereichen bekommen Inhalt (Eingang, Raucherecke,
-  Hinterausgang + mehr Nichtstun-Ereignisse)** — abgespalten vom größeren Punkt (siehe
-  Blockiert). Braucht neue Sprites/Deko und/oder ambiente, zeitgesteuerte Ereignisse
-  (wie `marvinTakt`, aber ortsbezogen), damit der Nichtstun-Test über 5 Minuten mehr als
-  viermal etwas meldet. Klos hat mit `WASCHBECKEN` schon eine Interaktion - prüfen, ob
-  das für „Klos" mitzählt oder ob der ursprüngliche Befund veraltet ist.
-  Wo: level5.html (`ORTE`, `SPR`, `marvinTakt`) · Fertig wenn: jeder der vier Bereiche
-  hat etwas zu tun oder zu sehen (gemessen: `leereProzent` bei Kamera auf dem Bereich,
-  oder eine neue Interaktion dort); im Nichtstun-Test passiert über 5 Minuten mehr als
-  viermal etwas.
+*Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
+
+- [ ] **P1 · Club-Uhr: alle ~25 s ein Ereignis (Durchsage/DJ-Satz)** — Der Club ist nach 107 s still. Ein zeitgesteuertes Ambient-Ereignis (Meldung, kurzer Ton, Blitz) füllt die Lücke. Liste CLUB_EREIGNISSE im TUNE-Block, 6 bis 8 Sätze, zufällig ohne Wiederholung.
+  Wo: level5.html (update, TUNE) · Fertig wenn: im Nichtstun-Test (300 s) mindestens 12 Ereignisse, das letzte nach 270 s.
+- [ ] **P1 · Club, Eingang: Garderobe zum Ansprechen** — Der Eingang (x 0-170) enthält nichts. Ein Tresen-Objekt mit E-Interaktion (zwei Sätze, einmal nutzbar, kleine Wirkung wie ruf +1).
+  Wo: level5.html (ORTE, naechstesZiel, Zeichnen, druckAktion) · Fertig wenn: naechstesZiel() liefert dort ein Ziel, die Aktion wirkt genau einmal, nachttest.js bleibt grün.
+- [ ] **P1 · Club, Raucherecke: zwei Stehende mit je einem Satz** — Raucherecke (x 860-1060) ist leer. Zwei Figuren (vorhandene Sprites einfärben) mit je einem eigenen Satz per E. Keine Bäume, nur ein Satz.
+  Wo: level5.html (ORTE, Figurenliste, Zeichnen) · Fertig wenn: zwei neue ansprechbare Ziele in dem Bereich; Sätze nur mit erlaubten Zeichen (nachttest.js prüft das).
+- [ ] **P1 · Club, Hinterausgang: Kisten und ein Lieferant** — Hinterausgang (x 1200-1400) ist leer. Kisten als Deko plus ein Lieferant mit einem Satz, der den Hinterausgang erklärt.
+  Wo: level5.html (ORTE, Zeichnen) · Fertig wenn: Deko sichtbar (leere Bildzeilen in dem Bereich mindestens 5 Punkte niedriger), ein ansprechbares Ziel.
+- [ ] **P1 · Club, Klos: prüfen, ob der Befund veraltet ist** — Klos hat mit WASCHBECKEN schon eine Interaktion. Nur messen und entscheiden, kein Bauen.
+  Wo: level5.html (ORTE, WASCHBECKEN) · Fertig wenn: Befund steht hier: entweder Klos ist ok und der Punkt gestrichen, oder ein neuer kleiner Punkt.
+- [ ] **P1 · Club-Decke: Lautsprecher- und Lampenreihe über die ganze Breite** — Obere Bildhälfte: nur wiederholte Sprites in zeichneClub(), keine neue Kunst. Erster Schritt, nicht das Endergebnis.
+  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club von 78 % auf höchstens 68 % (Software-Canvas), ohne Fehler im Nachttest.
+- [ ] **P1 · Club-Decke: Lichtkegel oder Discokugel über der Tanzfläche** — Zweiter Schritt, nur Tanzfläche (x 170-620), vorhandene Verlauf-Funktionen nutzen.
+  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 58 %.
+- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke.
+  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
+- [ ] **P1 · Obere Bildhälfte Level 2 (Wohnung): ein Element über die Breite** — Bilder, Regal oder Lampen an der Wand. Eine Sorte, wiederholt.
+  Wo: level2.html (zeichneWohnung) · Fertig wenn: leere Bildzeilen von 65 % auf höchstens 55 %.
+- [ ] **P1 · Obere Bildhälfte Level 6 (Afterhour): ein Element über die Breite** — Deckenleuchten oder Wanddeko, passend zum Traum.
+  Wo: level6.html (zeichneFlur) · Fertig wenn: leere Bildzeilen von 69 % auf höchstens 59 %.
+- [ ] **P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** — Oben fehlt die Ladenwand.
+  Wo: level7.html (zeichneSzene) · Fertig wenn: leere Bildzeilen von 73 % auf höchstens 63 %.
+- [ ] **P1 · Obere Bildhälfte Level 8 (Heimweg): Himmel mit Sternen, Mond, Häuserreihe** — Himmel und Silhouetten, an den Lichtfaktor gekoppelt (himmelFarbe).
+  Wo: level8.html (zeichneStrasse) · Fertig wenn: leere Bildzeilen von 76 % auf höchstens 66 %, Sonnenaufgang sieht weiterhin richtig aus (Pixelprobe).
 
 ### P2
 
@@ -160,8 +176,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Lautsprecher) über weite Teile der 1400 px Levelbreite, nicht ein paar Lampen an
   einer Stelle. Das ist ein echtes Kunst-/Gestaltungsprojekt, kein kleinster Eingriff,
   und unter Zeitdruck zusammengeschustert haette es eher ungleichmaessig/unruhig
-  gewirkt als geholfen (siehe „Zweifelst du..." in `routinen/nacht.md`). Bleibt offen,
-  jetzt mit echter Messzahl (vorher geschaetzt, jetzt durch den Software-Canvas von
+  gewirkt als geholfen (siehe „Zweifelst du..." in `routinen/nacht.md`). Aufgeteilt am 1.10. in die Punkte Club-Decke und Obere Bildhälfte Level 2/6/7/8 (P1).
+  Bleibt offen, jetzt mit echter Messzahl (vorher geschaetzt, jetzt durch den Software-Canvas von
   heute Nacht gemessen: 78 % statt der frueheren Browser-Schaetzung 73 %, Naeherung).
 
 - **2026-10-01 · P1 · Club zum Ort machen: vier von sechs Bereichen sind leer** — nicht

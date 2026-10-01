@@ -67,7 +67,7 @@ nicht: ins Log schreiben, pushen, **beenden, ohne weiterzubauen**.
 ## Schritt 3 — Bauen
 
 **Auswahl.** Aus „Offen": erst alle P1, dann P2, dann P3, in der Reihenfolge der Datei.
-„Entscheidung nötig" ist **tabu**. Höchstens **5 Punkte** oder etwa **90 Minuten** Bauzeit,
+„Entscheidung nötig" ist **tabu**. Höchstens **8 Punkte** oder etwa **90 Minuten** Bauzeit,
 was zuerst eintritt. Prüfe mit `date`, bevor du einen neuen Punkt beginnst; nach 100
 Minuten seit Start fängst du keinen neuen mehr an.
 
@@ -98,6 +98,8 @@ Punkt „Nachttest: Software-Canvas" selbst ist erlaubt (er ändert nur `tools/n
    mit Grund und dem, was du probiert hast. Weiter mit dem nächsten.
 6. **Folgearbeit** oder neue Fehler, die du entdeckst: als neue Einträge unter „Offen"
    (Format der Datei, „Fertig wenn" Pflicht). Nicht in denselben Commit bauen.
+
+Ist ein Punkt größer als ~15 Minuten Arbeit: nicht halb bauen, sondern in der Liste in kleinere Punkte teilen (je ein Bereich, eine Messzahl) und mit dem ersten davon weitermachen.
 
 Zweifelst du, ob eine Änderung das Spielgefühl verschlechtert: nicht bauen, Punkt unter
 „Blockiert" mit der Frage notieren. Erledigte Zeilen in `PLAYTEST.md` durchstreichen.
