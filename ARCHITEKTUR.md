@@ -137,25 +137,24 @@ Spiel ohne Bildschirm takten — `update(1/60)` in einer Schleife aufrufen
 und danach Werte auslesen. So sind alle Balance-Zahlen im Projekt
 entstanden.
 
-## Die Nachtroutinen
+## Die Nachtroutine
 
-Zwei Routinen in der Cloud (claude.ai → Routinen), die nachts unbeaufsichtigt laufen.
-Sie arbeiten auf dem Branch `claude/nacht`; `main` fassen sie nie an. Sie haben kein Gedächtnis an die Tagessitzung — alles,
-was sie wissen, steht in diesen Dateien:
+Eine Routine in der Cloud (claude.ai → Routinen), die nachts unbeaufsichtigt läuft:
+erst testen, dann die Liste abarbeiten. Sie arbeitet auf dem Branch `claude/nacht`;
+`main` fasst sie nie an. Sie hat kein Gedächtnis an die Tagessitzung — alles, was sie
+weiß, steht in diesen Dateien:
 
 | Datei | Wer schreibt | Inhalt |
 |:--|:--|:--|
-| `NACHT-TODO.md` | Skill `todo-notieren` am Ende jeder Aufgabe, beide Routinen | die Warteschlange: Offen (P1–P3), Entscheidung nötig, Erledigt, Blockiert |
-| `NACHT-BERICHT.md` | 4-Uhr-Routine | Testbericht der Nacht, wird überschrieben |
-| `NACHT-LOG.md` | beide Routinen | Protokoll, angehängt — morgens hier lesen |
+| `routinen/nacht.md` | von Hand | der Ablauf, den die Routine befolgt |
+| `NACHT-TODO.md` | Skill `todo-notieren` am Ende jeder Aufgabe, die Routine | die Warteschlange: Offen (P1–P3), Entscheidung nötig, Erledigt, Blockiert |
+| `NACHT-BERICHT.md` | die Routine | Testbericht der Nacht, wird überschrieben |
+| `NACHT-LOG.md` | die Routine | Protokoll, angehängt — morgens hier lesen |
 
-- **`nacht-4-testen`** (~4:12): testet alles, ändert keinen Spielcode, trägt Funde in die Liste ein.
-- **`nacht-5-weiterbauen`** (~5:12): arbeitet die Liste von oben ab, prüft jede Änderung, committet je Punkt.
-- Beide pushen **nur auf `claude/nacht`**, nie nach `main`. Übernehmen: den Branch ansehen,
-  dann mergen. Verwerfen: den Branch löschen. Einzelnes zurücknehmen: `git revert`.
+- Gepusht wird **nur auf `claude/nacht`**. Übernehmen: ansehen, mergen. Verwerfen: Branch
+  löschen. Einzelnes zurücknehmen: `git revert`.
 - Der Abschnitt „Entscheidung nötig" ist für sie tabu.
-- Der Skill liegt in `.claude/skills/todo-notieren/`; `CLAUDE.md` verlangt, ihn am Ende jeder Aufgabe aufzurufen.
-- Laufen in der Cloud, unabhängig davon, ob der Rechner oder die App an ist.
-- Die Zeiten sind in **UTC** eingetragen und kennen keine Sommerzeit: ab dem 25. Oktober 2026
-  (Winterzeit) laufen sie eine Stunde früher, 3 und 4 Uhr Ortszeit.
-
+- Der Skill liegt in `.claude/skills/todo-notieren/`; `CLAUDE.md` verlangt, ihn am Ende
+  jeder Aufgabe aufzurufen.
+- Läuft in der Cloud, unabhängig davon, ob der Rechner oder die App an ist.
+- Einrichtung und der einzutragende Prompt: `routinen/README.md`.

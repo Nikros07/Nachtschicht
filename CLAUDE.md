@@ -7,12 +7,11 @@ in `ARCHITEKTUR.md` — vor jeder Änderung lesen.
 
 **Rufe den Skill `todo-notieren` auf**, bevor du dem Nutzer das Ergebnis meldest.
 Er schreibt alles Offene, Aufgeschobene, Ungeprüfte und neu Gefundene in
-`NACHT-TODO.md`. Die Nachtroutinen (4 Uhr testen, 5 Uhr weiterbauen) arbeiten
-diese Liste ab und haben **kein Gedächtnis an diese Sitzung** — was nicht dort
-steht, passiert nachts nicht.
+`NACHT-TODO.md`. Die Nachtroutine (testet, dann baut sie die Liste ab) hat
+**kein Gedächtnis an diese Sitzung** — was nicht dort steht, passiert nachts nicht.
 
-Ausnahme: reine Fragen ohne Änderung und ohne neue Erkenntnis. Und in den
-Nachtroutinen selbst, die ihre Liste eigenständig pflegen.
+Ausnahme: reine Fragen ohne Änderung und ohne neue Erkenntnis. Und in der
+Nachtroutine selbst, die ihre Liste eigenständig pflegt.
 
 ## Regeln des Projekts
 
@@ -41,8 +40,8 @@ nehmen, wenn einer da ist.
 
 ## Nachtroutinen — Grenzen
 
-Beide Routinen laufen unbeaufsichtigt **in der Cloud** und arbeiten auf dem Branch
-`claude/nacht`. Sie pushen **nur dorthin, nie nach `main`**, nie mit `--force`.
+Die Routine läuft unbeaufsichtigt **in der Cloud** und arbeitet auf dem Branch
+`claude/nacht`. Ihr Ablauf steht in `routinen/nacht.md`; sie ändert `routinen/` nie. Sie pushen **nur dorthin, nie nach `main`**, nie mit `--force`.
 Sie löschen nichts außer dem, was ein Listenpunkt ausdrücklich verlangt, und sie
 fassen den Abschnitt „Entscheidung nötig" in `NACHT-TODO.md` nicht an.
 Protokoll: `NACHT-LOG.md`. Testbericht: `NACHT-BERICHT.md`.

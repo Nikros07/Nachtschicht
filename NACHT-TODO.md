@@ -3,13 +3,11 @@
 Diese Datei ist die **Warteschlange**. Alles, was beim Arbeiten offen bleibt,
 steht hier — und die Routinen holen es nachts ab:
 
-| Zeit | Routine | Was sie tut |
-|:--|:--|:--|
-| 4:00 | `nacht-4-testen` | Testet alles, schreibt `NACHT-BERICHT.md`, trägt Funde hier ein. Ändert **keinen** Spielcode. |
-| 5:00 | `nacht-5-weiterbauen` | Arbeitet diese Liste von oben ab, testet jede Änderung, committet je Punkt. |
-
-Beide laufen **in der Cloud** (claude.ai → Routinen) und arbeiten auf dem Branch
-**`claude/nacht`**. Nach `main` pushen sie nie — die Live-Seite bleibt, wie sie ist.
+Eine Routine, nachts, **in der Cloud** (claude.ai → Routinen). Sie testet zuerst alles,
+schreibt `NACHT-BERICHT.md`, trägt Funde hier ein und arbeitet danach diese Liste von oben
+ab — jeden Punkt gemessen, getestet, einzeln committet. Der Ablauf steht in
+`routinen/nacht.md`. Sie arbeitet auf dem Branch **`claude/nacht`**; nach `main` pusht sie
+nie — die Live-Seite bleibt, wie sie ist.
 
 Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 (`git log main..origin/claude/nacht`) und, wenn es passt, nach `main` mergen.
