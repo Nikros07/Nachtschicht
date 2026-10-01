@@ -123,9 +123,30 @@ gibt `{aktion, zwei, block, extras}` zurück.
 node tools/pruefe.js      # jede Seite gegen ihre Engine: Syntax, Doppelnamen
 node test/kampf.test.js   # 22 Prüfungen der Kampflogik, ohne Browser
 python tools/version.py   # Engine-Version neu setzen
+node tools/flagcheck.js   # Entscheidungen der Nacht: gesetzt und nie gelesen?
 ```
 
 Im Browser: `python -m http.server 5173`. Für Messungen lässt sich das
 Spiel ohne Bildschirm takten — `update(1/60)` in einer Schleife aufrufen
 und danach Werte auslesen. So sind alle Balance-Zahlen im Projekt
 entstanden.
+
+## Die Nachtroutinen
+
+Zwei geplante Aufgaben in Claude (Sidebar → „Scheduled"), die nachts
+unbeaufsichtigt laufen. Sie haben kein Gedächtnis an die Tagessitzung — alles,
+was sie wissen, steht in diesen Dateien:
+
+| Datei | Wer schreibt | Inhalt |
+|:--|:--|:--|
+| `NACHT-TODO.md` | Skill `todo-notieren` am Ende jeder Aufgabe, beide Routinen | die Warteschlange: Offen (P1–P3), Entscheidung nötig, Erledigt, Blockiert |
+| `NACHT-BERICHT.md` | 4-Uhr-Routine | Testbericht der Nacht, wird überschrieben |
+| `NACHT-LOG.md` | beide Routinen | Protokoll, angehängt — morgens hier lesen |
+
+- **`nacht-4-testen`** (~4:12): testet alles, ändert keinen Spielcode, trägt Funde in die Liste ein.
+- **`nacht-5-weiterbauen`** (~5:12): arbeitet die Liste von oben ab, prüft jede Änderung, committet je Punkt.
+- Beide committen **nur lokal** und pushen nie. Rückgängig machen: `git log`, dann `git revert`.
+- Der Abschnitt „Entscheidung nötig" ist für sie tabu.
+- Der Skill liegt in `.claude/skills/todo-notieren/`; `CLAUDE.md` verlangt, ihn am Ende jeder Aufgabe aufzurufen.
+- Läuft nur, solange die Claude-App offen ist; war sie zu, läuft die Routine beim nächsten Start nach.
+
