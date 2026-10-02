@@ -317,6 +317,10 @@ const GARDEROBE={ x:70, t:0.5 };
 /* Raucherecke (x 860-1060) - zwei Stehende, kein Baum, nur ein Satz per E. */
 const RAUCHER1={ x:900, t:0.5, satz:'HAST DU AUCH NUR EINE SEKUNDE RUHE HIER' };
 const RAUCHER2={ x:1010, t:0.5, satz:'DRINNEN IST ES HEUTE VOLLER ALS SONST' };
+/* Hinterausgang (x 1200-1400) - Kisten als Deko, ein Lieferant erklaert ihn. */
+const KISTEN=[{x:1215,t:0.08},{x:1245,t:0.08},{x:1290,t:0.1},{x:1325,t:0.08},{x:1360,t:0.08}];
+const LIEFERANT={ x:1250, t:0.5,
+  satz:'HINTERAUSGANG. HIER KOMMT NUR AN, WER LIEFERT ODER RAUCHEN GEHT.' };
 
 /* ==========================================================================
    DIE GESPRAECHE IM CLUB
@@ -891,6 +895,7 @@ function naechstesZiel(){
   pruefe(GARDEROBE,'garderobe',!S.garderobeFertig);
   pruefe(RAUCHER1,'raucher',true);
   pruefe(RAUCHER2,'raucher',true);
+  pruefe(LIEFERANT,'raucher',true);
   /* Der Ausgang zaehlt erst, wenn im Club etwas passiert ist - sonst
      verlaesst man ihn mit null Interaktionen, kaum dass man drin ist. */
   pruefe(AUSGANG,'tuer',S.warAktiv);
@@ -1424,6 +1429,28 @@ function zeichneClub(){
       if(naechst&&naechst.obj===r&&blink) text('E',r.x-2,y-9,P.gold);
     }});
   }
+  /* Hinterausgang: Kisten als reine Deko, der Lieferant nutzt den
+     vorhandenen Handlanger-Umriss. */
+  for(const k of KISTEN){
+    liste.push({t:k.t, mal:()=>{
+      /* Gestapelt bis in die sonst leere Wand hinein - eine einzelne
+         Kiste am Boden geht im Gewusel der Tuer unter (siehe Messung
+         in NACHT-TODO.md). */
+      const boden=bodenY(k.t);
+      for(let i=0;i<4;i++){
+        const y=boden-6-i*7;
+        ctx.fillStyle='#8a6a3a'; ctx.fillRect(k.x-4,y-5,9,5);
+        ctx.fillStyle='#c8a868'; ctx.fillRect(k.x-4,y-5,9,1);
+        ctx.fillStyle='#4a3a2a'; ctx.fillRect(k.x-4,y,9,1);
+      }
+    }});
+  }
+  liste.push({t:LIEFERANT.t, mal:()=>{
+    const y=bodenY(LIEFERANT.t)-SPR.handlanger.length;
+    schatten(LIEFERANT.x,LIEFERANT.t);
+    sprite(SPR.handlanger,LIEFERANT.x-3,y);
+    if(naechst&&naechst.obj===LIEFERANT&&blink) text('E',LIEFERANT.x-2,y-9,P.gold);
+  }});
 
   for(const z of ZIELE){
     if(z.weg) continue;
