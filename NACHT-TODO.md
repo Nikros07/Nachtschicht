@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club, Klos: prüfen, ob der Befund veraltet ist** — Klos hat mit WASCHBECKEN schon eine Interaktion. Nur messen und entscheiden, kein Bauen.
-  Wo: level5.html (ORTE, WASCHBECKEN) · Fertig wenn: Befund steht hier: entweder Klos ist ok und der Punkt gestrichen, oder ein neuer kleiner Punkt.
 - [ ] **P1 · Club-Decke: Lautsprecher- und Lampenreihe über die ganze Breite** — Obere Bildhälfte: nur wiederholte Sprites in zeichneClub(), keine neue Kunst. Erster Schritt, nicht das Endergebnis.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club von 78 % auf höchstens 68 % (Software-Canvas), ohne Fehler im Nachttest.
 - [ ] **P1 · Club-Decke: Lichtkegel oder Discokugel über der Tanzfläche** — Zweiter Schritt, nur Tanzfläche (x 170-620), vorhandene Verlauf-Funktionen nutzen.
@@ -146,6 +144,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club, Klos: Befund war veraltet, Punkt gestrichen ·
+  nicht gebaut, kein Spielcode geändert. WASCHBECKEN (x=1120) existiert seit der
+  ersten Fassung von Level 5 (Commit `0a47a28`), lange vor dem Fund „vier von
+  sechs Bereichen leer". Gemessen per Headless-Lauf: naechstesZiel() bei x=1120
+  liefert {art:'wasser'}, E senkt den Pegel messbar (50,0 → 31,95) und zeigt
+  „KALTES WASSER INS GESICHT". Klos hat also schon eine echte, wirksame
+  Interaktion - der Befund war veraltet.
 
 - [x] 2026-10-02 · P1 · Club, Hinterausgang: Kisten und ein Lieferant · `ad78867` ·
   Fuenf vier-hoch gestapelte Kisten (reichen in die leere Wand hinein) plus
