@@ -80,3 +80,64 @@ eigene `wahl` braucht E), nicht neu. Für einen Spieler, der gerade aktiv das In
 In `NACHT-TODO.md` unter „Offen" → P1: **Club: vier von sechs Bereichen bekommen
 Inhalt** (braucht neue Sprites/Deko oder ambiente Ereignisse — echtes Gestaltungsthema,
 kein kleinster Eingriff). Danach P2, angeführt von den beiden Level-4-Kampf-Punkten.
+
+---
+
+## 2026-10-02 — Nacht — Test und Bau
+
+Start-Commit: `93268fee17b6db4080d39bf9ed8217bda3b1fc46`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+61/50/7 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Einzige
+Auffälligkeit: level2.html meldet im Nichtstun-Test jetzt 0 statt 1 Ereignis (190 s) vom
+Vortag — erklärt, kein Fehler (siehe NACHT-BERICHT.md): die MITNEHMEN-Wahl sitzt seit
+gestern am Levelanfang, ihre Antwortzeile braucht wie jeder Dialog im Spiel ohne eigenes
+`wahl` einen Tastendruck zum Weiterblättern.
+
+### Erledigt (7 Punkte gebaut, 1 Punkt blockiert, ~29 Minuten)
+
+1. **Club-Uhr: Ambient-Ereignisse gegen die 193-s-Stille** · `afea7a1` — TUNE.CLUB_EREIGNISSE
+   (8 Sätze), Zufallsbeutel ohne direkte Wiederholung, ab Sekunde 20 alle ~25 s über
+   `ambientTakt(dt)`. Nichtstun 300 s: vorher 4 Ereignisse/letztes bei 107 s → nachher 16
+   Ereignisse/letztes bei 295 s (gefordert: mindestens 12, letztes nach 270 s).
+2. **Club, Eingang: Garderobe zum Ansprechen** · `0c6e875` — GARDEROBE (x=70, SPR.theke),
+   zwei Sätze, ruf+1, einmal nutzbar. Gemessen: naechstesZiel() liefert vorher
+   {art:'garderobe'}, ruf 50→51; danach liefert naechstesZiel() dort null, ruf bleibt bei 51.
+3. **Club, Raucherecke: zwei Stehende mit je einem Satz** · `39e80cb` — RAUCHER1 (x=900),
+   RAUCHER2 (x=1010), vorhandener Tanzer-Umriss eingefärbt, kein Baum. naechstesZiel()
+   liefert an beiden Stellen das jeweils eigene Ziel mit dem richtigen Satz.
+4. **Club, Hinterausgang: Kisten und ein Lieferant** · `ad78867` — fünf vier-hoch gestapelte
+   Kisten plus LIEFERANT (x=1250, Handlanger-Umriss) mit erklärendem Satz. Leere Bildzeilen
+   im Kamera-Ausschnitt auf den Hinterausgang: 77,2 % → 69,4 % (gefordert: mindestens 5
+   Punkte niedriger).
+5. **Club, Klos: Befund war veraltet** — nicht gebaut, nur gemessen: WASCHBECKEN (x=1120)
+   hat seit der ersten Fassung von Level 5 (`0a47a28`) schon eine echte Interaktion
+   (Pegel −18, Meldung). Punkt gestrichen.
+6. **Club-Decke: Lautsprecherreihe über die ganze Breite** · `13ef962` — Lautsprecher-Säule
+   mit Gitterstreifen, alle 50 px über 1400 px Levelbreite. Leere Bildzeilen im Club
+   (nachttest.js, 60 s): 77–78 % → 65 % (gefordert: höchstens 68 %).
+7. **Club-Decke: Discokugel und Lichtsäulen über der Tanzfläche** · `c91cee8` — vier
+   Discokugeln (Schachbrettmuster) mit gestreiften Lichtsäulen, nur x 170-620. Leere
+   Bildzeilen: 65 % → 53 % (gefordert: höchstens 58 %).
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js (--kurz bzw. ganz)
+erneut grün; `verloren` in flagcheck.js blieb durchgehend bei 7.
+
+### Blockiert (zweimal versucht, zurückgerollt)
+
+- **Club-Decke: Banner oder Galerie an der Rückwand** (P1, dritter Schritt über Bar/
+  Raucherecke) — zweimal gebaut (y 24, dann y 56, beides x 630-1060), beide Male mit
+  `git restore level5.html` zurückgenommen. Grund: die Galerie senkt die leeren
+  Bildzeilen am Ort nachweislich (Kamera direkt auf x=800: 65 % → 40,6 %), aber
+  `node tools/nachttest.js` meldet unverändert 53 %, weil dessen 60-s-Zufallslauf in
+  Level 5 mit dem festen Seed nie über x≈371 hinauskommt (Eingang + ein Stück
+  Tanzfläche, dann füllt ein Minispiel die Zeit). Neuer P2-Punkt dafür angelegt
+  („nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus").
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P1: **Club-Decke: Banner oder Galerie an der
+Rückwand** bleibt stehen, ist aber erst wieder sinnvoll angehbar, wenn der neue P2-Punkt
+zum Zufallslauf geklärt ist (sonst ist „Fertig wenn" mit dem vorgeschriebenen Werkzeug
+nicht prüfbar). Danach die vier „Obere Bildhälfte Level 2/6/7/8"-Punkte, dann die
+übrigen P2-Punkte.

@@ -42,17 +42,23 @@ Messung „Spieler tut nichts, fünf Minuten lang":
  49 s  MIA IST JETZT MIT MARVIN UNTERWEGS
  81 s  SOPHIE IST JETZT MIT MARVIN UNTERWEGS
 107 s  KIRA IST JETZT MIT MARVIN UNTERWEGS
-       — danach passiert 193 Sekunden lang nichts mehr —
+~~       — danach passiert 193 Sekunden lang nichts mehr —~~
 ```
 
-Die Leveluhr läuft **600 Sekunden**. Der Inhalt ist nach 107 Sekunden
-aufgebraucht. Der Ausgang ist ab Sekunde 0 offen und ohne Bedingung: man
+~~Die Leveluhr läuft **600 Sekunden**. Der Inhalt ist nach 107 Sekunden
+aufgebraucht.~~ Behoben (2.10.): TUNE.CLUB_EREIGNISSE liefert ab Sekunde 20
+alle ~25 s eine Durchsage/einen DJ-Satz, gemessen 16 Ereignisse, letztes bei
+295 s. ~~Der Ausgang ist ab Sekunde 0 offen und ohne Bedingung: man
 kann den Club mit **null Interaktionen** verlassen, und das Level gilt als
-geschafft.
+geschafft.~~ Behoben (1.10., Commit `297f845`): der Ausgang öffnet erst nach
+einer Interaktion.
 
-Dazu: von sechs benannten Bereichen — Eingang, Tanzfläche, Bar,
+~~Dazu: von sechs benannten Bereichen — Eingang, Tanzfläche, Bar,
 Raucherecke, Klos, Hinterausgang — enthalten **vier gar nichts**. Man läuft
-durch beschriftete Orte, in denen nichts steht.
+durch beschriftete Orte, in denen nichts steht.~~ Behoben (2.10.): Garderobe
+am Eingang, zwei Raucher in der Raucherecke, Kisten und ein Lieferant am
+Hinterausgang; Klos hatte mit WASCHBECKEN schon eine Interaktion (Befund
+war veraltet). Alle sechs Bereiche haben jetzt etwas.
 
 **Schweregrad: hoch.** Das ist das erklärte Herzstück des Spiels.
 
