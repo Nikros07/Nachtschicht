@@ -32,7 +32,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke.
+- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
 - [ ] **P1 · Obere Bildhälfte Level 2 (Wohnung): ein Element über die Breite** — Bilder, Regal oder Lampen an der Wand. Eine Sorte, wiederholt.
   Wo: level2.html (zeichneWohnung) · Fertig wenn: leere Bildzeilen von 65 % auf höchstens 55 %.
@@ -45,6 +45,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
+- [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
+  60-s-Spiellauf (`SPIEL_SEK`) bewegt sich mit dem festen Seed nur von x=40 bis x≈371
+  (Eingang, ein Stück Tanzfläche), dann füllt ein Minispiel die restliche Zeit. Bar,
+  Raucherecke, Klos und Hinterausgang (x 620-1400) werden von der „leere Bildzeilen"-
+  Messung dieses Laufs nie gesehen - jede künftige Deko dort ist mit `node
+  tools/nachttest.js level5` nicht prüfbar (siehe „Blockiert", Club-Decke-Galerie).
+  Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
+  derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
+  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
 - [ ] **P2 · Level 4: Titelbild verspricht E ODER LEERTASTE, die Leertaste startet nichts** —
   `level4.html` bindet Space nur an die Rolle (`rolleGedrueckt`), der Start geht nur über E/Enter.
   Wo: level4.html (Titelbild-Text, Tastenbehandlung) · Fertig wenn: Text und Verhalten stimmen
@@ -218,6 +227,21 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Blockiert
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
+
+- **2026-10-02 · P1 · Club-Decke: Banner oder Galerie an der Rückwand** — zweimal
+  gebaut (zuerst bei y 24, dann tiefer bei y 56, beides x 630-1060 ueber Bar und
+  Raucherecke), beide Male per `git restore level5.html` zurueckgerollt, weil die
+  vorgeschriebene Messung (`node tools/nachttest.js`) den Bereich nie erreicht:
+  der 60-s-Zufallslauf bewegt sich in Level 5 mit diesem Seed nur von x=40 bis
+  x≈371 (Eingang und ein Stueck Tanzflaeche, siehe neuer Punkt unten), bevor ein
+  Minispiel die restliche Zeit fuellt. Direkt mit der Kamera auf x=800 gestellt
+  (wie beim Hinterausgang) sinkt die Zeile dort tatsaechlich von 65 % auf 40,6 %
+  - der Baustein wirkt also, aber `node tools/nachttest.js` meldet trotzdem
+  unveraendert 52,83 % (gerundet 53 %), weil dort nie hingeschaut wird. Fertig
+  wenn in NACHT-TODO.md verlangt „leere Bildzeilen im Club" aus genau diesem
+  Lauf - mit dem jetzigen Zufallslauf ist das Ziel so nicht pruefbar. Bleibt
+  offen, bis der neue Punkt „Nichtstun-Zufallslauf Level 5 kommt nie ueber
+  x=400 hinaus" entschieden ist.
 
 - **2026-10-01 · P1 · Obere Bildhälfte füllen** — nicht gebaut, kein Code geändert.
   Grund: das Ziel (Club unter 45 % leere Zeilen, gemessen gerade bei ~78 %) verlangt
