@@ -1,7 +1,7 @@
 # NACHT-BERICHT
 
-Datum: 2026-10-01
-Start-Commit: df02d2664867bbac4a50c413da34b8fc5751801d
+Datum: 2026-10-02
+Start-Commit: 93268fee17b6db4080d39bf9ed8217bda3b1fc46
 
 ## Die vier Prüfungen
 
@@ -17,32 +17,39 @@ reparieren" entfällt.
 
 ## Nichtstun-Zahlen je Level (300 s)
 
-| Level | Ereignisse | Letztes bei | Vergleich zum Vortag (1.10.2026) |
+| Level | Ereignisse | Letztes bei | Vergleich zum Vortag (2026-10-01) |
 |:--|--:|--:|:--|
-| index.html (Level 1) | 1 | 165 s | kein Vortagswert in der Anleitung vermerkt |
-| level2.html | 1 | 190 s | kein Vortagswert vermerkt |
-| level3.html (Bus) | 1 | 34 s | kein Vortagswert vermerkt |
-| level4.html | 0 | 0 s | Referenz: null — **stimmt überein** |
-| level5.html (Club) | 4 | 107 s | Referenz: 4 Ereignisse, letztes bei 107 s — **stimmt überein** |
-| level6.html | 12 | 291 s | kein Vortagswert vermerkt |
-| level7.html | 0 | 0 s | kein Vortagswert vermerkt |
-| level8.html | 6 | 59 s | kein Vortagswert vermerkt |
-| karte.html | 1 | 0 s | kein Vortagswert vermerkt |
-
-Nur Level 4 und Club (level5) haben einen Referenzwert in `routinen/nacht.md`
-(Stand 1.10.2026) — beide stimmen exakt mit der heutigen Messung überein. Für die
-übrigen Level liegt kein Vortagswert vor, mit dem verglichen werden könnte (diese
-Datei existierte vorher nicht).
+| index.html (Level 1) | 1 | 165 s | stimmt überein |
+| level2.html | 0 | 0 s | **anders** (Vortag: 1, 190 s) — siehe Fund unten |
+| level3.html (Bus) | 1 | 34 s | stimmt überein |
+| level4.html | 0 | 0 s | Referenz routinen/nacht.md: null — stimmt überein |
+| level5.html (Club) | 4 | 107 s | Referenz routinen/nacht.md: 4 Ereignisse, letztes bei 107 s — stimmt überein |
+| level6.html | 12 | 291 s | stimmt überein |
+| level7.html | 0 | 0 s | stimmt überein |
+| level8.html | 6 | 59 s | stimmt überein |
+| karte.html | 1 | 0 s | stimmt überein |
 
 ## Funde
 
-Keine neuen, belegten Funde über das hinaus, was bereits in `NACHT-TODO.md` unter
+**level2.html: Nichtstun-Lauf bleibt ab Sekunde 0 ohne jedes Ereignis (vorher 1 bei 190 s).**
+Ursache geprüft, kein Fehler: `starteLevel()` zeigt seit dem gestrigen Umbau
+(„Level 2: Mitnehmen-Wahl an den Levelanfang", `b524a82`) das Gespräch `MITNEHMEN`
+sofort beim Levelstart statt wie vorher erst nach dem Kampf. Dessen erster Knoten hat
+`zeit:10` und löst nach 10 s ohne Tastendruck aus (per Simulation bestätigt: `GESPR.name`
+wechselt zu einer Antwort wie `alle`). Diese Antwortzeile selbst hat wie alle reinen
+Text-Knoten ohne `wahl` im ganzen Spiel kein `zeit` und wartet auf Bestätigung (E) —
+das ist dasselbe Muster wie z. B. `frech` im Beispiel-Baum in `nacht/dialog.js`. Ein
+echter Spieler drückt dort E und spielt normal weiter; der reine Nichtstun-Test kommt
+an dieser einen Konfirm-Zeile nicht vorbei, weil er nie eine Taste drückt. Kein Softlock,
+keine Ausnahme, `pruefe.js`/`kampf.test.js`/`nachttest.js` bleiben grün — daher kein
+neuer Eintrag unter „Offen": es ist erklärtes, beabsichtigtes Verhalten des
+Dialogsystems, keine neue, belegte Störung.
+
+Sonst keine neuen, belegten Funde über das hinaus, was bereits in `NACHT-TODO.md` unter
 „Offen" steht. `flagcheck.js` bestätigt die dort bereits erfassten 7 verlorenen Flags
 (`busDurchDieCrew`, `endeHeim`, `fightVerloren`, `friedlich`, `geantwortet_kira`,
 `geantwortet_mia`, `geantwortet_sophie`) und die 5 nie gelesenen Beziehungen
-(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — das deckt sich mit dem Befund „Die
-Hälfte aller Entscheidungen verpufft" in `PLAYTEST.md` und ist dort bzw. unter
-„Entscheidung nötig" bereits dokumentiert.
+(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — unverändert zum Vortag.
 
 ## Nicht geprüft
 
