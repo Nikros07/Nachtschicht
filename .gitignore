@@ -8,6 +8,7 @@ fotos/
 *.png
 *.heic
 !docs/*.png
+!icons/*.png
 
 # Kram
 .DS_Store
@@ -15,3 +16,6 @@ Thumbs.db
 desktop.ini
 node_modules/
 .vscode/
+
+# fertige Pakete (tools/paket.py)
+dist/

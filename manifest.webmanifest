@@ -1,0 +1,21 @@
+{
+  "name": "NACHTSCHICHT",
+  "short_name": "Nachtschicht",
+  "description": "Party Game drunk - ein Pixel-Art-Spiel ueber eine Nacht, die aus dem Ruder laeuft. Kein Download, kein Konto.",
+  "lang": "de",
+  "start_url": "./index.html?app=1",
+  "scope": "./",
+  "id": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#04030a",
+  "theme_color": "#04030a",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
