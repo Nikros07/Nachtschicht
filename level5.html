@@ -150,6 +150,22 @@ const TUNE = {
 
   /* (15) ABFUHR - spricht sich rum */
   abfuhrRuf:        -6,
+
+  /* (16) CLUB-AMBIENTE - ohne das ist der Club nach Marvins letzter Frau
+     193 s lang still (siehe PLAYTEST.md). Durchsagen/DJ-Saetze fuellen die
+     Lücke, unabhaengig davon, was der Spieler tut. */
+  ambientAb:        20,   // erstes Ereignis nach so vielen Sekunden
+  ambientAlle:      25,   // danach alle ~25 s eins
+  CLUB_EREIGNISSE: [
+    'DER DJ WECHSELT DEN TRACK',
+    'DIE BASSBOXEN WERDEN LAUTER',
+    'LICHT GEHT KURZ AUS UND WIEDER AN',
+    'EIN GLAS GEHT ZU BRUCH',
+    'DURCHSAGE: GARDEROBE SCHLIESST BALD',
+    'DIE MENGE AUF DER FLAECHE JOHLT',
+    'NEBELMASCHINE LAEUFT AN',
+    'JEMAND RUFT NACH EINEM SHOT',
+  ],
 };
 
 const P = {
@@ -649,6 +665,7 @@ function neuesSpiel(){
     ruettel:0, blitz:0,
     szene:0, szeneT:0, skipT:0, szenen:[],
     gewonnen:false, faenger:'', neueBestzeit:false,
+    ambientT:TUNE.ambientAb, ambientKiste:[], ambientLetzter:'',
   };
   for(const z of ZIELE){ z.stand='offen'; z.weg=false; }
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
@@ -992,6 +1009,30 @@ function marvinTakt(dt){
     m.ziel=null; m.pause=TUNE.marvinPause;
   }
 }
+/* Zieht einen Satz, ohne einen schon gezogenen zu wiederholen, bis alle dran
+   waren - dann neu mischen (ohne direkten Wiederholer an der Nahtstelle). */
+function ambientZieheSatz(){
+  if(!S.ambientKiste.length){
+    S.ambientKiste=[...TUNE.CLUB_EREIGNISSE];
+    for(let i=S.ambientKiste.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [S.ambientKiste[i],S.ambientKiste[j]]=[S.ambientKiste[j],S.ambientKiste[i]];
+    }
+    if(S.ambientKiste.length>1&&S.ambientKiste[S.ambientKiste.length-1]===S.ambientLetzter){
+      [S.ambientKiste[0],S.ambientKiste[S.ambientKiste.length-1]]=
+        [S.ambientKiste[S.ambientKiste.length-1],S.ambientKiste[0]];
+    }
+  }
+  return S.ambientKiste.pop();
+}
+function ambientTakt(dt){
+  S.ambientT-=dt;
+  if(S.ambientT<=0){
+    S.ambientLetzter=ambientZieheSatz();
+    meldung(S.ambientLetzter,2.0);
+    S.ambientT+=TUNE.ambientAlle;
+  }
+}
 function marvinStellt(){
   const m=S.marvin; m.wut=false;
   S.vx=0; S.vt=0; S.warAktiv=true;
@@ -1160,6 +1201,7 @@ function update(dt){
 
   marvinTakt(dt);
   if(gespraechAktiv()) return;      // Marvin hat dich gerade gestellt
+  ambientTakt(dt);
 
   while(aktionPuffer.length){
     aktionPuffer.shift();
