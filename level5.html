@@ -1365,6 +1365,20 @@ function zeichneClub(){
     text(o.name,o.von+6,26,'#ffffff18');
   }
 
+  /* Deckenreihe: Lautsprecher und Lampen, wiederholt ueber die ganze
+     Levelbreite - erster Schritt gegen die leere obere Bildhaelfte
+     (PLAYTEST.md). Keine neue Kunst, nur ein Muster, das sich wiederholt. */
+  for(let x=24;x<LEVEL_B;x+=50){
+    /* Lautsprecher-Saeule mit Gitterstreifen - jede Zeile bekommt eigene
+       Kanten, nicht nur eine einzelne duenne Stange. */
+    ctx.fillStyle='#1c1428'; ctx.fillRect(x,21,14,30);
+    ctx.fillStyle='#000000aa';
+    for(let gy=23;gy<49;gy+=3) ctx.fillRect(x+2,gy,10,1);
+    ctx.globalAlpha=.55+Math.sin(S.t*2+x)*.2;
+    ctx.fillStyle=P.gold; ctx.fillRect(x+16,27,7,4);
+    ctx.globalAlpha=1;
+  }
+
   /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
   const lichter=[[240,'#ff3d8b',0],[390,'#42d9ff',1.4],[540,'#ffd447',.6]];
   for(const [lx,col,off] of lichter){
