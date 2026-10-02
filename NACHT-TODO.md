@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club, Raucherecke: zwei Stehende mit je einem Satz** — Raucherecke (x 860-1060) ist leer. Zwei Figuren (vorhandene Sprites einfärben) mit je einem eigenen Satz per E. Keine Bäume, nur ein Satz.
-  Wo: level5.html (ORTE, Figurenliste, Zeichnen) · Fertig wenn: zwei neue ansprechbare Ziele in dem Bereich; Sätze nur mit erlaubten Zeichen (nachttest.js prüft das).
 - [ ] **P1 · Club, Hinterausgang: Kisten und ein Lieferant** — Hinterausgang (x 1200-1400) ist leer. Kisten als Deko plus ein Lieferant mit einem Satz, der den Hinterausgang erklärt.
   Wo: level5.html (ORTE, Zeichnen) · Fertig wenn: Deko sichtbar (leere Bildzeilen in dem Bereich mindestens 5 Punkte niedriger), ein ansprechbares Ziel.
 - [ ] **P1 · Club, Klos: prüfen, ob der Befund veraltet ist** — Klos hat mit WASCHBECKEN schon eine Interaktion. Nur messen und entscheiden, kein Bauen.
@@ -150,6 +148,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club, Raucherecke: zwei Stehende mit je einem Satz · `39e80cb` ·
+  RAUCHER1 (x=900) und RAUCHER2 (x=1010), vorhandener Tanzer-Umriss eingefaerbt, je
+  ein Satz per E, kein Baum. Gemessen per Headless-Lauf: naechstesZiel() liefert an
+  beiden Stellen das jeweils eigene Ziel mit dem richtigen Satz; nachttest.js grün.
 
 - [x] 2026-10-02 · P1 · Club, Eingang: Garderobe zum Ansprechen · `0c6e875` ·
   GARDEROBE (x=70, SPR.theke), GARDEROBE_BAUM mit zwei Sätzen, ruf+1, einmal nutzbar.
