@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Lautsprecher- und Lampenreihe über die ganze Breite** — Obere Bildhälfte: nur wiederholte Sprites in zeichneClub(), keine neue Kunst. Erster Schritt, nicht das Endergebnis.
-  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club von 78 % auf höchstens 68 % (Software-Canvas), ohne Fehler im Nachttest.
 - [ ] **P1 · Club-Decke: Lichtkegel oder Discokugel über der Tanzfläche** — Zweiter Schritt, nur Tanzfläche (x 170-620), vorhandene Verlauf-Funktionen nutzen.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 58 %.
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke.
@@ -144,6 +142,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club-Decke: Lautsprecherreihe über die ganze Breite · `13ef962` ·
+  Lautsprecher-Saeule mit Gitterstreifen, alle 50 px wiederholt ueber 1400 px
+  Levelbreite in zeichneClub(). Gemessen (nachttest.js, 60 s Zufallslauf): leere
+  Bildzeilen 77-78 % → 65 % (gefordert höchstens 68 %). Alle vier Prüfungen grün.
 
 - [x] 2026-10-02 · P1 · Club, Klos: Befund war veraltet, Punkt gestrichen ·
   nicht gebaut, kein Spielcode geändert. WASCHBECKEN (x=1120) existiert seit der
