@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club, Hinterausgang: Kisten und ein Lieferant** — Hinterausgang (x 1200-1400) ist leer. Kisten als Deko plus ein Lieferant mit einem Satz, der den Hinterausgang erklärt.
-  Wo: level5.html (ORTE, Zeichnen) · Fertig wenn: Deko sichtbar (leere Bildzeilen in dem Bereich mindestens 5 Punkte niedriger), ein ansprechbares Ziel.
 - [ ] **P1 · Club, Klos: prüfen, ob der Befund veraltet ist** — Klos hat mit WASCHBECKEN schon eine Interaktion. Nur messen und entscheiden, kein Bauen.
   Wo: level5.html (ORTE, WASCHBECKEN) · Fertig wenn: Befund steht hier: entweder Klos ist ok und der Punkt gestrichen, oder ein neuer kleiner Punkt.
 - [ ] **P1 · Club-Decke: Lautsprecher- und Lampenreihe über die ganze Breite** — Obere Bildhälfte: nur wiederholte Sprites in zeichneClub(), keine neue Kunst. Erster Schritt, nicht das Endergebnis.
@@ -148,6 +146,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club, Hinterausgang: Kisten und ein Lieferant · `ad78867` ·
+  Fuenf vier-hoch gestapelte Kisten (reichen in die leere Wand hinein) plus
+  LIEFERANT (x=1250, Handlanger-Umriss) mit einem erklaerenden Satz. Gemessen mit
+  Wegwerf-Software-Canvas auf den Hinterausgang-Ausschnitt: leere Bildzeilen 77.2 %
+  auf 69.4 % (Differenz 7.8 Punkte, gefordert mindestens 5). nachttest.js grün.
 
 - [x] 2026-10-02 · P1 · Club, Raucherecke: zwei Stehende mit je einem Satz · `39e80cb` ·
   RAUCHER1 (x=900) und RAUCHER2 (x=1010), vorhandener Tanzer-Umriss eingefaerbt, je
