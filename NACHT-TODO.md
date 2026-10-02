@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Uhr: alle ~25 s ein Ereignis (Durchsage/DJ-Satz)** — Der Club ist nach 107 s still. Ein zeitgesteuertes Ambient-Ereignis (Meldung, kurzer Ton, Blitz) füllt die Lücke. Liste CLUB_EREIGNISSE im TUNE-Block, 6 bis 8 Sätze, zufällig ohne Wiederholung.
-  Wo: level5.html (update, TUNE) · Fertig wenn: im Nichtstun-Test (300 s) mindestens 12 Ereignisse, das letzte nach 270 s.
 - [ ] **P1 · Club, Eingang: Garderobe zum Ansprechen** — Der Eingang (x 0-170) enthält nichts. Ein Tresen-Objekt mit E-Interaktion (zwei Sätze, einmal nutzbar, kleine Wirkung wie ruf +1).
   Wo: level5.html (ORTE, naechstesZiel, Zeichnen, druckAktion) · Fertig wenn: naechstesZiel() liefert dort ein Ziel, die Aktion wirkt genau einmal, nachttest.js bleibt grün.
 - [ ] **P1 · Club, Raucherecke: zwei Stehende mit je einem Satz** — Raucherecke (x 860-1060) ist leer. Zwei Figuren (vorhandene Sprites einfärben) mit je einem eigenen Satz per E. Keine Bäume, nur ein Satz.
@@ -154,6 +152,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club-Uhr: Ambient-Ereignisse gegen die 193-s-Stille · `afea7a1` ·
+  TUNE.CLUB_EREIGNISSE (8 Sätze), Zufallsbeutel ohne direkte Wiederholung, ab Sekunde 20
+  alle ~25 s über ambientTakt(dt). Gemessen (Nichtstun 300 s): vorher 4 Ereignisse,
+  letztes bei 107 s · nachher 16 Ereignisse, letztes bei 295 s (gefordert: mindestens 12,
+  letztes nach 270 s).
 
 - [x] 2026-10-01 · P1 · Nachttest: Software-Canvas für Pixelmessung · `307b659` ·
   leere Bildzeilen (60-s-Zufallslauf, Mittelwert): Wohnung 65 % (Referenz 66, Diff 1) ·
