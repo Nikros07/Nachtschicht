@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Lichtkegel oder Discokugel über der Tanzfläche** — Zweiter Schritt, nur Tanzfläche (x 170-620), vorhandene Verlauf-Funktionen nutzen.
-  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 58 %.
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
 - [ ] **P1 · Obere Bildhälfte Level 2 (Wohnung): ein Element über die Breite** — Bilder, Regal oder Lampen an der Wand. Eine Sorte, wiederholt.
@@ -142,6 +140,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club-Decke: Discokugel und Lichtsäulen über der Tanzfläche · `c91cee8` ·
+  Vier Discokugeln (Schachbrettmuster) mit gestreiften Lichtsäulen darunter, nur
+  über x 170-620. Gemessen (nachttest.js, 60 s Zufallslauf): leere Bildzeilen
+  65 % → 53 % (gefordert höchstens 58 %). Alle vier Prüfungen grün.
 
 - [x] 2026-10-02 · P1 · Club-Decke: Lautsprecherreihe über die ganze Breite · `13ef962` ·
   Lautsprecher-Saeule mit Gitterstreifen, alle 50 px wiederholt ueber 1400 px
