@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club, Eingang: Garderobe zum Ansprechen** — Der Eingang (x 0-170) enthält nichts. Ein Tresen-Objekt mit E-Interaktion (zwei Sätze, einmal nutzbar, kleine Wirkung wie ruf +1).
-  Wo: level5.html (ORTE, naechstesZiel, Zeichnen, druckAktion) · Fertig wenn: naechstesZiel() liefert dort ein Ziel, die Aktion wirkt genau einmal, nachttest.js bleibt grün.
 - [ ] **P1 · Club, Raucherecke: zwei Stehende mit je einem Satz** — Raucherecke (x 860-1060) ist leer. Zwei Figuren (vorhandene Sprites einfärben) mit je einem eigenen Satz per E. Keine Bäume, nur ein Satz.
   Wo: level5.html (ORTE, Figurenliste, Zeichnen) · Fertig wenn: zwei neue ansprechbare Ziele in dem Bereich; Sätze nur mit erlaubten Zeichen (nachttest.js prüft das).
 - [ ] **P1 · Club, Hinterausgang: Kisten und ein Lieferant** — Hinterausgang (x 1200-1400) ist leer. Kisten als Deko plus ein Lieferant mit einem Satz, der den Hinterausgang erklärt.
@@ -152,6 +150,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-02 · P1 · Club, Eingang: Garderobe zum Ansprechen · `0c6e875` ·
+  GARDEROBE (x=70, SPR.theke), GARDEROBE_BAUM mit zwei Sätzen, ruf+1, einmal nutzbar.
+  Gemessen per Headless-Lauf: naechstesZiel() am Eingang vorher {art:'garderobe'},
+  ruf 50→51 · danach naechstesZiel() dort null, ruf bleibt 51. nachttest.js grün
+  (5 Bäume/51 Knoten, vorher 4/48).
 
 - [x] 2026-10-02 · P1 · Club-Uhr: Ambient-Ereignisse gegen die 193-s-Stille · `afea7a1` ·
   TUNE.CLUB_EREIGNISSE (8 Sätze), Zufallsbeutel ohne direkte Wiederholung, ab Sekunde 20
