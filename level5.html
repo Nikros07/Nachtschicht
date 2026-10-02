@@ -231,6 +231,8 @@ const SPR={
   /* Tuer zur Afterhour */
   tuer:['zzzzzzzz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjjjz','zjjjjgjz','zjjjjjjz','zjjjjjjz',
         'zjjjjjjz','zjjjjjjz','zjjjjjjz','zzzzzzzz'],
+  /* Discokugel - Schachbrettmuster, harte Kanten statt nur Verlauf */
+  kugel:['.wcwcw.','wcwcwcw','cwcwcwc','wcwcwcw','cwcwcwc','.wcwcw.'],
 };
 
 /* ==========================================================================
@@ -1377,6 +1379,17 @@ function zeichneClub(){
     ctx.globalAlpha=.55+Math.sin(S.t*2+x)*.2;
     ctx.fillStyle=P.gold; ctx.fillRect(x+16,27,7,4);
     ctx.globalAlpha=1;
+  }
+
+  /* Discokugel ueber der Tanzflaeche - zweiter Schritt gegen die leere
+     Decke (PLAYTEST.md). Harte Kanten (Schachbrett, Streifen), der
+     Verlauf darunter bleibt nur der Lichtschein. */
+  for(const lx of [195,315,445,565]){
+    sprite(SPR.kugel,lx-3,24);
+    for(let by=29;by<TIEFE.hinten;by+=6){
+      ctx.fillStyle=((by-29)/6)%2===0?'#ffd447':'#2a2440';
+      ctx.fillRect(lx-5,by,11,4);
+    }
   }
 
   /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
