@@ -314,6 +314,9 @@ const BARTHEKE={ x:690, t:0.06 };
 const WASCHBECKEN={ x:1120, t:0.10 };
 const AUSGANG={ x:1350, t:0.30 };
 const GARDEROBE={ x:70, t:0.5 };
+/* Raucherecke (x 860-1060) - zwei Stehende, kein Baum, nur ein Satz per E. */
+const RAUCHER1={ x:900, t:0.5, satz:'HAST DU AUCH NUR EINE SEKUNDE RUHE HIER' };
+const RAUCHER2={ x:1010, t:0.5, satz:'DRINNEN IST ES HEUTE VOLLER ALS SONST' };
 
 /* ==========================================================================
    DIE GESPRAECHE IM CLUB
@@ -886,6 +889,8 @@ function naechstesZiel(){
   pruefe(BARTHEKE,'bar',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(WASCHBECKEN,'wasser',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(GARDEROBE,'garderobe',!S.garderobeFertig);
+  pruefe(RAUCHER1,'raucher',true);
+  pruefe(RAUCHER2,'raucher',true);
   /* Der Ausgang zaehlt erst, wenn im Club etwas passiert ist - sonst
      verlaesst man ihn mit null Interaktionen, kaum dass man drin ist. */
   pruefe(AUSGANG,'tuer',S.warAktiv);
@@ -1131,7 +1136,7 @@ function mobilKontext(){
   if(S.modus==='kloppe')   return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
   const z=naechstesZiel();
   const txt=!z?null:z.art==='reden'?'REDEN':z.art==='bar'?'AUF EX':z.art==='wasser'?'WASSER'
-    :z.art==='garderobe'?'JACKE':'RAUS';
+    :z.art==='garderobe'?'JACKE':z.art==='raucher'?'REDEN':'RAUS';
   return {aktion:txt, zwei:null};
 }
 
@@ -1233,6 +1238,7 @@ function update(dt){
       starteGespraech(GARDEROBE_BAUM,'start');
       return;
     }
+    if(z.art==='raucher'){ meldung(z.obj.satz,2.2); continue; }
   }
   kamera(dt);
 }
@@ -1409,6 +1415,15 @@ function zeichneClub(){
     text('GARDEROBE',GARDEROBE.x-textW('GARDEROBE')/2,y-10,P.dim);
     if(naechst&&naechst.obj===GARDEROBE&&blink) text('E',GARDEROBE.x-2,y-18,P.gold);
   }});
+  /* Raucherecke - vorhandener Tanzer-Umriss, nur eingefaerbt. */
+  for(const r of [RAUCHER1,RAUCHER2]){
+    liste.push({t:r.t, mal:()=>{
+      const y=bodenY(r.t)-SPR.tanzer.length;
+      schatten(r.x,r.t);
+      sprite(SPR.tanzer,r.x-3,y,1,r===RAUCHER1?'#8a6a3a':'#5a4632');
+      if(naechst&&naechst.obj===r&&blink) text('E',r.x-2,y-9,P.gold);
+    }});
+  }
 
   for(const z of ZIELE){
     if(z.weg) continue;
