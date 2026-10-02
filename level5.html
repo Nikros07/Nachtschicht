@@ -313,6 +313,7 @@ const TANZER=[190,215,250,280,300,370,395,420,455,490,520,560,590]
 const BARTHEKE={ x:690, t:0.06 };
 const WASCHBECKEN={ x:1120, t:0.10 };
 const AUSGANG={ x:1350, t:0.30 };
+const GARDEROBE={ x:70, t:0.5 };
 
 /* ==========================================================================
    DIE GESPRAECHE IM CLUB
@@ -580,6 +581,14 @@ const KIRA_BAUM = {
 
 const BAUM_FUER={ mia:MIA_BAUM, sophie:SOPHIE_BAUM, kira:KIRA_BAUM };
 
+/* Garderobe am Eingang - einmal nutzbar, zwei Saetze, kleine Wirkung. */
+const GARDEROBE_BAUM={
+  start:{ wer:'GARDEROBE', text:'JACKE ABGEBEN? ICH PASS AUF.', geh:'dank' },
+  dank:{ wer:'GARDEROBE', text:'GEH SCHON MAL REIN, HAB SIE SCHON.',
+    tu:{ruf:1}, geh:'ende' },
+  ende:null,
+};
+
 /* Die Ecke. Erzaehlt, nicht gezeigt: das Bild wird dunkel, die Zeilen
    kommen einzeln. Jede endet anders, weil jede eine andere Person ist. */
 const ECKE={
@@ -666,6 +675,7 @@ function neuesSpiel(){
     szene:0, szeneT:0, skipT:0, szenen:[],
     gewonnen:false, faenger:'', neueBestzeit:false,
     ambientT:TUNE.ambientAb, ambientKiste:[], ambientLetzter:'',
+    garderobeFertig:false,
   };
   for(const z of ZIELE){ z.stand='offen'; z.weg=false; }
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
@@ -875,6 +885,7 @@ function naechstesZiel(){
   }
   pruefe(BARTHEKE,'bar',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(WASCHBECKEN,'wasser',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
+  pruefe(GARDEROBE,'garderobe',!S.garderobeFertig);
   /* Der Ausgang zaehlt erst, wenn im Club etwas passiert ist - sonst
      verlaesst man ihn mit null Interaktionen, kaum dass man drin ist. */
   pruefe(AUSGANG,'tuer',S.warAktiv);
@@ -1119,7 +1130,8 @@ function mobilKontext(){
   if(S.modus==='mini')     return {aktion:'JETZT', zwei:null};
   if(S.modus==='kloppe')   return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
   const z=naechstesZiel();
-  const txt=!z?null:z.art==='reden'?'REDEN':z.art==='bar'?'AUF EX':z.art==='wasser'?'WASSER':'RAUS';
+  const txt=!z?null:z.art==='reden'?'REDEN':z.art==='bar'?'AUF EX':z.art==='wasser'?'WASSER'
+    :z.art==='garderobe'?'JACKE':'RAUS';
   return {aktion:txt, zwei:null};
 }
 
@@ -1216,6 +1228,11 @@ function update(dt){
       meldung('KALTES WASSER INS GESICHT',1.6); SFX.schluck(); continue;
     }
     if(z.art==='tuer'){ starteCutscene('hinten'); return; }
+    if(z.art==='garderobe'){
+      S.garderobeFertig=true;
+      starteGespraech(GARDEROBE_BAUM,'start');
+      return;
+    }
   }
   kamera(dt);
 }
@@ -1384,6 +1401,13 @@ function zeichneClub(){
     sprite(SPR.tuer,AUSGANG.x-4,y);
     text('AFTERHOUR',AUSGANG.x-textW('AFTERHOUR')/2,y-8,P.gold);
     if(naechst&&naechst.obj===AUSGANG&&blink) text('E',AUSGANG.x-1,y-16,P.gold);
+  }});
+  /* Garderobe am Eingang - gleicher Tresen wie die Bar, wiederverwendet. */
+  liste.push({t:GARDEROBE.t, mal:()=>{
+    const y=bodenY(GARDEROBE.t)-4;
+    outline(SPR.theke,GARDEROBE.x-6,y,1,.5); sprite(SPR.theke,GARDEROBE.x-6,y);
+    text('GARDEROBE',GARDEROBE.x-textW('GARDEROBE')/2,y-10,P.dim);
+    if(naechst&&naechst.obj===GARDEROBE&&blink) text('E',GARDEROBE.x-2,y-18,P.gold);
   }});
 
   for(const z of ZIELE){
