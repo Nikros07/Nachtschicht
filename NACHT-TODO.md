@@ -45,10 +45,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
   Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
-- [ ] **P2 · Level 4: Titelbild verspricht E ODER LEERTASTE, die Leertaste startet nichts** —
-  `level4.html` bindet Space nur an die Rolle (`rolleGedrueckt`), der Start geht nur über E/Enter.
-  Wo: level4.html (Titelbild-Text, Tastenbehandlung) · Fertig wenn: Text und Verhalten stimmen
-  überein, `nachttest.js` grün.
 - [ ] **P2 · Lektionen: Übungspuppe für den Kampf (Level 3, 4, 8)** — die Lektion zeigt bisher nur
   Tasten. Ein regloser Übungsgegner, an dem man Konter, Block und Rolle einmal wirklich ausführt,
   würde das Timing vor dem Ernstfall lehren. Wo: nacht/lehre.js, nacht/kampf.js (`kaempferTakt`) ·
@@ -101,12 +97,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
 
-- [ ] **P3 · Level 4: Wer nichts tut, wird in 300 s nie getroffen — zu prüfen** —
-  `nachttest.js` meldet im Nichtstun-Lauf von Level 4 null Ereignisse. Möglich, dass der
-  Boss einen untätigen Spieler nie trifft (Kampf ohne Zeitdruck), möglich auch, dass er es
-  tut und nur nichts gemeldet wird. Erst messen: `S.hp` vor und nach 300 s Nichtstun.
-  Wo: level4.html (`bossTakt`, `kampf`) · Fertig wenn: der Befund steht hier, und ein
-  untätiger Spieler verliert entweder, oder es ist als gewollt vermerkt.
 - [ ] **P3 · `tools/level5_baeume.js` löschen** — wortgleiche Zweitkopie der Bäume, wird nur
   von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
 - [ ] **P3 · Bahn oder Bus?** — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
@@ -140,6 +130,23 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P2 · Level 4: Leertaste startet jetzt wirklich · `044eef1` ·
+  Space war nur an die Ausweichrolle gebunden, nie an druckAktion() - das Titelbild
+  versprach „E ODER LEERTASTE", aber nur E/Enter starteten. Jetzt wie in level3.html
+  (druckSprung): Space löst außerhalb des Kampfes druckAktion() aus. Nebenbefund: der
+  Nachttest drückt am Anfang Leertaste zum Starten - das lief bisher ins Leere, der
+  „Nichtstun"-Lauf von Level 4 blieb auf dem Titelbild stehen (daher die bisherigen
+  „0 Ereignisse"). Löst nebenbei den P3-Punkt „Wer nichts tut, wird nie getroffen" auf
+  (siehe unten). Gemessen: nachttest.js level4 Nichtstun 300s vorher 0 Ereignisse (auf
+  dem Titelbild), nachher 3 Ereignisse, letztes bei 9s (echter Kampf). Alle vier
+  Prüfungen grün.
+
+- [x] 2026-10-03 · P3 · Level 4: untätiger Spieler verliert in 9 s · (im selben Fund wie `044eef1`) ·
+  Frage war nicht beantwortbar, weil der Nichtstun-Lauf bisher auf dem Titelbild
+  steckte (siehe Fund oben). Nach der Space-Korrektur gemessen: S.hp 3 → 0 nach dem
+  Intro-Skip bis Sekunde 9, S.modus wird 'ende', S.gewonnen=false. Ein untätiger
+  Spieler verliert also zuverlässig - kein Softlock, kein zeitloser Kampf.
 
 - [x] 2026-10-03 · P1 · Obere Bildhälfte Level 8 (Heimweg): Sterne, Mond, durchgehende Häuserreihe · `82c14c9` ·
   320 statt 30 Sterne (dichter verteilt, sonst reisst keine Zeile die Kanten-Schwelle),
