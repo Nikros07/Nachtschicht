@@ -579,27 +579,40 @@ function zeichneStrasse(){
   grd.addColorStop(0,himmel.oben); grd.addColorStop(1,himmel.unten);
   ctx.fillStyle=grd; ctx.fillRect(0,0,W,BODEN);
 
-  /* Sterne, verblassen mit steigendem Licht */
-  if(himmel.t<0.6){
-    ctx.globalAlpha=Math.max(0,1-himmel.t/0.6);
-    for(let i=0;i<30;i++){ ctx.fillStyle=i%5===0?'#ffffffaa':'#ffffff55';
-      ctx.fillRect((i*57-kx*0.05)%W,(i*23)%100+4,1,1); }
+  /* Sterne, verblassen mit steigendem Licht - dicht genug, dass auch
+     ein einzelner Bildschirmausschnitt mehrere sieht (PLAYTEST.md: obere
+     Bildhaelfte leer). An den Lichtfaktor gekoppelt, wie der Mond unten. */
+  if(himmel.t<0.7){
+    ctx.globalAlpha=Math.max(0,1-himmel.t/0.7);
+    for(let i=0;i<320;i++){ ctx.fillStyle=i%5===0?'#ffffffaa':'#ffffff55';
+      ctx.fillRect(((i*23-kx*0.05)%W+W)%W,(i*11)%70+4,1,1); }
+    ctx.globalAlpha=1;
+  }
+  /* Der Mond - gegenueber der Sonne, verblasst mit ihr zusammen mit den
+     Sternen beim Tagesanbruch. */
+  if(himmel.t<0.7){
+    ctx.globalAlpha=Math.max(0,1-himmel.t/0.7);
+    ctx.fillStyle='#d8dcee';
+    ctx.beginPath(); ctx.arc(W*0.18,28,9,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=himmel.oben;
+    ctx.beginPath(); ctx.arc(W*0.18+4,25,8,0,Math.PI*2); ctx.fill();
     ctx.globalAlpha=1;
   }
 
-  /* Die Sonne selbst - steigt langsam am Horizont hoch */
-  const sonneX=W*0.74;
-  const sonneY=Math.round(BODEN-6-(S.licht/100)*88);
-  zeichneSonne(sonneX,sonneY,himmel.t);
-
   ctx.save(); ctx.translate(-kx,0);
 
-  /* Haeuser-Silhouette im Hintergrund, langsamerer Parallax */
+  /* Haeuser-Reihe im Hintergrund, langsamerer Parallax - durchgehend
+     (vorher 50 px Luecke zwischen den Haeusern) und mit Fenstern, damit
+     die obere Bildhaelfte nicht leer bleibt, auch wenn Sterne/Mond mit
+     dem Tageslicht schon verblasst sind. */
   ctx.save(); ctx.translate(-kx*0.4,0);
-  for(let i=0;i<40;i++){
-    const bx=i*140, bh=30+((i*53)%40);
+  for(let i=0;i<62;i++){
+    const bx=i*90, bh=30+((i*53)%40);
     ctx.fillStyle=himmel.t<0.5?'#141224':'#2a2338';
     ctx.fillRect(bx,BODEN-bh,90,bh);
+    ctx.fillStyle=himmel.t<0.5?'#ffd44766':'#00000022';
+    for(let wy=BODEN-bh+6;wy<BODEN-6;wy+=10)
+      for(let wx=bx+6;wx<bx+84;wx+=14) ctx.fillRect(wx,wy,6,6);
   }
   ctx.restore();
 
@@ -674,6 +687,13 @@ function zeichneStrasse(){
   ctx.fillRect(Math.round(S.x-3),BODEN,7,1); ctx.globalAlpha=1;
 
   ctx.restore();
+
+  /* Die Sonne selbst - steigt langsam am Horizont hoch. Erst hier, nach
+     der durchgehenden Haeuserreihe, gezeichnet: sonst wuerde sie von
+     einem Haus verdeckt, solange sie noch tief steht. */
+  const sonneX=W*0.74;
+  const sonneY=Math.round(BODEN-6-(S.licht/100)*88);
+  zeichneSonne(sonneX,sonneY,himmel.t);
 }
 
 /* Die Sonne wird pixelig aus Reihen gezeichnet statt aus einem Canvas-
