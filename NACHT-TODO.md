@@ -34,8 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
-- [ ] **P1 · Obere Bildhälfte Level 2 (Wohnung): ein Element über die Breite** — Bilder, Regal oder Lampen an der Wand. Eine Sorte, wiederholt.
-  Wo: level2.html (zeichneWohnung) · Fertig wenn: leere Bildzeilen von 65 % auf höchstens 55 %.
 - [ ] **P1 · Obere Bildhälfte Level 6 (Afterhour): ein Element über die Breite** — Deckenleuchten oder Wanddeko, passend zum Traum.
   Wo: level6.html (zeichneFlur) · Fertig wenn: leere Bildzeilen von 69 % auf höchstens 59 %.
 - [ ] **P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** — Oben fehlt die Ladenwand.
@@ -149,6 +147,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 2 (Wohnung): Bilderrahmen, Regal, Wandverkleidung · `bcad605` ·
+  Drei wiederholte Muster über die Breite (x 14-890) in zeichneWohnung(). Gemessen
+  (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 71 % → 49 % (gefordert höchstens
+  55 %; die alte Referenz 65 % war vor dem Umbau der Mitnehmen-Wahl gemessen). Alle
+  vier Prüfungen grün.
 
 - [x] 2026-10-02 · P1 · Club-Decke: Discokugel und Lichtsäulen über der Tanzfläche · `c91cee8` ·
   Vier Discokugeln (Schachbrettmuster) mit gestreiften Lichtsäulen darunter, nur
