@@ -34,8 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
-- [ ] **P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** — Oben fehlt die Ladenwand.
-  Wo: level7.html (zeichneSzene) · Fertig wenn: leere Bildzeilen von 73 % auf höchstens 63 %.
 - [ ] **P1 · Obere Bildhälfte Level 8 (Heimweg): Himmel mit Sternen, Mond, Häuserreihe** — Himmel und Silhouetten, an den Lichtfaktor gekoppelt (himmelFarbe).
   Wo: level8.html (zeichneStrasse) · Fertig wenn: leere Bildzeilen von 76 % auf höchstens 66 %, Sonnenaufgang sieht weiterhin richtig aus (Pixelprobe).
 
@@ -145,6 +143,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame · `a03bfed` ·
+  Zwei Regalreihen mit Waren und eine leuchtende OFFEN-Reklame im Schaufenster, in der
+  Ladenwand (x 300-520). Wie bei Level 6 liegt die Deko in der Bildmitte (y 70-108),
+  nicht am oberen Rand, wegen der permanenten Vignette (mindestens 50 % Deckkraft).
+  Gemessen (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 73 % → 59 % (gefordert
+  höchstens 63 %). Alle vier Prüfungen grün.
 
 - [x] 2026-10-03 · P1 · Obere Bildhälfte Level 6 (Afterhour): Wanddeko (Plakate/Spinde) · `56f7b97` ·
   Deckenleuchten (y 23-29) blieben wirkungslos: die Vignette in zeichneFlur liegt mit
