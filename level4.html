@@ -75,6 +75,7 @@ const TUNE = {
   /* (3) DER PEGEL WIRKT SICH AUFS KONTERN AUS - er wird hier nicht getrunken,
      kommt aber aus Level 2/3 mit und macht das Timing wackliger. */
   pegelFensterStrafeMax: 0.4,  // bei Pegel 100: Konterfenster bis zu 40% enger
+  fensterMinSek:      0.28,    // das Fenster darf nie kuerzer sein als das, egal wie kurz das Ausholen ist
   pegelWackelAb:      35,      // ab hier zittert das Bild sichtbar
   pegelWackelMax:     2.2,
 
@@ -352,7 +353,12 @@ function starteAngriff(b,art){
   /* Der Pegel aus den vorigen Leveln macht das Fenster enger, Dennis in der
      Crew macht es wieder breiter. */
   const pegelFaktor=1-(S.pegelStart/100)*TUNE.pegelFensterStrafeMax;
-  b.fensterAnteil=Math.max(0.12,TUNE.fensterAnteil*S.fensterMult*pegelFaktor);
+  let anteil=Math.max(0.12,TUNE.fensterAnteil*S.fensterMult*pegelFaktor);
+  /* Das Fenster darf durch Pegel/Phase nie kuerzer werden als die
+     Mindest-Reaktionszeit - sonst ist es nicht unfair schwer, sondern
+     gar nicht zu treffen. */
+  anteil=Math.max(anteil,Math.min(1,TUNE.fensterMinSek/b.ausholenDauer));
+  b.fensterAnteil=anteil;
   b.zustand='ausholen'; b.zT=0; b.trefferGesetzt=false;
   SFX.warn();
 }
