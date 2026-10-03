@@ -34,9 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
-- [ ] **P1 · Obere Bildhälfte Level 8 (Heimweg): Himmel mit Sternen, Mond, Häuserreihe** — Himmel und Silhouetten, an den Lichtfaktor gekoppelt (himmelFarbe).
-  Wo: level8.html (zeichneStrasse) · Fertig wenn: leere Bildzeilen von 76 % auf höchstens 66 %, Sonnenaufgang sieht weiterhin richtig aus (Pixelprobe).
-
 ### P2
 
 - [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
@@ -143,6 +140,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 8 (Heimweg): Sterne, Mond, durchgehende Häuserreihe · `82c14c9` ·
+  320 statt 30 Sterne (dichter verteilt, sonst reisst keine Zeile die Kanten-Schwelle),
+  ein Mond gegenüber der Sonne, beide bis t=0,7 statt 0,6 sichtbar, und eine lückenlose
+  Häuserreihe mit Fenstern statt einzelner Häuser mit 50-px-Lücken. Die lückenlose Reihe
+  hätte die Sonne verdeckt, solange sie tief steht - zeichneSonne() läuft deshalb jetzt
+  nach der Häuserreihe, nicht davor. Pixelprobe: Sonnenfarbe bei licht=0/30/60/75/100
+  trifft exakt die erwarteten Werte (z. B. #fff4c2 bei licht=0), nicht mehr verschluckt.
+  Gemessen (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 76 % → 64 % (gefordert
+  höchstens 66 %). Alle vier Prüfungen grün.
 
 - [x] 2026-10-03 · P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame · `a03bfed` ·
   Zwei Regalreihen mit Waren und eine leuchtende OFFEN-Reklame im Schaufenster, in der
