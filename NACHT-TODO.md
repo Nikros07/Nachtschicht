@@ -67,12 +67,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
   Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
   Ausholen verschieden aus.
-- [ ] **P2 · Bus: Ein gekaufter Fahrschein schaltet den Bus für alle späteren Durchläufe ab** —
-  Wo: level3.html (`starteBus`, Flag-Reset, `S.ticket`) · Fertig wenn: nach Neustart
-  des Levels gilt kein alter Fahrschein mehr.
-- [ ] **P2 · Bus: Fahrschein rettet eine Kontrolle statt das ganze Level** — sonst ist
-  der Bus „gratis sicher oder sicher verloren". Wo: level3.html · Fertig wenn: mit
-  Fahrschein kostet die erste Kontrolle kein Leben, die zweite schon.
 - [ ] **P2 · Club: Die drei Frauen kennen sich** — Der Kommentar im Code verspricht,
   dass sich eine Abfuhr herumspricht. `S.abfuhren` gibt es schon.
   Wo: level5.html (`gespraechEnde`, die drei Bäume) · Fertig wenn: nach einer Abfuhr
@@ -132,6 +126,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
+  Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der
+  Fahrt komplett unverwundbar (Sichtkegel aus, Verdacht eingefroren) statt nur die eine
+  Kontrolle zu retten - jetzt steigt der Verdacht normal, bei 100 rettet das Ticket
+  einmal (kein Leben weg, verbraucht) und die nächste Kontrolle trifft normal.
+  (2) `ticket:flag('busTicket')` beim Levelstart ließ einen einmal gekauften Fahrschein
+  jeden Neustart überleben - ticket startet jetzt immer `false`. Gemessen per
+  Headless-Lauf: 1. erzwungene Kontrolle mit Ticket hp 3→3 (Ticket verbraucht),
+  2. Kontrolle hp 3→2 (normal getroffen); nach neuesSpiel() mit weiterhin gesetztem
+  flag('busTicket') ist S.ticket jetzt false statt true. Alle vier Prüfungen grün.
 
 - [x] 2026-10-03 · P2 · Phase-3-Jab-Reaktionszeit: Konterfenster hat jetzt eine Mindestbreite · `add3dd5` ·
   Bei Pegel 100 und in Phase 3 schrumpfte das Fenster auf 0,085 s (unter jeder
