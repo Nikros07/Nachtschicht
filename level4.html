@@ -270,7 +270,8 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); hochAn=true; }
   if(['ArrowDown','KeyS'].includes(e.code)){ e.preventDefault(); runterAn=true; }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); S.blockAn=true; }
-  if(e.code==='Space'){ e.preventDefault(); rolleGedrueckt=true; }
+  if(e.code==='Space'){ e.preventDefault();
+    if(S.modus==='kampf') rolleGedrueckt=true; else druckAktion(); }
 });
 addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
