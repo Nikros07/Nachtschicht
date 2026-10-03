@@ -808,6 +808,24 @@ function zeichneWohnung(){
     /* Name des Raums */
     text(o.name,o.von+6,26,'#ffffff18');
   }
+  /* Bilderreihe und Regalbrett an der Wand - gegen die leere obere
+     Bildhaelfte (PLAYTEST.md). Keine neue Kunst, zwei Muster, wiederholt. */
+  for(let x=20;x<890;x+=50){
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,23,20,21);
+    ctx.fillStyle='#4a3d5c'; ctx.fillRect(x+2,25,16,17);
+    ctx.fillStyle='#6a5a80'; ctx.fillRect(x+2,25,16,1);
+  }
+  ctx.fillStyle='#241f30'; ctx.fillRect(14,56,870,3);
+  ctx.fillStyle='#000000aa'; ctx.fillRect(14,59,870,1);
+  for(let x=20;x<884;x+=36){
+    const hoeh=6+(Math.floor(x/36)%3)*3;
+    ctx.fillStyle=(Math.floor(x/36)%2===0)?'#5c4a70':'#3c3350';
+    ctx.fillRect(x,56-hoeh,10,hoeh);
+  }
+  /* Wandverkleidung: senkrechte Paneelfugen unter dem Regal, sonst
+     bleibt die Wand bis zum Boden leer. */
+  ctx.fillStyle='#000000aa'; ctx.fillRect(14,68,870,1); ctx.fillRect(14,88,870,1);
+  for(let x=18;x<884;x+=18) ctx.fillRect(x,69,1,18);
   /* Wohnungstuer im Flur */
   sprite(SPR.tuer,34,BODEN-12);
   text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
