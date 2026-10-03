@@ -802,6 +802,17 @@ function zeichneFlur(){
     ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
     text(raumName(o),o.von+6,26,'#ffffff18');
   }
+  /* Wanddeko: Plakate/Spinde ueber die ganze Flurbreite, eine Sorte,
+     wiederholt - passend zum Traum (PLAYTEST.md: obere Bildhaelfte leer).
+     Naeher an der Bildmitte als die Decke, sonst schluckt die Vignette
+     (zeichneFlur unten) den Kontrast fast vollstaendig. */
+  for(let x=24;x<LEVEL_B;x+=60){
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,70,24,22);
+    ctx.fillStyle='#3a3350'; ctx.fillRect(x+2,72,20,18);
+    ctx.globalAlpha=.4+Math.sin(S.t*2+x)*.2;
+    ctx.fillStyle=P.dim; ctx.fillRect(x+5,76,14,2); ctx.fillRect(x+5,81,14,2); ctx.fillRect(x+5,86,10,2);
+    ctx.globalAlpha=1;
+  }
   /* Dieselbe Tafel, zweimal - der Raum wiederholt sich absichtlich */
   sprite(SPR.tafel,260,TIEFE.hinten-34);
   sprite(SPR.tafel,640,TIEFE.hinten-34);
