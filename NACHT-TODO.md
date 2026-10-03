@@ -34,8 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
-- [ ] **P1 · Obere Bildhälfte Level 6 (Afterhour): ein Element über die Breite** — Deckenleuchten oder Wanddeko, passend zum Traum.
-  Wo: level6.html (zeichneFlur) · Fertig wenn: leere Bildzeilen von 69 % auf höchstens 59 %.
 - [ ] **P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** — Oben fehlt die Ladenwand.
   Wo: level7.html (zeichneSzene) · Fertig wenn: leere Bildzeilen von 73 % auf höchstens 63 %.
 - [ ] **P1 · Obere Bildhälfte Level 8 (Heimweg): Himmel mit Sternen, Mond, Häuserreihe** — Himmel und Silhouetten, an den Lichtfaktor gekoppelt (himmelFarbe).
@@ -147,6 +145,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 6 (Afterhour): Wanddeko (Plakate/Spinde) · `56f7b97` ·
+  Deckenleuchten (y 23-29) blieben wirkungslos: die Vignette in zeichneFlur liegt mit
+  mindestens 50 % Deckkraft permanent über dem Bild und schluckt dort fast jeden
+  Kontrast (gemessen 68,685 % vor wie nach dem ersten Versuch, identisch bis auf drei
+  Nachkommastellen). Näher an der Bildmitte (y 70-92, eine Sorte, wiederholt über die
+  Flurbreite) bleibt genug Kontrast übrig. Gemessen (nachttest.js, 60 s Zufallslauf,
+  Nachkommastellen temporär ausgegeben): 68,685 % → 58,494 % (gefordert höchstens
+  59 %). Alle vier Prüfungen grün. Hinweis für Level 7/8: vor Deckenlicht-artigen
+  Elementen prüfen, ob die jeweilige Zeichenfunktion eine ähnliche Vignette/Abdunklung
+  am oberen Bildrand hat.
 
 - [x] 2026-10-03 · P1 · Obere Bildhälfte Level 2 (Wohnung): Bilderrahmen, Regal, Wandverkleidung · `bcad605` ·
   Drei wiederholte Muster über die Breite (x 14-890) in zeichneWohnung(). Gemessen
