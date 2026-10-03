@@ -771,7 +771,11 @@ function neuesSpiel(){
 
     tiefe:TUNE.gangTiefe, vt:0,
     kloppeStand:'offen', ich:null, gegner:[], rolleGedrueckt:false, blockAn:false,
-    ablenkT:0, ticket:flag('busTicket'), geredet:{}, verrat:0,
+    /* ticket startet IMMER false, nie aus flag('busTicket') - der Flag ist
+       eine Erinnerung fuer gespraechFolgen() in DIESEM Durchlauf, kein
+       Dauerabo: sonst wirkt ein frueher gekaufter Fahrschein auch nach
+       einem Neustart des Levels noch, ohne dass man ihn neu kauft. */
+    ablenkT:0, ticket:false, geredet:{}, verrat:0,
     busZeit:0, verdacht:0, versteckt:null, hp:TUNE.leben, unverwundbarT:0, warnGespielt:false,
     kontrolleure:erzeugeKontrolleure(),
     ruckelT:0, naechstesRuckel:TUNE.ruckelMin+Math.random()*(TUNE.ruckelMax-TUNE.ruckelMin),
@@ -1064,8 +1068,10 @@ function bus(dt){
   for(const k of S.kontrolleure){
     if(k.alarm>0) k.alarm-=dt;
     /* Verstecken bricht die Verfolgung ab - das ist der Zweck der
-       Verstecke, und ohne das waere eine Jagd nicht mehr abzuschuetteln. */
-    if(S.versteckt||S.ticket) k.alarm=0;
+       Verstecke, und ohne das waere eine Jagd nicht mehr abzuschuetteln.
+       Der Fahrschein tut das nicht mehr: er rettet nur noch die naechste
+       Kontrolle, siehe erwischt()-Aufruf unten. */
+    if(S.versteckt) k.alarm=0;
 
     /* Alarm geht vor allem anderen: er laesst seine Zone stehen und
        kommt hinterher. */
@@ -1099,7 +1105,7 @@ function bus(dt){
     else if(k.x<=k.minX){ k.x=k.minX; k.blick=1; k.pauseT=TUNE.patrouillePause; }
   }
 
-  if(!S.versteckt&&S.unverwundbarT<=0&&!S.ticket){
+  if(!S.versteckt&&S.unverwundbarT<=0){
     /* Sichtkegel in der Flaeche: wer weit genug in der Sitzreihe ist,
        liegt seitlich ausserhalb und kommt vorbei. Genau davon lebt die
        Tiefe - ohne die Kappung in welt.js waere der Kegel am Ende so
@@ -1136,7 +1142,16 @@ function bus(dt){
 
   if(S.verdacht>=70&&!S.warnGespielt){ S.warnGespielt=true; SFX.warn(); meldung('VORSICHT - ER SIEHT DICH',1.4); }
   if(S.verdacht<40) S.warnGespielt=false;
-  if(S.verdacht>=100&&S.unverwundbarT<=0) erwischt();
+  if(S.verdacht>=100&&S.unverwundbarT<=0){
+    /* Der Fahrschein rettet genau diese eine Kontrolle - kein Leben weg,
+       aber er ist danach verbraucht. Die zweite Kontrolle trifft normal. */
+    if(S.ticket){
+      S.ticket=false; S.verdacht=0; S.unverwundbarT=TUNE.unverwundbarDauer; S.warnGespielt=false;
+      S.kontrolleure.forEach(k=>{ k.alarm=0; k.zielX=null; });
+      S.ruettel=4; SFX.warn();
+      meldung('FAHRSCHEIN GEZEIGT - DIESMAL GEHTS GUT',2);
+    } else erwischt();
+  }
 
   kamera(dt);
 
@@ -1407,16 +1422,17 @@ function zeichneBus(){
       const fuss=bodenY(k.t);
       /* Der Kegel wird als Flaeche gemalt, nicht als Balken - sonst sieht
          man nicht, dass er sich seitlich nicht beliebig oeffnet. */
-      if(!S.ticket){
-        ctx.globalAlpha=S.ablenkT>0?.07:(k.alarm>0?.28:.15);
-        ctx.fillStyle=k.alarm>0?P.gold:P.rot;
-        const seit=Math.min(TIEFE.kegelMax,TUNE.kegelOeffnung)*(TIEFE.vorne-TIEFE.hinten);
-        ctx.beginPath();
-        ctx.moveTo(k.x+k.blick*4,fuss-6);
-        ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6-seit);
-        ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6+seit);
-        ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
-      }
+      /* Der Kegel zeigt sich immer - der Fahrschein rettet nur noch EINE
+         Kontrolle, kein Grund mehr, ihn fuer den Rest der Fahrt zu
+         verstecken. */
+      ctx.globalAlpha=S.ablenkT>0?.07:(k.alarm>0?.28:.15);
+      ctx.fillStyle=k.alarm>0?P.gold:P.rot;
+      const seit=Math.min(TIEFE.kegelMax,TUNE.kegelOeffnung)*(TIEFE.vorne-TIEFE.hinten);
+      ctx.beginPath();
+      ctx.moveTo(k.x+k.blick*4,fuss-6);
+      ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6-seit);
+      ctx.lineTo(k.x+k.blick*(4+TUNE.sichtWeite),fuss-6+seit);
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
       const rows=SPR.kontrolleur, y=fuss-rows.length;
       ctx.globalAlpha=.22; ctx.fillStyle='#000';
       ctx.fillRect(Math.round(k.x-3),Math.round(fuss),7,1); ctx.globalAlpha=1;

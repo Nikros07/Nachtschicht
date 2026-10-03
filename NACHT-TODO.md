@@ -34,15 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
-- [ ] **P1 · Obere Bildhälfte Level 2 (Wohnung): ein Element über die Breite** — Bilder, Regal oder Lampen an der Wand. Eine Sorte, wiederholt.
-  Wo: level2.html (zeichneWohnung) · Fertig wenn: leere Bildzeilen von 65 % auf höchstens 55 %.
-- [ ] **P1 · Obere Bildhälfte Level 6 (Afterhour): ein Element über die Breite** — Deckenleuchten oder Wanddeko, passend zum Traum.
-  Wo: level6.html (zeichneFlur) · Fertig wenn: leere Bildzeilen von 69 % auf höchstens 59 %.
-- [ ] **P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** — Oben fehlt die Ladenwand.
-  Wo: level7.html (zeichneSzene) · Fertig wenn: leere Bildzeilen von 73 % auf höchstens 63 %.
-- [ ] **P1 · Obere Bildhälfte Level 8 (Heimweg): Himmel mit Sternen, Mond, Häuserreihe** — Himmel und Silhouetten, an den Lichtfaktor gekoppelt (himmelFarbe).
-  Wo: level8.html (zeichneStrasse) · Fertig wenn: leere Bildzeilen von 76 % auf höchstens 66 %, Sonnenaufgang sieht weiterhin richtig aus (Pixelprobe).
-
 ### P2
 
 - [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
@@ -54,15 +45,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
   Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
-- [ ] **P2 · Level 4: Titelbild verspricht E ODER LEERTASTE, die Leertaste startet nichts** —
-  `level4.html` bindet Space nur an die Rolle (`rolleGedrueckt`), der Start geht nur über E/Enter.
-  Wo: level4.html (Titelbild-Text, Tastenbehandlung) · Fertig wenn: Text und Verhalten stimmen
-  überein, `nachttest.js` grün.
-- [ ] **P2 · Lektionen: Übungspuppe für den Kampf (Level 3, 4, 8)** — die Lektion zeigt bisher nur
-  Tasten. Ein regloser Übungsgegner, an dem man Konter, Block und Rolle einmal wirklich ausführt,
-  würde das Timing vor dem Ernstfall lehren. Wo: nacht/lehre.js, nacht/kampf.js (`kaempferTakt`) ·
-  Fertig wenn: die Lektion von Level 4 verlangt einen gelungenen Konter an einer Puppe; im
-  Nachttest per Simulation machbar.
+- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
+  eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
+  einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
+  bestehenden Schritt „KONTERN IM GOLDENEN BEREICH" ersetzt, statt nur eine Taste einmal zu
+  pruefen). Am 3.10. geteilt - zuerst nur Level 4, Block/Rolle (Level 3, 8) folgen als eigene
+  Punkte, erst wenn der Mechanismus hier steht.
+  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`), nacht/kampf.js (`kaempferTakt` wiederverwenden,
+  nicht duplizieren) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
+  Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
+  Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
+  falschen Zeit = nicht).
+- [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
+  Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
+  von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
@@ -71,19 +67,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
   Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
   Ausholen verschieden aus.
-- [ ] **P2 · Pegel verengt das Konterfenster unsichtbar (bis −40 %)** — der Balken zeigt
-  das Fenster in voller Breite, das echte ist kleiner. Das ist die unfaire Art von schwer.
-  Wo: level4.html (`fensterAnteil`, `pegelFaktor`), `nacht/hud.js` · Fertig wenn: der
-  goldene Streifen im Balken ist so breit wie das echte Fenster.
-- [ ] **P2 · Phase-3-Jab auf HART mit Pegel liegt unter der Reaktionszeit** —
-  Wo: level4.html / `KAMPF`-Werte · Fertig wenn: kleinste Vorwarnzeit ≥ 0,28 s auf
-  jeder Schwierigkeit, gemessen.
-- [ ] **P2 · Bus: Ein gekaufter Fahrschein schaltet den Bus für alle späteren Durchläufe ab** —
-  Wo: level3.html (`starteBus`, Flag-Reset, `S.ticket`) · Fertig wenn: nach Neustart
-  des Levels gilt kein alter Fahrschein mehr.
-- [ ] **P2 · Bus: Fahrschein rettet eine Kontrolle statt das ganze Level** — sonst ist
-  der Bus „gratis sicher oder sicher verloren". Wo: level3.html · Fertig wenn: mit
-  Fahrschein kostet die erste Kontrolle kein Leben, die zweite schon.
 - [ ] **P2 · Club: Die drei Frauen kennen sich** — Der Kommentar im Code verspricht,
   dass sich eine Abfuhr herumspricht. `S.abfuhren` gibt es schon.
   Wo: level5.html (`gespraechEnde`, die drei Bäume) · Fertig wenn: nach einer Abfuhr
@@ -110,12 +93,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
 
-- [ ] **P3 · Level 4: Wer nichts tut, wird in 300 s nie getroffen — zu prüfen** —
-  `nachttest.js` meldet im Nichtstun-Lauf von Level 4 null Ereignisse. Möglich, dass der
-  Boss einen untätigen Spieler nie trifft (Kampf ohne Zeitdruck), möglich auch, dass er es
-  tut und nur nichts gemeldet wird. Erst messen: `S.hp` vor und nach 300 s Nichtstun.
-  Wo: level4.html (`bossTakt`, `kampf`) · Fertig wenn: der Befund steht hier, und ein
-  untätiger Spieler verliert entweder, oder es ist als gewollt vermerkt.
 - [ ] **P3 · `tools/level5_baeume.js` löschen** — wortgleiche Zweitkopie der Bäume, wird nur
   von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
 - [ ] **P3 · Bahn oder Bus?** — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
@@ -149,6 +126,83 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
+  Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der
+  Fahrt komplett unverwundbar (Sichtkegel aus, Verdacht eingefroren) statt nur die eine
+  Kontrolle zu retten - jetzt steigt der Verdacht normal, bei 100 rettet das Ticket
+  einmal (kein Leben weg, verbraucht) und die nächste Kontrolle trifft normal.
+  (2) `ticket:flag('busTicket')` beim Levelstart ließ einen einmal gekauften Fahrschein
+  jeden Neustart überleben - ticket startet jetzt immer `false`. Gemessen per
+  Headless-Lauf: 1. erzwungene Kontrolle mit Ticket hp 3→3 (Ticket verbraucht),
+  2. Kontrolle hp 3→2 (normal getroffen); nach neuesSpiel() mit weiterhin gesetztem
+  flag('busTicket') ist S.ticket jetzt false statt true. Alle vier Prüfungen grün.
+
+- [x] 2026-10-03 · P2 · Phase-3-Jab-Reaktionszeit: Konterfenster hat jetzt eine Mindestbreite · `add3dd5` ·
+  Bei Pegel 100 und in Phase 3 schrumpfte das Fenster auf 0,085 s (unter jeder
+  menschlichen Reaktionszeit). Neue TUNE.fensterMinSek (0,28s) hebt fensterAnteil
+  so weit an, dass ausholenDauer*fensterAnteil nie darunter fällt. Betrifft nur
+  schwung/jab, ramme bleibt unblockbar ohne Fenster. Gemessen: kleinste Fensterbreite
+  über alle Phasen/Angriffe bei Pegel 100 vorher 0,085s, nachher exakt 0,280s
+  (gefordert ≥0,28s). Alle vier Prüfungen grün.
+
+- [x] 2026-10-03 · P2 · Pegel verengt das Konterfenster unsichtbar: Befund war veraltet ·
+  nicht gebaut, kein Code geändert außer dem Fix oben. zeichneAusholbalken() in
+  nacht/hud.js liest b.fensterAnteil direkt - dieselbe Quelle wie konterVersuch() in
+  nacht/kampf.js. Balken und echtes Fenster stimmen schon überein, vermutlich seit der
+  Kampfsprache-Vereinheitlichung (Commit `781b327`). Gemessen (Pegel 80, Jab): Balken-
+  Fensterstart 0,420s vs. echter Fensterstart 0,423s - Differenz nur Pixel-Rundung.
+
+- [x] 2026-10-03 · P2 · Level 4: Leertaste startet jetzt wirklich · `044eef1` ·
+  Space war nur an die Ausweichrolle gebunden, nie an druckAktion() - das Titelbild
+  versprach „E ODER LEERTASTE", aber nur E/Enter starteten. Jetzt wie in level3.html
+  (druckSprung): Space löst außerhalb des Kampfes druckAktion() aus. Nebenbefund: der
+  Nachttest drückt am Anfang Leertaste zum Starten - das lief bisher ins Leere, der
+  „Nichtstun"-Lauf von Level 4 blieb auf dem Titelbild stehen (daher die bisherigen
+  „0 Ereignisse"). Löst nebenbei den P3-Punkt „Wer nichts tut, wird nie getroffen" auf
+  (siehe unten). Gemessen: nachttest.js level4 Nichtstun 300s vorher 0 Ereignisse (auf
+  dem Titelbild), nachher 3 Ereignisse, letztes bei 9s (echter Kampf). Alle vier
+  Prüfungen grün.
+
+- [x] 2026-10-03 · P3 · Level 4: untätiger Spieler verliert in 9 s · (im selben Fund wie `044eef1`) ·
+  Frage war nicht beantwortbar, weil der Nichtstun-Lauf bisher auf dem Titelbild
+  steckte (siehe Fund oben). Nach der Space-Korrektur gemessen: S.hp 3 → 0 nach dem
+  Intro-Skip bis Sekunde 9, S.modus wird 'ende', S.gewonnen=false. Ein untätiger
+  Spieler verliert also zuverlässig - kein Softlock, kein zeitloser Kampf.
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 8 (Heimweg): Sterne, Mond, durchgehende Häuserreihe · `82c14c9` ·
+  320 statt 30 Sterne (dichter verteilt, sonst reisst keine Zeile die Kanten-Schwelle),
+  ein Mond gegenüber der Sonne, beide bis t=0,7 statt 0,6 sichtbar, und eine lückenlose
+  Häuserreihe mit Fenstern statt einzelner Häuser mit 50-px-Lücken. Die lückenlose Reihe
+  hätte die Sonne verdeckt, solange sie tief steht - zeichneSonne() läuft deshalb jetzt
+  nach der Häuserreihe, nicht davor. Pixelprobe: Sonnenfarbe bei licht=0/30/60/75/100
+  trifft exakt die erwarteten Werte (z. B. #fff4c2 bei licht=0), nicht mehr verschluckt.
+  Gemessen (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 76 % → 64 % (gefordert
+  höchstens 66 %). Alle vier Prüfungen grün.
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame · `a03bfed` ·
+  Zwei Regalreihen mit Waren und eine leuchtende OFFEN-Reklame im Schaufenster, in der
+  Ladenwand (x 300-520). Wie bei Level 6 liegt die Deko in der Bildmitte (y 70-108),
+  nicht am oberen Rand, wegen der permanenten Vignette (mindestens 50 % Deckkraft).
+  Gemessen (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 73 % → 59 % (gefordert
+  höchstens 63 %). Alle vier Prüfungen grün.
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 6 (Afterhour): Wanddeko (Plakate/Spinde) · `56f7b97` ·
+  Deckenleuchten (y 23-29) blieben wirkungslos: die Vignette in zeichneFlur liegt mit
+  mindestens 50 % Deckkraft permanent über dem Bild und schluckt dort fast jeden
+  Kontrast (gemessen 68,685 % vor wie nach dem ersten Versuch, identisch bis auf drei
+  Nachkommastellen). Näher an der Bildmitte (y 70-92, eine Sorte, wiederholt über die
+  Flurbreite) bleibt genug Kontrast übrig. Gemessen (nachttest.js, 60 s Zufallslauf,
+  Nachkommastellen temporär ausgegeben): 68,685 % → 58,494 % (gefordert höchstens
+  59 %). Alle vier Prüfungen grün. Hinweis für Level 7/8: vor Deckenlicht-artigen
+  Elementen prüfen, ob die jeweilige Zeichenfunktion eine ähnliche Vignette/Abdunklung
+  am oberen Bildrand hat.
+
+- [x] 2026-10-03 · P1 · Obere Bildhälfte Level 2 (Wohnung): Bilderrahmen, Regal, Wandverkleidung · `bcad605` ·
+  Drei wiederholte Muster über die Breite (x 14-890) in zeichneWohnung(). Gemessen
+  (nachttest.js, 60 s Zufallslauf): leere Bildzeilen 71 % → 49 % (gefordert höchstens
+  55 %; die alte Referenz 65 % war vor dem Umbau der Mitnehmen-Wahl gemessen). Alle
+  vier Prüfungen grün.
 
 - [x] 2026-10-02 · P1 · Club-Decke: Discokugel und Lichtsäulen über der Tanzfläche · `c91cee8` ·
   Vier Discokugeln (Schachbrettmuster) mit gestreiften Lichtsäulen darunter, nur

@@ -33,6 +33,13 @@ Raum zu einem Ort macht.
 
 **Schweregrad: hoch.** Betrifft jeden Bildschirm des Spiels.
 
+Teilweise behoben (1.–3.10., per `node tools/nachttest.js`, Software-Canvas-Näherung,
+nicht die obige Browser-Messung): Club 73 % → 53 % (Discokugeln, Lautsprecher,
+Garderobe, Raucherecke, Hinterausgang - Rückwand/Galerie bleibt offen, siehe
+NACHT-TODO „Blockiert"), Wohnung 66 % → 49 % (Bilderrahmen, Regal, Wandverkleidung),
+Afterhour 72 % → 58 % (Wanddeko, Plakate/Spinde), Späti 77 % → 59 % (Regal,
+Leuchtreklame), Heimweg 77 % → 64 % (Sterne, Mond, durchgehende Häuserreihe).
+
 ### 2. Der Club ist ein Flur mit sechs Knöpfen
 
 Messung „Spieler tut nichts, fünf Minuten lang":
@@ -86,8 +93,8 @@ sich anders, ohne länger zu werden.~~
 | ~~Den Ausholbalken gab es nur in Level 4~~ | Bus, Club und Heimweg verlangen dasselbe Timing — Konterfenster 116–265 ms — und zeigten nur ein blinkendes `!`. Das Finale war die schwerste Stelle des Spiels mit der schlechtesten Information. | hoch | ~~`nacht/hud.js`, jetzt in allen vier Kämpfen~~ |
 | Level 2 hat eine **zweite, eigene** Kampflogik | Dort kontert jeder Tastendruck zu jedem Zeitpunkt. Gemessen: „E im richtigen Moment" und „E dauernd drücken" liefern dasselbe Ergebnis — 3:0 ohne einen Treffer. Der erste Kampf des Spiels bringt das Gegenteil von dem bei, was Level 4 prüft. | hoch | `aktionPuffer` auch im Zustand `komm` leeren |
 | Level 4 ist fünfmal dieselbe Entscheidung | Nach dem zweiten Konter ist alles gesehen. Die Phasen ändern nur Zahlen, keine Antworten. | hoch | Jede Phase soll die vorige Antwort entwerten |
-| Der Pegel verengt das Konterfenster um bis zu 40 % — unsichtbar | Der Spieler erlebt eine Runde, in der „das Timing nicht geht", ohne je zu erfahren warum. Das ist die unfaire Variante von schwer. | hoch | Das Fenster im Balken mitschrumpfen lassen |
-| Phase-3-Jab auf HART mit Pegel ist nicht mehr reagierbar | Liegt unter menschlicher Reaktionszeit. | hoch | Untergrenze einziehen |
+| ~~Der Pegel verengt das Konterfenster um bis zu 40 % — unsichtbar~~ | Der Spieler erlebt eine Runde, in der „das Timing nicht geht", ohne je zu erfahren warum. Das ist die unfaire Variante von schwer. | hoch | ~~Befund war veraltet: der Balken liest fensterAnteil schon direkt, stimmt schon mit dem echten Fenster überein (3.10.)~~ |
+| ~~Phase-3-Jab auf HART mit Pegel ist nicht mehr reagierbar~~ | Liegt unter menschlicher Reaktionszeit. | hoch | ~~Untergrenze TUNE.fensterMinSek=0,28s eingezogen (3.10.)~~ |
 | Jab und Schwung sehen identisch aus | Zwei Muster tragen nur, wenn man sie unterscheiden kann. | mittel | Eigene Haltung je Angriff |
 
 ## Club — die Zahlen unter den Texten
@@ -111,10 +118,10 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | Problem | Warum es nervt | Grad | Lösung |
 |:--|:--|:--|:--|
 | ~~Die Ablenkung zieht alle fünf Kontrolleure auf den Spieler zu~~ | Das Werkzeug tat das Gegenteil von dem, wofür es da ist. | kritisch | ~~Ziel weicht jetzt vom Spieler weg aus~~ |
-| Der Bus zerfällt in „gratis sicher" oder „sicher verloren" | Ein Schleichlevel lebt vom Abwägen; hier ist die richtige Antwort immer dieselbe. | hoch | Der Fahrschein rettet eine Kontrolle, nicht das ganze Level |
+| ~~Der Bus zerfällt in „gratis sicher" oder „sicher verloren"~~ | Ein Schleichlevel lebt vom Abwägen; hier ist die richtige Antwort immer dieselbe. | hoch | ~~Fahrschein rettet nur noch eine Kontrolle (3.10.)~~ |
 | Der Sprint ist „D halten, sechzehnmal im Takt springen" | Kein Grund, aufmerksam zu sein. | hoch | Eine zweite Entscheidung: Bürgersteig oder Straße |
 | ~~Das blinkende E über den Verstecken erscheint nie~~ | Man fand das Hauptwerkzeug des Levels nur zufällig. | hoch | ~~Dieselbe Tiefenprüfung wie naheVersteck()~~ |
-| Ein einmal gekaufter Fahrschein schaltet den Bus für **alle** späteren Durchläufe ab | — | hoch | Beim Levelstart zurücksetzen |
+| ~~Ein einmal gekaufter Fahrschein schaltet den Bus für **alle** späteren Durchläufe ab~~ | — | hoch | ~~ticket startet jetzt immer false (3.10.)~~ |
 | Bahn oder Bus? Das Intro sagt Bahn, das Schild sagt BUS | Erster und letzter Eindruck des Levels. | niedrig | Entscheiden |
 
 ## Level 2 — die Entscheidung der Nacht

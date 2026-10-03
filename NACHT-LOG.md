@@ -141,3 +141,91 @@ Rückwand** bleibt stehen, ist aber erst wieder sinnvoll angehbar, wenn der neue
 zum Zufallslauf geklärt ist (sonst ist „Fertig wenn" mit dem vorgeschriebenen Werkzeug
 nicht prüfbar). Danach die vier „Obere Bildhälfte Level 2/6/7/8"-Punkte, dann die
 übrigen P2-Punkte.
+
+---
+
+## 2026-10-03 — Nacht — Test und Bau
+
+Start-Commit: `30d6ae97b3fa047b02921abd4a3f3673d281e5e5`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+61/50/7 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Einzige
+Auffälligkeit: level5.html zeigt im Nichtstun-Test jetzt 16 statt 4 Ereignisse (295 s statt
+107 s) gegenüber der alten Referenz in `routinen/nacht.md` — kein neuer Fund, der gestrige
+Bericht wurde vor der Club-Uhr-Ambient-Ereignisse-Nachtbau-Phase geschrieben, der jetzige
+Stand ist der erwartete nach diesem Fix.
+
+### Erledigt (7 Punkte gebaut, ~46 Minuten; davon 2 Funde als „Befund war veraltet"
+ohne Codeänderung erledigt)
+
+1. **Obere Bildhälfte Level 2 (Wohnung): Bilderrahmen, Regal, Wandverkleidung** · `bcad605`
+   — drei wiederholte Muster über die Breite (x 14-890) in `zeichneWohnung()`. Leere
+   Bildzeilen (nachttest.js, 60 s): 71 % → 49 % (gefordert: höchstens 55 %; die alte
+   TODO-Referenz 65 % stammte von vor dem Mitnehmen-Wahl-Umbau).
+2. **Obere Bildhälfte Level 6 (Afterhour): Wanddeko** · `56f7b97` — ein erster Versuch mit
+   Deckenleuchten blieb wirkungslos (68,685 % vor wie nach, identisch bis auf drei
+   Nachkommastellen): die Vignette in `zeichneFlur()` liegt mit mindestens 50 % Deckkraft
+   permanent über dem Bild und schluckt dort fast jeden Kontrast. Plakate/Spinde näher an
+   der Bildmitte (y 70-92) funktionierten: 68,685 % → 58,494 % (gefordert: höchstens 59 %).
+   Hinweis für künftige Deko in Level 7/8 hinterlassen (dieselbe Vignette-Falle).
+3. **Obere Bildhälfte Level 7 (Späti): Regal und Leuchtreklame** · `a03bfed` — zwei
+   Regalreihen und eine leuchtende OFFEN-Reklame in der Ladenwand (x 300-520), gleich in
+   der Bildmitte platziert (Lehre aus Punkt 2). Leere Bildzeilen: 73 % → 59 % (gefordert:
+   höchstens 63 %).
+4. **Obere Bildhälfte Level 8 (Heimweg): Sterne, Mond, durchgehende Häuserreihe** ·
+   `82c14c9` — 320 statt 30 dichter verteilte Sterne, ein Mond gegenüber der Sonne (beide
+   an den Lichtfaktor gekoppelt), lückenlose Häuserreihe mit Fenstern. Die lückenlose Reihe
+   hätte die Sonne verdeckt, solange sie tief steht — `zeichneSonne()` läuft deshalb jetzt
+   nach der Häuserreihe. Pixelprobe: Sonnenfarbe bei licht=0/30/60/75/100 trifft exakt die
+   erwarteten Werte, nicht mehr verschluckt. Leere Bildzeilen: 76 % → 64 % (65,926 % exakt;
+   gefordert: höchstens 66 %).
+5. **Level 4: Leertaste startet jetzt wirklich** · `044eef1` — das Titelbild versprach
+   „E ODER LEERTASTE", Space war aber nur an die Ausweichrolle gebunden. Jetzt wie in
+   `level3.html` (`druckSprung`): Space löst außerhalb des Kampfes `druckAktion()` aus.
+   Nebenbefund: der Nachttest drückt zum Start immer Leertaste — das lief bei Level 4
+   bisher ins Leere, der „Nichtstun"-Lauf blieb auf dem Titelbild stehen (0 Ereignisse).
+   Löst dabei den offenen P3-Punkt „Wer nichts tut, wird nie getroffen" auf: nach der
+   Korrektur gemessen, S.hp 3→0 bis Sekunde 9, ein untätiger Spieler verliert zuverlässig.
+6. **Level 4: Konterfenster mit Mindestbreite** · `add3dd5` — bei Pegel 100 und Phase 3
+   schrumpfte das Konterfenster auf 0,085 s, unter jeder menschlichen Reaktionszeit. Neue
+   `TUNE.fensterMinSek` (0,28 s) hebt `fensterAnteil` so weit an, dass die Fensterbreite nie
+   darunter fällt (nur schwung/jab betroffen, ramme bleibt unblockbar). Gemessen: kleinste
+   Fensterbreite über alle Phasen/Angriffe bei Pegel 100 vorher 0,085 s, nachher exakt
+   0,280 s. Dabei den verwandten TODO-Punkt „Pegel verengt das Konterfenster unsichtbar"
+   als veraltet erkannt und gestrichen: `zeichneAusholbalken()` liest `fensterAnteil` schon
+   direkt, Balken und echtes Fenster stimmen bereits überein.
+7. **Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt** · `a13acb2` — zwei
+   zusammenhängende Fehler in `S.ticket`: (1) machte komplett unverwundbar für den Rest der
+   Fahrt statt nur die eine Kontrolle zu retten; (2) `ticket:flag('busTicket')` beim
+   Levelstart ließ einen gekauften Fahrschein jeden Neustart überleben. Beides behoben:
+   Verdacht steigt normal, rettet bei 100 einmal (verbraucht sich dabei), `ticket` startet
+   jetzt immer `false`. Gemessen per Headless-Lauf mit erzwungener Kontrolle: 1. Kontrolle
+   hp 3→3 (gerettet, verbraucht), 2. Kontrolle hp 3→2 (normal getroffen); nach `neuesSpiel()`
+   mit weiterhin gesetztem Flag ist `S.ticket` jetzt `false` statt `true`.
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js erneut grün;
+`verloren` in flagcheck.js blieb durchgehend bei 7. `PLAYTEST.md` entsprechend
+nachgezogen (durchgestrichen bzw. mit Datum annotiert).
+
+### Nicht gebaut (zu groß, geteilt statt zurückgerollt)
+
+- **Lektionen: Übungspuppe für den Kampf** (P2) — ein neuer Schritt-Typ in
+  `nacht/lehre.js`, der während der Lektion einen Mini-Kampf gegen eine reglose Puppe mit
+  `kaempferTakt()`-Windup laufen lässt, plus die passende Simulation in `nachttest.js` für
+  den Timing-Check. Mehr als ein kleinster Eingriff; in `NACHT-TODO.md` in zwei Punkte
+  geteilt (zuerst nur Level 4/Konter, danach Level 3/8 für Block/Rolle), keiner davon heute
+  begonnen — kein Rollback nötig, da nichts an Code geändert wurde.
+- **Level 5 Zufallslauf** und **Level 4: jede Phase soll die vorige Antwort entwerten**
+  (beide P2) — übersprungen: Ersteres würde `tools/nachttest.js`s gemeinsamen Tastenmix für
+  alle neun Seiten ändern und jede bestehende Messzahl in `NACHT-TODO.md` neu kalibrieren
+  nötig machen, Letzteres ist eine Spielgefühl-Frage (ab wann „entwertet" eine neue Phase
+  eine Antwort wirklich). Beide bleiben unverändert in „Offen" stehen.
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P1: **Club-Decke: Banner oder Galerie an der
+Rückwand** bleibt stehen, weiterhin blockiert durch den ungeklärten Zufallslauf-Punkt.
+Danach P2 in Dateireihenfolge: Level-5-Zufallslauf (groß, siehe oben), dann die
+Übungspuppen-Punkte (groß, siehe oben), dann Level 4 Phasen-Entwertung, Jab/Schwung-
+Unterscheidung, Club-Beziehungen (drei Frauen, Sophie/Lena), Level-2-Kleinteile
+(`mobilKontext`, tote Tasten), Analyse-Nachholbedarf (Level 1/6/7/8/Karte/Runner/Engine).
