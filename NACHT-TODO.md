@@ -45,11 +45,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
   Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
-- [ ] **P2 · Lektionen: Übungspuppe für den Kampf (Level 3, 4, 8)** — die Lektion zeigt bisher nur
-  Tasten. Ein regloser Übungsgegner, an dem man Konter, Block und Rolle einmal wirklich ausführt,
-  würde das Timing vor dem Ernstfall lehren. Wo: nacht/lehre.js, nacht/kampf.js (`kaempferTakt`) ·
-  Fertig wenn: die Lektion von Level 4 verlangt einen gelungenen Konter an einer Puppe; im
-  Nachttest per Simulation machbar.
+- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
+  eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
+  einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
+  bestehenden Schritt „KONTERN IM GOLDENEN BEREICH" ersetzt, statt nur eine Taste einmal zu
+  pruefen). Am 3.10. geteilt - zuerst nur Level 4, Block/Rolle (Level 3, 8) folgen als eigene
+  Punkte, erst wenn der Mechanismus hier steht.
+  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`), nacht/kampf.js (`kaempferTakt` wiederverwenden,
+  nicht duplizieren) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
+  Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
+  Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
+  falschen Zeit = nicht).
+- [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
+  Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
+  von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
@@ -58,13 +67,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
   Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
   Ausholen verschieden aus.
-- [ ] **P2 · Pegel verengt das Konterfenster unsichtbar (bis −40 %)** — der Balken zeigt
-  das Fenster in voller Breite, das echte ist kleiner. Das ist die unfaire Art von schwer.
-  Wo: level4.html (`fensterAnteil`, `pegelFaktor`), `nacht/hud.js` · Fertig wenn: der
-  goldene Streifen im Balken ist so breit wie das echte Fenster.
-- [ ] **P2 · Phase-3-Jab auf HART mit Pegel liegt unter der Reaktionszeit** —
-  Wo: level4.html / `KAMPF`-Werte · Fertig wenn: kleinste Vorwarnzeit ≥ 0,28 s auf
-  jeder Schwierigkeit, gemessen.
 - [ ] **P2 · Bus: Ein gekaufter Fahrschein schaltet den Bus für alle späteren Durchläufe ab** —
   Wo: level3.html (`starteBus`, Flag-Reset, `S.ticket`) · Fertig wenn: nach Neustart
   des Levels gilt kein alter Fahrschein mehr.
@@ -130,6 +132,21 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-03 · P2 · Phase-3-Jab-Reaktionszeit: Konterfenster hat jetzt eine Mindestbreite · `add3dd5` ·
+  Bei Pegel 100 und in Phase 3 schrumpfte das Fenster auf 0,085 s (unter jeder
+  menschlichen Reaktionszeit). Neue TUNE.fensterMinSek (0,28s) hebt fensterAnteil
+  so weit an, dass ausholenDauer*fensterAnteil nie darunter fällt. Betrifft nur
+  schwung/jab, ramme bleibt unblockbar ohne Fenster. Gemessen: kleinste Fensterbreite
+  über alle Phasen/Angriffe bei Pegel 100 vorher 0,085s, nachher exakt 0,280s
+  (gefordert ≥0,28s). Alle vier Prüfungen grün.
+
+- [x] 2026-10-03 · P2 · Pegel verengt das Konterfenster unsichtbar: Befund war veraltet ·
+  nicht gebaut, kein Code geändert außer dem Fix oben. zeichneAusholbalken() in
+  nacht/hud.js liest b.fensterAnteil direkt - dieselbe Quelle wie konterVersuch() in
+  nacht/kampf.js. Balken und echtes Fenster stimmen schon überein, vermutlich seit der
+  Kampfsprache-Vereinheitlichung (Commit `781b327`). Gemessen (Pegel 80, Jab): Balken-
+  Fensterstart 0,420s vs. echter Fensterstart 0,423s - Differenz nur Pixel-Rundung.
 
 - [x] 2026-10-03 · P2 · Level 4: Leertaste startet jetzt wirklich · `044eef1` ·
   Space war nur an die Ausweichrolle gebunden, nie an druckAktion() - das Titelbild
