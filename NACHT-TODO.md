@@ -32,7 +32,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. War blockiert, weil die vorgeschriebene Messung (`node tools/nachttest.js`) den Bereich (x 620-1400) nie erreichte - seit `c1e717e` (4.10., Tastenmix mit mehr KeyD) kommt derselbe Lauf dort an (x>900 bei 38,6 s), die Messung ist also jetzt möglich.
+- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. War blockiert, weil die vorgeschriebene Messung (`node tools/nachttest.js`) den Bereich (x 620-1400) nie erreichte - seit `66ecc5f` (4.10., Tastenmix mit mehr KeyD) kommt derselbe Lauf dort an (x>900 bei 41,4 s), die Messung ist also jetzt möglich.
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 % (gemessen mit `node tools/nachttest.js level5`, dem jetzt durch den ganzen Level laufenden Zufallslauf). Erst danach gilt die obere Bildhälfte im Club als erledigt.
 ### P2
 
@@ -118,14 +118,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
-- [x] 2026-10-04 · P2 · nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level · `c1e717e` ·
+- [x] 2026-10-04 · P2 · nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level · `66ecc5f` ·
   Tastenmix fuer den 60-s-Spiellauf war fast ausgeglichen (2x KeyD gegen 1x KeyA, dazu
   sieben Tasten ohne Seitwaertswirkung) - im Schnitt nur 10% der Hoechstgeschwindigkeit
-  nach rechts. KeyD jetzt 5x statt 2x (13 statt 10 Eintraege), KeyA weiterhin 1x.
-  Gemessen (Level 5, Seed 12345): x ueberschreitet 900 jetzt bei 38,6 s, Lauf endet bei
-  x=1209,6 (vorher: nie ueber x=371 in 60 s). Macht den Club-Decke-Punkt (siehe
-  „Blockiert" unten) wieder pruefbar. Alle vier Pruefungen weiterhin gruen, „verloren"
-  bei flagcheck.js unveraendert bei 7.
+  nach rechts. Erster Versuch (`c1e717e`, KeyD 5x) war in einem Wegwerf-Skript ohne
+  draw()-Aufrufe gemessen und daher falsch: draw() zieht selbst aus Math.random()
+  (Bildzittern), das im Nachttest an denselben Seed gekoppelt ist wie die
+  Tastenauswahl - ohne draw() lief die Zufallsfolge anders als im echten
+  `node tools/nachttest.js`. Mit dem echten Skript blieb derselbe Tastenmix bei
+  x=639,8 nach 59 s haengen. KeyD jetzt 9x statt 2x (17 statt 10 Eintraege), KeyA
+  weiterhin 1x, mit dem echten `node tools/nachttest.js level5` gemessen: x
+  ueberschreitet 900 bei 41,4 s, Lauf endet bei x=1354 (Modi jetzt sogar
+  spiel/mini/cutscene/ende - der Lauf kommt bis zum Ausgang). Macht den
+  Club-Decke-Punkt (siehe „Blockiert" unten) wieder pruefbar. Alle vier Pruefungen
+  weiterhin gruen, „verloren" bei flagcheck.js unveraendert bei 7.
 
 - [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
   Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der
