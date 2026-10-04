@@ -79,8 +79,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
   Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
-- [ ] **P2 · Zwei Handys auf zwei Tasten** — `H` stumm (Level 1), `T` Engine-Handy.
-  Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
 ### P3
 
@@ -121,6 +119,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Level 1: H-Meldung heisst nicht mehr HANDY · `6ce23e2` ·
+  H (index.html, S.stumm) und das Engine-Handy (T, nacht/handy.js) sind zwei echte,
+  unterschiedliche Mechaniken, keine tote Dopplung - H macht das eigene Handy beim
+  Nachrichtenempfang unhoerbar/ohne Laerm (echte Schleich-Konsequenz ueber laerm() in
+  nachricht()), T oeffnet das Engine-Handy mit den HANDY_DREHBUCH-Nachrichten der Nacht.
+  Index.html laedt beide Module gleichzeitig - die Verwechslung war echt. Eine
+  Zusammenlegung haette die Laerm-Konsequenz in die gemeinsame, levelneutrale
+  nacht/handy.js tragen muessen - zu gross fuer einen Punkt. Kleinster sicherer Schritt:
+  nur die Meldung bei H heisst jetzt TON AUS/TON AN statt HANDY STUMM/HANDY LAUT;
+  S.stumm/nachricht()/laerm() unveraendert. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-04 · P2 · Level 1: Titelbild zeigt nur noch vier Grundtasten · `08af616` ·
   Sieben Tastenzeilen waren eine Bedienungsanleitung zum Lesen. Gemessen (Software-Canvas,
