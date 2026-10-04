@@ -391,6 +391,44 @@ function pauseTaste(){
   if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
 }
 
+/* ==========================================================================
+   WAS DER KNOPF AM HANDY GERADE TUT
+   Ohne das hier stand immer nur AKTION da (nacht/mobil.js, ALLGEMEIN-
+   Fallback) - am Rechner sieht man an der Naehe zu Leuten/Moebeln, was E
+   gerade macht, am Handy nicht. Gleiche Vorrangregel wie bei der echten
+   Aktionsaufloesung in update() (Personen vor Moebeln, das Naehere gewinnt).
+   ========================================================================== */
+function mobilKontext(){
+  if(S.modus==='titel')    return {aktion:'START',  zwei:null};
+  if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
+  if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
+  if(S.modus==='pause')    return {aktion:null,     zwei:null};
+  if(S.modus==='kampf')    return {aktion:'KONTER', zwei:null};
+  if(S.reden)              return {aktion:'WEITER', zwei:null};
+  if(typeof gespraechAktiv==='function'&&gespraechAktiv()) return {aktion:'WEITER', zwei:null};
+
+  let person=null, dPerson=1e9;
+  for(const l of LEUTE){
+    if(!tiefeNah(l.t||0.5,S.tiefe)) continue;
+    const d=Math.abs(l.x-S.x);
+    if(d<TUNE.reichweite&&d<dPerson){ person=l; dPerson=d; }
+  }
+  let ding=null, dDing=1e9;
+  for(const d0 of DINGE){ const d=Math.abs(d0.x+6-S.x);
+    if(d<TUNE.reichweite&&d<dDing){ ding=d0; dDing=d; } }
+
+  let aktion=null;
+  if(person&&(!ding||dPerson<=dDing)) aktion='REDEN';
+  else if(ding){
+    aktion = ding.art==='getraenk' ? 'TRINKEN'
+           : ding.art==='kuehl'    ? (S.inventar.dose?'HABE SCHON':'NEHMEN')
+           : ding.art==='spiegel'  ? 'SPIEGEL'
+           : S.durchsucht[ding.art] ? 'LEER' : 'SUCHEN';
+  } else if(S.x<60) aktion=alleFertig()?'LOS':null;
+  return {aktion, zwei:null};
+}
+
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
   if(['ArrowLeft','KeyA'].includes(e.code)){ e.preventDefault(); linksAn=true; }
