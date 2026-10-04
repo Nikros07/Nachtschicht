@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Über NACHTSCHICHT</title>
+<meta name="description" content="Steuerung, Hinweise, Datenschutz und Credits zu NACHTSCHICHT, dem Pixel-Art-Partyspiel im Browser.">
+<meta name="theme-color" content="#04030a">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<!-- Diese Seite steht für sich: eigener Stil, keine Schriften, keine Skripte von außen,
+     nur relative Verweise - sie funktioniert auch offline und über file://.
+     Die einzige Verbindung nach draußen ist der Link zur GitHub-Datenschutzerklärung;
+     er wird nur geladen, wenn man ihn anklickt.
+     Eine Spielengine wird hier nicht geladen. Der Abschnitt STAND bleibt deshalb leer
+     und versteckt, solange kein GERAET.version da ist (siehe Skript unten). -->
+<style>
+:root{
+  --nacht:#04030a; --raum:#1b1030; --rosa:#ff3d8b; --gold:#ffd447;
+  --text:#d9d4ee; --leise:#9a93b8; --linie:#2a2246; --karte:rgba(255,255,255,.035);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+[hidden]{ display:none !important; }
+html{ background:var(--nacht); scroll-behavior:smooth; }
+@media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto; } }
+body{
+  min-height:100vh;
+  font:16px/1.65 ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  color:var(--text);
+  background:radial-gradient(ellipse at 50% 0%,var(--raum) 0%,var(--nacht) 60%) no-repeat fixed var(--nacht);
+}
+a{ color:var(--gold); }
+a:focus-visible,button:focus-visible{ outline:3px solid var(--rosa); outline-offset:3px; }
+
+.seite{
+  width:100%; max-width:44rem; margin:0 auto;
+  padding:20px max(16px,env(safe-area-inset-right)) 56px max(16px,env(safe-area-inset-left));
+}
+.kopf{ text-align:center; padding:8px 0 22px; }
+.marquee{
+  font-weight:700; font-size:14px; letter-spacing:.4em; color:var(--rosa);
+  text-shadow:0 0 8px #ff3d8b99,0 0 18px #ff3d8b55; margin-bottom:10px;
+}
+h1{
+  font-size:clamp(1.4rem,6vw,1.9rem); line-height:1.25; letter-spacing:.1em; color:var(--text);
+  margin-bottom:18px;
+}
+.knopf{
+  display:inline-block; min-height:48px; padding:12px 24px;
+  font-family:inherit; font-weight:700; font-size:16px; line-height:1.4; letter-spacing:.18em; text-decoration:none; text-align:center; cursor:pointer;
+  color:var(--gold); background:rgba(255,212,71,.08); border:2px solid var(--gold); border-radius:6px;
+}
+.knopf:hover{ background:rgba(255,212,71,.2); }
+.knopf.rosa{ color:var(--rosa); background:rgba(255,61,139,.10); border-color:var(--rosa); }
+.knopf.rosa:hover{ background:rgba(255,61,139,.22); }
+.knopf.leise{ color:var(--text); background:rgba(255,255,255,.05); border-color:var(--leise); }
+.knopf.leise:hover{ background:rgba(255,255,255,.12); }
+
+nav.sprung{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:0 0 22px; }
+nav.sprung a{
+  display:inline-block; padding:10px 14px; min-height:44px; text-decoration:none;
+  font-weight:700; font-size:14px; letter-spacing:.12em; color:var(--leise);
+  border:1px solid var(--linie); border-radius:6px; background:rgba(255,255,255,.04);
+}
+nav.sprung a:hover{ color:var(--gold); border-color:var(--gold); }
+
+section{
+  scroll-margin-top:16px;
+  margin:0 0 18px; padding:20px 18px 22px;
+  background:var(--karte); border:1px solid var(--linie); border-radius:10px;
+}
+h2{
+  font-size:16px; letter-spacing:.22em; font-weight:700; color:var(--rosa);
+  text-shadow:0 0 10px #ff3d8b55; margin-bottom:12px;
+}
+h3{ font-size:14px; letter-spacing:.16em; color:var(--gold); margin:18px 0 8px; }
+p{ margin:0 0 12px; }
+p:last-child,ul:last-child,dl:last-child{ margin-bottom:0; }
+ul{ margin:0 0 12px 1.2em; }
+li{ margin-bottom:8px; }
+strong{ color:#fff; }
+.leise{ color:var(--leise); font-size:14px; }
+
+kbd{
+  display:inline-block; min-width:1.9em; padding:1px 7px; margin:0 3px 3px 0; text-align:center;
+  font:700 .92em ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; color:var(--gold);
+  background:#1b1730; border:1px solid #3a2f63; border-bottom-width:3px; border-radius:5px;
+}
+dl.tasten{ display:grid; grid-template-columns:minmax(7rem,11rem) 1fr; gap:10px 16px; align-items:baseline; }
+dl.tasten dt{ white-space:normal; }
+dl.tasten dd{ margin:0; }
+@media (max-width:30em){
+  dl.tasten{ grid-template-columns:1fr; gap:0; }
+  dl.tasten dt{ margin-top:12px; }
+  dl.tasten dt:first-child{ margin-top:0; }
+}
+
+/* Platzhalter im Impressum und bei den Credits: unübersehbar, damit sie nicht
+   versehentlich so stehen bleiben */
+.platzhalter{
+  display:inline-block; padding:0 6px; font-weight:700; color:#fff;
+  background:rgba(255,61,139,.22); border:1px dashed var(--rosa); border-radius:4px;
+}
+address{ font-style:normal; }
+
+.loeschen{ margin-top:16px; padding-top:16px; border-top:1px solid var(--linie); }
+#frage{ margin-top:12px; padding:14px; border:2px solid var(--rosa); border-radius:8px; background:rgba(255,61,139,.08); }
+#frage p{ margin-bottom:12px; }
+#frage .reihe{ display:flex; flex-wrap:wrap; gap:10px; }
+#meldung{ margin-top:12px; min-height:1.65em; color:var(--gold); }
+
+footer{ text-align:center; padding-top:8px; }
+</style>
+</head>
+<body>
+<div class="seite">
+
+<header class="kopf">
+  <div class="marquee">NACHTSCHICHT</div>
+  <h1>ÜBER DAS SPIEL</h1>
+  <a class="knopf" href="index.html">ZUM SPIEL</a>
+</header>
+
+<nav class="sprung" aria-label="Abschnitte">
+  <a href="#steuerung">STEUERUNG</a>
+  <a href="#hinweise">HINWEISE</a>
+  <a href="#datenschutz">DATENSCHUTZ</a>
+  <a href="#impressum">IMPRESSUM</a>
+  <a href="#credits">CREDITS</a>
+</nav>
+
+<main>
+
+<section id="was">
+  <h2>WAS IST DAS</h2>
+  <p>NACHTSCHICHT ist ein Partyspiel in Pixel-Art, das direkt im Browser läuft – ohne Download und ohne Konto. Du erlebst eine Nacht in acht Leveln, von der Schule bis zum Heimweg, und unterwegs triffst du Entscheidungen, die Folgen haben. Gespielt wird am Rechner mit der Tastatur oder am Handy mit Touch-Steuerung, und alles ist auf Deutsch.</p>
+</section>
+
+<section id="steuerung">
+  <h2>STEUERUNG</h2>
+  <p>Welche Tasten ein Level braucht, zeigt dir das Spiel vor dem Level zum Ausprobieren.</p>
+
+  <h3>TASTATUR</h3>
+  <dl class="tasten">
+    <dt><kbd>A</kbd><kbd>D</kbd> oder <kbd>←</kbd><kbd>→</kbd></dt>
+    <dd>Laufen. Im Gespräch wählen die Richtungstasten die Antwort.</dd>
+    <dt><kbd>E</kbd></dt>
+    <dd>Aktion: reden, durchsuchen, Türen öffnen, im Kampf kontern.</dd>
+    <dt><kbd>Leertaste</kbd></dt>
+    <dd>Springen, im Kampf rollen.</dd>
+    <dt><kbd>Shift</kbd></dt>
+    <dd>Schleichen, im Kampf blocken.</dd>
+    <dt><kbd>W</kbd><kbd>S</kbd> oder <kbd>↑</kbd><kbd>↓</kbd></dt>
+    <dd>Treppen hoch und runter, im Kampf nach hinten oder vorn ausweichen.</dd>
+    <dt><kbd>Q</kbd> <kbd>R</kbd></dt>
+    <dd>Taschenlampe und Werfen (in der Schule).</dd>
+    <dt><kbd>M</kbd></dt>
+    <dd>Ton an und aus.</dd>
+    <dt><kbd>P</kbd></dt>
+    <dd>Pause.</dd>
+    <dt><kbd>F</kbd></dt>
+    <dd>Vollbild.</dd>
+    <dt><kbd>1</kbd>–<kbd>8</kbd></dt>
+    <dd>Auf dem Titelbild: direkt zu diesem Level springen.</dd>
+  </dl>
+
+  <h3>HANDY</h3>
+  <ul>
+    <li>Links ein Stick, der dort erscheint, wo dein Daumen aufsetzt.</li>
+    <li>Rechts der Hauptknopf. Seine Aufschrift passt sich an, zum Beispiel AKTION, SPRUNG, KONTER oder ROLLE.</li>
+    <li>Gespräche beantwortest du durch Antippen der Antwortflächen.</li>
+    <li>Im Menü stellst du unter anderem Händigkeit, Knopfgröße und das Verhalten des Sticks ein.</li>
+  </ul>
+</section>
+
+<section id="hinweise">
+  <h2>HINWEISE</h2>
+  <h3>PARTYNACHT MIT ALKOHOL</h3>
+  <p>Im Spiel geht es um eine Partynacht mit Alkohol, Streit und Prügeleien. Es ist ein Spiel – <strong>nichts davon ist zum Nachmachen</strong>. Wenn du selbst trinkst, dann mit Maß, und steig nicht ins Auto. Wenn Alkohol für dich oder jemanden, den du kennst, zum Problem geworden ist, hilft eine Suchtberatung in deiner Nähe.</p>
+
+  <h3>BLITZE UND FLACKERN</h3>
+  <p>Das Spiel hat Stroboskop- und Blitzeffekte (zum Beispiel im Club), dazu helle Blitze bei Treffern und Bildschirmwackeln. Wenn du empfindlich auf Flackern reagierst, schalte unter <strong>Einstellungen</strong> den <strong>Flackerschutz</strong> ein: Er dämpft Blitze und Stroboskop stark. Hast du im System „Bewegung reduzieren“ gewählt, ist er anfangs schon an. Bei Unwohlsein, Schwindel oder Kopfschmerz: aufhören und Pause machen.</p>
+
+  <h3>SPIELZEIT</h3>
+  <p>Eine ganze Nacht dauert etwa 40 Minuten. Mit <kbd>P</kbd> hältst du das Spiel an.</p>
+</section>
+
+<section id="datenschutz">
+  <h2>DATENSCHUTZ</h2>
+  <p>Das Wichtigste vorweg: Das Spiel will nichts von dir wissen.</p>
+  <ul>
+    <li><strong>Keine Anmeldung, kein Konto.</strong> Es gibt nichts, wofür du dich registrieren müsstest.</li>
+    <li><strong>Keine Cookies, kein Tracking.</strong> Die Seiten des Spiels setzen keine Cookies und binden keine Werbe-, Statistik- oder Analysedienste ein.</li>
+    <li><strong>Keine externen Anfragen.</strong> Alle Seiten, Skripte und Bilder kommen von derselben Adresse wie diese Seite. Das Spiel lädt keine fremden Schriften, Bibliotheken oder Dienste nach; der Ton entsteht im Browser selbst.</li>
+    <li><strong>Gespeichert wird nur auf deinem Gerät.</strong> Spielstand, Bestzeiten, gewählte Schwierigkeit, Einstellungen (zum Beispiel Flackerschutz und Handy-Steuerung) und welche Lektionen du schon gesehen hast liegen im Browser-Speicher (localStorage) dieses Geräts, unter Namen, die mit <code>nachtschicht.</code> beginnen. Das Spiel schickt sie an niemanden. Kurzzeitig merkt sich der Tab außerdem, ob eine Fehlerseite oder ein Hinweis schon gezeigt wurde (sessionStorage); das endet mit dem Schließen des Tabs.</li>
+    <li><strong>Offline-Speicher.</strong> Damit das Spiel auch ohne Netz startet und sich installieren lässt, legt ein Service Worker die Dateien des Spiels im Browser-Cache dieses Geräts ab (Namen beginnen mit <code>nachtschicht-</code>). Das sind nur die Seiten, Skripte und Bilder des Spiels selbst, keine Daten über dich. Mit der Adresse <code>?reset=cache</code> hinter der Spieladresse lässt er sich leeren.</li>
+    <li><strong>Hosting bei GitHub.</strong> Die Seite wird über GitHub Pages ausgeliefert. Dabei verarbeitet GitHub technisch bedingt Zugriffsdaten wie deine IP-Adresse. Mehr dazu steht in der <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von GitHub</a> (englisch).</li>
+  </ul>
+
+  <div class="loeschen">
+    <p>Auf diesem Gerät gespeichert: <strong id="anzahl">–</strong></p>
+    <button type="button" class="knopf rosa" id="loeschen">SPIELSTAND LÖSCHEN</button>
+    <div id="frage" role="group" aria-labelledby="frage-text" hidden>
+      <p id="frage-text"><strong>Wirklich alles löschen?</strong> Spielstand, Bestzeiten und Einstellungen dieses Geräts sind danach weg. Das lässt sich nicht rückgängig machen.</p>
+      <div class="reihe">
+        <button type="button" class="knopf leise" id="nein">ABBRECHEN</button>
+        <button type="button" class="knopf rosa" id="ja">JA, LÖSCHEN</button>
+      </div>
+    </div>
+    <p id="meldung" role="status" aria-live="polite"></p>
+    <noscript><p class="leise">Zum Löschen braucht diese Seite JavaScript. Alternativ kannst du die Website-Daten dieser Adresse in den Einstellungen deines Browsers entfernen.</p></noscript>
+    <p class="leise">Entfernt alle Einträge, deren Name mit <code>nachtschicht.</code> beginnt. Anderes, das dein Browser für diese Adresse gespeichert hat, bleibt unberührt.</p>
+  </div>
+</section>
+
+<section id="impressum">
+  <h2>IMPRESSUM</h2>
+  <!-- ENTWICKLER, BITTE LESEN: Das hier ist nur eine Vorlage, keine Rechtsberatung.
+       Ob für diese Seite ein Impressum nötig ist und welche Angaben es enthalten muss,
+       hängt von deiner Lage ab (privat oder geschäftsmäßig, Land, Einnahmen, Werbung).
+       Das musst du selbst klären und entscheiden. Fülle dann die Platzhalter [NAME],
+       [ANSCHRIFT] und [E-MAIL] mit echten Angaben aus - oder streiche den Abschnitt samt
+       seinem Sprunglink oben, wenn du ihn nicht brauchst. Denk dir keine Angaben aus.
+       Bis dahin stehen die Platzhalter sichtbar auf der Seite. -->
+  <p>Angaben zum Anbieter dieser Seite:</p>
+  <address>
+    <span class="platzhalter">[NAME]</span><br>
+    <span class="platzhalter">[ANSCHRIFT]</span><br>
+    E-Mail: <span class="platzhalter">[E-MAIL]</span>
+  </address>
+</section>
+
+<section id="credits">
+  <h2>CREDITS</h2>
+  <ul>
+    <li>Ein Spiel von <strong>Nikros07</strong>.</li>
+    <li>Gebaut ohne Framework in JavaScript, gezeichnet auf einem Canvas.</li>
+    <li>Der Ton wird im Browser synthetisiert, es gibt keine Audiodateien.</li>
+    <li>Die Schrift ist eine eigene 3×5-Pixelschrift.</li>
+    <li>Danke an alle, die mitgespielt und getestet haben: <span class="platzhalter">[WEITERE CREDITS]</span></li>
+  </ul>
+</section>
+
+<section id="stand" hidden>
+  <h2>STAND</h2>
+  <p>Version <strong id="stand-version"></strong><span id="stand-build-teil" hidden> · Build <strong id="stand-build"></strong></span></p>
+</section>
+
+</main>
+
+<footer>
+  <a class="knopf" href="index.html">ZUM SPIEL</a>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---- Gespeichertes ansehen und löschen ----
+     Es zählen nur Schlüssel mit diesem Präfix: Auf derselben Adresse (github.io) können
+     andere Seiten ihre eigenen Daten ablegen, die hier nichts zu suchen haben. */
+  var PRAEFIX='nachtschicht.';
+  var anzahl=document.getElementById('anzahl');
+  var meldung=document.getElementById('meldung');
+  var loeschen=document.getElementById('loeschen');
+  var frage=document.getElementById('frage');
+  var ja=document.getElementById('ja');
+  var nein=document.getElementById('nein');
+
+  /* Liste der eigenen Schlüssel, oder null, wenn der Speicher gesperrt ist
+     (privates Fenster, blockierte Website-Daten). */
+  function schluessel(){
+    var liste=[];
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var k=localStorage.key(i);
+        if(k&&k.indexOf(PRAEFIX)===0) liste.push(k);
+      }
+    }catch(e){ return null; }
+    return liste;
+  }
+
+  function zeigeAnzahl(){
+    var l=schluessel();
+    if(l===null) anzahl.textContent='Speicher nicht erreichbar';
+    else anzahl.textContent=l.length+(l.length===1?' Eintrag':' Einträge');
+  }
+
+  function frageAuf(){
+    loeschen.hidden=true; frage.hidden=false; meldung.textContent='';
+    nein.focus();   /* Vorbelegung auf der sicheren Seite: Abbrechen */
+  }
+  function frageZu(){
+    frage.hidden=true; loeschen.hidden=false; loeschen.focus();
+  }
+  function alleLoeschen(){
+    var l=schluessel();
+    frageZu();
+    if(l===null){ meldung.textContent='Der Browser-Speicher ist hier nicht erreichbar. Es gibt nichts zu löschen.'; return; }
+    /* erst alle Namen sammeln, dann entfernen: wer beim Durchlaufen löscht, überspringt Einträge */
+    try{ l.forEach(function(k){ localStorage.removeItem(k); }); }
+    catch(e){ meldung.textContent='Löschen nicht möglich: Der Browser blockiert den Speicher.'; zeigeAnzahl(); return; }
+    meldung.textContent=l.length?('Gelöscht: '+l.length+(l.length===1?' Eintrag.':' Einträge.')):'Es war nichts gespeichert.';
+    zeigeAnzahl();
+  }
+
+  loeschen.addEventListener('click',frageAuf);
+  nein.addEventListener('click',frageZu);
+  ja.addEventListener('click',alleLoeschen);
+  frage.addEventListener('keydown',function(e){ if(e.key==='Escape') frageZu(); });
+  zeigeAnzahl();
+
+  /* ---- STAND ----
+     Nur wenn die Engine geladen ist (GERAET aus nacht/geraet.js), sonst bleibt der
+     Abschnitt weg. typeof ist hier Absicht: ein nicht vorhandenes GERAET darf nicht werfen. */
+  try{
+    if(typeof GERAET!=='undefined'&&GERAET&&GERAET.version){
+      document.getElementById('stand-version').textContent=String(GERAET.version);
+      if(GERAET.build){
+        document.getElementById('stand-build').textContent=String(GERAET.build);
+        document.getElementById('stand-build-teil').hidden=false;
+      }
+      document.getElementById('stand').hidden=false;
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

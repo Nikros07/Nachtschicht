@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diese Tür ist zu - NACHTSCHICHT</title>
+<meta name="description" content="Diese Seite gibt es nicht. Hier geht es zurück in die Nacht.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#04030a">
+<meta name="color-scheme" content="dark">
+<!-- WARUM ALLES IN EINER DATEI: GitHub Pages liefert diese Seite unter JEDEM unbekannten
+     Pfad aus (/Nachtschicht/foo/bar/...). Ein relativer Verweis auf Bild, Stil oder
+     Symbole wuerde dort ins Leere laufen. Darum steckt der Stil im <style>, der Pixelmond
+     als data-URI im <img id="mond"> (tools/icons.py setzt ihn neu ein, wenn sich das
+     Symbol aendert), und der Knopf bekommt sein Ziel per Skript. -->
+<style>
+:root{
+  --nacht:#04030a; --raum:#1b1030; --rosa:#ff3d8b; --gold:#ffd447;
+  --text:#d9d4ee; --leise:#9a93b8; --linie:#2a2246;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ background:var(--nacht); }
+body{
+  min-height:100vh; min-height:100dvh;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));
+  font:16px/1.6 ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  color:var(--text);
+  background:radial-gradient(ellipse at 50% 30%,var(--raum) 0%,var(--nacht) 70%) fixed var(--nacht);
+}
+/* Dasselbe Gehaeuse wie im Spiel: dunkle Tafel mit violettem Schimmer */
+.tafel{
+  width:100%; max-width:30rem; text-align:center; padding:22px 20px 32px;
+  border-radius:10px;
+  background:linear-gradient(#1b1730,#0e0b1a 60%,#17132a);
+  box-shadow:0 0 0 2px var(--linie),0 0 60px rgba(120,60,220,.2),0 30px 60px rgba(0,0,0,.8);
+}
+.marquee{
+  font-weight:700; font-size:14px; letter-spacing:.4em; color:var(--rosa);
+  text-shadow:0 0 8px #ff3d8b99,0 0 18px #ff3d8b55; padding-bottom:18px;
+}
+#mond{
+  display:block; margin:0 auto 18px; width:128px; height:128px; border-radius:6px;
+  image-rendering:pixelated; image-rendering:crisp-edges;
+  box-shadow:0 0 0 2px #000,0 0 28px rgba(255,61,139,.22);
+}
+.fehler{ font-weight:700; font-size:14px; letter-spacing:.3em; color:var(--gold); margin-bottom:6px; }
+h1{
+  font-size:clamp(1.5rem,7vw,2.1rem); line-height:1.2; letter-spacing:.08em; font-weight:700;
+  color:var(--rosa); text-shadow:0 0 10px #ff3d8b99,0 0 24px #ff3d8b55; margin-bottom:14px;
+}
+p{ color:var(--text); margin:0 auto 26px; max-width:24rem; }
+.knopf{
+  display:inline-block; min-height:48px; padding:12px 28px;
+  font-weight:700; font-size:16px; letter-spacing:.2em; text-decoration:none;
+  color:var(--gold); background:rgba(255,212,71,.08);
+  border:2px solid var(--gold); border-radius:6px;
+}
+.knopf:hover{ background:rgba(255,212,71,.2); }
+.knopf:focus-visible{ outline:3px solid var(--rosa); outline-offset:3px; }
+/* Der Mond schwebt ganz langsam - nur, wenn das System keine Bewegung sparen will */
+@media (prefers-reduced-motion:no-preference){
+  #mond{ animation:schweben 7s ease-in-out infinite; }
+  @keyframes schweben{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+}
+</style>
+</head>
+<body>
+<main class="tafel">
+  <div class="marquee">NACHTSCHICHT</div>
+  <img id="mond" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cGF0aCBmaWxsPSIjMGIwODE4IiBkPSJNMCAwaDMydjFoLTMyek0wIDFoMzJ2MWgtMzJ6TTAgMmgxNHYxaC0xNHpNMTUgMmgxN3YxaC0xN3pNMCAzaDN2MWgtM3pNNCAzaDI4djFoLTI4eiIvPjxwYXRoIGZpbGw9IiNmMmYwZmYiIGQ9Ik0xNCAyaDF2MWgtMXpNMyAzaDF2MWgtMXpNMjcgNGgxdjFoLTF6TTkgNmgxdjFoLTF6TTEyIDloMXYxaC0xek0zMCA5aDF2MWgtMXpNNiAxMWgxdjFoLTF6TTI5IDE0aDF2MWgtMXoiLz48cGF0aCBmaWxsPSIjMTIwYzI2IiBkPSJNMCA0aDI3djFoLTI3ek0yOCA0aDR2MWgtNHpNMCA1aDIwdjFoLTIwek0yMSA1aDExdjFoLTExek0wIDZoOXYxaC05ek0xMCA2aDh2MWgtOHpNMjAgNmgxMnYxaC0xMnpNMCA3aDE3djFoLTE3ek0xOSA3aDEzdjFoLTEzeiIvPjxwYXRoIGZpbGw9IiNmZmQ0NDciIGQ9Ik0yMCA1aDF2MWgtMXpNMTggNmgydjFoLTJ6TTE3IDdoMnYxaC0yek0xNiA4aDN2MWgtM3pNMTYgOWgzdjFoLTN6TTE1IDEwaDR2MWgtNHpNMTUgMTFoNHYxaC00ek0xNSAxMmg1djFoLTV6TTE2IDEzaDV2MWgtNXpNMTYgMTRoNnYxaC02ek0xNyAxNWg5djFoLTl6TTE4IDE2aDd2MWgtN3pNMjAgMTdoM3YxaC0zek0xMCAyNmgxdjFoLTF6TTggMjhoMXYxaC0xek0xNyAyOGgxdjFoLTF6TTIyIDI5aDF2MWgtMXoiLz48cGF0aCBmaWxsPSIjMWIxMDM4IiBkPSJNMCA4aDE2djFoLTE2ek0xOSA4aDEzdjFoLTEzek0wIDloMTJ2MWgtMTJ6TTEzIDloM3YxaC0zek0xOSA5aDExdjFoLTExek0zMSA5aDF2MWgtMXpNMCAxMGgxNXYxaC0xNXpNMTkgMTBoMTN2MWgtMTN6TTAgMTFoNnYxaC02ek03IDExaDh2MWgtOHpNMTkgMTFoMTN2MWgtMTN6Ii8+PHBhdGggZmlsbD0iIzJhMTQ1MCIgZD0iTTAgMTJoMTV2MWgtMTV6TTIwIDEyaDEydjFoLTEyek0wIDEzaDE2djFoLTE2ek0yMSAxM2gxMXYxaC0xMXpNMCAxNGgxNnYxaC0xNnpNMjIgMTRoN3YxaC03ek0zMCAxNGgydjFoLTJ6TTAgMTVoMTd2MWgtMTd6TTI2IDE1aDZ2MWgtNnoiLz48cGF0aCBmaWxsPSIjNDIxNzVlIiBkPSJNMCAxNmgxOHYxaC0xOHpNMjUgMTZoN3YxaC03ek0wIDE3aDIwdjFoLTIwek0yMyAxN2g5djFoLTl6TTAgMThoMzJ2MWgtMzJ6TTAgMTloMzJ2MWgtMzJ6Ii8+PHBhdGggZmlsbD0iIzY2MWE2NiIgZD0iTTAgMjBoMzJ2MWgtMzJ6TTAgMjFoN3YxaC03ek0xMiAyMWgyMHYxaC0yMHpNMCAyMmg3djFoLTd6TTEyIDIyaDEydjFoLTEyek0yOCAyMmg0djFoLTR6TTAgMjNoN3YxaC03ek0xMiAyM2g0djFoLTR6TTE5IDIzaDV2MWgtNXpNMjggMjNoNHYxaC00ek00IDI0aDN2MWgtM3pNMTIgMjRoNHYxaC00ek0xOSAyNGg1djFoLTV6TTI4IDI0aDR2MWgtNHpNNCAyNWgzdjFoLTN6TTE5IDI1aDV2MWgtNXpNNCAyNmgzdjFoLTN6Ii8+PHBhdGggZmlsbD0iIzA3MDUwZiIgZD0iTTcgMjFoNXYxaC01ek03IDIyaDN2MWgtM3pNMTEgMjJoMXYxaC0xek0yNCAyMmg0djFoLTR6TTcgMjNoNXYxaC01ek0xNiAyM2gzdjFoLTN6TTI0IDIzaDR2MWgtNHpNMCAyNGg0djFoLTR6TTcgMjRoMXYxaC0xek05IDI0aDN2MWgtM3pNMTYgMjRoMXYxaC0xek0xOCAyNGgxdjFoLTF6TTI0IDI0aDR2MWgtNHpNMCAyNWg0djFoLTR6TTcgMjVoMTJ2MWgtMTJ6TTI0IDI1aDF2MWgtMXpNMjYgMjVoNnYxaC02ek0wIDI2aDR2MWgtNHpNNyAyNmgzdjFoLTN6TTExIDI2aDE4djFoLTE4ek0zMCAyNmgydjFoLTJ6TTAgMjdoMXYxaC0xek0yIDI3aDE4djFoLTE4ek0yMSAyN2gxdjFoLTF6TTIzIDI3aDJ2MWgtMnpNMjYgMjdoNnYxaC02ek0wIDI4aDh2MWgtOHpNOSAyOGg0djFoLTR6TTE0IDI4aDN2MWgtM3pNMTggMjhoMTR2MWgtMTR6TTAgMjloMjJ2MWgtMjJ6TTIzIDI5aDl2MWgtOXpNMCAzMGg1djFoLTV6TTYgMzBoMnYxaC0yek05IDMwaDF2MWgtMXpNMTEgMzBoMnYxaC0yek0xNCAzMGgxNXYxaC0xNXpNMzAgMzBoMnYxaC0yek0wIDMxaDMydjFoLTMyeiIvPjxwYXRoIGZpbGw9IiNmZjNkOGIiIGQ9Ik0xMCAyMmgxdjFoLTF6TTggMjRoMXYxaC0xek0xNyAyNGgxdjFoLTF6TTI1IDI1aDF2MWgtMXpNMjkgMjZoMXYxaC0xek0xIDI3aDF2MWgtMXpNMjAgMjdoMXYxaC0xek0yMiAyN2gxdjFoLTF6TTI1IDI3aDF2MWgtMXpNMTMgMjhoMXYxaC0xek01IDMwaDF2MWgtMXpNOCAzMGgxdjFoLTF6TTEwIDMwaDF2MWgtMXpNMTMgMzBoMXYxaC0xek0yOSAzMGgxdjFoLTF6Ii8+PC9zdmc+" width="128" height="128" alt="">
+  <div class="fehler">FEHLER 404</div>
+  <h1>DIESE TÜR IST ZU</h1>
+  <p>Hier gibt es nichts, außer einer Nacht, die du noch nicht gespielt hast.</p>
+  <!-- Ohne Skript greift dieser Ersatzpfad (Live-Adresse /Nachtschicht/); das Skript unten
+       ermittelt das richtige Ziel fuer jeden Ort, an dem die Seite liegt. -->
+  <a class="knopf" id="zurnacht" href="/Nachtschicht/">ZUR NACHT</a>
+</main>
+<script>
+/* Ziel des Knopfes: Die Seite kann unter beliebiger Tiefe erscheinen, "./index.html" waere
+   also falsch. Bei *.github.io (Projektseite) ist der erste Pfadabschnitt die Basis, bei
+   eigener Domain die Wurzel, bei file:// (und allem, was nicht http/https ist) liegt index.html direkt daneben. */
+(function(){
+  var ort=window.location, ziel;
+  if(!/^https?:$/.test(ort.protocol)){ ziel='index.html'; }
+  else{
+    var teile=ort.pathname.split('/').filter(Boolean);
+    ziel=(/\.github\.io$/i.test(ort.hostname)&&teile.length)?'/'+teile[0]+'/':'/';
+  }
+  document.getElementById('zurnacht').setAttribute('href',ziel);
+  /* Tab-Symbol: derselbe eingebettete Mond, ein relatives Symbol-Bild gaebe es hier nicht */
+  var bild=document.getElementById('mond').getAttribute('src');
+  if(bild){
+    var l=document.createElement('link'); l.rel='icon'; l.type='image/svg+xml'; l.href=bild;
+    document.head.appendChild(l);
+  }
+})();
+</script>
+</body>
+</html>

@@ -19,3 +19,6 @@ node_modules/
 
 # fertige Pakete (tools/paket.py)
 dist/
+
+# Sicherung von tools/umbenennen.py (die Originale vor einer Umbenennung, fuer --zurueck)
+.umbenennen-sicherung.json

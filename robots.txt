@@ -1,0 +1,6 @@
+# NACHTSCHICHT: alles darf gelesen werden, eine Sitemap ist bei zehn Seiten nicht noetig.
+# Hinweis: Suchroboter lesen robots.txt nur im Wurzelverzeichnis einer Domain. Unter
+# nikros07.github.io/Nachtschicht/ wird diese Datei deshalb nicht ausgewertet; sie
+# greift erst, wenn das Spiel auf einer eigenen Domain liegt.
+User-agent: *
+Allow: /
