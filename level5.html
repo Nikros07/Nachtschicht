@@ -469,7 +469,12 @@ const SOPHIE_BAUM = {
       { txt:'Deal. Aber du trinkst mit.',       wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:12, mag:['SOPHIE',8]} },
       { txt:'Ich stand hier zuerst.',           geh:'konter', tu:{mag:['SOPHIE',6]} },
       { txt:'Oh. Sorry.',                       geh:'langweilig', tu:{mag:['SOPHIE',-6]} },
+      { txt:'Shot? Gib mir gleich drei.',       wenn:{pegel:55}, geh:'besoffen' },
     ], zeit:8, standard:2 },
+
+  /* Wie bei Mia (wenn:{pegel:55}): zu betrunken wirkt hier nicht mutig,
+     sondern abschreckend - dieselbe Schwelle, dasselbe Ergebnis. */
+  besoffen:{ wer:'SOPHIE', text:'Okay, du hast schon genug. Trink lieber Wasser.', geh:'@nein' },
 
   langweilig:{ wer:'SOPHIE', text:'Sorry? Gott. Na gut, du darfst nochmal.',
     wahl:[
@@ -616,6 +621,20 @@ const GARDEROBE_BAUM={
   start:{ wer:'GARDEROBE', text:'JACKE ABGEBEN? ICH PASS AUF.', geh:'dank' },
   dank:{ wer:'GARDEROBE', text:'GEH SCHON MAL REIN, HAB SIE SCHON.',
     tu:{ruf:1}, geh:'ende' },
+  ende:null,
+};
+
+/* Lena steht neben der Tanzflaeche und wartet auf ihre Freundinnen - bisher
+   nur ein Name im Vorbeigehen (naechstesZiel() kannte sie nicht), obwohl
+   Mia schon von ihrem Geburtstag erzaehlt. Kurzes, eigenes Gespraech. */
+const LENA_BAUM={
+  start:{ wer:'LENA', text:'Mia hat dir bestimmt schon erzaehlt, dass ich Geburtstag hab.',
+    wahl:[
+      { txt:'Alles Gute! Wie alt?', geh:'alter' },
+      { txt:'Wo bleiben denn deine Leute?', geh:'leute' },
+    ], zeit:7, standard:0 },
+  alter:{ wer:'LENA', text:'Alt genug, um das hier zu ueberleben. Danke dir.', geh:'ende' },
+  leute:{ wer:'LENA', text:'Tanzen. Ich warte, bis die Schuhe es wieder erlauben.', geh:'ende' },
   ende:null,
 };
 
@@ -916,6 +935,7 @@ function naechstesZiel(){
   pruefe(BARTHEKE,'bar',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(WASCHBECKEN,'wasser',!tiefeAn()||S.tiefe<=TUNE.barTiefe);
   pruefe(GARDEROBE,'garderobe',!S.garderobeFertig);
+  pruefe(LENA,'lena',tiefeNah(LENA.t,S.tiefe,TUNE.redeTiefe));
   pruefe(RAUCHER1,'raucher',true);
   pruefe(RAUCHER2,'raucher',true);
   pruefe(LIEFERANT,'raucher',true);
@@ -1271,6 +1291,7 @@ function update(dt){
       starteGespraech(GARDEROBE_BAUM,'start');
       return;
     }
+    if(z.art==='lena'){ starteGespraech(LENA_BAUM,'start'); return; }
     if(z.art==='raucher'){ meldung(z.obj.satz,2.2); continue; }
   }
   kamera(dt);
@@ -1538,6 +1559,7 @@ function zeichneClub(){
     const rows=SPR.lena, y=bodenY(LENA.t)-rows.length;
     schatten(LENA.x,LENA.t); sprite(rows,LENA.x-3,y);
     if(Math.abs(LENA.x-S.x)<40) text('LENA',LENA.x+3-textW('LENA')/2,y-9,P.dunkel);
+    if(naechst&&naechst.obj===LENA&&blink) text('E',LENA.x-2,y-16,P.gold);
   }});
 
   const m=S.marvin;
