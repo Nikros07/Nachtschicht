@@ -313,8 +313,8 @@ function baeume(L,seite){
     while(rand.length){ const k=rand.pop(); if(gesehen.has(k)||!(k in b)||!b[k]) continue; gesehen.add(k);
       if(b[k].geh) rand.push(b[k].geh); for(const w of b[k].wahl||[]) if(w.geh) rand.push(w.geh); }
     const tot=Object.keys(b).filter(k=>b[k]&&!gesehen.has(k));
-    /* tanzGut/tanzSchlecht werden von aussen betreten - das ist gewollt. */
-    const fremd=tot.filter(k=>!/^(tanzGut|tanzSchlecht)$/.test(k));
+    /* tanzGut/tanzSchlecht/startAbfuhr werden von aussen betreten - das ist gewollt. */
+    const fremd=tot.filter(k=>!/^(tanzGut|tanzSchlecht|startAbfuhr)$/.test(k));
     if(fremd.length) fehler.push(n+': unerreichbar ab start: '+fremd.join(', '));
   }
   return {zahl,knoten,fehler};

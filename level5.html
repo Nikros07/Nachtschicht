@@ -366,6 +366,9 @@ const LIEFERANT={ x:1250, t:0.5,
    ========================================================================== */
 
 const MIA_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'MIA', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   start:{ wer:'MIA', text:'Ja? Kann ich dir helfen?',
     wahl:[
       { txt:'Hi. Ich wollte einfach hallo sagen.',          geh:'ehrlich',  tu:{mag:['MIA',8]} },
@@ -458,6 +461,9 @@ const MIA_BAUM = {
 };
 
 const SOPHIE_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'SOPHIE', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   start:{ wer:'SOPHIE', text:'Du stehst zwischen mir und der Bar. Das kostet dich einen Shot.',
     wahl:[
       { txt:'Deal. Aber du trinkst mit.',       wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:12, mag:['SOPHIE',8]} },
@@ -523,6 +529,9 @@ const SOPHIE_BAUM = {
 };
 
 const KIRA_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'KIRA', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   /* Wer betrunken ankommt, sieht die ruhigen Antworten gar nicht erst -
      {pegel:-54} heisst "hoechstens 54". Kira ist die eine, bei der Pegel
      nichts oeffnet, sondern alles schliesst. */
@@ -927,7 +936,12 @@ function redeMit(z){
      Levelstart - und "betrunken" waere nie freigeschaltet. */
   speicherePegel(S.pegel);
   S.vx=0; S.vt=0;
-  starteGespraech(BAUM_FUER[z.id],'start',e=>gespraechEnde(z,e));
+  /* Eine Abfuhr bleibt nicht unter vier Augen (siehe TUNE (15)) - die naechste,
+     die man anspricht, hat schon davon gehoert. Nur einmal pro Figur, sonst
+     wiederholt sich die Zeile bei jedem erneuten Ansprechen. */
+  const abfuhrGehoert = !z._abfuhrGesagt && ZIELE.some(o=>o!==z&&o.stand==='nein');
+  if(abfuhrGehoert) z._abfuhrGesagt=true;
+  starteGespraech(BAUM_FUER[z.id], abfuhrGehoert?'startAbfuhr':'start', e=>gespraechEnde(z,e));
 }
 function gespraechEnde(z,e){
   S.pegel=ladePegel();        // Shots aus dem Gespraech zaehlen
