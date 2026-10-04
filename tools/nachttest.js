@@ -369,7 +369,7 @@ for(const seite of SEITEN){
   try{
     L.taste('Space',true); L.taste('Space',false);
     for(let i=0;i<4000&&E('S.modus')==='intro';i++){ E('S.szeneT+=99'); E('update(1/60)'); }
-    const tasten=['KeyD','KeyD','KeyD','KeyD','KeyD','KeyA','KeyE','Space','ShiftLeft','KeyW','KeyS','KeyR','KeyQ'];
+    const tasten=['KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyA','KeyE','Space','ShiftLeft','KeyW','KeyS','KeyR','KeyQ'];
     let gedrueckt=null;
     const modi=new Set([E('S.modus')]);
     let leerSumme=0, leerN=0;
