@@ -33,10 +33,10 @@ Raum zu einem Ort macht.
 
 **Schweregrad: hoch.** Betrifft jeden Bildschirm des Spiels.
 
-Teilweise behoben (1.–3.10., per `node tools/nachttest.js`, Software-Canvas-Näherung,
-nicht die obige Browser-Messung): Club 73 % → 53 % (Discokugeln, Lautsprecher,
-Garderobe, Raucherecke, Hinterausgang - Rückwand/Galerie bleibt offen, siehe
-NACHT-TODO „Blockiert"), Wohnung 66 % → 49 % (Bilderrahmen, Regal, Wandverkleidung),
+Teilweise behoben (1.–4.10., per `node tools/nachttest.js`, Software-Canvas-Näherung,
+nicht die obige Browser-Messung): Club 73 % → 46 % (Discokugeln, Lautsprecher,
+Garderobe, Raucherecke, Hinterausgang, Banner über Bar/Raucherecke an der Rückwand -
+Klos/Hinterausgang oben bleiben offen, siehe NACHT-TODO), Wohnung 66 % → 49 % (Bilderrahmen, Regal, Wandverkleidung),
 Afterhour 72 % → 58 % (Wanddeko, Plakate/Spinde), Späti 77 % → 59 % (Regal,
 Leuchtreklame), Heimweg 77 % → 64 % (Sterne, Mond, durchgehende Häuserreihe).
 
@@ -109,8 +109,8 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | ~~Der Ruf wurde angezeigt, gesenkt und bekommentiert — und von keiner Bedingung gelesen~~ | Eine Zahl im HUD, die nichts tut. | hoch | ~~Die drei besten Enden verlangen ihn~~ |
 | ~~Marvins Kampf war per Knopfdruck abschaltbar und gab dafür +6 Ruf~~ | Hing an `crew:'DENNIS'` — und Dennis kommt in Level 4 bedingungslos dazu. | hoch | ~~Hängt jetzt an der Entscheidung aus Level 2~~ |
 | ~~Zwei wortgleiche Antworten untereinander im Lena-Knoten~~ | — | hoch | ~~Eine entfernt~~ |
-| Die drei Frauen wissen nichts voneinander | Der Kommentar im Code verspricht das Gegenteil. Eine Abfuhr soll sich herumsprechen — aber niemand merkt es. | hoch | `S.abfuhren` gibt es bereits; die anderen beiden daran hängen |
-| Sophie ist die Trinkerin und hat keine einzige Pegel-Bedingung | — | mittel | — |
+| ~~Die drei Frauen wissen nichts voneinander~~ | Der Kommentar im Code verspricht das Gegenteil. Eine Abfuhr soll sich herumsprechen — aber niemand merkt es. | hoch | ~~Neuer Knoten startAbfuhr in allen drei Bäumen, ausgelöst sobald eine andere schon einen Korb gegeben hat (4.10.)~~ |
+| ~~Sophie ist die Trinkerin und hat keine einzige Pegel-Bedingung~~ | — | mittel | ~~Neue Wahl ab pegel:55, gleiche Schwelle wie Mia (4.10.)~~ |
 | `tools/level5_baeume.js` ist eine wortgleiche Zweitkopie der Bäume | Zwei Wahrheiten, von denen nur eine im Spiel landet. | niedrig | Löschen |
 
 ## Bus
@@ -132,7 +132,7 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | Die Wahl hat in Level 2 selbst keine sichtbare Folge | Dieselbe Cutscene, dasselbe Ende, als einziges Feedback eine Zeile „DABEI:". | hoch | Wer dableibt, verabschiedet sich sichtbar |
 | ~~„DER SCHLÄFER" und „DER TELEFONIERER" sind keine Personen~~ | Beide kamen in keiner anderen Datei namentlich vor. | hoch | ~~Heißen jetzt FINN und DAVID, je drei Sätze~~ |
 | ~~`gruppeGross`/`gruppeKlein` wurden nie zurückgesetzt~~ | Die Wahl des letzten Durchlaufs fälscht vier spätere Stellen. | hoch | ~~Behoben~~ |
-| Springen, Hoch und Runter werden beigebracht und tun nichts | Drei von sechs Eingaben ohne Zweck. | mittel | — |
+| ~~Springen, Hoch und Runter werden beigebracht und tun nichts~~ | Drei von sechs Eingaben ohne Zweck. | mittel | ~~Titelbild nennt Sprung nicht mehr als Steuerung, Sprung selbst bleibt im Code (4.10.)~~ |
 
 ## Durchs ganze Spiel
 
@@ -142,9 +142,9 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | ~~Die Schrift kannte keine Klammern~~ | `(weitergehen)` stand als `?WEITERGEHEN?` auf dem Bild. | mittel | ~~`( ) ' "` ergänzt~~ |
 | ~~`tempo2D` rechnete mit der Tiefe, auch wenn sie aus ist~~ | In flachen Leveln liefen Gehanimation und Schrittgeräusch, während sich nichts bewegte. | mittel | ~~Behoben~~ |
 | ~~`tools/pruefe.js` hatte die Engine-Liste fest eingetippt~~ | Eine neu eingehängte Datei wurde stillschweigend nie geprüft. | mittel | ~~Liest jetzt die Script-Tags~~ |
-| Das Titelbild von Level 1 ist eine Bedienungsanleitung | Sieben Tastenzeilen, dazu zwei Zeilen mit einem Pixel Abstand, die ineinanderlaufen. | mittel | — |
-| Zwei Handys mit zwei Tasten | `H` schaltet das eingezogene Handy aus Level 1 stumm, `T` öffnet das Handy der Engine. | mittel | — |
-| Level 2 hat kein `mobilKontext()` | Am Handy heißt jeder Knopf überall „AKTION". | mittel | Nach dem Muster aus `index.html` |
+| ~~Das Titelbild von Level 1 ist eine Bedienungsanleitung~~ | Sieben Tastenzeilen, dazu zwei Zeilen mit einem Pixel Abstand, die ineinanderlaufen. | mittel | ~~Nur noch vier Grundtasten, Überlappung gab es laut Messung keine mehr (4.10.)~~ |
+| ~~Zwei Handys mit zwei Tasten~~ | `H` schaltet das eingezogene Handy aus Level 1 stumm, `T` öffnet das Handy der Engine. | mittel | ~~Zwei echte, unterschiedliche Mechaniken - nur die Meldung bei H heißt nicht mehr HANDY (4.10.)~~ |
+| ~~Level 2 hat kein `mobilKontext()`~~ | Am Handy heißt jeder Knopf überall „AKTION". | mittel | ~~Nach dem Muster aus `index.html` (4.10.)~~ |
 | Die README beschreibt die alte Handy-Steuerung | „Steuerkreuz links, Aktionstasten rechts" gibt es seit dem Umbau nicht mehr. | niedrig | — |
 
 ---
