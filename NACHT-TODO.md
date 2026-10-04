@@ -79,9 +79,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
   Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
-- [ ] **P2 · Level 1: Titelbild ist eine Bedienungsanleitung** — sieben Tastenzeilen,
-  zwei davon laufen ineinander. Wo: index.html `titelbild()` · Fertig wenn: höchstens
-  vier Zeilen, nichts überlappt.
 - [ ] **P2 · Zwei Handys auf zwei Tasten** — `H` stumm (Level 1), `T` Engine-Handy.
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
@@ -124,6 +121,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Level 1: Titelbild zeigt nur noch vier Grundtasten · `08af616` ·
+  Sieben Tastenzeilen waren eine Bedienungsanleitung zum Lesen. Gemessen (Software-Canvas,
+  Zeilen 95-160): die Ueberlappung aus der Beschreibung gab es nicht mehr (sieben sauber
+  getrennte Zeilen y 100-152) - nur die Zeilenzahl verfehlte das Ziel. Lampe (Q) und Wurf
+  (R) kommen schon als eigene Schritte in der Lektion (nacht/lehre.js, opt:true), H ist
+  nur Audio. Jetzt nur noch A D/SHIFT/W S/E (vier Zeilen, deckungsgleich mit der
+  Touch-Fassung). Gemessen: y 100-128, vier getrennte Zeilen. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-04 · P2 · Club: Sophie reagiert auf Pegel, Lena ist ansprechbar · `b6a6d00` ·
   Sophie hatte als einzige der drei keine Pegel-Bedingung (Mia/Kira schon) - neue Wahl ab
