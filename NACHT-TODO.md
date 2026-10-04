@@ -76,10 +76,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
   Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
   Ausholen verschieden aus.
-- [ ] **P2 · Club: Die drei Frauen kennen sich** — Der Kommentar im Code verspricht,
-  dass sich eine Abfuhr herumspricht. `S.abfuhren` gibt es schon.
-  Wo: level5.html (`gespraechEnde`, die drei Bäume) · Fertig wenn: nach einer Abfuhr
-  erwähnt mindestens eine andere Figur sie, gemessen per Baum-Durchlauf.
 - [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
   Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
   Lena hat ein kurzes Gespräch.
@@ -131,6 +127,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Club: eine Abfuhr spricht sich jetzt im Gespraech herum · `0e73e3a` ·
+  Der Ruf-Abschlag wirkte schon, aber keine andere Figur erwaehnte eine Abfuhr. Neuer
+  Knoten startAbfuhr in allen drei Baeumen (MIA/SOPHIE/KIRA_BAUM), eine Zeile dann normal
+  weiter zu start; redeMit() waehlt ihn, sobald eine ANDERE der drei schon einen Korb
+  gegeben hat, nur einmal pro Figur. tools/nachttest.js: startAbfuhr zur Liste der von
+  aussen betretenen Knoten ergaenzt (wie tanzGut/tanzSchlecht). Gemessen per Headless-
+  Baumdurchlauf: Mia abblitzen lassen, danach startet das Gespraech mit Sophie bei
+  startAbfuhr statt bei start. Alle vier Pruefungen gruen, flagcheck.js unveraendert
+  bei 7 verloren.
 
 - [x] 2026-10-04 · P2 · Level 2: Titelbild bringt keine wirkungslose Taste mehr bei · `c04f355` ·
   SPRUNG/LEER stand als Steuerung auf dem Titelbild, aber Level 2 ist flach (keine Tiefe,
