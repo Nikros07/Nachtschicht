@@ -1,7 +1,7 @@
 # NACHT-BERICHT
 
-Datum: 2026-10-03
-Start-Commit: 30d6ae97b3fa047b02921abd4a3f3673d281e5e5
+Datum: 2026-10-04
+Start-Commit: fad935a05e970b9a2f88e1a479e45abd58e8ad60
 
 ## Die vier Prüfungen
 
@@ -17,13 +17,13 @@ reparieren" entfällt.
 
 ## Nichtstun-Zahlen je Level (300 s)
 
-| Level | Ereignisse | Letztes bei | Vergleich zum Vortag (2026-10-02) |
+| Level | Ereignisse | Letztes bei | Vergleich mit dem Vortag (2026-10-03) |
 |:--|--:|--:|:--|
 | index.html (Level 1) | 1 | 165 s | stimmt überein |
 | level2.html | 0 | 0 s | stimmt überein |
 | level3.html (Bus) | 1 | 34 s | stimmt überein |
-| level4.html | 0 | 0 s | Referenz routinen/nacht.md: null — stimmt überein |
-| level5.html (Club) | 16 | 295 s | **anders** (Vortag-Bericht: 4, 107 s) — Bericht vom 2.10. wurde vor der Nachtbau-Phase geschrieben; die dort gebaute „Club-Uhr: Ambient-Ereignisse" (Commit `afea7a1`) steckt jetzt im getesteten Stand. Kein neuer Fund, nur ein späterer Messzeitpunkt. |
+| level4.html | 3 | 9 s | **anders** (Vortag-Bericht: 0, 0 s) — der Vortagsbericht nennt noch die Referenz aus `routinen/nacht.md` (vor der Leertasten-Korrektur). Die Korrektur selbst (Commit `044eef1`, „Leertaste startet jetzt wirklich") steckt bereits im Vortagsstand und ist unter „Erledigt (Nacht)" in `NACHT-TODO.md` vom 3.10. verzeichnet; dort auch schon das jetzt bestätigte Ergebnis „3 Ereignisse, letztes bei 9 s". Kein neuer Fund.
+| level5.html (Club) | 16 | 295 s | stimmt überein |
 | level6.html | 12 | 291 s | stimmt überein |
 | level7.html | 0 | 0 s | stimmt überein |
 | level8.html | 6 | 59 s | stimmt überein |
