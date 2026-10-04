@@ -76,9 +76,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
   Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
   Ausholen verschieden aus.
-- [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
-  Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
-  Lena hat ein kurzes Gespräch.
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
   Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
@@ -127,6 +124,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Club: Sophie reagiert auf Pegel, Lena ist ansprechbar · `b6a6d00` ·
+  Sophie hatte als einzige der drei keine Pegel-Bedingung (Mia/Kira schon) - neue Wahl ab
+  pegel:55, gleiche Schwelle wie Mia, fuehrt zu einer eigenen Abfuhr. Lena stand seit der
+  ersten Fassung neben der Tanzflaeche, aber naechstesZiel() kannte sie nicht - neuer
+  LENA_BAUM (zwei kurze Zweige, keine Werte-Aenderung), als 'lena' verdrahtet. Ein erster
+  Versuch mit tu:{mag:['LENA',6]} haette eine neue, nie gelesene Beziehung angelegt
+  (flagcheck.js 9->10) - wieder entfernt. Gemessen per Headless-Lauf: Sophie bei Pegel 60
+  zeigt die neue Wahl; naechstesZiel() bei Lena liefert {art:'lena'}. Alle vier Pruefungen
+  gruen, flagcheck.js unveraendert bei 7 verloren/9 Beziehungen.
 
 - [x] 2026-10-04 · P2 · Club: eine Abfuhr spricht sich jetzt im Gespraech herum · `0e73e3a` ·
   Der Ruf-Abschlag wirkte schon, aber keine andere Figur erwaehnte eine Abfuhr. Neuer
