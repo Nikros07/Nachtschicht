@@ -32,8 +32,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. War blockiert, weil die vorgeschriebene Messung (`node tools/nachttest.js`) den Bereich (x 620-1400) nie erreichte - seit `66ecc5f` (4.10., Tastenmix mit mehr KeyD) kommt derselbe Lauf dort an (x>900 bei 41,4 s), die Messung ist also jetzt möglich.
-  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 % (gemessen mit `node tools/nachttest.js level5`, dem jetzt durch den ganzen Level laufenden Zufallslauf). Erst danach gilt die obere Bildhälfte im Club als erledigt.
+- [ ] **P1 · Club-Decke, vierter Schritt: Klos und Hinterausgang oben noch leer** — Eingang/
+  Tanzflaeche (Discokugeln, Lautsprecherreihe) und jetzt Bar/Raucherecke (Banner, `3243c27`)
+  haben eine Decke/Wanddeko. Klos (1060-1200) und Hinterausgang (1200-1400) haben nur
+  Boden-Deko (Waschbecken, Kisten/Lieferant) - die Wand darueber ist leer. Gefunden beim
+  Messen des Club-Decke-Punkts: Kamera direkt auf x=1150 bzw. x=1300 gestellt (Software-
+  Canvas, `modus:'spiel'`), 56,7 % bzw. 59,4 % leere Bildzeilen - deutlich mehr als die
+  46,5 % bei Bar/Raucherecke.
+  Wo: level5.html (zeichneClub, ORTE Klos/Hinterausgang) · Fertig wenn: leere Bildzeilen bei
+  Kamera auf x=1150 und auf x=1300 (gleiche Methode wie oben) je hoechstens 50 %.
+
 ### P2
 
 - [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
@@ -117,6 +125,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P1 · Club-Decke: Banner an der Rueckwand ueber Bar und Raucherecke · `3243c27` ·
+  Dritter Schritt gegen die leere obere Bildhaelfte im Club, nach Lautsprecherreihe und
+  Discokugeln. War zweimal blockiert (siehe „Blockiert"), weil der Zufallslauf diesen
+  Teil des Levels nie erreichte - seit `66ecc5f` (Tastenmix-Punkt oben) geht das. Erster
+  Versuch nur ein halb so hoher Rahmen (y 38-105) - kam auf 48,4 % statt der
+  geforderten hoechstens 48, weil die Wand darueber und darunter leer blieb. Banner
+  jetzt ueber die volle Wandhoehe (y 20 bis TIEFE.hinten). Gemessen (node
+  tools/nachttest.js level5): leere Bildzeilen 46,5 % (gefordert hoechstens 48 %).
+  Alle vier Pruefungen gruen, flagcheck.js unveraendert bei 7 verloren.
 
 - [x] 2026-10-04 · P2 · nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level · `66ecc5f` ·
   Tastenmix fuer den 60-s-Spiellauf war fast ausgeglichen (2x KeyD gegen 1x KeyA, dazu
@@ -302,6 +320,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Lauf - mit dem jetzigen Zufallslauf ist das Ziel so nicht pruefbar. Bleibt
   offen, bis der neue Punkt „Nichtstun-Zufallslauf Level 5 kommt nie ueber
   x=400 hinaus" entschieden ist.
+  **Erledigt am 4.10.** (siehe „Erledigt (Nacht)"): der Zufallslauf erreicht den
+  Bereich seit `66ecc5f`, das Banner steht seit `3243c27`.
 
 - **2026-10-01 · P1 · Obere Bildhälfte füllen** — nicht gebaut, kein Code geändert.
   Grund: das Ziel (Club unter 45 % leere Zeilen, gemessen gerade bei ~78 %) verlangt
