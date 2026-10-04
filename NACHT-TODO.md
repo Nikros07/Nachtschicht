@@ -83,8 +83,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
   Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
   Lena hat ein kurzes Gespräch.
-- [ ] **P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts** —
-  Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
   Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
@@ -133,6 +131,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Level 2: Titelbild bringt keine wirkungslose Taste mehr bei · `c04f355` ·
+  SPRUNG/LEER stand als Steuerung auf dem Titelbild, aber Level 2 ist flach (keine Tiefe,
+  keine Hindernisse) - Springen hatte nie eine Spielwirkung. "WASD" als Sammelbegriff hatte
+  dasselbe Problem: nur A/D bewegen, W/S (Tiefe) tun hier nichts. Die Lektion
+  (nacht/lehre.js) lehrte beides schon vorher nicht. Titelbild zeigt jetzt nur noch A D
+  (LAUFEN) und E (REDEN, SUCHEN, TRINKEN); der Sprung selbst bleibt im Code, wird nur nicht
+  mehr beworben. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-04 · P2 · Level 2: mobilKontext() - Knopf zeigt an, was E tut · `794c62b` ·
   Ohne eigenes mobilKontext() griff der ALLGEMEIN-Fallback aus nacht/mobil.js - der Knopf
