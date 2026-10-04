@@ -1056,8 +1056,11 @@ function titelbild(){
   textC('LEVEL 2 - VORGLUEHEN',44,P.dim);
   const zeilen=['DIE BAHN FAEHRT UM ZEHN','VIER LEUTE. KEINER WILL LOS.','MACH SIE FERTIG.'];
   zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['STICK','LAUFEN'],['SPRUNG','SPRINGEN'],['KNOPF','REDEN, SUCHEN, TRINKEN']]
-                   :[['WASD','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, SUCHEN, TRINKEN']];
+  /* Kein SPRUNG/LEER hier: Springen und Tiefe (W/S) haben in dieser flachen
+     Wohnung keine Wirkung (TIEFE_PRO_SEITE['level2.html']=false, keine
+     Hindernisse) - beigebracht wurde eine Taste, die nichts tut. */
+  const st=IS_TOUCH?[['STICK','LAUFEN'],['KNOPF','REDEN, SUCHEN, TRINKEN']]
+                   :[['A D','LAUFEN'],['E','REDEN, SUCHEN, TRINKEN']];
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);
