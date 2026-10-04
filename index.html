@@ -660,8 +660,11 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); schleichAn=true; }
   if(e.code==='KeyQ'){ e.preventDefault(); lampeSchalten(); }
+  /* "HANDY STUMM/LAUT" hiess das frueher - verwechselbar mit dem Engine-Handy
+     (T, nacht/handy.js), einer ganz anderen Oberflaeche. S.stumm/nachricht()/
+     laerm() bleiben unveraendert, nur das Wort HANDY faellt aus der Meldung. */
   if(e.code==='KeyH'){ e.preventDefault(); S.stumm=!S.stumm;
-                       meldung(S.stumm?'HANDY STUMM':'HANDY LAUT',1.2); piep(S.stumm?300:600,.06); }
+                       meldung(S.stumm?'TON AUS':'TON AN',1.2); piep(S.stumm?300:600,.06); }
   if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
   if(S.modus==='titel'&&['ArrowLeft','KeyA'].includes(e.code)){ wechsleSchwierigkeit(-1); piep(440,.05); }
   if(S.modus==='titel'&&['ArrowRight','KeyD'].includes(e.code)){ wechsleSchwierigkeit(1); piep(660,.05); }
