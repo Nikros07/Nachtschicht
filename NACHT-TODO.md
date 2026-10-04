@@ -32,19 +32,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
-  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
+- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. War blockiert, weil die vorgeschriebene Messung (`node tools/nachttest.js`) den Bereich (x 620-1400) nie erreichte - seit `c1e717e` (4.10., Tastenmix mit mehr KeyD) kommt derselbe Lauf dort an (x>900 bei 38,6 s), die Messung ist also jetzt möglich.
+  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 % (gemessen mit `node tools/nachttest.js level5`, dem jetzt durch den ganzen Level laufenden Zufallslauf). Erst danach gilt die obere Bildhälfte im Club als erledigt.
 ### P2
 
-- [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
-  60-s-Spiellauf (`SPIEL_SEK`) bewegt sich mit dem festen Seed nur von x=40 bis x≈371
-  (Eingang, ein Stück Tanzfläche), dann füllt ein Minispiel die restliche Zeit. Bar,
-  Raucherecke, Klos und Hinterausgang (x 620-1400) werden von der „leere Bildzeilen"-
-  Messung dieses Laufs nie gesehen - jede künftige Deko dort ist mit `node
-  tools/nachttest.js level5` nicht prüfbar (siehe „Blockiert", Club-Decke-Galerie).
-  Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
-  derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
-  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
 - [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
   eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
   einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
@@ -126,6 +117,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level · `c1e717e` ·
+  Tastenmix fuer den 60-s-Spiellauf war fast ausgeglichen (2x KeyD gegen 1x KeyA, dazu
+  sieben Tasten ohne Seitwaertswirkung) - im Schnitt nur 10% der Hoechstgeschwindigkeit
+  nach rechts. KeyD jetzt 5x statt 2x (13 statt 10 Eintraege), KeyA weiterhin 1x.
+  Gemessen (Level 5, Seed 12345): x ueberschreitet 900 jetzt bei 38,6 s, Lauf endet bei
+  x=1209,6 (vorher: nie ueber x=371 in 60 s). Macht den Club-Decke-Punkt (siehe
+  „Blockiert" unten) wieder pruefbar. Alle vier Pruefungen weiterhin gruen, „verloren"
+  bei flagcheck.js unveraendert bei 7.
 
 - [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
   Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der
