@@ -44,17 +44,27 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
-  eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
-  einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
-  bestehenden Schritt „KONTERN IM GOLDENEN BEREICH" ersetzt, statt nur eine Taste einmal zu
-  pruefen). Am 3.10. geteilt - zuerst nur Level 4, Block/Rolle (Level 3, 8) folgen als eigene
-  Punkte, erst wenn der Mechanismus hier steht.
-  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`), nacht/kampf.js (`kaempferTakt` wiederverwenden,
-  nicht duplizieren) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
+- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — am 4.10. nochmal angesehen und
+  genauer geplant, aber nicht gebaut: `nacht/lehre.js` ist eine gemeinsame Datei fuer alle acht
+  Level, fuenf davon laden `nacht/kampf.js` gar nicht (index, level2, 5, 6, 7 - siehe
+  `tools/pruefe.js`-Ausgabe) - jeder Zugriff auf `kaempfer()`/`kaempferTakt()` dort muss hinter
+  `typeof kaempfer==='function'` stehen, wie beim bestehenden `typeof piep` in derselben Datei.
+  Level 4 treibt seinen Boss schon ueber `kaempfer()`+`kaempferTakt()` aus kampf.js
+  (`bossTakt()`), aber `starteAngriff()`/`bossPhase()` sind levelspezifisch (TUNE, Phasen) und
+  duerfen von der gemeinsamen `lehre.js` nicht aufgerufen werden - die Puppe fuer die Lektion
+  braucht einen eigenen, einfachen Windup, nicht Level 4s Phasen-Logik. Konkreter Plan fuer den
+  Bau: in `Z.pruefe()` fuer einen Schritt mit `s.puppe` ein eigenes `s._puppe=kaempfer({x:0,t:0,
+  ausholenDauer:1.2,schlagDauer:.2})` anlegen und `s._puppe.zustand='ausholen'` setzen; in
+  `Z.takt(dt)` `kaempferTakt(s._puppe,dt)` aufrufen und bei `zustand==='frei'` zurueck auf
+  `'ausholen'` setzen (endlose Wiederholung, bis der Schritt erledigt ist); in `Z.taste()` bei
+  `KeyE` pruefen `imKonterfenster(s._puppe,KAMPF.konterAnteil)` - nur dann den Schritt als
+  erledigt markieren.
+  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`, siehe Plan oben), nacht/kampf.js (nur lesen,
+  nichts aendern) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
   Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
   Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
-  falschen Zeit = nicht).
+  falschen Zeit = nicht); `node tools/pruefe.js` bleibt fuer alle zehn Seiten gruen (auch die
+  fuenf ohne kampf.js).
 - [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
   Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
   von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
@@ -73,8 +83,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
   Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
   Lena hat ein kurzes Gespräch.
-- [ ] **P2 · Level 2: kein `mobilKontext()`** — am Handy heißt jeder Knopf „AKTION".
-  Wo: level2.html, Muster aus index.html · Fertig wenn: Knopfaufschriften je Modus.
 - [ ] **P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts** —
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
@@ -125,6 +133,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-04 · P2 · Level 2: mobilKontext() - Knopf zeigt an, was E tut · `794c62b` ·
+  Ohne eigenes mobilKontext() griff der ALLGEMEIN-Fallback aus nacht/mobil.js - der Knopf
+  hiess immer AKTION. Jetzt dieselbe Vorrangregel wie die echte Aktionsaufloesung in
+  update() (Personen vor Moebeln, das Naehere gewinnt), plus Titel/Intro/Cutscene/Ende/
+  Pause/Kampf/Gespraech. Gemessen per Headless-Lauf: REDEN bei Max Ferdi, NEHMEN am
+  Kuehlschrank, TRINKEN an den Getraenken, SPIEGEL am Spiegel, SUCHEN/LEER am Tisch je
+  nach S.durchsucht, WEITER waehrend des Mitnehmen-Gespraechs, KONTER im Kampf - vorher
+  ueberall AKTION. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-04 · P1 · Club-Decke: Banner an der Rueckwand ueber Bar und Raucherecke · `3243c27` ·
   Dritter Schritt gegen die leere obere Bildhaelfte im Club, nach Lautsprecherreihe und
