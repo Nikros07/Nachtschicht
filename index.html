@@ -2104,9 +2104,12 @@ function titelbild(){
               ['KNOPF','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],86,y,P.dim); });
   } else {
+    /* Nur die vier Grundtasten - Lampe (Q), Wurf (R) kommen schon als
+       eigene, ausprobierbare Schritte in der Lektion (nacht/lehre.js),
+       H ist nur Audio und nicht spielentscheidend. Sieben Zeilen hier
+       waren eine Bedienungsanleitung zum Lesen statt zum Merken. */
     const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','AN DER TREPPE'],
-              ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
-              ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
+              ['E','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   }
   /* Schwierigkeit. Die alte Crew-Zeile stand hier - aber ein Start setzt
