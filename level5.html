@@ -1404,6 +1404,20 @@ function zeichneClub(){
     }
   }
 
+  /* Rueckwand-Banner ueber Bar und Raucherecke - dritter Schritt gegen die
+     leere Decke (PLAYTEST.md). Hohe Banner ueber die volle Wandhoehe
+     (y 20 bis TIEFE.hinten, Boden-Y der Rueckwand), abwechselnd eingefaerbt,
+     wiederholt ueber x 625-1065 (Bar und Raucherecke, siehe ORTE). Ein
+     erster, nur halb so hoher Versuch (Rahmen bei y 38-105) liess die Wand
+     darueber und darunter leer - deckt jetzt die ganze Wand ab. */
+  for(let x=625;x<1065;x+=48){
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,20,40,TIEFE.hinten-20);
+    ctx.fillStyle=(Math.floor((x-625)/48)%2===0)?'#3a4452':'#4a2c38';
+    ctx.fillRect(x+3,23,34,TIEFE.hinten-26);
+    ctx.fillStyle='#ffffff22'; ctx.fillRect(x+3,23,34,1);
+    ctx.fillStyle='#00000055'; ctx.fillRect(x+3,TIEFE.hinten-3,34,1);
+  }
+
   /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
   const lichter=[[240,'#ff3d8b',0],[390,'#42d9ff',1.4],[540,'#ffd447',.6]];
   for(const [lx,col,off] of lichter){
