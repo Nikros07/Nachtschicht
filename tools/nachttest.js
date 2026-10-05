@@ -414,7 +414,22 @@ for(const seite of SEITEN){
       if(!EQ('LEHRE.pruefe()')) meld(seite,'Lektion startet nicht im Intro');
       for(let i=0;i<3;i++){ EQ('LEHRE.takt(1/60)'); EQ('LEHRE.zeichne()'); }
       const gr=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.gr.map(g=>g[0]))');
-      for(const grp of gr) for(const code of grp){ Q.taste(code,true); Q.taste(code,false); }
+      const puppen=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>!!s.puppe)');
+      for(let si=0;si<gr.length;si++){
+        if(puppen[si]){
+          /* Uebungspuppe: zur falschen Zeit druecken darf nicht erledigen -
+             erst danach bis ins Konterfenster takten und dann druecken. */
+          Q.taste('KeyE',true); Q.taste('KeyE',false);
+          if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt zur falschen Zeit schon erledigt');
+          let guard=0;
+          while(!EQ('LEHRE.L.schritte['+si+']._puppe&&imKonterfenster(LEHRE.L.schritte['+si+']._puppe,KAMPF.konterAnteil)')&&guard<600){
+            EQ('LEHRE.takt(1/60)'); guard++;
+          }
+          Q.taste('KeyE',true); Q.taste('KeyE',false);
+        } else {
+          for(const code of gr[si]){ Q.taste(code,true); Q.taste(code,false); }
+        }
+      }
       EQ('LEHRE.zeichne()');
       if(!EQ('LEHRE.alleErledigt()')) meld(seite,'Lektion: nicht alle Schritte lassen sich erledigen');
       const mk=EQ('LEHRE.mobilKontext()');

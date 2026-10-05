@@ -57,7 +57,7 @@ const LEKTIONEN={
           'RAMMEN KANN MAN NICHT KONTERN: AUSWEICHEN.'],
     schritte:[
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
-      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER' },
+      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER', puppe:true },
       { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN - KOSTET KRAFT', block:true },
       { gr:[['Space']], taste:'LEER', touch:'ROLLE', was:'ROLLEN - WEICHT AUS', btn:'ROLLE' },
       { gr:[['ArrowUp','KeyW'],['ArrowDown','KeyS']], taste:'W S', touch:'STICK', was:'NACH HINTEN, VORNE AUSWEICHEN', opt:true },
@@ -122,7 +122,16 @@ window.LEHRE=(function(){
     if(gesehen()&&!erzwungen){ Z.fertig=true; return false; }
     Z.aktiv=true; Z.t=0; Z.skipT=0; Z.runter.clear();
     Z.erledigt=L.schritte.map(()=>false);
-    L.schritte.forEach((s,i)=>{ s._offen=s.gr.map(()=>true); });
+    L.schritte.forEach((s,i)=>{
+      s._offen=s.gr.map(()=>true);
+      /* Uebungspuppe: eine stillstehende Figur, die immer wieder ausholt -
+         nur kaempfer()/kaempferTakt() aus kampf.js, keine Level-Phasenlogik
+         (siehe NACHT-TODO.md). Fuenf von acht Leveln laden kampf.js nicht. */
+      if(s.puppe&&typeof kaempfer==='function'){
+        s._puppe=kaempfer({x:0,t:0,ausholenDauer:1.2,schlagDauer:.2});
+        s._puppe.zustand='ausholen';
+      }
+    });
     return true;
   };
 
@@ -139,6 +148,16 @@ window.LEHRE=(function(){
     const weiter=(code==='Enter')||(code==='KeyE'&&Z.alleErledigt());
     if(weiter&&Z.alleErledigt()){ Z.beenden(); return; }
     L.schritte.forEach((s,i)=>{
+      /* Puppe: nur ein im Fenster getroffener Konter zaehlt - ein E
+         ausserhalb des Fensters bleibt wirkungslos, der Schritt bleibt offen. */
+      if(s.puppe){
+        if(code==='KeyE'&&!Z.erledigt[i]&&s._puppe&&typeof imKonterfenster==='function'
+           &&imKonterfenster(s._puppe,KAMPF.konterAnteil)){
+          s._offen[0]=false; Z.erledigt[i]=true;
+          try{ if(typeof piep==='function') piep(520+i*70,.05,'square',.04); }catch(e){}
+        }
+        return;
+      }
       s.gr.forEach((g,k)=>{ if(s._offen[k]&&g.includes(code)) s._offen[k]=false; });
       if(!Z.erledigt[i]&&s._offen.every(o=>!o)){
         Z.erledigt[i]=true;
@@ -152,6 +171,12 @@ window.LEHRE=(function(){
     /* ENTER halten ueberspringt - auch wenn noch nicht alles probiert ist. */
     if(Z.runter.has('Enter')){ Z.skipT+=dt; if(Z.skipT>=LEHRE_SKIP) Z.beenden(); }
     else Z.skipT=Math.max(0,Z.skipT-dt*2);
+    /* Puppe: holt endlos neu aus, bis der Schritt per Konter erledigt ist. */
+    L.schritte.forEach(s=>{
+      if(!s._puppe||typeof kaempferTakt!=='function') return;
+      kaempferTakt(s._puppe,dt);
+      if(s._puppe.zustand==='frei'){ s._puppe.zustand='ausholen'; s._puppe.zT=0; }
+    });
   };
 
   /* Am Handy richtet sich das Bedienfeld nach der Lektion: nur die Knoepfe,
