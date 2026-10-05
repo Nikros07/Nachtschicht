@@ -120,6 +120,7 @@ window.LEHRE=(function(){
     if(Z.fertig||!L||aus) return false;
     if(typeof S==='undefined'||!S||S.modus!=='intro') return false;
     if(gesehen()&&!erzwungen){ Z.fertig=true; return false; }
+    if(typeof kapitelAktiv==='function'&&kapitelAktiv()) return false;   // erst die Kapitelkarte
     Z.aktiv=true; Z.t=0; Z.skipT=0; Z.runter.clear();
     Z.erledigt=L.schritte.map(()=>false);
     L.schritte.forEach((s,i)=>{ s._offen=s.gr.map(()=>true); });

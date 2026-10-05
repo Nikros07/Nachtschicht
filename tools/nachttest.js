@@ -365,6 +365,20 @@ for(const seite of SEITEN){
     if(b.zahl) bericht.push(b.zahl+' Baeume/'+b.knoten+' Knoten');
   }catch(e){ meld(seite,'Baumpruefung: '+e.message); }
 
+  /* 1b) Plauschzeilen des Levels: wer+text <= 44 Zeichen, nur Zeichen der Schrift */
+  try{
+    const glyph=new Set(E('Object.keys(GLYPH)'));
+    const pz=E('typeof PLAUSCH_ZEILEN!=="undefined"?PLAUSCH_ZEILEN:[]');
+    const ids=new Set();
+    for(const z of pz){
+      const t=(z.wer?z.wer+': ':'')+z.text;
+      if(t.length>44) meld(seite,'Plausch '+z.id+': '+t.length+' Zeichen (max 44)');
+      for(const c of t.toUpperCase()) if(!glyph.has(c)){ meld(seite,'Plausch '+z.id+': Zeichen "'+c+'" fehlt in der Schrift'); break; }
+      if(ids.has(z.id)) meld(seite,'Plausch: id '+z.id+' doppelt'); ids.add(z.id);
+    }
+    if(pz.length) bericht.push(pz.length+' Plauschzeilen');
+  }catch(e){ meld(seite,'Plauschpruefung: '+String(e.message).slice(0,120)); }
+
   /* 2) Spielen: Titel -> Intro -> 60 s mit zufaelligen Tasten */
   try{
     L.taste('Space',true); L.taste('Space',false);
@@ -426,6 +440,23 @@ for(const seite of SEITEN){
   }catch(e){ meld(seite,'Lektion: '+String(e.message).slice(0,140)); }
 
   zeile(seite,bericht.join(' | '));
+}
+
+/* ---- Texte aus texte.js (und EPILOG, falls vorhanden): Zeilenlaenge ----------- */
+if(!filter.length||filter.some(f=>'index.html'.includes(f))){
+  try{
+    const L=lade('index.html'), E=c=>L.api.ev(c);
+    const glyph=new Set(E('Object.keys(GLYPH)')); let n=0, bad=0;
+    const pr=(wo,t,max)=>{ if(typeof t!=='string') return; n++;
+      for(const z of t.split('|')){ if(z.length>max){ bad++; meld('Texte',wo+': "'+z+'" hat '+z.length+' Zeichen (max '+max+')'); }
+        for(const c of z.toUpperCase()) if(!glyph.has(c)){ bad++; meld('Texte',wo+': Zeichen "'+c+'" fehlt in der Schrift'); break; } } };
+    const kap=E('TEXTE_KAPITEL'); for(const k of Object.keys(kap)) for(const f of ['zeit','ort','zeile']) pr('KAPITEL '+k+'.'+f,kap[k][f],44);
+    E('TEXTE_BISHER').forEach((b,i)=>pr('BISHER '+i,b.txt,36));
+    const mo=E('TEXTE_MOMENTE'); for(const k of Object.keys(mo)) for(const f of ['titel','l1','l2']) pr('MOMENT '+k+'.'+f,mo[k][f],44);
+    if(E('typeof EPILOG')==='object'){ const ep=E('EPILOG');
+      for(const k of Object.keys(ep)) for(const [i,z] of (ep[k].zeilen||[]).entries()) pr('EPILOG '+k+' '+i,z.txt,44); }
+    if(!bad) zeile('Texte',n+' Texte geprueft (Laenge, Schrift)');
+  }catch(e){ meld('Texte',String(e.message).slice(0,140)); }
 }
 
 /* ---- Konter-Test, nur wenn Level 2 mitlaeuft ------------------------------------ */

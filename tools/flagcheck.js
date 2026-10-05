@@ -40,8 +40,10 @@ const gesetztWie=n=>setzt[n]||Object.keys(setzt).filter(vorsilbe).filter(p=>n.st
 const gelesenWie=n=>liest[n]||Object.keys(liest).filter(vorsilbe).filter(p=>n.startsWith(p)).map(p=>liest[p]).flat();
 
 const alle=[...new Set([...Object.keys(setzt),...Object.keys(liest)])].sort();
-const verloren=alle.filter(f=>gesetztWie(f).length&&!(gelesenWie(f)||[]).length&&!vorsilbe(f));
-const tot=alle.filter(f=>(gelesenWie(f)||[]).length&&!gesetztWie(f).length&&!vorsilbe(f));
+/* Dynamisch gelesen ('moment'+n in erzaehl.js, 'tschuess_'+name im Epilog): Allowlist */
+const ERLAUBT=/^(moment[0-9]*|tschuess_.*)$/;
+const verloren=alle.filter(f=>!ERLAUBT.test(f)&&gesetztWie(f).length&&!(gelesenWie(f)||[]).length&&!vorsilbe(f));
+const tot=alle.filter(f=>!ERLAUBT.test(f)&&(gelesenWie(f)||[]).length&&!gesetztWie(f).length&&!vorsilbe(f));
 const wirksam=alle.length-verloren.length-tot.length-alle.filter(vorsilbe).length;
 
 console.log('FLAGS: '+alle.length+' gesamt | wirksam '+wirksam+' | verloren '+verloren.length+' | ohne Setzer '+tot.length);

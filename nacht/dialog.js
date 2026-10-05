@@ -54,6 +54,7 @@ function betrete(name){
   const k=GESPR.baum[name];
   if(!k){ const f=GESPR.fertig; GESPR=null; if(f) f(name); return; }
   wirke(k.tu);
+  if(k.wer&&typeof stimmePiep==='function') stimmePiep(k.wer);
   GESPR.knoten=k; GESPR.name=name; GESPR.gewaehlt=0; GESPR.tippT=0;
   GESPR.wahlen=(k.wahl||[]).filter(w=>bedingungErfuellt(w.wenn));
   /* Bedenkzeit nach Schwierigkeit - auf LOCKER anderthalbmal so lang. */
@@ -114,7 +115,7 @@ function zeichneGespraech(){
   ctx.fillStyle=D_FARBE.kasten; ctx.fillRect(0,y0,W,hoehe);
   ctx.fillStyle=D_FARBE.rand;   ctx.fillRect(0,y0,W,1);
 
-  if(k.wer) text(k.wer,8,y0+5,D_FARBE.name);
+  if(k.wer) text(k.wer,8,y0+5,typeof stimmeFarbe==='function'?stimmeFarbe(k.wer):D_FARBE.name);
 
   /* Zeitbalken - nur wenn der Knoten Zeitdruck hat */
   if(GESPR.zeitRest>0&&k.zeit){

@@ -25,6 +25,7 @@ window.HANDY={ offen:false };
    kommen kann. wenn = Bedingung wie in den Gespraechsbaeumen.
    Antworten wirken wie Auswahlen im Gespraech (tu). */
 const HANDY_DREHBUCH=[
+  /* vorlesen:{wer,text} - ohne Handy (handyDa() falsch) sagt es stattdessen der PLAUSCH (Canvas: Grossbuchstaben, wer+text <= 44) */
   { id:'moritz1', ab:2, von:'MORITZ', text:'Wo bleibst du? Hier laeuft schon was.',
     antworten:[ { txt:'Bin unterwegs.',               tu:{mag:['MORITZ',3]} },
                 { txt:'Wurde eingesperrt. Lange Geschichte.', tu:{mag:['MORITZ',5]} } ] },
@@ -75,6 +76,7 @@ function handyZustellen(){
     if(!bedingungErfuellt(n.wenn)) continue;
     liste.push({ id:n.id, gelesen:false, antwort:null });
     speichereStand();
+    if(!handyDa()&&n.vorlesen&&typeof PLAUSCH!=='undefined'){ try{ PLAUSCH.sag(n.vorlesen.wer,n.vorlesen.text); }catch(e){} }
     if(handyDa()){
       handyToast('NEUE NACHRICHT - '+n.von);
       if(typeof mobilVibriere==='function') mobilVibriere([0,40,60,40]);

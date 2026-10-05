@@ -25,6 +25,8 @@ const STAND_VORLAGE={
   inventar:{},        // {'PFAND':3,'FEUERZEUG':1}
   flags:{},           // {'clubDrin':true} - Entscheidungen, die spaeter zaehlen
   gesehen:[],         // welche Enden schon erreicht wurden
+  knotenBest:{},      // {'ENDETITEL':0-3} - bester Wolle-Knoten je Ende
+  momenteBest:[],     // gefundene Polaroids (1-8), ueberlebt den Neuanfang
   nachrichten:[],     // was aufs Handy kam, siehe handy.js
 };
 
@@ -41,6 +43,8 @@ function ladeStand(){
   st.inventar={...(s.inventar||{})};
   st.flags={...(s.flags||{})};
   st.gesehen=s.gesehen||[];
+  st.knotenBest={...(s.knotenBest||{})};
+  st.momenteBest=Array.isArray(s.momenteBest)?s.momenteBest:[];
   st.nachrichten=s.nachrichten||[];
   return st;
 }
@@ -83,7 +87,7 @@ function setzeKapitel(n){ if(n>NACHT.kapitel){ NACHT.kapitel=n; speichereStand()
 
 /* ---- Bedingungen, wie sie im Gespraechsbaum stehen ----
    {mut:40} heisst "mut mindestens 40". {geld:-5} heisst "hoechstens 5".
-   {crew:'SEMIH'} / {hat:'PFAND'} / {flag:'clubDrin'} / {nichtFlag:'...'} */
+   {crew:'SEMIH'} / {hat:'PFAND'} / {nichtHat:'PFAND'} / {flag:'clubDrin'} / {nichtFlag:'...'} */
 function bedingungErfuellt(b){
   if(!b) return true;
   for(const [k,v] of Object.entries(b)){
@@ -91,6 +95,7 @@ function bedingungErfuellt(b){
     if(k==='hat'){ if(!hatDing(v)) return false; continue; }
     if(k==='flag'){ if(!flag(v)) return false; continue; }
     if(k==='nichtFlag'){ if(flag(v)) return false; continue; }
+    if(k==='nichtHat'){ if(hatDing(v)) return false; continue; }
     if(k==='mag'){ if(beziehung(v[0])<v[1]) return false; continue; }
     if(typeof v==='number'){
       if(v>=0 ? wert(k)<v : wert(k)>-v) return false;
@@ -119,6 +124,8 @@ function nachtZuruecksetzen(){
   /* Die gesehenen Enden ueberleben den Neuanfang - sie sind der Grund,
      die Nacht nochmal zu spielen. */
   const gesehen=(NACHT&&NACHT.gesehen)||[];
-  NACHT=tiefKopie(STAND_VORLAGE); NACHT.gesehen=gesehen; speichereStand();
+  const knotenBest=(NACHT&&NACHT.knotenBest)||{}, momenteBest=(NACHT&&NACHT.momenteBest)||[];
+  NACHT=tiefKopie(STAND_VORLAGE); NACHT.gesehen=gesehen;
+  NACHT.knotenBest=knotenBest; NACHT.momenteBest=momenteBest; speichereStand();
   try{ localStorage.removeItem(CREW_KEY); localStorage.removeItem(PEGEL_KEY); }catch(e){}
 }
