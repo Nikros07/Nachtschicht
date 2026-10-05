@@ -139,6 +139,21 @@ index.html vollständig gelesen, dazu die elf geladenen Engine-Dateien;
 | `wirf()` (index.html:736-739) rechnet mit eigenen Werten (T=0,6, Höhe=10, g=760) statt mit TUNE; g=760 weicht ohne Begründung von TUNE.gravitation=920 des Spielers ab | Wurfweite lässt sich nicht im TUNE-Block ändern; zwei Schwerkraftwerte im selben Level wirken wie ein Versehen | niedrig | Werte in TUNE ziehen, g an TUNE.gravitation koppeln |
 | In der Spielart `S.variante==='hausmeister'` bleibt der zuvor gewürfelte Raum `r` weiter von Zettel/Fund-Platzierung ausgeschlossen (:440), obwohl er in dieser Variante gar nicht der Schlüsselraum ist | Wirkungsloser Code-Pfad in der Hälfte aller Runden, kein sichtbarer Schaden | niedrig | Ausschluss nur im `raum`-Zweig anwenden |
 
+## Level 6 — Afterhour
+
+Analyse vom 5.10. (siehe NACHT-TODO.md, zweiter von acht nachgeholten Teilen).
+level6.html vollständig gelesen; `node tools/pruefe.js`/`nachttest.js level6`/
+`flagcheck.js` zur Gegenprüfung, dazu eigene `update(1/60)`-Läufe für Pegel/Tiefe.
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| Die Tiefe ist für Level 6 abgeschaltet (`TIEFE_PRO_SEITE['level6.html']=false`, nacht/welt.js:59), aber level6.html rechnet trotzdem mit ihr: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo (:110-113) und TUNE.redeTiefe (:107, in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`) sind tot - genau das Muster aus der Level-1-Analyse. Gemessen: 2 s HOCH halten ändert `S.tiefe` nicht (bleibt exakt 0,26) | Fünf Regler, die wie Stellschrauben aussehen, aber nichts tun; jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA (:242-291) ist nur noch Zeichenreihenfolge, keine echte Position | hoch | Tiefe bewusst aktivieren (passt zum „wabernden Flur") oder die toten TUNE-Werte/`tiefeNah`-Aufrufe/`.t`-Felder entfernen |
+| TUNE.pegelAbbauProSek=1,3 (:89, genutzt :543) senkt den Pegel gemessen unabhängig vom Spielerverhalten in 77 s von 100 auf 0 - schneller, als TUNE's eigener Kommentar für eine Hin-Strecke plus Schleife ansetzt (~18 s mehrfach, :116-119) | Das als „Kern des Levels" beschriebene Wabern verblasst meist durch reines Abwarten, nicht durch das eigentliche Ziel (Erinnerungen finden, proKlarheit=14/Fund) | mittel | pegelAbbauProSek senken oder an die Levellänge koppeln, proKlarheit stärker gewichten |
+| `mobilKontext()` liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (:693), obwohl Level 6 keine Hindernisse, keine Lücken und (siehe oben) keine Tiefe hat; die Lektion des Levels (nacht/lehre.js) lehrt Sprung gar nicht erst | Mobile Spieler sehen die ganze Spielzeit einen zweiten Aktionsknopf für eine Aktion ohne jede Spielwirkung | mittel | `zwei:null` für Level 6, oder Sprung eine echte Funktion geben |
+| `aufwachen()` (:678) zieht den Pegel um den hartcodierten Wert `10` ab, direkt neben `TUNE.aufwachenMit`, das für dieselbe Funktion schon im TUNE-Block steht | Verstößt gegen „jede Stellschraube steht im TUNE-Block" - derselbe Fehlertyp wie `wirf()` in Level 1 | niedrig | `10` als eigenen TUNE-Wert in den Block ziehen |
+| Derselbe Hinweistext „DIESEN RAUM GAB ES SCHON EINMAL" wird von zwei unabhängigen Triggern ausgelöst: beim Betreten des wiederholten Raums (:560) und beim Anstoßen an die Schleifenwand ein paar Schritte weiter (:588) | Wirkt wie zwei Entwürfe derselben Idee statt zwei unterschiedlichen Meldungen, können kurz nacheinander überlappend auf dem Schirm stehen | niedrig | Einen der beiden Texte ändern (z.B. :560 auf einen reinen Ortshinweis) |
+| `NACHTECHOS[].name` (:287-289, z.B. `name:'MORITZ'`) wird nirgends gelesen - die Anzeige nutzt ausschließlich die hartcodierte Fallunterscheidung in `echoName()` (:668), die `.name` dupliziert | Totes Datenfeld, das bei einer Änderung fälschlich mitgepflegt wird, ohne etwas zu bewirken | niedrig | Feld entfernen oder `echoName()` `e.name` lesen lassen |
+
 ## Level 2 — die Entscheidung der Nacht
 
 | Problem | Warum es nervt | Grad | Lösung |
@@ -186,7 +201,14 @@ Damit das nicht untergeht:
   Bildzeilen (Software-Canvas-Näherung) schon deutlich dichter als die
   66-77 % der anderen Level.
 - **Level 6 hat eine Uhr, die drückt.** Im Nichtstun-Test knickt man nach
-  100, 147 und 194 Sekunden weg. So soll das.
+  100, 147 und 194 Sekunden weg. So soll das. Die drei NACHTECHOS
+  (MORITZ/SIE/MARVIN) sind zudem die einzige Stelle im Spiel, an der
+  Entscheidungen aus Level 2-5 sichtbar in einen eigenen Dialog
+  zurückkommen (echte Flags wie `clubJa_mia`, `marvinKennt`, `beziehung()`)
+  - ein Nachklapp-Mechanismus, den es sonst nirgends gibt. Die
+  Overlay-Reihenfolge haelt ihr Versprechen: HUD und E-Prompt werden
+  nachweislich nach der Bildverzerrung gezeichnet und bleiben scharf,
+  egal wie stark Warp/Trail/Farbwasch ziehen.
 - **Die Engine trägt.** Ein `TUNE`-Block je Level, vier zentrale Tabellen,
   kein Build, keine Abhängigkeiten.
 
@@ -197,9 +219,9 @@ Damit das nicht untergeht:
 Die Analyse lief mit vierzehn parallelen Prüfern. **Neun sind am
 Nutzungslimit des Kontos gescheitert** (HTTP 429, Fünf-Stunden-Limit).
 Fertig geworden sind Level 2, Level 3, Level 4 und zweimal Level 5.
-Level 1 kam am 5.10. als Nachtroutine-Analyse dazu (siehe oben).
+Level 1 und Level 6 kamen am 5.10. als Nachtroutine-Analysen dazu (siehe oben).
 
-Noch ohne vollständige Prüfung: Level 6, Level 7, Level 8,
+Noch ohne vollständige Prüfung: Level 7, Level 8,
 `karte.html`, `runner.html`, die Engine-Dateien und die Dramaturgie über
 die ganze Nacht.
 
