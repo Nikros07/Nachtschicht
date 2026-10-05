@@ -1,7 +1,7 @@
 # NACHT-BERICHT
 
-Datum: 2026-10-04
-Start-Commit: fad935a05e970b9a2f88e1a479e45abd58e8ad60
+Datum: 2026-10-05
+Start-Commit: 6453365
 
 ## Die vier Prüfungen
 
@@ -17,12 +17,12 @@ reparieren" entfällt.
 
 ## Nichtstun-Zahlen je Level (300 s)
 
-| Level | Ereignisse | Letztes bei | Vergleich mit dem Vortag (2026-10-03) |
+| Level | Ereignisse | Letztes bei | Vergleich mit dem Vortag (2026-10-04) |
 |:--|--:|--:|:--|
 | index.html (Level 1) | 1 | 165 s | stimmt überein |
 | level2.html | 0 | 0 s | stimmt überein |
 | level3.html (Bus) | 1 | 34 s | stimmt überein |
-| level4.html | 3 | 9 s | **anders** (Vortag-Bericht: 0, 0 s) — der Vortagsbericht nennt noch die Referenz aus `routinen/nacht.md` (vor der Leertasten-Korrektur). Die Korrektur selbst (Commit `044eef1`, „Leertaste startet jetzt wirklich") steckt bereits im Vortagsstand und ist unter „Erledigt (Nacht)" in `NACHT-TODO.md` vom 3.10. verzeichnet; dort auch schon das jetzt bestätigte Ergebnis „3 Ereignisse, letztes bei 9 s". Kein neuer Fund.
+| level4.html | 3 | 9 s | stimmt überein |
 | level5.html (Club) | 16 | 295 s | stimmt überein |
 | level6.html | 12 | 291 s | stimmt überein |
 | level7.html | 0 | 0 s | stimmt überein |
@@ -31,11 +31,11 @@ reparieren" entfällt.
 
 ## Funde
 
-Keine neuen, belegten Funde über das hinaus, was bereits in `NACHT-TODO.md` unter
-„Offen" steht. `flagcheck.js` bestätigt die dort bereits erfassten 7 verlorenen Flags
+Keine neuen, belegten Funde. `flagcheck.js` bestätigt dieselben 7 verlorenen Flags
 (`busDurchDieCrew`, `endeHeim`, `fightVerloren`, `friedlich`, `geantwortet_kira`,
-`geantwortet_mia`, `geantwortet_sophie`) und die 5 nie gelesenen Beziehungen
-(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — unverändert zum Vortag.
+`geantwortet_mia`, `geantwortet_sophie`) und dieselben 5 nie gelesenen Beziehungen
+(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — unverändert zum Vortag. Alle in
+`NACHT-TODO.md` bereits erfasst.
 
 ## Nicht geprüft
 
