@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051126">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051233">
 </head>
 <body>
 <div id="cab">
@@ -37,24 +37,24 @@
   <div id="base"><span>LEVEL 6 - AFTERHOUR</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051126"></script>
-<script src="nacht/geraet.js?v=202610051126"></script>
-<script src="nacht/bild.js?v=202610051126"></script>
-<script src="nacht/hud.js?v=202610051126"></script>
-<script src="nacht/ton.js?v=202610051126"></script>
-<script src="nacht/komfort.js?v=202610051126"></script>
-<script src="nacht/stand.js?v=202610051126"></script>
-<script src="nacht/welt.js?v=202610051126"></script>
-<script src="nacht/nacht.js?v=202610051126"></script>
-<script src="nacht/dialog.js?v=202610051126"></script>
-<script src="nacht/eingabe.js?v=202610051126"></script>
-<script src="nacht/lehre.js?v=202610051126"></script>
-<script src="nacht/mobil.js?v=202610051126"></script>
-<script src="nacht/handy.js?v=202610051126"></script>
-<script src="nacht/texte.js?v=202610051126"></script>
-<script src="nacht/erzaehl.js?v=202610051126"></script>
-<script src="nacht/epilog.js?v=202610051126"></script>
-<script src="nacht/menue.js?v=202610051126"></script>
+<script src="nacht/kern.js?v=202610051233"></script>
+<script src="nacht/geraet.js?v=202610051233"></script>
+<script src="nacht/bild.js?v=202610051233"></script>
+<script src="nacht/hud.js?v=202610051233"></script>
+<script src="nacht/ton.js?v=202610051233"></script>
+<script src="nacht/komfort.js?v=202610051233"></script>
+<script src="nacht/stand.js?v=202610051233"></script>
+<script src="nacht/welt.js?v=202610051233"></script>
+<script src="nacht/nacht.js?v=202610051233"></script>
+<script src="nacht/dialog.js?v=202610051233"></script>
+<script src="nacht/eingabe.js?v=202610051233"></script>
+<script src="nacht/lehre.js?v=202610051233"></script>
+<script src="nacht/mobil.js?v=202610051233"></script>
+<script src="nacht/handy.js?v=202610051233"></script>
+<script src="nacht/texte.js?v=202610051233"></script>
+<script src="nacht/erzaehl.js?v=202610051233"></script>
+<script src="nacht/epilog.js?v=202610051233"></script>
+<script src="nacht/menue.js?v=202610051233"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 6: AFTERHOUR
@@ -292,6 +292,16 @@ const NACHTECHOS=[
   { id:'marvin', x:1170, t:0.40, name:'',       tint:'#9a8ab8' },
 ];
 const LEA={ x:1560, t:0.40, name:'LEA' };
+/* Die stehende Wanduhr (Polaroid moment6). Alle Uhren im Traum zeigen 17:30. */
+const FOTO6={ x:612, t:0.22 };
+const UHREN=[ 90, 300, 612, 790, 1000, 1180, 1330, 1520 ];
+const UHR_ZEIT='17:30';
+
+/* Plauschzeilen (Untertitelleiste, nacht/erzaehl.js): Traum-Stimmung. */
+const PLAUSCH_ZEILEN=[
+  {id:'l6a', wer:'LEA', text:'ICH FOTOGRAFIER NUR.', nach:14},
+  {id:'l6c', wer:'LEA', text:'ALLE UHREN SIND STEHENGEBLIEBEN.', nach:70},
+];
 
 
 /* ==========================================================================
@@ -305,6 +315,23 @@ function zeilenBaum(wer,zeilen){
   b.start=b.z0; return b;
 }
 
+/* Der Hausmeister aus Level 1 fragt nach dem Schluessel. */
+const HAUSMEISTER_ECHO={
+  start:{ wer:'HAUSMEISTER', text:'Hast du meinen Schluessel gesehen.',
+    wahl:[ { txt:'Hier. Ich bring ihn zurueck.', wenn:{hat:'SCHLUESSEL', flag:'hausmeisterHilft'},
+             tu:{flag:'schluesselVersprochen', mag:['HAUSMEISTER',6]}, geh:'gutH' },
+           { txt:'Hier. Ich bring ihn zurueck.', wenn:{hat:'SCHLUESSEL', nichtFlag:'hausmeisterHilft'},
+             tu:{flag:'schluesselVersprochen', mag:['HAUSMEISTER',6]}, geh:'gut' },
+           { txt:'Welchen?', geh:'welchen' },
+           { txt:'Ich hab ihn nicht mehr.', wenn:{nichtHat:'SCHLUESSEL'}, geh:'weg' } ], zeit:0 },
+  gutH:   { wer:'HAUSMEISTER', text:'Gut gemacht. Dann fehlt nichts.', geh:'sehenK' },
+  gut:    { wer:'HAUSMEISTER', text:'Gut. Dann fehlt nichts.',        geh:'sehenK' },
+  welchen:{ wer:'HAUSMEISTER', text:'Den mit der roten Wolle.',      geh:'sehen' },
+  weg:    { wer:'HAUSMEISTER', text:'Dann sucht er sich selbst.',    geh:'sehen' },
+  sehen:  { wer:'HAUSMEISTER', text:'Ich seh die Schule, wenn ihr weg seid.', geh:'@ende' },
+  sehenK: { wer:'HAUSMEISTER', text:'Ich seh die Schule, wenn ihr weg seid.', geh:'@kraft20' },
+};
+
 const MORITZ_ECHO = {
   start:{ wer:'MORITZ', text:'Hast du mich heute eigentlich gefragt, ob ich mitwill? Oder einfach entschieden?',
     wahl:[
@@ -312,7 +339,10 @@ const MORITZ_ECHO = {
       { txt:'Ich wollte nur mit dir los. Nicht mit allen.', wenn:{flag:'gruppeKlein'}, geh:'gut', tu:{mag:['MORITZ',6]} },
       { txt:'Ehrlich? Ich hab nicht drueber nachgedacht.',  geh:'ehrlich' },
       { txt:'Du warst doch dabei. Was willst du.',          geh:'kalt', tu:{mag:['MORITZ',-6]} },
+      { txt:'Ich hab die Kartons gesehen.', wenn:{flag:'moritzKartonGesehen'}, geh:'karton',
+        tu:{flag:'moritzGeheimnis', mag:['MORITZ',6]} },
     ], zeit:10, standard:2 },
+  karton:{ wer:'MORITZ', text:"Dann weisst du's. Sag's den anderen nicht. Noch nicht.", geh:'@kraft20' },
   gut:{ wer:'MORITZ', text:'Okay. Dann ist ja gut. Ich pass auf dich auf, wenn du gleich umkippst.',
     tu:{flag:'traumMoritz'}, geh:'@kraft' },
   ehrlich:{ wer:'MORITZ', text:'Wenigstens ehrlich. Das warst du schon immer.',
@@ -361,8 +391,12 @@ function sieEcho(){
 function marvinEcho(){
   if(!flag('marvinKennt')) return { name:'EIN SCHATTEN', baum:{
     start:{ wer:'SCHATTEN', text:'Ich warte am Ende der Nacht auf dich.', geh:'@ende' } }};
+  const gerufen=flag('marvinNachgerufen');
   return { name:'MARVIN', baum:{
-    start:{ wer:'MARVIN', text:'Du hast Angst vor mir. Ich seh das.',
+    start:{ wer:'MARVIN', geh:'angst',
+      text:gerufen?'Du hast gerufen. Ich hab es gehoert.'
+                  :'Ihr habt mich nach der sechsten nicht mehr gefragt. Ich hab gewartet.' },
+    angst:{ wer:'MARVIN', text:'Du hast Angst vor mir. Ich seh das.',
       wahl:[
         { txt:'Ja. Und?',                 geh:'zugegeben', tu:{mut:6, flag:'angstZugegeben'} },
         { txt:'Nein.',     wenn:{mut:50}, geh:'hart',      tu:{mut:3} },
@@ -373,17 +407,23 @@ function marvinEcho(){
   }};
 }
 
-/* Lea sagt am Ende, wo man wirklich ist. */
-const LEA_BAUM = {
-  start:{ wer:'LEA', text:'Hey. Schau mich an.', geh:'zwei' },
-  zwei:{ wer:'LEA', text:'Das hier ist nicht echt. Aber du bist es.',
-    wahl:[
-      { txt:'Wo bin ich eigentlich?',       geh:'wo' },
-      { txt:'Bring mich einfach raus.',      geh:'raus' },
-    ], zeit:0 },
-  wo:{ wer:'LEA', text:'Auf der Afterhour. Du bist vor einer Stunde auf dem Sofa weggeknickt.', geh:'raus' },
-  raus:{ wer:'LEA', text:'Komm. Wir holen uns was am Spaeti.', geh:'@fertig' },
+/* Lea fuehrt und stellt die Frage der Nacht. */
+const LEA_FRAGE={
+  start:{ wer:'LEA', text:'Ich hab euch den ganzen Abend fotografiert. Seite 9.', geh:'frage' },
+  frage:{ wer:'LEA', text:'Warum rennst du die ganze Nacht?',
+    wahl:[ { txt:'Weil danach alles anders ist.', tu:{flag:'traumEinsicht', mag:['LEA',8]}, geh:'a' },
+           { txt:'Ich renn nicht.',               tu:{mag:['LEA',3]}, geh:'b' },
+           { txt:'Keine Ahnung.',                 tu:{mag:['LEA',3]}, geh:'c' } ], zeit:0 },
+  a:{ wer:'LEA', text:'Wenn du stehenbleibst, ist es vorbei. Stimmt nicht.', geh:'a2' },
+  a2:{ wer:'LEA', text:"Aber ich versteh's.", geh:'uhr' },
+  b:{ wer:'LEA', text:'Okay. Dann sitzt du ganz ruhig da.', geh:'uhr' },
+  c:{ wer:'LEA', text:'Das ist auch eine Antwort.', geh:'uhr' },
+  uhr:{ wer:'LEA', text:'Die Schule hat jeden Abend um halb sechs zu.', geh:'uhr2' },
+  uhr2:{ wer:'LEA', text:'Auch heute. Das ist nicht schlimm.', geh:'echt' },
+  echt:{ wer:'LEA', text:'Das hier ist nicht echt. Aber du bist es.', geh:'@fertig' },
 };
+/* Wer drei Polaroids hat, hoert zuerst von den Fotos. */
+const LEA_FRAGE_SEITE=Object.assign({},LEA_FRAGE,{start:{ wer:'LEA', text:'Du hast meine Fotos gefunden. Mindestens drei. Gut.', geh:'frage' }});
 const LEA_NOCH_NICHT = {
   start:{ wer:'LEA', text:'Du siehst noch ganz verwaschen aus. Hol dir erst deine Erinnerungen.', geh:'@ende' },
 };
@@ -395,7 +435,15 @@ function traumEnde(e){
     S.kondition=Math.min(100,S.kondition+30);
     meldung('DU FUEHLST DICH WACHER',1.8); SFX.erledigt();
   }
-  if(e==='@fertig') starteCutscene();
+  if(e==='@kraft20'){
+    S.kondition=Math.min(100,S.kondition+20);
+    meldung('DU FUEHLST DICH WACHER',1.8); SFX.erledigt();
+  }
+  if(e==='@fertig'){
+    /* Die ehrliche Antwort auf Leas Frage macht wach (+30), wie ein gutes Echo. */
+    if(flag('traumEinsicht')&&!S.leaVorher) S.kondition=Math.min(100,S.kondition+30);
+    starteCutscene();
+  }
 }
 
 /* ==========================================================================
@@ -429,6 +477,8 @@ function neuesSpiel(){
     szene:0, szeneT:0, skipT:0,
     gewonnen:false, faenger:'', wiederholungGezeigt:false, neueBestzeit:false,
   };
+  PLAUSCH.lade(PLAUSCH_ZEILEN);
+  PLAUSCH.y=IS_TOUCH?56:H-11;   // frei von Meldung, Hinweis und Aufgabenliste
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
 }
 neuesSpiel();
@@ -466,6 +516,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(erzaehlTaste()) return;
   if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
@@ -511,7 +562,10 @@ const INTRO=[
   { d:2.8, txt:'DIE SCHULE. SCHON WIEDER.' },
   { d:2.6, txt:'DAS KANN NICHT SEIN. ODER?' },
 ];
-function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; sicherTrail(true); piep(300,.12,'sine',.035); }
+function starte(){ neuesSpiel();
+  /* Entscheidungen dieses Levels gelten nur fuer diesen Versuch. */
+  ['schluesselVersprochen','moritzGeheimnis'].forEach(f=>setzeFlag(f,false));
+  kapitelZeigen(6); S.modus='intro'; S.szene=0; S.szeneT=0; sicherTrail(true); piep(300,.12,'sine',.035); }
 function starteLevel(){ S.modus='spiel'; zeigeHinweis('FIND DEINE ERINNERUNGEN. BLEIB WACH. SOFAS HELFEN.',4);
   piep(600,.09,'sine'); setTimeout(()=>piep(900,.13,'sine'),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
@@ -530,6 +584,8 @@ const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
    AKTUALISIEREN
    ========================================================================== */
 function update(dt){
+  PLAUSCH.sperre=S.modus!=='spiel'||gespraechAktiv();
+  if(erzaehlTakt(dt)) return;
   S.t+=dt; musik();
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   S.blitz=Math.max(0,S.blitz-dt*2.2);
@@ -627,6 +683,7 @@ function update(dt){
       S.x=z.obj.ziel; S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2)); S.blitz=.6; SFX.nichts();
       meldung(z.obj.luegt?'DAS WAR NICHT RAUS':'DURCH DIE TUER',1.8); break;
     }
+    if(z.art==='foto'){ if(MOMENT.fund(6)){ S.vx=0; } break; }
     redeImTraum(z); break;
   }
   kamera(dt);
@@ -649,14 +706,20 @@ function naechstesZiel(){
   for(const e of ECHOS) pruefe(e,'echo',e.t);
   for(const e of NACHTECHOS) if(!S.geredetMit[e.id]) pruefe(e,'nachtecho',e.t);
   pruefe(LEA,'lea',LEA.t);
+  if(!MOMENT.hat(6)) pruefe(FOTO6,'foto',FOTO6.t);
   return bestes;
 }
 
 function redeImTraum(z){
   S.vx=0; S.vt=0; S.ruht=null; SFX.reden();
-  if(z.art==='echo'){ starteGespraech(zeilenBaum(z.obj.name,z.obj.zeilen),'start',traumEnde); return; }
+  if(z.art==='echo'){
+    if(z.obj.id==='hausmeister'&&!S.geredetMit.hausmeister){
+      S.geredetMit.hausmeister=true; starteGespraech(HAUSMEISTER_ECHO,'start',traumEnde); return; }
+    starteGespraech(zeilenBaum(z.obj.name,z.obj.zeilen),'start',traumEnde); return; }
   if(z.art==='lea'){
-    starteGespraech(alleErinnerungen()?LEA_BAUM:LEA_NOCH_NICHT,'start',traumEnde); return;
+    if(!alleErinnerungen()){ starteGespraech(LEA_NOCH_NICHT,'start',traumEnde); return; }
+    S.leaVorher=flag('traumEinsicht');
+    starteGespraech(MOMENT.anzahl()>=3?LEA_FRAGE_SEITE:LEA_FRAGE,'start',traumEnde); return;
   }
   const e=z.obj;
   S.geredetMit[e.id]=true;
@@ -685,6 +748,7 @@ function aufwachen(){
 }
 
 function mobilKontext(){
+  const ek=(typeof erzaehlKontext==='function')?erzaehlKontext():null; if(ek) return ek;
   if(S.modus==='titel')    return {aktion:'START',  zwei:null};
   if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
   if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
@@ -692,7 +756,7 @@ function mobilKontext(){
   if(S.ruht)               return {aktion:'AUFSTEHEN', zwei:null};
   const z=naechstesZiel();
   const txt=!z?null:{ding:S.durchsucht[z.obj.art]?'LEER':'SUCHEN',sofa:'AUSRUHEN',tuer:'TUER',
-                     echo:'REDEN',nachtecho:'REDEN',lea:'LEA'}[z.art];
+                     echo:'REDEN',nachtecho:'REDEN',lea:'LEA',foto:'FOTO'}[z.art];
   return {aktion:txt, zwei:'SPRUNG'};
 }
 
@@ -731,8 +795,7 @@ const SZENEN=[
   { d:2.4, txt:'DU MACHST DIE AUGEN AUF.' },
   { d:2.4, txt:'EIN SOFA. EINE FREMDE WOHNUNG. MUSIK AUS DER KUECHE.' },
   { d:2.4, txt:'LEA SITZT NEBEN DIR UND GRINST.' },
-  { d:2.4, txt:'LEA: GUTEN MORGEN. ES IST HALB VIER.' },
-  { d:2.6, txt:'LEA: DIE ANDEREN SIND SCHON UNTEN. SPAETI.' },
+  { d:4.4, txt:'LEA: GUTEN MORGEN. ES IST HALB DREI.|DIE ANDEREN SIND SCHON UNTEN. SPAETI.' },
   { d:2.4, txt:'LEVEL 6 GESCHAFFT' },
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; SFX.sieg(); }
@@ -778,10 +841,11 @@ function draw(dt){
   /* 2) Nachbild-Puffer leicht ausblenden, dann die neue Szene wellenfoermig
      hineinkopieren - Zeile fuer Zeile mit einem eigenen Sinus-Versatz.
      Das ergibt gleichzeitig das Wabern UND die Echo-Schweife. */
-  const fade=Math.max(0.12,TUNE.trailFadeBasis-(S.pegel/100)*TUNE.trailFadePegel);
+  /* Verzerrung und Nachbild nur ueber FX: bei Flackerschutz/ohne Wackeln steht das Bild. */
+  const fade=FX.ruhig()?1:Math.max(0.12,TUNE.trailFadeBasis-(S.pegel/100)*TUNE.trailFadePegel);
   trailCtx.fillStyle=`rgba(8,6,15,${fade.toFixed(3)})`;
   trailCtx.fillRect(0,0,W,H);
-  const staerke=TUNE.basisWelle+(S.pegel/100)*TUNE.pegelWelle;
+  const staerke=FX.ruhig()?0:FX.wackel(TUNE.basisWelle+(S.pegel/100)*TUNE.pegelWelle);
   for(let y=0;y<H;y++){
     const off=Math.sin(S.t*TUNE.wellenSpeed+y*TUNE.wellenFreq)*staerke;
     trailCtx.drawImage(warpCV,0,y,W,1,Math.round(off),y,W,1);
@@ -798,13 +862,14 @@ function draw(dt){
   /* 4) Alles Bedienbare bleibt scharf - egal wie stark es gerade wabert */
   zeichnePrompts();
   hud();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${FX.blitz(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   bildschirme();
+  erzaehlZeichne();
 }
 
 function zeichneFlur(){
   ctx.save();
-  const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel*.6;
+  const rw=FX.wackel(S.ruettel), rx=(Math.random()-.5)*rw, ry=(Math.random()-.5)*rw*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
   const kx=Math.round(S.kamX);
   ctx.translate(-kx,0);
@@ -838,7 +903,16 @@ function zeichneFlur(){
     ctx.globalAlpha=1;
   }
 
+  /* Wanduhren: alle stehen auf 17:30 */
+  for(const ux of UHREN){
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(ux-12,34,24,11);
+    ctx.fillStyle='#d8d2c0'; ctx.fillRect(ux-11,35,22,9);
+    text(UHR_ZEIT,ux-textW(UHR_ZEIT)/2,37,'#1d1830');
+  }
+
   const liste=[];
+  liste.push({t:FOTO6.t, mal:()=>{
+    MOMENT.zeichneFund(FOTO6.x-4,bodenY(FOTO6.t)-9,6); }});
   for(const d of DINGE){ const rows=SPR[d.moebel];
     liste.push({t:d.t, mal:()=>{ const y=bodenY(d.t)-rows.length;
       outline(rows,d.x,y,1,.5); sprite(rows,d.x,y,1,S.durchsucht[d.art]?'#3a3350':null); }}); }
@@ -892,7 +966,7 @@ function zeichneFlur(){
    auch wenn die Welt darunter gerade stark wabert. ---- */
 function zeichnePrompts(){
   if(S.modus!=='spiel'||S.suchT>0||S.ruht||gespraechAktiv()) return;
-  if(Math.floor(S.t*4)%2!==0) return;
+  if(Math.floor(S.t*2*FX.hz(2))%2!==0) return;
   const z=naechstesZiel(); if(!z) return;
   const sx=Math.round(z.obj.x-S.kamX), sy=Math.round(bodenY(z.obj.t))-26;
   const t=z.art==='ding'&&S.durchsucht[z.obj.art]?'OK':'E';
@@ -916,7 +990,7 @@ function hud(){
     ctx.fillStyle='#000a'; ctx.fillRect(kx-2,ky-2,kw+4,7);
     ctx.fillStyle='#2a2440'; ctx.fillRect(kx,ky,kw,3);
     const knapp=S.kondition<TUNE.schwereAb;
-    ctx.fillStyle=knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.neon2);
+    ctx.fillStyle=knapp&&Math.floor(S.t*2*FX.hz(2))%2===0?P.rot:(knapp?P.gold:P.neon2);
     ctx.fillRect(kx,ky,Math.round(kw*k),3);
     text(S.ruht?'AUSRUHEN':'WACH',kx+kw-textW(S.ruht?'AUSRUHEN':'WACH'),ky+6,P.dunkel); }
 
@@ -980,7 +1054,8 @@ function bildschirme(){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
     const s=SZENEN[S.szene];
-    if(s&&s.txt) textC(s.txt,H-26,P.weiss);
+    if(s&&s.txt){ if(typeof zeichneKarte==='function') zeichneKarte(s.txt,H-33,P.weiss);
+      else textC(s.txt.split('|')[0],H-26,P.weiss); }
     if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
   }
   if(S.modus==='ende'){

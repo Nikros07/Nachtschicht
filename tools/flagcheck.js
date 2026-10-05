@@ -10,7 +10,7 @@
    findet das Skript, solange die Namen als Text in der setzeFlag-Zeile stehen. */
 const fs=require('fs');
 const dateien=['index.html','level2.html','level3.html','level4.html','level5.html',
-  'level6.html','level7.html','level8.html','karte.html','nacht/handy.js'];
+  'level6.html','level7.html','level8.html','karte.html','nacht/handy.js','nacht/epilog.js','nacht/erzaehl.js'];
 const setzt={}, liest={};
 const merke=(m,k,d,l)=>{ (m[k]=m[k]||[]).push(d+':'+l); };
 
@@ -30,6 +30,8 @@ for(const d of dateien){
       merke(lesen?liest:setzt,t[1],d,l);
     }
     for(const t of z.matchAll(/(?<![a-zA-Z])flag\(\s*'([^']+)'\s*\)/g)) merke(liest,t[1],d,l);
+    /* epilog.js liest ueber den Helfer _epF('name') */
+    for(const t of z.matchAll(/_epF\(\s*'([^']+)'\s*\)/g)) merke(liest,t[1],d,l);
     for(const t of z.matchAll(/nichtFlag:\s*'([^']+)'/g)) merke(liest,t[1],d,l);
   });
 }
