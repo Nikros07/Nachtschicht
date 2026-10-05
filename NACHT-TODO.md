@@ -34,15 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken nirgends** — gefunden bei der
-  Level-1-Analyse vom 5.10., betrifft aber alle acht Level: `S.blitz`/`S.ruettel` werden
-  roh gezeichnet (z.B. index.html:1556/1569) statt durch `FX.blitz()`/`FX.wackel()` aus
-  nacht/komfort.js geschickt - projektweiter Grep bestaetigt null Treffer fuer
-  `FX.blitz`/`FX.wackel` ausserhalb von komfort.js selbst. Siehe PLAYTEST.md, Abschnitt
-  „Durchs ganze Spiel". Wo: nacht/komfort.js (FX.blitz/FX.wackel bestehen schon), jedes
-  Level, das S.blitz/S.ruettel zeichnet (grep zeigt die Stellen) · Fertig wenn: mit
-  FLACKERSCHUTZ aktiv bleibt ein Blitz/Wackel-Ereignis messbar schwaecher als mit
-  Schutz aus (z.B. S.blitz durch FX.blitz(S.blitz) ersetzt, Alpha-Wert niedriger).
 - [ ] **P2 · Analyse nachholen: Level 6** — zweiter von acht Teilen (Level 1 erledigt
   5.10., dann 6, 7, 8, Karte, Runner, Engine, Dramaturgie), weil die ganze Liste in
   einem Punkt zu groß war - neun Prüfer sind schon am Nutzungslimit gescheitert
@@ -102,6 +93,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken jetzt · `727f73e` ·
+  Betraf alle acht Level: S.blitz/S.ruettel (in Level 5 zusaetzlich das Stroboskop
+  S.flacker) wurden roh gezeichnet statt durch FX.blitz()/FX.wackel() geschickt. An
+  jeder der acht Lesestellen jetzt durchgereicht, der Pegel-Wobble ('wack') blieb
+  unberuehrt (anderer Effekt). Gemessen (Software-Canvas, index.html): FX.blitz(1)
+  1,000 ohne Flackerschutz, 0,120 mit; FX.wackel(6) 6,00 ohne, 3,00 mit. Alle vier
+  Pruefungen gruen (kampf.test.js einmal durch einen bestehenden, unabhaengigen Flake
+  rot, danach fuenfmal in Folge 22/0).
 
 - [x] 2026-10-05 · P2 · Analyse nachholen: Level 1 · `9508e31` · Erster von acht Teilen
   des aufgeteilten Analyse-Punkts. Ein Analyse-Agent hat index.html und die elf
