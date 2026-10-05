@@ -34,11 +34,34 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Analyse nachholen: Level 6** — zweiter von acht Teilen (Level 1 erledigt
-  5.10., dann 6, 7, 8, Karte, Runner, Engine, Dramaturgie), weil die ganze Liste in
-  einem Punkt zu groß war - neun Prüfer sind schon am Nutzungslimit gescheitert
-  (siehe PLAYTEST.md ganz unten). Fertig wenn: eigener Abschnitt „Level 6" in
-  PLAYTEST.md mit Problem/Warum/Grad/Loesung-Tabelle, Funde mit Datei:Zeile belegt.
+- [ ] **P2 · Level 1 und 6: toter Tiefen-Code** — beide Level haben
+  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59), rechnen aber trotzdem mit
+  S.tiefe/TUNE.tiefe*/tiefeNah() weiter (index.html: Sichtkegel-Trapez :1744-1751,
+  Meldung „ZU WEIT VORNE" :964/968, TUNE.tiefeWelt/tiefeTempo/kegelOeffnung/
+  tuerTiefe; level6.html: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo :110-113,
+  TUNE.redeTiefe :107 in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`,
+  jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA :242-291 nur noch
+  Zeichenreihenfolge). Gefunden bei den Analysen vom 5.10. (PLAYTEST.md, Abschnitte
+  „Level 1"/„Level 6"). Zwei Level mit demselben Muster - lohnt eine gemeinsame
+  Entscheidung statt zwei Einzel-Fixes.
+  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html · Fertig wenn: für
+  jedes der beiden Level einzeln entschieden und gemessen - Tiefe bewusst aktiviert
+  (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich) ODER die toten
+  TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+- [ ] **P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht** —
+  TUNE.pegelAbbauProSek=1,3 (level6.html:89, genutzt :543) senkt den Pegel gemessen
+  unabhaengig vom Spielerverhalten in 77s von 100 auf 0 - schneller als der
+  TUNE-Kommentar fuer eine Hin-Strecke plus Schleife ansetzt (~18s mehrfach, :116-119).
+  Wo: level6.html (TUNE.pegelAbbauProSek oder TUNE.proKlarheit) · Fertig wenn:
+  gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber 77s (oder bewusst belassen,
+  wenn das Verblassen Teil des Zeitdrucks sein soll - dann Punkt nach
+  „Entscheidung noetig" verschieben statt bauen).
+- [ ] **P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung** — `mobilKontext()`
+  liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (level6.html:693), obwohl
+  Level 6 keine Hindernisse, keine Luecken und keine Tiefe hat (siehe Tiefe-Punkt
+  oben); die eigene Lektion lehrt Sprung gar nicht erst.
+  Wo: level6.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
+  eine echte Funktion).
 - [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
   Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
@@ -56,6 +79,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
+- [ ] **P3 · Level 6: hartcodierte Pegelzahl neben echtem TUNE-Wert** — `aufwachen()`
+  (level6.html:678) zieht den Pegel um den hartcodierten Wert `10` ab, direkt neben
+  `TUNE.aufwachenMit`, das fuer dieselbe Funktion schon im TUNE-Block steht - verstoesst
+  gegen „jede Stellschraube steht im TUNE-Block". Wo: level6.html (`aufwachen`) ·
+  Fertig wenn: `10` ist ein eigener TUNE-Wert.
+- [ ] **P3 · Level 6: ein Hinweistext, zwei unabhaengige Trigger** — „DIESEN RAUM GAB
+  ES SCHON EINMAL" wird sowohl beim Betreten des wiederholten Raums (level6.html:560)
+  als auch beim Anstossen an die Schleifenwand (:588) ausgeloest - koennen ueberlappend
+  auf dem Schirm stehen. Wo: level6.html · Fertig wenn: beide Stellen zeigen
+  unterschiedliche Texte.
+- [ ] **P3 · Level 6: `NACHTECHOS[].name` wird nirgends gelesen** — die Anzeige nutzt
+  ausschliesslich die hartcodierte Fallunterscheidung in `echoName()` (level6.html:668),
+  die `.name` dupliziert. Wo: level6.html · Fertig wenn: Feld entfernt oder `echoName()`
+  liest `e.name`.
 - [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
@@ -93,6 +130,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Analyse nachholen: Level 6 · `7e60128` · Zweiter von acht Teilen.
+  Ein Analyse-Agent hat level6.html vollstaendig gelesen; Kernfunde stichprobenhaft
+  gegengeprueft (grep auf TIEFE_PRO_SEITE, pegelAbbauProSek, mobilKontext zwei:,
+  aufwachen(), mag:['MORITZ',...]). Neuer Abschnitt „Level 6" in PLAYTEST.md mit
+  sechs belegten Funden. Der bereits behobene FLACKERSCHUTZ-Fund und die bereits
+  dokumentierte MORITZ-Luecke wurden gegengeprueft, aber bewusst nicht erneut
+  gemeldet. Die sechs Einzelfunde als neue Punkte unter „Offen" eingetragen (zwei
+  P2, drei P3 - der Tiefe-Fund zusammen mit dem gleichartigen aus Level 1). Keine
+  Spiellogik geaendert, nur Dokumentation.
 
 - [x] 2026-10-05 · P2 · Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken jetzt · `727f73e` ·
   Betraf alle acht Level: S.blitz/S.ruettel (in Level 5 zusaetzlich das Stroboskop
