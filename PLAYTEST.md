@@ -124,6 +124,21 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | ~~Ein einmal gekaufter Fahrschein schaltet den Bus für **alle** späteren Durchläufe ab~~ | — | hoch | ~~ticket startet jetzt immer false (3.10.)~~ |
 | Bahn oder Bus? Das Intro sagt Bahn, das Schild sagt BUS | Erster und letzter Eindruck des Levels. | niedrig | Entscheiden |
 
+## Level 1 — Die Schule
+
+Analyse vom 5.10. (siehe NACHT-TODO.md, erster von acht nachgeholten Teilen).
+index.html vollständig gelesen, dazu die elf geladenen Engine-Dateien;
+`node tools/pruefe.js`/`nachttest.js index`/`flagcheck.js` zur Gegenprüfung.
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| Die Tiefe ist für Level 1 abgeschaltet (`TIEFE_PRO_SEITE['index.html']=false`, nacht/welt.js:54), aber index.html rechnet trotzdem mit ihr (S.tiefe, Sichtkegel-Trapez Zeile 1744-1751, die Meldung „ZU WEIT VORNE" Zeile 964/968, TUNE.tiefeWelt/tiefeTempo/kegelOeffnung/tuerTiefe) | Toter Code, der echte Werte vorgaukelt - TUNE.tiefeTempo etc. lassen sich drehen, ohne dass sich im Spiel irgendetwas ändert | hoch | Tiefe bewusst aktivieren oder die toten Zeilen/TUNE-Werte entfernen |
+| Die Zuneigung zu HAUSMEISTER (`mag:['HAUSMEISTER',10/-5/-12]`, index.html:1278/1281/1284) wird nirgends gelesen (`node tools/flagcheck.js` bestätigt: nie gelesen) | Die drei Antworten beim Hausmeister (mitleidig/genervt/frech) wirken wie eine Entscheidung, bleiben folgenlos - dasselbe Muster wie die bekannte MORITZ-Lücke oben | hoch | Später abfragen, wie `direktorMontag` u.ä. in level8.html |
+| TUNE.sichtHoehe (:122) und TUNE.vibrationVerdacht (:92) werden projektweit nirgends gelesen - `laerm()` (:725) addiert stattdessen hartcodiert `+.15` | Verstößt gegen „jede Stellschraube steht im TUNE-Block" - zwei Regler ohne Wirkung | mittel | Werte entfernen oder tatsächlich verwenden |
+| Sprung (LEER) hat in Level 1 keine Spielwirkung mehr (Höhenprüfung der Sicht laut Kommentar :1230-1233 bewusst entfernt, keine Hindernisse im Korridor), wird aber als eigener, optionaler Schritt in der Lektion gelehrt (nacht/lehre.js) | Bringt nur den Nachteil des lauten Landens, keinen Vorteil | mittel | Echten Nutzen ergänzen oder Lektionsschritt streichen |
+| `wirf()` (index.html:736-739) rechnet mit eigenen Werten (T=0,6, Höhe=10, g=760) statt mit TUNE; g=760 weicht ohne Begründung von TUNE.gravitation=920 des Spielers ab | Wurfweite lässt sich nicht im TUNE-Block ändern; zwei Schwerkraftwerte im selben Level wirken wie ein Versehen | niedrig | Werte in TUNE ziehen, g an TUNE.gravitation koppeln |
+| In der Spielart `S.variante==='hausmeister'` bleibt der zuvor gewürfelte Raum `r` weiter von Zettel/Fund-Platzierung ausgeschlossen (:440), obwohl er in dieser Variante gar nicht der Schlüsselraum ist | Wirkungsloser Code-Pfad in der Hälfte aller Runden, kein sichtbarer Schaden | niedrig | Ausschluss nur im `raum`-Zweig anwenden |
+
 ## Level 2 — die Entscheidung der Nacht
 
 | Problem | Warum es nervt | Grad | Lösung |
@@ -146,6 +161,7 @@ Vollständige Pfadaufzählung: MIA 169 Wege, KIRA 117, SOPHIE 81.
 | ~~Zwei Handys mit zwei Tasten~~ | `H` schaltet das eingezogene Handy aus Level 1 stumm, `T` öffnet das Handy der Engine. | mittel | ~~Zwei echte, unterschiedliche Mechaniken - nur die Meldung bei H heißt nicht mehr HANDY (4.10.)~~ |
 | ~~Level 2 hat kein `mobilKontext()`~~ | Am Handy heißt jeder Knopf überall „AKTION". | mittel | ~~Nach dem Muster aus `index.html` (4.10.)~~ |
 | Die README beschreibt die alte Handy-Steuerung | „Steuerkreuz links, Aktionstasten rechts" gibt es seit dem Umbau nicht mehr. | niedrig | — |
+| Die Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken nirgends - `S.blitz`/`S.ruettel` werden roh gezeichnet (z.B. index.html:1556/1569) statt durch `FX.blitz()`/`FX.wackel()` aus nacht/komfort.js geschickt; projektweiter Grep über alle 8 Level: null Treffer für `FX.blitz`/`FX.wackel` außerhalb von komfort.js selbst (gefunden bei der Level-1-Analyse, betrifft aber jedes Level) | Wer wegen Fotosensibilität Flackerschutz aktiviert, bekommt bei jedem Fund/Alarm trotzdem den vollen weißen Blitz und das volle Bildschirmwackeln - die Einstellung tut im ganzen Spiel nichts | hoch | `S.blitz`/`S.ruettel` beim Zeichnen durch `FX.blitz()`/`FX.wackel()` schicken, projektweit |
 
 ---
 
@@ -164,6 +180,11 @@ Damit das nicht untergeht:
   ihm jemanden wegnimmt. Er wird nur zu selten sichtbar.
 - **Level 1 ist dicht.** Korridor 6,5 s, schleichend 15,5 s, Uhr 165 s —
   jeder Weg ist eine Entscheidung. Das ist das Maß für die anderen Level.
+  Zwei Spielarten (Schlüssel im Raum oder am Gürtel des Hausmeisters) und
+  ein Hinweissystem, das sich an die Fundreihenfolge statt an eine feste
+  Stufe hängt, machen Durchläufe wirklich verschieden. Mit 56 % leeren
+  Bildzeilen (Software-Canvas-Näherung) schon deutlich dichter als die
+  66-77 % der anderen Level.
 - **Level 6 hat eine Uhr, die drückt.** Im Nichtstun-Test knickt man nach
   100, 147 und 194 Sekunden weg. So soll das.
 - **Die Engine trägt.** Ein `TUNE`-Block je Level, vier zentrale Tabellen,
@@ -176,8 +197,9 @@ Damit das nicht untergeht:
 Die Analyse lief mit vierzehn parallelen Prüfern. **Neun sind am
 Nutzungslimit des Kontos gescheitert** (HTTP 429, Fünf-Stunden-Limit).
 Fertig geworden sind Level 2, Level 3, Level 4 und zweimal Level 5.
+Level 1 kam am 5.10. als Nachtroutine-Analyse dazu (siehe oben).
 
-Noch ohne vollständige Prüfung: Level 1, Level 6, Level 7, Level 8,
+Noch ohne vollständige Prüfung: Level 6, Level 7, Level 8,
 `karte.html`, `runner.html`, die Engine-Dateien und die Dramaturgie über
 die ganze Nacht.
 
