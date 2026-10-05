@@ -34,9 +34,28 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
-  neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
-  Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
+- [ ] **P2 · Analyse nachholen: Level 1** — erster von acht Teilen (Level 1, 6, 7, 8, Karte,
+  Runner, Engine, Dramaturgie), weil die ganze Liste in einem Punkt zu groß war - neun
+  Prüfer sind schon am Nutzungslimit gescheitert (siehe PLAYTEST.md ganz unten). Lief in
+  der Nacht vom 5.10. als Analyse-Agent, Ergebnis noch nicht in PLAYTEST.md eingetragen
+  (Zeitbudget der Sitzung). Fertig wenn: eigener Abschnitt „Level 1" in PLAYTEST.md mit
+  Problem/Warum/Grad/Loesung-Tabelle, Funde mit Datei:Zeile belegt.
+- [ ] **P2 · Analyse nachholen: Level 6** — zweiter Teil, siehe oben.
+  Fertig wenn: eigener Abschnitt „Level 6" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
+  Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
+  Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
+  Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
+  Fertig wenn: eigener Abschnitt „Runner" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Engine** — siebter Teil, siehe oben. Wo: nacht/*.js ·
+  Fertig wenn: eigener Abschnitt „Engine" in PLAYTEST.md (Dateien, die quer durch alle
+  Level wirken, z.B. gemeinsame Zustaende, Tabellen).
+- [ ] **P2 · Analyse nachholen: Dramaturgie über die ganze Nacht** — achter und letzter
+  Teil, siehe oben. Fertig wenn: eigener Abschnitt „Dramaturgie" in PLAYTEST.md (Bogen
+  über alle acht Level hinweg, nicht einzelne Level).
 
 ### P3
 
