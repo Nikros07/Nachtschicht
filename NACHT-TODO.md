@@ -34,12 +34,18 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
-  Level-4-Mechanismus auf (steht seit `2e60b48`: Schritt-Typ `puppe` in nacht/lehre.js, mit
-  `s._puppe`/`imKonterfenster`). Block braucht einen eigenen Check in `Z.taste()` (z.B. bei
-  `ShiftLeft` pruefen, ob `s._puppe.zustand==='ausholen'` und man selbst blockt), Rolle
-  entsprechend fuer Space. Wo: nacht/lehre.js · Fertig wenn: die Lektion von Level 3 verlangt
-  einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
+- [ ] **P2 · Lektionen: Übungspuppe für Rolle (Level 8)** — zweiter Teil, nach dem Block-Teil
+  (Level 3) abgespalten, weil beides zusammen über ~15 Minuten ging. Baut auf dem
+  Level-4-Mechanismus auf (`puppe`-Schritt-Typ in nacht/lehre.js, `PUPPE_ARTEN` seit dem
+  Block-Punkt). Level 8 bindet Rolle an dieselbe Taste wie Sprung (Space) - ausserhalb des
+  Kampfes springt man, im Kampf rollt man (siehe `rolleGedrueckt` in level8.html, Zeile ~368).
+  Ein neuer, eigener Lektionsschritt (nicht der bestehende SPRUNG-Schritt) mit
+  `puppe:'rolle'`, Taste Space, `wann: p=>p.zustand==='ausholen'||p.zustand==='schlag'` (wie
+  beim Block). Zwei Schritte mit derselben Taste (SPRUNG und ROLLE) sind ok - beide muessen
+  einzeln erfuellt werden. Wo: nacht/lehre.js (LEKTIONEN['level8.html'].schritte) ·
+  Fertig wenn: die Lektion von Level 8 verlangt zusaetzlich eine Rolle (Space waehrend die
+  Puppe ausholt/schlaegt) gegen dieselbe Puppe, bevor sie als erledigt gilt; per Simulation
+  im Nachttest auslösbar wie beim Konter-Punkt.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
@@ -91,6 +97,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Block in Level 3 · `59d5066` ·
+  Zweiter Teil (erster: Konter Level 4, siehe unten), vorher in zwei Punkte geteilt, weil
+  beides zusammen ueber ~15 Minuten ging. `puppe`-Schritt-Typ in nacht/lehre.js verall-
+  gemeinert: `PUPPE_ARTEN` haelt je Art (konter/block/rolle) Taste und Zeitfenster.
+  Level 3s SHIFT-Schritt war bisher optional und zaehlte bei jedem Druck - jetzt
+  `puppe:'block'`, nicht mehr optional, erledigt erst waehrend die Puppe ausholt/schlaegt.
+  tools/nachttest.js generalisiert: prueft fuer 'block' (anders als 'konter') folgerichtig
+  keinen Fruehdruck-Fehlschlag, weil deren Fenster von Anfang an offen ist. Gemessen per
+  Simulation (node tools/nachttest.js level3): Lektion ok, SHIFT erledigt den Schritt nur
+  waehrend ausholen/schlag. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Level 4, nur Konter · `2e60b48` ·
   Neuer Schritt-Typ `puppe` in nacht/lehre.js, wie am 4.10. geplant: eine stillstehende
