@@ -34,30 +34,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — am 4.10. nochmal angesehen und
-  genauer geplant, aber nicht gebaut: `nacht/lehre.js` ist eine gemeinsame Datei fuer alle acht
-  Level, fuenf davon laden `nacht/kampf.js` gar nicht (index, level2, 5, 6, 7 - siehe
-  `tools/pruefe.js`-Ausgabe) - jeder Zugriff auf `kaempfer()`/`kaempferTakt()` dort muss hinter
-  `typeof kaempfer==='function'` stehen, wie beim bestehenden `typeof piep` in derselben Datei.
-  Level 4 treibt seinen Boss schon ueber `kaempfer()`+`kaempferTakt()` aus kampf.js
-  (`bossTakt()`), aber `starteAngriff()`/`bossPhase()` sind levelspezifisch (TUNE, Phasen) und
-  duerfen von der gemeinsamen `lehre.js` nicht aufgerufen werden - die Puppe fuer die Lektion
-  braucht einen eigenen, einfachen Windup, nicht Level 4s Phasen-Logik. Konkreter Plan fuer den
-  Bau: in `Z.pruefe()` fuer einen Schritt mit `s.puppe` ein eigenes `s._puppe=kaempfer({x:0,t:0,
-  ausholenDauer:1.2,schlagDauer:.2})` anlegen und `s._puppe.zustand='ausholen'` setzen; in
-  `Z.takt(dt)` `kaempferTakt(s._puppe,dt)` aufrufen und bei `zustand==='frei'` zurueck auf
-  `'ausholen'` setzen (endlose Wiederholung, bis der Schritt erledigt ist); in `Z.taste()` bei
-  `KeyE` pruefen `imKonterfenster(s._puppe,KAMPF.konterAnteil)` - nur dann den Schritt als
-  erledigt markieren.
-  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`, siehe Plan oben), nacht/kampf.js (nur lesen,
-  nichts aendern) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
-  Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
-  Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
-  falschen Zeit = nicht); `node tools/pruefe.js` bleibt fuer alle zehn Seiten gruen (auch die
-  fuenf ohne kampf.js).
 - [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
-  Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
-  von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
+  Level-4-Mechanismus auf (steht seit `2e60b48`: Schritt-Typ `puppe` in nacht/lehre.js, mit
+  `s._puppe`/`imKonterfenster`). Block braucht einen eigenen Check in `Z.taste()` (z.B. bei
+  `ShiftLeft` pruefen, ob `s._puppe.zustand==='ausholen'` und man selbst blockt), Rolle
+  entsprechend fuer Space. Wo: nacht/lehre.js · Fertig wenn: die Lektion von Level 3 verlangt
+  einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
@@ -109,6 +91,19 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Level 4, nur Konter · `2e60b48` ·
+  Neuer Schritt-Typ `puppe` in nacht/lehre.js, wie am 4.10. geplant: eine stillstehende
+  `kaempfer()`-Instanz (ausholenDauer 1,2s) holt in `Z.takt()` endlos aus, `Z.taste()`
+  zaehlt ein E nur, wenn `imKonterfenster(s._puppe,KAMPF.konterAnteil)` wahr ist - alles
+  hinter `typeof kaempfer`/`typeof kaempferTakt`-Wachen, da fuenf von acht Leveln
+  kampf.js nicht laden. Level 4s eigene Boss-Phasenlogik (`starteAngriff`/`bossPhase`)
+  blieb unberuehrt. Die generische Lektionspruefung in tools/nachttest.js druckte bisher
+  jede Taste sofort - ergaenzt um einen Fruehdruck-Check (darf den Puppe-Schritt nicht
+  erledigen) und ein Takten bis ins Fenster (muss ihn erledigen). Gemessen per Simulation:
+  Druck vor dem Fenster laesst `LEHRE.erledigt[i]` false, Druck ab zT>=0,792s (Fenster-
+  anfang bei ausholenDauer*(1-konterAnteil)) setzt es true - beides jetzt automatisch in
+  nachttest.js geprueft. Alle vier Pruefungen gruen (auch die fuenf Seiten ohne kampf.js).
 
 - [x] 2026-10-05 · P1 · Club-Decke, vierter Schritt: Banner jetzt auch ueber Klos und
   Hinterausgang · `2981c28` · Die Rueckwand-Banner-Schleife (Bar/Raucherecke, `3243c27`)
