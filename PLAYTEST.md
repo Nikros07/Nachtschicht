@@ -95,7 +95,7 @@ sich anders, ohne länger zu werden.~~
 | Level 4 ist fünfmal dieselbe Entscheidung | Nach dem zweiten Konter ist alles gesehen. Die Phasen ändern nur Zahlen, keine Antworten. | hoch | Jede Phase soll die vorige Antwort entwerten |
 | ~~Der Pegel verengt das Konterfenster um bis zu 40 % — unsichtbar~~ | Der Spieler erlebt eine Runde, in der „das Timing nicht geht", ohne je zu erfahren warum. Das ist die unfaire Variante von schwer. | hoch | ~~Befund war veraltet: der Balken liest fensterAnteil schon direkt, stimmt schon mit dem echten Fenster überein (3.10.)~~ |
 | ~~Phase-3-Jab auf HART mit Pegel ist nicht mehr reagierbar~~ | Liegt unter menschlicher Reaktionszeit. | hoch | ~~Untergrenze TUNE.fensterMinSek=0,28s eingezogen (3.10.)~~ |
-| Jab und Schwung sehen identisch aus | Zwei Muster tragen nur, wenn man sie unterscheiden kann. | mittel | Eigene Haltung je Angriff |
+| ~~Jab und Schwung sehen identisch aus~~ | Zwei Muster tragen nur, wenn man sie unterscheiden kann. | mittel | ~~Eigene Haltung je Angriff: neue SPR.bossWindJab (5.10.)~~ |
 
 ## Club — die Zahlen unter den Texten
 

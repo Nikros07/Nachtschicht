@@ -324,3 +324,78 @@ In `NACHT-TODO.md` unter „Offen" → P1: **Club-Decke, vierter Schritt (Klos/H
 heute gefunden. Danach P2 in Dateireihenfolge: die beiden Übungspuppen-Punkte (groß, heute
 genauer geplant), Level-4-Phasen-Entwertung, Jab/Schwung-Unterscheidung, Analyse-Nachholbedarf
 (Level 1/6/7/8/Karte/Runner/Engine/Dramaturgie).
+
+---
+
+## 2026-10-05 — Nacht — Test und Bau
+
+Start-Commit: `6453365`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+61/50/7 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Alle
+Nichtstun-Zahlen und flagcheck.js-Werte stimmten exakt mit dem Vortagsbericht überein,
+keine neuen Funde beim Testen selbst.
+
+### Erledigt (8 Punkte, ~54 Minuten)
+
+1. **Club-Decke, vierter Schritt: Banner jetzt auch über Klos und Hinterausgang** ·
+   `2981c28` — die Rückwand-Banner-Schleife (Bar/Raucherecke) lief bisher nur bis x=1065;
+   kleinster Eingriff: dieselbe Schleife bis x=1400 verlängert. Der ursprüngliche Messweg
+   (56,7 %/59,4 % bei Kamera auf x=1150/x=1300) war nicht mehr rekonstruierbar — eigene,
+   dokumentierte Methode (direkter S.kamX, Spieler außerhalb des Bildes): leere Bildzeilen
+   70,0 % → 27,2 % (kamX=1150) bzw. 86,7 % → 32,2 % (kamX=1300), beide unter 50 %.
+2. **Lektionen: Übungspuppe für Level 4, nur Konter** · `2e60b48` — neuer Schritt-Typ
+   `puppe` in nacht/lehre.js: eine stillstehende `kaempfer()`-Instanz holt endlos aus, E
+   zählt nur im Konterfenster (`imKonterfenster()`), sonst bleibt der Schritt offen. Hinter
+   `typeof kaempfer`-Wachen, da fünf von acht Leveln kampf.js nicht laden. nachttest.js um
+   einen Fruehdruck-Check (darf nicht erledigen) und ein Takten bis ins Fenster ergänzt.
+3. **Lektionen: Übungspuppe für Block in Level 3** · `59d5066` — `puppe`-Schritt-Typ
+   verallgemeinert (`PUPPE_ARTEN` je Art Taste+Zeitfenster). Level 3s SHIFT-Schritt war
+   optional und zählte bei jedem Druck — jetzt `puppe:'block'`, erledigt erst während die
+   Puppe ausholt/schlägt.
+4. **Lektionen: Übungspuppe für Rolle in Level 8** · `d62c683` — dritter Teil, nutzt
+   `PUPPE_ARTEN.rolle` (stand schon seit Punkt 3), nur der neue Lektionsschritt war nötig.
+5. **Level 4: Jab und Schwung im Ausholen unterscheidbar** · `926e612` — neue
+   SPR.bossWindJab (enger, mit roter Faust statt blossem Torso) statt derselben Sprite für
+   beide Angriffsarten. Gemessen: 6 von 72 Zeichen zwischen bossWind und bossWindJab
+   unterschiedlich (vorher 0, identisch).
+6. **Analyse nachholen: Level 1** · `9508e31` — erster von acht Teilen des aufgeteilten
+   Analyse-Punkts. Ein Analyse-Agent hat index.html und die elf geladenen Engine-Dateien
+   gelesen; sechs belegte Funde (toter Tiefen-Code, nie gelesene HAUSMEISTER-Zuneigung,
+   zwei ungenutzte TUNE-Werte, wirkungsloser Sprung, hartcodierte Wurf-Physik, ein
+   wirkungsloser Ausschluss) als neuer Abschnitt „Level 1" in PLAYTEST.md. Ein siebter,
+   projektweiter Fund als eigener Punkt unter „Offen" (siehe Punkt 7).
+7. **Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken jetzt** · `727f73e` — betraf alle acht
+   Level: S.blitz/S.ruettel (in Level 5 zusätzlich das Stroboskop S.flacker) wurden roh
+   gezeichnet statt durch FX.blitz()/FX.wackel() geschickt. Gemessen: FX.blitz(1) 1,000 ohne
+   Flackerschutz, 0,120 mit; FX.wackel(6) 6,00 ohne, 3,00 mit.
+8. **Analyse nachholen: Level 6** · `7e60128` — zweiter Teil. Sechs belegte Funde
+   (dieselbe tote Tiefen-Logik wie Level 1, ein zu schnell fallender Pegel, ein
+   wirkungsloser Mobil-Sprungknopf, eine hartcodierte Pegelzahl neben einem echten
+   TUNE-Wert, zwei Trigger für denselben Hinweistext, ein nie gelesenes Datenfeld) als
+   neuer Abschnitt „Level 6" in PLAYTEST.md; alle sechs einzeln unter „Offen" eingetragen
+   (der Tiefe-Fund zusammengelegt mit dem aus Level 1).
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js erneut grün;
+`verloren` in flagcheck.js blieb durchgehend bei 7. `kampf.test.js` meldete nach Punkt 7
+einmal 21/22 (ein Lauf) — fünf direkt folgende Wiederholungen liefen 22/22; die Datei testet
+nur nacht/kampf.js in Isolation und lädt keine der an Punkt 7 geänderten Leveldateien, also
+kein Zusammenhang mit der Änderung. `PLAYTEST.md` entsprechend nachgezogen.
+
+### Blockiert (bewusst nicht gebaut, kein Code geändert)
+
+- **Level 4: jede Phase soll die vorige Antwort entwerten** (P2) — Zweifel am Spielgefühl,
+  kein gescheiterter Bauversuch. Phase 2 entwertet die Phase-1-Antwort bereits echt (Ramme,
+  unblockbar, Konter explizit abgelehnt in `konterVersuch()`). Phase 3 bräuchte einen neuen,
+  nur-block-baren Angriff — das heißt `unblockbarJetzt` in getrennte Fahnen für Konter/Block
+  aufzuspalten, eine neue Windup-Pose und eine Balance-Entscheidung, die den ohnehin knappen
+  Kampf eher verschlechtert hätte als verbessert. Mit der Frage unter „Blockiert" vermerkt.
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Level 1 und 6: toter
+Tiefen-Code** (zusammengelegt), **Level 6: Pegel fällt zu schnell**, **Level 6:
+Mobil-Sprungknopf ohne Wirkung**, dann die restlichen sechs Analyse-Teile (Level 7, 8,
+Karte, Runner, Engine, Dramaturgie). Danach P3, angeführt von drei neuen Level-6-Kleinfunden
+und der bestehenden Liste (Lektion wiederholen, `level5_baeume.js` löschen, Bahn-oder-Bus,
+`TODO.md` veraltet).
