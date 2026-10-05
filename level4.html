@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051122">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051126">
 </head>
 <body>
 <div id="cab">
@@ -37,24 +37,25 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051122"></script>
-<script src="nacht/geraet.js?v=202610051122"></script>
-<script src="nacht/bild.js?v=202610051122"></script>
-<script src="nacht/hud.js?v=202610051122"></script>
-<script src="nacht/ton.js?v=202610051122"></script>
-<script src="nacht/komfort.js?v=202610051122"></script>
-<script src="nacht/stand.js?v=202610051122"></script>
-<script src="nacht/welt.js?v=202610051122"></script>
-<script src="nacht/kampf.js?v=202610051122"></script>
-<script src="nacht/nacht.js?v=202610051122"></script>
-<script src="nacht/eingabe.js?v=202610051122"></script>
-<script src="nacht/lehre.js?v=202610051122"></script>
-<script src="nacht/mobil.js?v=202610051122"></script>
-<script src="nacht/handy.js?v=202610051122"></script>
-<script src="nacht/texte.js?v=202610051122"></script>
-<script src="nacht/erzaehl.js?v=202610051122"></script>
-<script src="nacht/epilog.js?v=202610051122"></script>
-<script src="nacht/menue.js?v=202610051122"></script>
+<script src="nacht/kern.js?v=202610051126"></script>
+<script src="nacht/geraet.js?v=202610051126"></script>
+<script src="nacht/bild.js?v=202610051126"></script>
+<script src="nacht/hud.js?v=202610051126"></script>
+<script src="nacht/ton.js?v=202610051126"></script>
+<script src="nacht/komfort.js?v=202610051126"></script>
+<script src="nacht/stand.js?v=202610051126"></script>
+<script src="nacht/welt.js?v=202610051126"></script>
+<script src="nacht/kampf.js?v=202610051126"></script>
+<script src="nacht/nacht.js?v=202610051126"></script>
+<script src="nacht/dialog.js?v=202610051126"></script>
+<script src="nacht/eingabe.js?v=202610051126"></script>
+<script src="nacht/lehre.js?v=202610051126"></script>
+<script src="nacht/mobil.js?v=202610051126"></script>
+<script src="nacht/handy.js?v=202610051126"></script>
+<script src="nacht/texte.js?v=202610051126"></script>
+<script src="nacht/erzaehl.js?v=202610051126"></script>
+<script src="nacht/epilog.js?v=202610051126"></script>
+<script src="nacht/menue.js?v=202610051126"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -216,6 +217,29 @@ const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return 
    Konterfenster. Kuenftige Level (ab 5) sollen denselben Helfer verwenden. */
 const dennisKampfBonus=()=>ladeCrew().includes('DENNIS')?{leben:1,fenster:1.15}:{leben:0,fenster:1};
 
+/* Plauschzeilen (nacht/erzaehl.js): nur in der Wartephase vor dem Kampf.
+   Moritz sagt hier KEINEN Anlauf (es gibt genau vier: L2, L3, L5, L7). */
+const PLAUSCH_ZEILEN=[
+  {id:'l4a', wer:'MIA',   text:'IHR SEID DIE BUS-TYPEN.', ausloeser:'warten', nach:3},
+  {id:'l4b', wer:'ROCKY', text:'WUFF.', ausloeser:'warten', nach:6},
+  {id:'l4c', wer:'JONAS', text:'ICH BLEIB NEBEN DIR.', ausloeser:'warten', nach:7, wenn:{flag:'jonasAngstTeilen'}},
+];
+/* Dennis steht noch in der Schlange, ist noch nicht in der Crew. */
+const DENNIS_SCHLANGE={
+  start:{ wer:'DENNIS', text:'Eine Stunde. Der kommt nicht rein, wer so aussieht.',
+    wahl:[ { txt:'Wir kommen rein.',        tu:{mut:3, mag:['DENNIS',4]}, geh:'passt' },
+           { txt:'Und wenn du recht hast?', tu:{mag:['DENNIS',4]},        geh:'passt' } ], zeit:10, standard:0 },
+  passt:{ wer:'DENNIS', text:'Passt.', geh:'ende' },
+  ende:null,
+};
+const KAPPE_KARTE=()=>{
+  if(flag('busKloppeGewonnen')) return 'DER MIT DER KAPPE HAT EIN BLAUES AUGE.|ER STEHT HINTER DIR.';
+  if(flag('busGezahlt'))        return 'DER MIT DER KAPPE NICKT DIR ZU.|ER STEHT HINTER DIR.';
+  if(flag('busAngeblafft'))     return 'DER MIT DER KAPPE WEICHT DIR AUS.|ER STEHT HINTER DIR.';
+  return 'KAPPE: DU SCHON WIEDER.';
+};
+const KAPPE_DAUER=2.2, WARTE_MIN=9, WARTE_MAX=16, ONKEL_DAUER=2.4;
+
 let S={};
 /* Die Gruppengroesse aus Level 2 wirkt hier: mit vier Mann faellt ihr auf
    und er laesst sich mehr bitten, zu zweit kommt ihr leichter durch.
@@ -235,7 +259,7 @@ function neuesSpiel(){
     modus:'titel', t:0, zeit:0,
     maxHp:TUNE.leben+bonus.leben, hp:TUNE.leben+bonus.leben, fensterMult:bonus.fenster,
     pegelStart:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
-    treffer:0, erholungT:0,
+    treffer:0, erholungT:0, herzVerlust:0, kappeT:0, kappeText:'', warteT:0, onkelT:0, onkelGesagt:false,
     ruettel:0, blitz:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     szene:0, szeneT:0, skipT:0,
@@ -243,6 +267,7 @@ function neuesSpiel(){
     spieler:null, blockAn:false,
   };
   S.spieler=kaempfer({ x:96, t:0.5, blick:1, hp:S.maxHp, maxHp:S.maxHp });
+  PLAUSCH.lade(PLAUSCH_ZEILEN);
 }
 neuesSpiel();
 
@@ -254,17 +279,22 @@ let aktionGehalten=false;
 let aktionPuffer=[];
 
 function druckAktion(){
+  if(erzaehlTaste()) return;
+  if(gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=4'; return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
+  if(S.modus==='schlange') return;
   if(S.modus==='pause') return;
   aktionPuffer.push(S.t);
 }
 /* Knopf-Aufschriften fuer nacht/mobil.js: Leertaste ist hier die Rolle,
    nicht der Sprung, und ohne block:true fehlte am Handy der Blockknopf. */
 function mobilKontext(){
+  const ek=erzaehlKontext(); if(ek) return ek;
+  if(S.modus==='schlange') return {aktion:'WEITER', zwei:null};
   if(S.modus==='titel')    return {aktion:'START',  zwei:null};
   if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
   if(S.modus==='ende')     return {aktion:'WEITER', zwei:null};
@@ -308,19 +338,35 @@ addEventListener('blur',()=>{ aktionGehalten=false;
    INTRO
    ========================================================================== */
 const INTRO=[
-  { d:2.2, txt:'23:15. VOR DEM CLUB.' },
+  { d:2.2, txt:'22:40. VOR DEM CLUB.' },
   { d:2.4, txt:'DIE SCHLANGE ZIEHT SICH UM DIE ECKE.' },
   { d:2.4, txt:'VORNE STEHT EINER, DER EUCH NICHT REINLAESST.' },
   { d:2.2, txt:'DER TUERSTEHER.' },
-  { d:2.6, txt:'E IM RICHTIGEN MOMENT IM AUSHOLEN - DAS IST KONTERN.' },
+  { d:2.6, txt:(IS_TOUCH?'KONTER-KNOPF':'E')+' IM RICHTIGEN MOMENT IM AUSHOLEN - DAS IST KONTERN.' },
 ];
-function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+function starte(){ neuesSpiel(); kapitelZeigen(4); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+/* Wartephase: Kappe-Karte, Plausch, Dennis-Gespraech - dann erst der Kampf. */
 function starteLevel(){
+  S.modus='schlange'; S.kappeT=KAPPE_DAUER; S.warteT=0; S.skipT=0;
+  S.kappeText=KAPPE_KARTE();
+}
+function schlange(dt){
+  if(gespraechAktiv()){ gespraechTakt(dt); return; }
+  if(S.kappeT>0){ S.kappeT-=dt; return; }
+  S.warteT+=dt;
+  PLAUSCH.ausloeser('warten');
+  const still=!PLAUSCH.jetzt&&PLAUSCH.warte.length===0;
+  if(S.warteT>=WARTE_MAX||(S.warteT>=WARTE_MIN&&still)){
+    PLAUSCH.jetzt=null; PLAUSCH.warte=[];
+    starteGespraech(DENNIS_SCHLANGE,'start',starteKampf);
+  }
+}
+function starteKampf(){
   S.modus='kampf';
   S.boss=kaempfer({ x:W+30, t:0.5, blick:-1, art:'tuersteher',
     hp:trefferZiel(), maxHp:trefferZiel(), reichweite:19,
     pauseT:0.9, anlauf:true, vorZustand:'frei' });
-  zeigeHinweis('E IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
+  zeigeHinweis((IS_TOUCH?'KONTER':'E')+' IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
   SFX.warn(); meldung('NA WARTE',1.4);
 }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
@@ -502,6 +548,7 @@ function kampf(dt){
     const r=loeseTreffer(b,s,{schaden:1,unblockbar:b.unblockbarJetzt,
                               reichweite:b.reichweite,betaeubung:0.35});
     if(r==='treffer'||r==='gardebruch'){
+      S.herzVerlust++;
       S.ruettel=6; S.blitz=.5; SFX.aua();
       meldung(r==='gardebruch'?'DURCH DIE DECKUNG'
              :b.art==='ramme'?'UMGERANNT'
@@ -512,6 +559,9 @@ function kampf(dt){
       meldung('AUSGEWICHEN',0.9);
     }
   }
+
+  if(S.onkelT>0) S.onkelT-=zdt;
+  if(!S.onkelGesagt&&flag('jonasDabei')&&b.hp<=b.maxHp/2&&b.hp>0){ S.onkelGesagt=true; S.onkelT=ONKEL_DAUER; }
 
   /* ---- Ausgang ---- */
   S.hp=Math.max(0,Math.ceil(s.hp));
@@ -531,16 +581,26 @@ const SZENEN=[
   { d:1.0, txt:'' },
   { d:2.2, txt:'*ER GEHT ZU BODEN*' },
   { d:2.2, txt:'TUERSTEHER: ...OKAY. OKAY.' },
+  { d:3.2, txt:'TUERSTEHER: ICH STEH HIER ACHT STUNDEN.|ICH SEH EUCH ALLE KOMMEN. UND GEHEN.' },
+  { d:2.4, txt:'TUERSTEHER: ...JONAS? DU BIST IM KINO.', wenn:{flag:'jonasDabei'} },
   { d:2.0, txt:'DU: DARF ICH JETZT' },
   { d:2.2, txt:'*ER TRITT ZUR SEITE*' },
   { d:2.4, txt:'EINER AUS DER SCHLANGE KOMMT MIT' },
   { d:2.4, txt:'DENNIS: RESPEKT. ICH KOMM MIT REIN.' },
+  { d:3.2, txt:'DENNIS: NICHT BEEINDRUCKT SEIN.|ICH BOXE, DAMIT ICH NICHT MUSS.' },
   { d:1.2, txt:'' },
   { d:2.6, txt:'DENNIS IST JETZT DABEI' },
   { d:2.6, txt:'ER BOXT UND HAT EUREN RUECKEN IM CLUB' },
+  { d:2.2, txt:'ROCKY BELLT EINMAL. MEHR NICHT.' },
   { d:2.2, txt:'LEVEL 4 GESCHAFFT' },
 ];
-function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.boss=null; SFX.sieg(); }
+function szeneGueltig(i){ return !SZENEN[i].wenn||bedingungErfuellt(SZENEN[i].wenn); }
+function naechsteSzene(){ do{ S.szene++; }while(S.szene<SZENEN.length&&!szeneGueltig(S.szene)); S.szeneT=0; }
+function starteCutscene(){
+  S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.boss=null; SFX.sieg();
+  /* Polaroid als Belohnung: nur wenn der Boss ohne Herzverlust faellt. */
+  if(S.herzVerlust===0) MOMENT.fund(4);
+}
 function levelGeschafft(){
   speichereCrew('DENNIS');
   /* Level 5 kennt das: Sophie will eine gute Geschichte hoeren. */
@@ -559,7 +619,7 @@ function cutscene(dt){
   } else S.skipT=Math.max(0,S.skipT-dt*2);
   S.szeneT+=dt;
   if(S.szeneT>=SZENEN[S.szene].d){
-    S.szene++; S.szeneT=0;
+    naechsteSzene();
     if(S.szene>=SZENEN.length){ S.modus='ende'; S.gewonnen=true; levelGeschafft(); }
   }
 }
@@ -568,6 +628,8 @@ function cutscene(dt){
    AKTUALISIEREN
    ========================================================================== */
 function update(dt){
+  if(erzaehlTakt(dt)) return;
+  PLAUSCH.sperre=gespraechAktiv();
   S.t+=dt; if(S.modus!=='titel') S.zeit+=dt; musik();
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   S.blitz=Math.max(0,S.blitz-dt*2.2);
@@ -575,6 +637,7 @@ function update(dt){
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel'||S.modus==='ende'){ return; }
   if(S.modus==='intro'){ intro(dt); return; }
+  if(S.modus==='schlange'){ schlange(dt); return; }
   if(S.modus==='kampf'){ kampf(dt); return; }
   if(S.modus==='cutscene'){ cutscene(dt); return; }
 }
@@ -590,15 +653,19 @@ function draw(dt){
   ctx.save();
   const wack = S.pegelStart>TUNE.pegelWackelAb
     ? (S.pegelStart-TUNE.pegelWackelAb)/(100-TUNE.pegelWackelAb)*TUNE.pegelWackelMax : 0;
-  const rx=(Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack;
-  const ry=(Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6;
+  const wk=FX.wackel(1);
+  const rx=((Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack)*wk;
+  const ry=((Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6)*wk;
   ctx.translate(Math.round(rx),Math.round(ry));
   zeichneArena();
   ctx.restore();
 
   hud();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${FX.blitz(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  zeichneSchlange();
+  zeichneGespraech();
   bildschirme();
+  erzaehlZeichne();
 }
 
 function zeichneKulisse(){
@@ -804,17 +871,33 @@ function zeichneIntro(){
   if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
   zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
+function zeichneSchlange(){
+  if(S.modus==='schlange'&&S.kappeT>0&&!gespraechAktiv()){
+    const zl=S.kappeText.split('|').length;
+    const h=zl*8+10, y=Math.round(H/2-h/2);
+    ctx.fillStyle='#08060fe6'; ctx.fillRect(0,y,W,h);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,y,W,1); ctx.fillRect(0,y+h-1,W,1);
+    zeichneKarte(S.kappeText,y+6,P.weiss);
+  }
+  if(S.modus==='kampf'&&S.onkelT>0){
+    const y=H-18, t='JONAS: ONKEL?!', x=Math.round((W-textW(t))/2);
+    ctx.fillStyle='#0000008c'; ctx.fillRect(0,y,W,11);
+    text('JONAS:',x,y+3,stimmeFarbe('JONAS'));
+    text('ONKEL?!',x+28,y+3,'#f2f0ff');
+  }
+}
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
     textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
   }
   if(S.modus==='cutscene'){
-    ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
-    ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
-    const s=SZENEN[S.szene];
-    if(s&&s.txt) textC(s.txt,H-26,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+    const s=SZENEN[S.szene], zl=s&&s.txt?s.txt.split('|').length:1, bh=zl>1?50:40;
+    ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-bh,W,bh);
+    ctx.fillStyle=P.neon; ctx.fillRect(0,H-bh,W,1);
+    if(s&&s.txt) zeichneKarte(s.txt,H-bh+(zl>1?8:14),P.weiss);
+    const uk=IS_TOUCH?'HALTEN ZUM UEBERSPRINGEN':'E HALTEN ZUM UEBERSPRINGEN';
+    if(Math.floor(S.t*FX.hz(1)*2)%2===0) text(uk,W-textW(uk)-6,H-10,P.dunkel);
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);

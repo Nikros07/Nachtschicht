@@ -42,7 +42,7 @@ const GERAET={};
   const UPDATE_PRUEFEN_MS=30*60*1000;  // wie oft nach einer neuen Version geschaut wird
 
   GERAET.version="1.0.0";
-  GERAET.build="202610051122";       // tools/version.py stempelt hier die Build-Nummer
+  GERAET.build="202610051126";       // tools/version.py stempelt hier die Build-Nummer
   GERAET.speicherOk=true;     // false: localStorage geht nicht (privates Fenster, voll)
   GERAET.fehler=[];           // die letzten Fehler, fuer Support: GERAET.fehler in der Konsole
   GERAET.bilder=0;            // wie viele Spielbilder ohne Ausnahme gelaufen sind
