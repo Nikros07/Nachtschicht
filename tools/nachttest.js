@@ -455,6 +455,32 @@ if(!filter.length||filter.some(f=>'index.html'.includes(f))){
     const mo=E('TEXTE_MOMENTE'); for(const k of Object.keys(mo)) for(const f of ['titel','l1','l2']) pr('MOMENT '+k+'.'+f,mo[k][f],44);
     if(E('typeof EPILOG')==='object'){ const ep=E('EPILOG');
       for(const k of Object.keys(ep)) for(const [i,z] of (ep[k].zeilen||[]).entries()) pr('EPILOG '+k+' '+i,z.txt,44); }
+    /* Abspann-Karten (epilog.js): leerer und voller Speicherstand, ohne Ausnahme,
+       jede Zeile <= 44 Zeichen und nur Zeichen der Schrift */
+    if(E('typeof abspannMitte')==='function'){
+      const karten=(was)=>E(`(()=>{ const alt=JSON.stringify(NACHT), altCrew=localStorage.getItem(CREW_KEY), altPegel=localStorage.getItem(PEGEL_KEY);
+        try{
+          ${was}
+          const p={weg:'sonne',kampf:'frieden',anfuehrer:'MARVIN'};
+          return JSON.stringify([].concat(abspannMitte(p),abspannSchluss(p),abspannMitte(null),abspannSchluss({})));
+        } finally { NACHT=JSON.parse(alt); if(altCrew===null) localStorage.removeItem(CREW_KEY); else localStorage.setItem(CREW_KEY,altCrew);
+          if(altPegel===null) localStorage.removeItem(PEGEL_KEY); else localStorage.setItem(PEGEL_KEY,altPegel); }
+      })()`);
+      const leer="nachtZuruecksetzen();";
+      const voll=`nachtZuruecksetzen(); ['MORITZ','JONAS','DENNIS','SEMIH','LEA','MAX FERDI','TOBI'].forEach(speichereCrew);
+        ['schluesselVersprochen','wirEuchAuch','tschuessGesagt','bisGleichAmEnde','moritzGeheimnis','jonasAngstTeilen','kiraTschuess',
+         'marvinKennt','marvinMitkommen','fightFrieden','fightGewonnen','endeSonne','taxiTipp','spaetiWasser','mitgesungen','notbremse',
+         'moritzKartonGesehen','tobiBruecke','tschuess_jonas','tschuess_dennis','tschuess_semih','tschuess_lea','tschuess_tobi',
+         'moment1','moment2','moment3','moment4','moment5','moment6','moment7','moment8'].forEach(f=>setzeFlag(f));
+        ['MORITZ','DENNIS','SEMIH'].forEach(x=>aendereBeziehung(x,50)); setzeWert('pegel',90);`;
+      let k=0;
+      for(const [name,was] of [['leer',leer],['voll',voll]]){
+        let arr; try{ arr=JSON.parse(karten(was)); }catch(e){ meld('Abspann',name+': Ausnahme '+String(e.message).slice(0,100)); continue; }
+        if(!arr.length) meld('Abspann',name+': keine Karten');
+        for(const c of arr){ k++; pr('ABSPANN '+name,c.txt,44); }
+      }
+      if(!bad) zeile('Abspann',k+' Karten (leerer und voller Stand) ohne Ausnahme, Zeilen <= 44, Schrift ok');
+    }
     if(!bad) zeile('Texte',n+' Texte geprueft (Laenge, Schrift)');
   }catch(e){ meld('Texte',String(e.message).slice(0,140)); }
 }

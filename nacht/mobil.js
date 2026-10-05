@@ -467,6 +467,7 @@ function zeigeBlatt(was){
       ensureAudio(); tipp('KeyM'); setTimeout(function(){ b.textContent=muted?'TON AN':'TON AUS'; },80); });
     knopfIn(blatt,'VOLLBILD',function(){ vollbild(); });
     if(typeof handyAuf==='function') knopfIn(blatt,'HANDY',function(){ menueZu(); handyAuf(); });
+    if(typeof MENUE!=='undefined'&&MENUE.galerie) knopfIn(blatt,'ENDEN',function(){ menueZu(); MENUE.galerie(); });
     knopfIn(blatt,'LEVEL WECHSELN',function(){ zeigeBlatt('level'); });
     knopfIn(blatt,'EINSTELLUNGEN',function(){ zeigeBlatt('einst'); });
   } else if(was==='level'){
