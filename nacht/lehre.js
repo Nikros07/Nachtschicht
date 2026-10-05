@@ -89,6 +89,7 @@ const LEKTIONEN={
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
       { gr:[['Space']], taste:'LEER', touch:'SPRUNG', was:'SPRINGEN UEBER ALLES', btn:'SPRUNG' },
       { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN IM KAMPF', opt:true, block:true },
+      { gr:[['Space']], taste:'LEER', touch:'ROLLE', was:'ROLLEN GEGEN EINEN ANGRIFF', btn:'ROLLE', puppe:'rolle' },
     ]},
 };
 
