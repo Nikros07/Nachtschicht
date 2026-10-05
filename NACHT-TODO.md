@@ -34,13 +34,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
-  die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
-  Wo: level4.html (`bossPhase`, `naechsteArt`) · Fertig wenn: Phase 2 und 3 verlangen
-  je eine andere Antwort als Phase 1.
-- [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
-  Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
-  Ausholen verschieden aus.
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
   Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
@@ -84,6 +77,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Level 4: Jab und Schwung im Ausholen unterscheidbar · `926e612` ·
+  Beide Angriffsarten nutzten dieselbe Windup-Sprite (SPR.bossWind). Neue
+  SPR.bossWindJab: enger an den Schultern, mit sichtbarer roter Faust statt blossem
+  Torso. Zeichenfunktion waehlt jetzt per `b.art==='jab'` zwischen beiden. Gemessen
+  (Software-Canvas, Zeichenketten verglichen): 6 von 72 Zeichen zwischen bossWind und
+  bossWindJab unterschiedlich (vorher 0, identisch). Alle vier Pruefungen gruen.
 
 - [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Rolle in Level 8 · `d62c683` ·
   Dritter und letzter Teil (Konter Level 4 `2e60b48`, Block Level 3 `59d5066`). Neuer
@@ -366,6 +366,24 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Blockiert
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
+
+- **2026-10-05 · P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — nicht
+  gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe „Zweifelst du..." in
+  routinen/nacht.md), kein gescheiterter Bauversuch. Phase 2 entwertet die Phase-1-Antwort
+  bereits echt: `naechsteArt()` schaltet den Rammstoss dazu, und `konterVersuch()` lehnt
+  `opt.unblockbar` explizit ab (kampf.js Zeile 267) - Rammen MUSS man ausweichen, Kontern
+  geht nicht mehr. Phase 3 aendert laut `naechsteArt()`/`starteAngriff()` nur noch Zahlen
+  (kuerzere Fenster/Pausen ueber `TUNE.phaseWindupKuerzer`/`phasePauseKuerzer`) - keine neue
+  Antwort. Eine echte vierte Antwort fuer Phase 3 braucht einen neuen Angriff, der Kontern
+  UND Ausweichen beide entwertet (vermutlich: nur per Block zu entschaerfen) - das heisst
+  `unblockbarJetzt` in eine fuer Konter und fuer Block getrennte Fahne aufzuspalten
+  (aktuell eine gemeinsame, siehe level4.html Zeile 364 und kampf.js `opt.unblockbar` in
+  `loeseTreffer`/`konterVersuch`), eine neue Windup-Pose UND eine Balance-Entscheidung
+  (wie stark, wie oft) - das ist Gestaltung, kein kleinster Eingriff, und schlecht
+  geraten haette den ohnehin knappen Kampf (siehe „Finale in Level 8 entschaerfen?" unter
+  Entscheidung noetig) eher kaputt gemacht als verbessert.
+  Fertig wenn weiterhin: Phase 2 und 3 verlangen je eine andere Antwort als Phase 1 -
+  Phase 2 erfuellt das schon (Ramme), Phase 3 noch nicht.
 
 - **2026-10-02 · P1 · Club-Decke: Banner oder Galerie an der Rückwand** — zweimal
   gebaut (zuerst bei y 24, dann tiefer bei y 56, beides x 630-1060 ueber Bar und
