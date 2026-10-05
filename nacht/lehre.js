@@ -50,14 +50,14 @@ const LEKTIONEN={
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
       { gr:[['Space']], taste:'LEER', touch:'SPRUNG', was:'SPRINGEN (HINDERNISSE)', btn:'SPRUNG' },
       { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'REDEN, VERSTECKEN, SCHLAGEN', btn:'AKTION' },
-      { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN IM KAMPF', opt:true, block:true },
+      { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN GEGEN EINEN ANGRIFF', block:true, puppe:'block' },
     ]},
   'level4.html':{ titel:'DIE SCHLANGE',
     text:['EIN GEGNER. WARTE, BIS DER BALKEN GOLD IST - DANN E.',
           'RAMMEN KANN MAN NICHT KONTERN: AUSWEICHEN.'],
     schritte:[
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
-      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER', puppe:true },
+      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER', puppe:'konter' },
       { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN - KOSTET KRAFT', block:true },
       { gr:[['Space']], taste:'LEER', touch:'ROLLE', was:'ROLLEN - WEICHT AUS', btn:'ROLLE' },
       { gr:[['ArrowUp','KeyW'],['ArrowDown','KeyS']], taste:'W S', touch:'STICK', was:'NACH HINTEN, VORNE AUSWEICHEN', opt:true },
@@ -94,6 +94,16 @@ const LEKTIONEN={
 
 const LEHRE_SKIP=0.6;       // so lange ENTER halten, dann ist die Lektion uebersprungen
 const LEHRE_KEY='nachtschicht.lektion.';
+
+/* Uebungspuppe: ein Schritt mit puppe:'konter'|'block'|'rolle' gilt erst nach
+   der jeweils richtigen Antwort auf einen Ausholer als erledigt - nicht nach
+   irgendeinem Tastendruck. 'wann' greift nur auf den Zustand der Puppe zu,
+   nie auf Level-4-Phasenlogik (siehe NACHT-TODO.md). */
+const PUPPE_ARTEN={
+  konter:{ codes:['KeyE'], wann:p=>typeof imKonterfenster==='function'&&imKonterfenster(p,KAMPF.konterAnteil) },
+  block:{ codes:['ShiftLeft','ShiftRight'], wann:p=>p.zustand==='ausholen'||p.zustand==='schlag' },
+  rolle:{ codes:['Space'], wann:p=>p.zustand==='ausholen'||p.zustand==='schlag' },
+};
 
 window.LEHRE=(function(){
   const seite=((typeof location!=='undefined'&&location.pathname)||'').split('/').pop().toLowerCase()||'index.html';
@@ -148,11 +158,11 @@ window.LEHRE=(function(){
     const weiter=(code==='Enter')||(code==='KeyE'&&Z.alleErledigt());
     if(weiter&&Z.alleErledigt()){ Z.beenden(); return; }
     L.schritte.forEach((s,i)=>{
-      /* Puppe: nur ein im Fenster getroffener Konter zaehlt - ein E
-         ausserhalb des Fensters bleibt wirkungslos, der Schritt bleibt offen. */
+      /* Puppe: nur die richtige Antwort auf einen Ausholer zaehlt - eine
+         Taste zur falschen Zeit bleibt wirkungslos, der Schritt bleibt offen. */
       if(s.puppe){
-        if(code==='KeyE'&&!Z.erledigt[i]&&s._puppe&&typeof imKonterfenster==='function'
-           &&imKonterfenster(s._puppe,KAMPF.konterAnteil)){
+        const art=PUPPE_ARTEN[s.puppe];
+        if(art&&art.codes.includes(code)&&!Z.erledigt[i]&&s._puppe&&art.wann(s._puppe)){
           s._offen[0]=false; Z.erledigt[i]=true;
           try{ if(typeof piep==='function') piep(520+i*70,.05,'square',.04); }catch(e){}
         }

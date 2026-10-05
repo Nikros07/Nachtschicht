@@ -414,18 +414,26 @@ for(const seite of SEITEN){
       if(!EQ('LEHRE.pruefe()')) meld(seite,'Lektion startet nicht im Intro');
       for(let i=0;i<3;i++){ EQ('LEHRE.takt(1/60)'); EQ('LEHRE.zeichne()'); }
       const gr=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.gr.map(g=>g[0]))');
-      const puppen=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>!!s.puppe)');
+      const puppen=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.puppe||null)');
       for(let si=0;si<gr.length;si++){
-        if(puppen[si]){
-          /* Uebungspuppe: zur falschen Zeit druecken darf nicht erledigen -
-             erst danach bis ins Konterfenster takten und dann druecken. */
-          Q.taste('KeyE',true); Q.taste('KeyE',false);
-          if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt zur falschen Zeit schon erledigt');
-          let guard=0;
-          while(!EQ('LEHRE.L.schritte['+si+']._puppe&&imKonterfenster(LEHRE.L.schritte['+si+']._puppe,KAMPF.konterAnteil)')&&guard<600){
-            EQ('LEHRE.takt(1/60)'); guard++;
+        const art=puppen[si];
+        if(art){
+          /* Uebungspuppe: nur die richtige Antwort (art) zur richtigen Zeit
+             zaehlt. Steht die Puppe noch ausserhalb des Fensters, erst
+             pruefen, dass ein Druck jetzt NICHT erledigt, dann takten bis
+             PUPPE_ARTEN[art].wann() zutrifft. */
+          const code=EQ('PUPPE_ARTEN["'+art+'"].codes[0]');
+          const vorFenster=EQ('!PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe||{})');
+          if(vorFenster){
+            Q.taste(code,true); Q.taste(code,false);
+            if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') zur falschen Zeit schon erledigt');
+            let guard=0;
+            while(!EQ('LEHRE.L.schritte['+si+']._puppe&&PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe)')&&guard<600){
+              EQ('LEHRE.takt(1/60)'); guard++;
+            }
           }
-          Q.taste('KeyE',true); Q.taste('KeyE',false);
+          Q.taste(code,true); Q.taste(code,false);
+          if(!EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') im Fenster nicht erledigt');
         } else {
           for(const code of gr[si]){ Q.taste(code,true); Q.taste(code,false); }
         }
