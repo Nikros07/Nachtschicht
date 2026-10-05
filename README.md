@@ -2,326 +2,139 @@
 
 *Party Game drunk.*
 
-Ein Pixel-Art-Spiel im Browser über eine Nacht, die aus dem Ruder läuft. Jedes
-Level ist eine Stufe des Abends. Kein Download, keine Installation, kein Konto.
+Ein Pixel-Art-Spiel über eine Nacht, die aus dem Ruder läuft. Freitag, letzter Schultag, 16:40:
+Du sitzt in der Schule fest, die Türen sind zu — und heute Abend geht was. Von da an ist es eine
+einzige lange Nacht, bis die Sonne aufgeht. Alle tun so, als wäre es nur „bis gleich“. Es ist
+aber die letzte Nacht als Jahrgang.
+
+Läuft im Browser, am Rechner und am Handy. **Kein Download, kein Konto, kein Tracking.**
+Alles auf Deutsch, etwa 40 Minuten für eine Nacht.
 
 **▶ [Jetzt spielen](https://nikros07.github.io/Nachtschicht/)**
 
-> Was noch fehlt, steht in [TODO.md](TODO.md).
-
 ---
 
-# Spielanleitung
+## Worum es geht
 
-## Level 1 — Die Schule
+Acht Level, acht Stationen der Nacht — und jedes spielt sich anders:
 
-Freitag, letzter Schultag, 16:40. Du hast das Nachsitzen verpennt, alle sind weg,
-die Türen sind zu. Heute Abend geht was, und da willst Du hin.
+| Level | Ort | Was du tust |
+|:--|:--|:--|
+| 1 | **Die Schule** | schleichen, Zettel lesen, den Lehrern und dem Direktor ausweichen, den Weg nach draußen finden |
+| 2 | **Bei Moritz** | Vorglühen: deine Leute in Bewegung bringen, Sachen suchen, den ersten Kampf bestehen |
+| 3 | **Der Nachtbus** | erst ein Sprint zur Haltestelle, dann ohne Ticket durch den Bus, ohne aufzufallen |
+| 4 | **Die Schlange** | vor dem Club: der Türsteher lässt euch nicht rein — ein Kampf auf Timing |
+| 5 | **Club** | Leute ansprechen, tanzen, Stroboskop, und wenn es kippt: kämpfen |
+| 6 | **Afterhour** | tief in der Nacht kippt es ins Surreale; Erinnerungen suchen, Echos des Abends |
+| 7 | **Späti** | fünf Minuten Ruhe: Wasser, Snacks, Gespräche, die Crew auf der Bank |
+| 8 | **Heimweg** | der letzte Weg, gegen die aufgehende Sonne |
 
-**Dein Ziel:** Schlüssel finden, Ausgang im Erdgeschoss aufschließen, raus.
+Dazu eine **Stadtkarte** zwischen den Leveln mit Umwegen, ein **Handy**, das dir die ganze Nacht
+schreibt, und ein **Bonus-Level** (Runner) außerhalb der Nacht.
 
-**Deine Gegner:** Drei Etagen, zehn Räume, Lehrer auf jeder Etage, ein Direktor
-der durchs ganze Gebäude wandert — und eine Uhr, die um **17:30** abläuft.
+Was du sagst und tust, merkt sich die Nacht: Mut, Ruf, Geld, wer dabei ist, was in der Tasche liegt.
+Es gibt keinen Punktestand — nur verschiedene Nächte.
+
+### Enden und Momente
+
+- Es gibt **zehn Enden**. Welches du bekommst, hängt davon ab, wie du die Nacht beendest, wie die
+  Kämpfe ausgehen — und wem du unterwegs zugehört hast. Eines davon musst du dir erst verdienen.
+- In jedem Level liegt irgendwo abseits des Weges ein **Polaroid**: acht **Momente** zum Sammeln.
+- Im Startmenü zeigt **ENDEN** (Taste `G`), was du schon gefunden hast. Gefundenes bleibt, auch
+  wenn du eine neue Nacht beginnst.
+- Beim ersten Mal einfach spielen. Es lohnt sich, es ein zweites Mal anders zu versuchen.
 
 ---
 
 ## Steuerung
 
+### Tastatur
+
 | Taste | Aktion |
 |:--|:--|
-| `A` `D` oder `←` `→` | Laufen |
-| `Leertaste` | Springen |
-| `W` oder `↑` | Treppe hoch |
-| `S` oder `↓` | Treppe runter |
-| **`E`** | Tür öffnen · Möbel durchsuchen · in den Spind · Schlüssel klauen |
-| **`Shift`** | Schleichen |
-| **`R`** | Etwas werfen |
-| **`Q`** | Taschenlampe an/aus |
-| **`H`** | Handy stumm schalten |
-| `F` Vollbild · `P` Pause · `M` Ton aus | |
+| `A` `D` oder `←` `→` | Laufen; im Gespräch: Antwort wählen |
+| **`E`** | Aktion: reden, durchsuchen, Türen öffnen, im Kampf kontern |
+| `Leertaste` | Springen; im Kampf rollen |
+| **`Shift`** | Schleichen; im Kampf blocken |
+| `W` `S` oder `↑` `↓` | Treppen; im Kampf nach hinten oder vorn ausweichen |
+| `Q` · `R` | Taschenlampe · Werfen (in der Schule) |
+| `M` Ton · `P` Pause · `F` Vollbild | |
+| `1`–`8` | auf dem Titelbild: direkt zu diesem Level |
 
-**Am Handy** — am besten quer:
+Vor jedem Level zeigt eine kurze **Lektion**, welche Tasten es braucht: jede leuchtet auf, sobald
+du sie ausprobierst. `ENTER` gedrückt halten überspringt sie.
 
-- **Linker Daumen:** ein Stick, der dort erscheint, wo du ihn aufsetzt. Sanft gezogen
-  schleichst du, voll gezogen gehst du.
-- **Rechter Daumen:** ein großer Hauptknopf unten außen, die übrigen Knöpfe (Sprung,
-  Block, Rolle, Lampe …) liegen im Bogen um ihn. Ein Tippen **irgendwo auf der rechten
-  Hälfte** zählt als Hauptknopf — du musst ihn nicht treffen. Er pulsiert, sobald es
-  etwas zu tun gibt.
-- **Menü** (am rechten Rand): hält das Spiel an, dazu Ton, Vollbild, Levelwahl und
-  **Einstellungen** — Linkshänder, Größe der Knöpfe, Stick frei oder fest, Tippen rechts,
-  Vibration. Die Einstellungen bleiben auf dem Gerät.
+### Handy
+
+Am besten **quer**. Die erste Berührung schaltet ins Vollbild (auf dem iPhone gibt es das im Browser
+nicht — dort hilft „Zum Home-Bildschirm“, siehe unten).
+
+- **Links** ein Stick, der dort erscheint, wo du den Daumen aufsetzt: sanft gezogen schleichst du,
+  voll gezogen gehst du.
+- **Rechts** ein großer Hauptknopf, die übrigen Knöpfe (Sprung, Block, Rolle, Lampe …) liegen im
+  Bogen darum. Ein Tippen **irgendwo auf der rechten Hälfte** zählt als Hauptknopf.
 - **Gespräche:** die Antworten sind große Flächen zum Antippen.
-- Die erste Berührung schaltet ins Vollbild.
+- **Menü** am rechten Rand: Pause, Ton, Vollbild, Level wechseln, **Enden** und **Einstellungen** —
+  Linkshänder, Größe der Knöpfe, Stick frei oder fest, Tippen rechts, Vibration.
 
 ---
 
-## Zwei Spielarten
+## Installieren und Offline
 
-Beim Start sagt Dir das Intro, welche gerade läuft — sie wechselt jede Runde:
+Nach dem ersten Laden läuft die ganze Nacht auch **ohne Netz**. Du kannst das Spiel wie eine App
+installieren (Vollbild, Querformat, eigenes Symbol):
 
-**Der Zweitschlüssel liegt irgendwo.** Durchsuch die Räume. Zettel helfen Dir.
+- **Android (Chrome):** Menü → „App installieren“.
+- **iPhone (Safari):** Teilen → „Zum Home-Bildschirm“.
+- **Rechner (Chrome, Edge):** Installieren-Symbol in der Adressleiste.
 
-**Der Hausmeister trägt ihn am Gürtel.** Du musst ihn ablenken. Dafür ist `R` da.
+Gibt es eine neue Version, meldet das Spiel „NEUE VERSION - TIPPEN ZUM LADEN“ und wechselt erst,
+wenn du zustimmst — nie mitten in der Nacht. Gespeichert wird nur auf deinem Gerät (Spielstand,
+Bestzeiten, Einstellungen); Details zum Datenschutz stehen auf der Seite
+[Über NACHTSCHICHT](ueber.html) im Spiel. Dort kannst du den Spielstand auch löschen.
+
+Hängt das Spiel einmal: `?reset=cache` an die Adresse hängen löscht nur den Offline-Speicher,
+`?reset=1` auch den Spielstand.
 
 ---
 
-## Die Räume
+## Hinweise
 
-Im Korridor siehst Du nur Türen. Was dahinter liegt, siehst Du erst, wenn Du
-reingehst — unbetretene Türen zeigen `? ? ?`.
+- **Alkohol:** Im Spiel geht es um eine Partynacht mit Alkohol, Streit und Prügeleien. Es ist ein
+  Spiel — nichts davon ist zum Nachmachen. Wenn du selbst trinkst, dann mit Maß, und steig nicht
+  ins Auto. Wenn Alkohol für dich oder jemanden, den du kennst, zum Problem geworden ist, hilft
+  eine Suchtberatung in deiner Nähe.
+- **Blitze und Flackern:** Das Spiel hat Stroboskop- und Blitzeffekte (zum Beispiel im Club),
+  helle Blitze bei Treffern und Bildschirmwackeln. Wenn du empfindlich darauf reagierst, schalte
+  unter **Einstellungen** den **Flackerschutz** ein: Er dämpft Blitze und Stroboskop stark.
+  Hast du im System „Bewegung reduzieren“ gewählt, ist er anfangs schon an. Bei Unwohlsein
+  aufhören und Pause machen.
+- Wackeln und den Röhren-Look (Scanlines) kannst du in den Einstellungen ebenfalls abschalten.
 
-Drinnen durchsuchst Du Möbel mit `E`. Die meisten sind leer, aber nicht alle:
+---
 
-| Fund | Wirkung |
+## Für Entwickler
+
+Kein Build, keine Abhängigkeiten, klassische `<script>`-Tags: Doppelklick auf `index.html` reicht.
+Für das Handy im WLAN oder zum Testen ohne Cache: `python tools/server.py --lan`.
+
+| Datei | Inhalt |
 |:--|:--|
-| **Schlüssel** | Dein Ziel |
-| **Zettel** | Erster Fund verrät die Etage, zweiter den Raum |
-| **Akku** | +40 % Handy-Akku |
-| **Energydrink** | 8 Sekunden lang 35 % schneller |
-| **Notiz** | Erzählt Dir was über die Schule |
-
-**Räume sind sicher.** Solange Du drin bist, kann Dich niemand sehen oder
-schnappen.
-
----
-
-## Wie Du nicht erwischt wirst
-
-Jede Aufsicht hat einen **Sichtkegel** in Laufrichtung. Kommst Du hinein, füllt
-sich ein Balken über ihrem Kopf — das ist Deine Reaktionszeit, kein Sofort-Alarm.
-Ist er voll, wird gejagt. Du bist schneller als sie und kannst weglaufen.
-
-Vier Möglichkeiten, gar nicht erst gesehen zu werden:
-
-**Schleichen** (`Shift`) halbiert ihre Sichtweite und macht keine Schritte.
-Kostet Tempo — Du läufst nur noch mit 42 %.
-
-**Spinde** (`E` davor) verstecken Dich komplett. Von innen siehst Du durch den
-Sehschlitz zu, wie sie vorbeigehen. Danach **10 Sekunden Abklingzeit**.
-
-**Werfen** (`R`) wirft etwas 96 Pixel weit in Deine Blickrichtung. Wer es hört,
-geht dem Geräusch nach und schaut sich dort um. Ein Wurf kann sogar eine
-**laufende Verfolgung abbrechen** — aber nur, wenn er weit genug von Dir landet.
-
-**Nicht springen.** Landen ist laut und weiter zu hören als ihre Sichtweite.
-Wer schleicht, landet leise.
-
----
-
-## Dein Handy
-
-Dein wichtigstes Werkzeug — und Dein größtes Risiko.
-
-**`Q` schaltet die Taschenlampe an.** Im zweiten Stock sind die Röhren kaputt,
-ohne Licht siehst Du dort fast nichts. Aber das Leuchten macht Dich für die
-Aufsicht **aus 1,7-facher Entfernung** sichtbar, und der Akku reicht nur für
-rund 29 Sekunden.
-
-**Deine Jungs schreiben Dir die ganze Zeit.** Die Nachrichten kommen, wenn was
-passiert — beim ersten Raum, beim ersten Zettel, beim Etagenwechsel.
-
-**Und jede Nachricht lässt das Handy vibrieren.** Das hört man. Steht gerade
-jemand in der Nähe, hast Du ein Problem. Mit `H` schaltest Du stumm — dann
-verpasst Du aber, was die Jungs schreiben.
-
----
-
-## Die Aufsicht
-
-| Wer | Verhalten |
-|:--|:--|
-| **Lehrer** | Patrouillieren eine Etage, machen Pausen und schauen sich um |
-| **Der Direktor** | Wandert über alle Etagen, sieht deutlich weiter, gibt länger nicht auf — und folgt Dir die Treppe hoch |
-| **Der Hausmeister** | Nur in seiner Spielart. Trägt den Schlüssel sichtbar am Gürtel |
-
-Beim Hausmeister: wirf etwas, warte bis er hingeht, und greif zu solange über
-ihm **JETZT** blinkt. Gehst Du hin während er hinschaut, passiert nichts außer
-einer Abfuhr.
-
----
-
-## Die Uhr
-
-Du hast **165 Sekunden**, dann macht der Hausmeister seine letzte Runde und
-schließt endgültig ab. Jedes Erwischtwerden kostet Dich zusätzlich **14 Sekunden**
-— und ein Herz. Drei Herzen hast Du.
-
----
-
-## Und am Ende
-
-Am Ausgang steht jemand, der Dich nicht rauslassen will. Das klärt sich.
-Danach triffst Du draußen **Max Ferdi** — der ist auch gerade abgehauen, durchs
-Fenster, und ist Sportler. Ab dann läufst Du in jeder Runde **15 % schneller**.
-
-Die Cutscene lässt sich mit gedrücktem `E` überspringen. Freischaltung und
-Bestzeit zählen trotzdem.
-
----
-
-## Ein paar Tipps
-
-- **Zettel zuerst.** Zwei Funde grenzen die Suche von zehn Räumen auf einen ein.
-- **Nicht jeden Meter rennen.** Schleichen kostet Zeit, aber Erwischtwerden
-  kostet 14 Sekunden — das ist teurer.
-- **Die Lampe nur wenn nötig.** Sie verdoppelt fast Deine Sichtbarkeit.
-- **Der Spind ist kein Dauerversteck.** Nach 10 Sekunden Abklingzeit brauchst Du
-  einen Plan B.
-- **Der Direktor hat keine sichere Etage.** Wenn Du ihn hörst, ist er schon da.
-
----
-
----
-
-## Level 2 — Bei Moritz
-
-21:10. Vorglühen bei Moritz. Die Bahn fährt um **22:00**, vier Leute sitzen seit
-zwei Stunden rum und keiner macht Anstalten loszugehen. Also machst Du es.
-
-**Kein zweites Schleich-Level.** In Level 1 geht es darum, nicht gesehen zu
-werden. Hier geht es darum, eine Meute in Bewegung zu kriegen.
-
-### Vier Aufgaben
-
-| Aufgabe | Wie |
-|:--|:--|
-| **Deine Jacke finden** | Möbel durchsuchen — sie liegt jede Runde woanders |
-| **Moritz' Ausweis finden** | Auch versteckt. Ohne kommt er nirgends rein |
-| **Den Schläfer wecken** | Er braucht einen Energydrink aus dem Kühlschrank |
-| **Den Telefonierer holen** | Er hängt am Balkon am Telefon. Dafür brauchst Du **Mut** |
-
-### Der Pegel
-
-Neu in diesem Level — und er begleitet Dich durch die restliche Nacht.
-
-An den Getränken in der Küche trinkst Du mit `E`. Jeder Schluck bringt Dich
-weiter. Ab einem gewissen Punkt traust Du Dich Sachen, die Du nüchtern nicht
-machen würdest — zum Beispiel jemandem einfach das Handy abnehmen.
-
-Aber: ab der Hälfte fängt das Bild an zu schwanken, ab 70 wirst Du spürbar
-langsamer, und bei 100 ist **Blackout** auf Moritz' Sofa. Die grüne Markierung
-auf dem Pegelbalken zeigt Dir, ab wo Du Mut hast.
-
-### Und dann klingelt es
-
-Wenn alle bereit sind und Du zur Wohnungstür gehst, steht da jemand, den keiner
-eingeladen hat. Das ist der **erste Kampf** im Spiel: Er holt sichtbar aus, ein
-roter Balken läuft. Drück `E` **während er ausholt** — das ist ein Konter.
-Machst Du nichts, kostet es ein Herz. Dreimal kontern, dann liegt er.
-
-### Moritz
-
-Danach schließt sich Moritz an: dunkle Haare, etwas größer als Du, weiß-blaues
-Fußballtrikot, das er seit drei Tagen trägt. **Mit ihm läuft es besser mit den
-Chayas** — das wird im Club-Level wichtig.
-
----
-
-## Level 3 — Der Nachtbus
-
-21:10 vorbei, 22:00 fährt die letzte Bahn. Zwei Teile: erst ein Sprint durch
-die Stadt gegen die Uhr, dann die Fahrt selbst — ohne Ticket, mit
-Kontrolleuren an Bord. Kein Sichtkegel wie bei den Lehrern, sondern ein
-Verdachtsbalken im engen Gang: wer zu lange auffällt, fliegt auf. Der Pegel
-aus Level 2 ist an Bord dabei und wirkt sich hier schon aufs Gleichgewicht
-aus. Schaltet **JONAS** frei.
-
-## Level 4 — Die Schlange
-
-Der erste echte Boss: der Türsteher lässt euch nicht rein. Reiner
-Konter-Kampf ohne Bewegung — er holt sichtbar aus, `E` im richtigen Moment
-kontert, verpasstes Timing kostet ein Herz. Zwei verschiedene Schlagmuster,
-damit man nicht einfach im Takt drücken kann. Schaltet **DENNIS** frei, der
-ab hier fest dabei ist.
-
-## Level 5 — Club
-
-Drinnen. Ein Stroboskop lässt die Sicht immer wieder wegbrechen, und wer
-jemanden ansprechen will, spielt ein Timing-Minispiel: ein Zeiger läuft über
-eine Leiste, `E` im grünen Fenster trifft. Erfolg macht kurz selbstbewusst
-und schneller, Fehlschlag bremst. Der Pegel steigt hier weiter. Schaltet
-**SEMIH** frei.
-
-## Level 6 — Afterhour
-
-Tief in der Nacht kippt es ins Surreale — die Schule aus Level 1 taucht
-verzerrt wieder auf, mit doppelten Konturen und Erinnerungsfetzen statt
-Räumen. Kein neuer Kampf, nur Navigation durch etwas, das nicht ganz stimmt.
-Schaltet **LEA** frei.
-
-## Level 7 — Späti
-
-Die Ruhepause. Kein Kampf, keine Uhr, die drängt — Wasser und Snacks holen,
-mit der Crew reden, kurz durchatmen, bevor der letzte Akt beginnt.
-
-## Level 8 — Heimweg
-
-Der letzte Weg nach Hause, gegen die aufgehende Sonne. Kein klassischer
-Bosskampf, sondern ein Wettlauf: die Sonne holt sichtbar auf, wer es nicht
-rechtzeitig schafft, wird von ihr eingeholt. Danach ist die Nacht vorbei —
-`E` startet das ganze Spiel neu, Leertaste nur dieses Level.
-
----
-
-## Der alte Modus
-
-Vor den Levels war das hier ein Endlos-Brawler mit Kampfsystem, Kontern, fünf
-Gegnertypen und vier Bossen. Der liegt unverändert in **[runner.html](runner.html)**:
-[nikros07.github.io/Nachtschicht/runner.html](https://nikros07.github.io/Nachtschicht/runner.html)
-
----
-
-# Für Entwickler
-
-## Selbst dran drehen
-
-Ganz oben in `index.html` steht ein Block namens `TUNE`. Dort liegt das komplette
-Spielgefühl in benannten Werten. Die Spiellogik enthält keine festen Zahlen.
-
-| Regler | Bewirkt |
-|:--|:--|
-| `gehTempo` · `beschleunigung` · `bremsung` | Wie sich Laufen anfühlt |
-| `schleichTempo` · `schleichSicht` | Wie stark Schleichen wirkt |
-| `sichtWeite` · `verdachtProSek` · `jagdTempo` | Wie gefährlich die Lehrer sind |
-| `chefSicht` · `chefEtagenWechsel` | Wie präsent der Direktor ist |
-| `wurfWeite` · `laermWeite` | Reichweite von Wurf und Geräusch |
-| `akkuProSek` · `lampeSichtBonus` | Der Handel mit der Taschenlampe |
-| `levelSekunden` · `zeitstrafe` | Wie hart die Uhr drückt |
-| `leben` | Wie viele Fehler Du machen darfst |
-
-Das Level selbst steht direkt darunter als Daten: `RAEUME`, `SPINDE`,
-`LEHRER_START`, `BODEN`, `AUSGANG`, `STIL`. Räume dazuschreiben geht ohne eine
-Zeile Logik. Die Sprüche und Nachrichten liegen in `NACHRICHTEN` und `NOTIZEN`.
-
-## Lokal starten
-
-Doppelklick auf `index.html` reicht. Wer lieber einen Server will:
-
-```bash
-python -m http.server 5173
-```
-
-Mit `?touch=1` an der Adresse lässt sich die Handy-Steuerung am Rechner testen.
-
-## Technisch
-
-- 320 × 180 interne Auflösung, Breite wächst auf breiten Schirmen mit
-- Eigener 3×5-Bitmap-Font statt Browser-Schrift
-- Sprites, Konturen, Schrift und Farbverläufe werden einmal gebacken und danach
-  nur kopiert — Zeichenzeit 1,2 statt 4,8 ms pro Bild
-- Bewegung mit Beschleunigung, Coyote-Zeit und Sprungpuffer
-- Timing läuft in Spielzeit statt Wanduhrzeit
-- Sieben Raumstile mit eigenen Farben, Fenstern und Einrichtung
+| [`ARCHITEKTUR.md`](ARCHITEKTUR.md) | die Karte des Codes: Seiten, Engine, Erzählhaken, Fallgruben, Tests, Werkzeuge, URL-Parameter |
+| [`CLAUDE.md`](CLAUDE.md) | Regeln für jede Sitzung und die Prüfliste vor jedem Commit |
+| [`LAUNCH.md`](LAUNCH.md) | Start-Checkliste, offene Entscheidungen, Veröffentlichen, Zurückrollen |
+| [`CHANGELOG.md`](CHANGELOG.md) | was sich geändert hat |
+| [`docs/launch/`](docs/launch/) | Story-Bibel, Flags-Vertrag, Startmenü, Handy-Abnahme |
+| [`test/README.md`](test/README.md) | die Tests |
+
+Nach jeder Änderung an Seiten oder in `nacht/`: `python tools/version.py`, dann die Prüfliste aus
+`CLAUDE.md`. Jede Stellschraube eines Levels steht im `TUNE`-Block am Anfang seiner Datei.
 
 ## Woran es sich orientiert
 
-- **Night in the Woods** — Seitenansicht, Räume die man erst betreten muss
+- **Night in the Woods** — Seitenansicht, eine Kleinstadt, Gespräche
 - **Oxenfree** — Jugendliche, eine einzige Nacht, es kippt ins Unheimliche
 - **HerrAnwalt: Lawyers Legacy** — Pixel-Art, Schule, Springen und Schlagen
 
-## Stand
-
-Alle acht Level sind durchspielbar, Level 1 und 2 ausgereift, Level 3 bis 8
-als erste spielbare Grundversion. Was daran noch fehlt oder wackelt, steht in
-[TODO.md](TODO.md).
+Der alte Endlos-Modus von früher liegt unverändert in [`runner.html`](runner.html).
+Was noch fehlt, steht in [`TODO.md`](TODO.md).

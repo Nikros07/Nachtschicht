@@ -15,12 +15,43 @@ und am Handy, ohne Download und ohne Konto.
   gezogen schleichst du, voll gezogen gehst du. Rechts ein großer Hauptknopf, die übrigen
   Knöpfe liegen im Bogen darum. Ein Tippen irgendwo auf der rechten Hälfte zählt als
   Hauptknopf.
-- **Gespräche mit großen Antwortflächen** zum Antippen.
+- **Gespräche mit großen Antwortflächen** zum Antippen (mindestens 44 Pixel hoch).
+- **Handy-Abnahme in der Emulation:** Knöpfe, Menü, Gespräche, Plausch, Kapitelkarte und
+  Galerie wurden bei sieben Bildschirmgrößen (von iPhone SE quer bis iPad und hochkant) auf
+  Überlappungen und Trefferflächen vermessen und angepasst. Der Titel-Knopf ÜBER ist erreichbar,
+  der Menü-Knopf größer und mit Abstand zum Rand, der Plausch bricht um, und bei mehreren
+  Fingern bleibt keine Taste hängen. Am echten Telefon ist es noch nicht getestet.
 - **Menü** mit Weiter, Vollbild, Handy, Level wechseln und Einstellungen. Einstellbar sind:
   Hand (links/rechts), Größe der Knöpfe, Stick frei oder fest, Tippen rechts als Aktion,
   Vibration. Die Einstellungen bleiben auf dem Gerät.
 
 ### Neu im Spiel
+
+- **Eine neue Geschichte.** Die Nacht ist jetzt die letzte als Jahrgang: alle tun so, als wäre es
+  nur „bis gleich“, und wer stehenbleibt, müsste Tschüss sagen. Dazu passen neue Orte und Zeiten
+  (der letzte **Bus** statt der Bahn, Jules Geburtstag im Club, Uhrzeiten von 16:40 bis 05:20) und
+  die Nachtschicht-Leute, die die Jugendlichen die ganze Zeit gesehen haben. Drei freiwillige
+  Fäden — der Schlüssel des Hausmeisters, das „Wir sehen euch“, das Tschüss — laufen durch die
+  Nacht und im Finale zusammen.
+- **Startmenü** auf dem Titelbild: NEUE NACHT, WEITER (springt zum nächsten Level), LEVEL WAEHLEN,
+  EINSTELLUNGEN, ENDEN und ÜBER. Beim ersten Start steht zuerst der Inhaltshinweis; wer
+  empfindlich auf Flackern reagiert, kann dort gleich den Flackerschutz einschalten. Vor einer
+  neuen Nacht fragt es nach, wenn schon Fortschritt da ist.
+- **Fortschritt:** das Spiel merkt sich, wie weit du in der Nacht bist, und bietet WEITER an.
+  Bestzeiten bleiben auch nach einer neuen Nacht.
+- **Kapitelkarte** zu Beginn jedes Levels: Uhrzeit, Ort und eine Zeile, dazu bis zu zwei
+  Erinnerungen an das, was du vorher getan hast.
+- **Plausch:** die Crew und die Leute am Rand kommentieren beim Gehen in kurzen Zeilen, ohne
+  dass das Spiel anhält.
+- **Momente:** in jedem Level liegt ein Polaroid abseits des Weges — acht Stück zum Sammeln.
+- **Zehn Enden**, dazu **Enden-Galerie** mit allen gefundenen Enden und Momenten (im
+  Startmenü unter ENDEN oder mit G). Ein zehntes, verstecktes Ende gibt es nur, wenn du die drei
+  Fäden der roten Wolle in einer Nacht zusammenbringst.
+- **Neuer Abspann:** Epilog je Freund, Gruppenchat, Album, „Was wir nie wieder erwähnen“ und ein
+  Kater am Samstag, der vom Pegel abhängt.
+- **Flackerschutz, Wackeln und Röhren-Look** lassen sich einzeln einstellen. Der Flackerschutz
+  dämpft Blitze und Stroboskop stark und begrenzt sie auf höchstens drei pro Sekunde; hast du im
+  System „Bewegung reduzieren“ gewählt, ist er anfangs schon an.
 
 - **Eine Lektion vor jedem Level.** Statt einer Tastenliste leuchtet jede Taste (am Handy:
   jeder Knopf) auf, sobald du sie ausprobierst — du merkst, dass sie geht, bevor es ernst
@@ -57,7 +88,7 @@ Das alles steckt in der Nacht, die hier zum ersten Mal vollständig ist:
 - **Die Stadtkarte** zwischen den Leveln, mit Umwegen als Nebenaufgaben.
 - **Gespräche mit Folgen.** Mut, Ruf, Geld, Beziehungen, wer dabei ist und was in der Tasche
   liegt: die Nacht merkt sich deine Entscheidungen, und das Finale liest viele davon.
-  **Neun Enden.**
+  **Zehn Enden.**
 - **Schleichen, Reden, Suchen, Prügeln:** jedes Level spielt sich anders — Lehrer ausweichen,
   im Club Leute ansprechen, im Bus ohne Ticket durchkommen, in der Afterhour Erinnerungen
   suchen.
@@ -81,6 +112,9 @@ Das alles steckt in der Nacht, die hier zum ersten Mal vollständig ist:
 - `python tools/server.py --lan` — Testserver ohne Cache, auch fürs Handy im WLAN.
 - `tools/icons.py`, `tools/engine_einbinden.py` — Symbole erzeugen, neue Engine-Datei einhängen.
 - `node test/launch.test.js` — Tests für die Startwerkzeuge.
+- `node test/erzaehl.test.js`, `test/epilog.test.js`, `test/menue.test.js`, `test/geraet.test.js`, `test/sw.test.js` — Tests für Erzählschicht, Abspann und Enden, Startmenü, Gerätefunktionen und Service Worker.
+- Neue Engine-Dateien: `geraet.js`, `komfort.js`, `texte.js`, `erzaehl.js`, `epilog.js`, `menue.js`.
+- Adress-Zusätze für Notfälle und Tests: `?reset=1`, `?reset=cache`, `?fehlertest=N`, `?sw=1`, `?neu=1`, `?lektion=0/1`.
 
 ## Davor
 

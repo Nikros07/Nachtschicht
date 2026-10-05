@@ -36,6 +36,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
 ### P2
 
+- [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
+  Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt, dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei Start 40 der Wettlauf verloren gehen kann; Werte stehen hier.
+- [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
+  Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
+
 - [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
   60-s-Spiellauf (`SPIEL_SEK`) bewegt sich mit dem festen Seed nur von x=40 bis x≈371
   (Eingang, ein Stück Tanzfläche), dann füllt ein Minispiel die restliche Zeit. Bar,
@@ -74,7 +79,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
   Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
   Lena hat ein kurzes Gespräch.
-- [ ] **P2 · Level 2: kein `mobilKontext()`** — am Handy heißt jeder Knopf „AKTION".
+- [x] ~~**P2 · Level 2: kein `mobilKontext()`**~~ (erledigt in der Sitzung 3.-5.10., Commit 427135a) — am Handy heißt jeder Knopf „AKTION".
   Wo: level2.html, Muster aus index.html · Fertig wenn: Knopfaufschriften je Modus.
 - [ ] **P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts** —
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
@@ -89,13 +94,22 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
+- [ ] **P3 · Handy: LEICHTER/SCHWERER blitzen im ersten Bild** — vor dem ersten Takt sind beide kurz über dem Hinweistext zu sehen, danach ausgeblendet.
+  Wo: nacht/mobil.js (Titelbild-Knöpfe) · Fertig wenn: im ersten Bild nach dem Laden (667x375) sind sie nicht sichtbar.
+- [ ] **P3 · `erzaehl.js`: Kopfkommentar nennt `kapitelZeigen` in `neuesSpiel()`** — alle Level rufen es in `starte()`.
+  Wo: nacht/erzaehl.js (Kopf) · Fertig wenn: Kommentar stimmt, `grep kapitelZeigen nacht/erzaehl.js` widerspricht keiner Zeile.
+- [ ] **P3 · Optionale Story-Punkte der Aufträge nicht gebaut** — Karte: Pizza-Umweg, Brunnen, Musiker (`docs/launch/auftrag-karte.md`); Level 2: Trikot-Meldung und Karte GRUPPE (`auftrag-level2.md`); Level 5: Mia-Noten (`auftrag-level5.md`).
+  Wo: karte.html, level2.html, level5.html · Fertig wenn: je Punkt umgesetzt oder im Auftrag als verworfen vermerkt; `node tools/nachttest.js` grün.
+- [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
+  Wo: nacht/menue.js · Fertig wenn: entschieden (gewollt) oder Levelfortschritt gespeichert.
+
 - [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
 
 - [ ] **P3 · `tools/level5_baeume.js` löschen** — wortgleiche Zweitkopie der Bäume, wird nur
   von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
-- [ ] **P3 · Bahn oder Bus?** — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
+- [x] ~~**P3 · Bahn oder Bus?**~~ (erledigt in der Sitzung 3.-5.10., Commit 427135a: überall Bus) — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
   Fertig wenn: ein Wort überall.
 - [x] ~~**P3 · README: Handy-Steuerung beschreibt den alten Stand**~~ (erledigt mit der neuen Handy-Fassung) — „Steuerkreuz links,
   Aktionstasten rechts" gibt es nicht mehr. Wo: README.md · Fertig wenn: beschreibt
@@ -107,6 +121,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ## Entscheidung nötig (die Routinen lassen das liegen)
 
+- [ ] **Launch-Stand ansehen und mit „übernimm“ nach main holen** — der komplette Ausbau liegt auf dem Branch `claude/launch` (Story in allen acht Leveln, Startmenü, Handy-Abnahme, Offline-Modus, Flackerschutz, Doku). Auf `main` ist davon nichts. Danach muss `claude/nacht` (Branch der Routine) auf den neuen Stand gesetzt werden, sonst arbeitet sie auf der alten Fassung weiter.
+- [ ] **Am echten Telefon prüfen (Android Chrome UND iPhone Safari)** — Service Worker/Offline/Installieren, Ton nach iOS-Unterbrechung, Multitouch (Stick + Knöpfe), Vollbild/Orientierung, Daumenreichweite, Stroboskop-Wirkung. Im Emulator nicht prüfbar. Start: `python tools/server.py --lan`. Liste: `LAUNCH.md`, `docs/launch/endabnahme.md`.
+- [ ] **Impressum, Lizenz, Inhaltshinweis-Wortlaut** — `ueber.html` hat Platzhalter [NAME]/[ANSCHRIFT]/[E-MAIL]; keine Lizenz gewählt. Kein Rechtsrat; Details in `LAUNCH.md` unter OFFENE ENTSCHEIDUNGEN.
+- [ ] **Marvin als Spiegel des Spielers** — passt das zur echten Mannschaftsgeschichte? Ebenso Moritz' Umzug, Jonas' Angst, Dennis' Kampf, Semihs Wunsch gefragt zu werden: gegen die echten Menschen lesen (`docs/launch/story-ist.md` Abschnitt Personen; Austauschtabelle `AUSBLICK` in `nacht/epilog.js`; Umbenennen mit `python tools/umbenennen.py`).
 - [ ] **Handy-Steuerung am echten Gerät beurteilen** — Größen, Bogen und Menü sind nur in der
   Emulation geprüft (375x812 und 812x375). Daumenreichweite, Knopfgrößen und ob die rechte
   Hälfte als Hauptknopf zu empfindlich ist, kann nur Nick am Telefon sagen. Die Werte stehen
@@ -126,6 +144,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · Sitzung · Launch-Ausbau auf `claude/launch`: Story (Bibel, acht Level, Abspann mit zehn Enden), Erzähl-Engine (Kapitelkarte, Plausch, Momente), Startmenü und Enden-Galerie, Geräte-Schutz und Offline-Modus, Handy-Abnahme im Emulator · `42c3b93` bis `44a236f`.
 
 - [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
   Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der

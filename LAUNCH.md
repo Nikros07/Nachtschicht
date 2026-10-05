@@ -1,10 +1,49 @@
 # LAUNCH — die Start-Checkliste
 
-Für Nick. Zum Abhaken. Stand: 2026-10-03, Version 1.0.0 (`CHANGELOG.md`).
+Für Nick. Zum Abhaken. Stand: 2026-10-05, Version 1.0.0 (`CHANGELOG.md`).
 
 **Kein Rechtsrat.** Wo es um Namen, Impressum, Lizenzen oder Alter geht, steht hier eine
 **Entscheidung**, die du triffst — keine Antwort. Wenn du unsicher bist, frag jemanden, der
 sich damit auskennt (Verbraucherzentrale, Anwalt, Jugendschutz-Stelle).
+
+---
+
+## OFFENE ENTSCHEIDUNGEN FUER NICK
+
+Alles, was nur du klären kannst. Nichts davon darf die Nachtroutine oder ein Werkzeug für dich
+entscheiden; die Details stehen weiter unten bei „Vor dem Start“.
+
+1. **Echte Namen der Freunde und ihr Einverständnis.** Die Crew im Spiel heißt MAX FERDI, MORITZ,
+   JONAS, DENNIS, SEMIH, LEA, TOBI (dazu MARVIN, MIA, SOPHIE, KIRA, JULE, NELE, HEINZ, FINN, DAVID und
+   Nebenfiguren). Wenn das echte Menschen sind: haben sie zugestimmt — Namen, Spitznamen,
+   Eigenschaften, Streit- und Flirtszenen? Bei Minderjährigen die Eltern. Die heikelsten Stellen
+   hat `docs/launch/story-ist.md` unter **6. PERSONEN-HINWEIS** gesammelt (zuerst: Moritz mit dem
+   Fußballtrikot und dem Ausweis, Moritz als Kontakt-Abbruch im Abspann, Finn und David in Level 2,
+   Tobi als Außenseiter, Jonas mit seiner Angst, Max Ferdi, der Betrunkenen-Witz über die ganze
+   Crew in Level 7). Bis das geklärt ist: Namen tauschen (`python tools/umbenennen.py`) oder
+   die Szenen entschärfen. Die Git-Historie behält die alten Namen. Fotos nur mit ausdrücklichem
+   Einverständnis.
+2. **Impressum-Platzhalter in `ueber.html`:** `[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]` und
+   `[WEITERE CREDITS]` ausfüllen — oder den Abschnitt samt Sprunglink streichen. Ob eine
+   Anbieterangabe nötig ist, hängt davon ab, ob das Angebot rein privat bleibt; und ob eine
+   Privatadresse öffentlich stehen soll, entscheidest du. (`launchcheck` warnt bis dahin: 4 Warnungen.)
+3. **Lizenz:** für den Quellcode ist keine gewählt („alle Rechte vorbehalten“). MIT/Apache, GPL, eigene
+   Regel oder bewusst keine? Dazu für Kunst, Texte und Töne: alle Rechte vorbehalten oder frei
+   (CC BY, CC BY-NC)? Und bestätigen, dass nichts Fremdes drinsteckt.
+4. **Marvin-Spiegel-Idee:** die Story-Bibel macht Marvin (und Max Ferdi) zum „Spiegel des Spielers“ — der,
+   dem nie jemand Tschüss gesagt hat. Das ist der einzige Teil der Nacht, der nicht lustig sein darf,
+   und er hängt an einem echten Menschen, falls MARVIN einer ist. Soll das so bleiben, entschärft
+   oder gestrichen werden? (`docs/launch/STORY-BIBEL.md`, Abschnitt 1)
+5. **Balance des Finales:** Level 8 (Wettlauf gegen die Sonne mit Abbiegungen, Kampf oder Frieden,
+   SCHICHTWECHSEL) ist in den Unterlagen nur mit Skripten gemessen (kein Protokoll eines Menschen-Durchlaufs). Zu schwer,
+   zu leicht, zu lang? Das entscheidet nur, wer es spielt (auch auf LOCKER und HART).
+6. **Handy am echten Gerät testen:** alle Handy-Messungen (`docs/launch/handy-abnahme.md`) stammen aus
+   der Emulation. Die Liste unter „Am echten Handy“ je einmal auf Android Chrome und iPhone Safari
+   abhaken; besonders Daumenreichweite, Notch/Adressleiste, Lesbarkeit der Pixelschrift, Ton nach
+   Unterbrechung, Installieren und Offline.
+7. **Weitere Entscheidungen** (weiter unten): Alterstext ja/nein, Wortlaut und Sichtbarkeit des
+   Inhaltshinweises, eigene Domain, zweiter Meldeweg für Fehler, Spieldauer „etwa 40 Minuten“
+   (geschätzt, nicht gestoppt).
 
 ---
 
@@ -36,8 +75,9 @@ Wichtig zu wissen:
 
 ### Namen und Gesichter
 
-- [ ] **Sind die Namen im Spiel echte Menschen?** Im Code stehen MAX FERDI, MORITZ, FINN, DAVID,
-  JONAS, DENNIS, SEMIH als Crew (dazu MARVIN, MIA, LENA, SOPHIE, KIRA und weitere). Wenn sie
+- [ ] **Sind die Namen im Spiel echte Menschen?** Im Code stehen MAX FERDI, MORITZ, JONAS, DENNIS,
+  SEMIH, LEA und TOBI als Crew (dazu FINN, DAVID, MARVIN, MIA, SOPHIE, KIRA, JULE, NELE, HEINZ und
+  Nebenfiguren; Übersicht der heiklen Stellen: `docs/launch/story-ist.md`, Abschnitt 6). Wenn sie
   Freunden gehören: **haben sie zugestimmt** — Namen, Spitznamen, Eigenschaften, Streit- und
   Flirtszenen? Bei Minderjährigen gilt das erst recht für Eltern.
 - [ ] **Fotos oder Pixel-Köpfe nach Fotos:** nur mit ausdrücklichem Einverständnis. Die
@@ -122,6 +162,11 @@ node tools/launchcheck.js           # muss "BEREIT" sagen; Warnungen ansehen, ni
 node tools/pruefe.js                # alle 10 Seiten: Syntax, doppelte Namen
 node tools/nachttest.js             # jede Seite ohne Browser durchspielen (~60 s, --kurz ~20 s)
 node test/kampf.test.js             # 22 Prüfungen der Kampflogik
+node test/erzaehl.test.js           # Kapitelkarte, Plausch, Momente
+node test/epilog.test.js            # Knoten, Enden, Epilog, Galerie-Daten
+node test/menue.test.js             # Startmenü
+node test/geraet.test.js            # Fehlerschutz, Service-Worker-Anmeldung, ?reset
+node test/sw.test.js                # Service Worker
 node test/launch.test.js            # Tests der Startwerkzeuge
 node tools/flagcheck.js             # nur lesen: Entscheidungen, die nie gelesen werden
 ```
@@ -145,7 +190,10 @@ Chrome → `chrome://inspect`).
 
 Was am Telefon zu prüfen ist — je einmal auf **Android Chrome** und **iPhone Safari**:
 
-- [ ] Seite lädt, Titelbild sichtbar, nichts abgeschnitten (Notch, Adressleiste)
+- [ ] Seite lädt, **Startmenü** sichtbar (beim ersten Mal erst der Inhaltshinweis), nichts abgeschnitten
+  (Notch, Adressleiste); Einträge lassen sich antippen, die Liste wischen; WEITER erscheint erst
+  nach Fortschritt; NEUE NACHT fragt bei vorhandenem Fortschritt nach; ENDEN öffnet die Galerie
+  (der alte Titelbild-Weg: `?neu=1`)
 - [ ] **Quer und Hoch:** im Hochformat kommt ein Hinweis zum Drehen, im Querformat passt das Bild
 - [ ] Erste Berührung schaltet **Vollbild** ein (Android; auf dem iPhone gibt es keins im Browser)
 - [ ] **Ton** startet nach der ersten Berührung; nach Tab-Wechsel und zurück stimmt er wieder
@@ -154,7 +202,8 @@ Was am Telefon zu prüfen ist — je einmal auf **Android Chrome** und **iPhone 
 - [ ] **Gespräch:** Antworten sind Flächen, lassen sich sicher treffen, kein versehentliches Antippen
 - [ ] **Menü:** Weiter, Vollbild, Handy, Level wechseln, **Einstellungen** (Hand links/rechts,
   Größe, Stick frei/fest, Tippen rechts, Vibration) — und sie bleiben nach Neuladen erhalten
-- [ ] **Flackerschutz** (falls im Menü vorhanden): an, dann Club (Level 5) — keine harten Blitze
+- [ ] **Flackerschutz** (Startmenü → EINSTELLUNGEN): an, dann Club (Level 5) — keine harten Blitze;
+  Kapitelkarte, Plausch-Zeilen und Polaroids (Momente) sind lesbar und blockieren nichts
 - [ ] **Zum Home-Bildschirm** (iPhone: Teilen → „Zum Home-Bildschirm"; Android: Menü → „App
   installieren"), Start vom Symbol: Vollbild, Querformat, Symbol sieht richtig aus (nicht abgeschnitten)
 - [ ] **Offline:** einmal ganz laden (über https), Flugmodus, App/Seite neu starten — spielbar?
@@ -207,7 +256,7 @@ nicht verlässlich. Der **Speicher** kann gesperrt sein; das Spiel merkt es und 
 > Freitag, letzter Schultag, 16:40. Du hast das Nachsitzen verpennt, die Türen sind zu — und heute
 > Abend geht was. Acht Level von der Schule über den Nachtbus und die Schlange vor dem Club bis
 > zum Heimweg im Morgengrauen: schleichen, reden, suchen, prügeln. Was du sagst und tust, merkt
-> sich die Nacht — es gibt neun Enden.
+> sich die Nacht — es gibt zehn Enden.
 > Pixel-Art im Browser, Tastatur oder Handy-Steuerung, kein Download, kein Konto, kein Tracking.
 > *(Hinweis: Alkohol, Streit und Prügeleien — nichts davon ist zum Nachmachen. Enthält Blitz- und
 > Flackereffekte, abschaltbar.)*
@@ -219,7 +268,7 @@ deutsch, party, mobile-friendly.
 
 **Screenshots und GIFs** (jedes in Pixel-Größe 3× hochskaliert, ohne Rand):
 
-- [ ] Titelbild mit Levelauswahl
+- [ ] Startmenü (und Enden-Galerie)
 - [ ] Level 1: Schulflur mit Sichtkegel der Lehrer
 - [ ] Level 2: Wohnung (Pegel, Getränke)
 - [ ] Level 3: Nachtbus mit Kontrolleuren
@@ -306,6 +355,7 @@ Ehrlich, was wir nicht wissen:
   über die WLAN-Adresse des Testservers.
 - **`nachttest.js` sieht keine Pixel und hört keinen Ton.** Layout, Farben, Lesbarkeit und
   Lautstärke prüft nur ein Mensch.
+- **Der Spielstand „WEITER“** merkt sich nur das nächste Level, nicht die Stelle im Level (`docs/launch/startmenue.md`).
 - **Die Spieldauer** („etwa 40 Minuten" in `ueber.html`) ist geschätzt, nicht gestoppt.
 - **Der Speicher ist je Gerät und Adresse.** Kein Spielstand-Abgleich, kein Konto; ein Adresswechsel
   setzt alle zurück.
