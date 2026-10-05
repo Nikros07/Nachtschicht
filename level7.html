@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051632">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051640">
 </head>
 <body>
 <div id="cab">
@@ -37,24 +37,24 @@
   <div id="base"><span>LEVEL 7 - RUHEPAUSE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051632"></script>
-<script src="nacht/geraet.js?v=202610051632"></script>
-<script src="nacht/bild.js?v=202610051632"></script>
-<script src="nacht/hud.js?v=202610051632"></script>
-<script src="nacht/ton.js?v=202610051632"></script>
-<script src="nacht/komfort.js?v=202610051632"></script>
-<script src="nacht/stand.js?v=202610051632"></script>
-<script src="nacht/welt.js?v=202610051632"></script>
-<script src="nacht/nacht.js?v=202610051632"></script>
-<script src="nacht/dialog.js?v=202610051632"></script>
-<script src="nacht/eingabe.js?v=202610051632"></script>
-<script src="nacht/lehre.js?v=202610051632"></script>
-<script src="nacht/mobil.js?v=202610051632"></script>
-<script src="nacht/handy.js?v=202610051632"></script>
-<script src="nacht/texte.js?v=202610051632"></script>
-<script src="nacht/erzaehl.js?v=202610051632"></script>
-<script src="nacht/epilog.js?v=202610051632"></script>
-<script src="nacht/menue.js?v=202610051632"></script>
+<script src="nacht/kern.js?v=202610051640"></script>
+<script src="nacht/geraet.js?v=202610051640"></script>
+<script src="nacht/bild.js?v=202610051640"></script>
+<script src="nacht/hud.js?v=202610051640"></script>
+<script src="nacht/ton.js?v=202610051640"></script>
+<script src="nacht/komfort.js?v=202610051640"></script>
+<script src="nacht/stand.js?v=202610051640"></script>
+<script src="nacht/welt.js?v=202610051640"></script>
+<script src="nacht/nacht.js?v=202610051640"></script>
+<script src="nacht/dialog.js?v=202610051640"></script>
+<script src="nacht/eingabe.js?v=202610051640"></script>
+<script src="nacht/lehre.js?v=202610051640"></script>
+<script src="nacht/mobil.js?v=202610051640"></script>
+<script src="nacht/handy.js?v=202610051640"></script>
+<script src="nacht/texte.js?v=202610051640"></script>
+<script src="nacht/erzaehl.js?v=202610051640"></script>
+<script src="nacht/epilog.js?v=202610051640"></script>
+<script src="nacht/menue.js?v=202610051640"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -1050,7 +1050,7 @@ function zeichneIntro(){
   ctx.fillStyle='#000000cc'; ctx.fillRect(0,H-38,W,38);
   ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
   if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
-  if(Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+  if(!IS_TOUCH&&Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
   zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
 function bildschirme(){

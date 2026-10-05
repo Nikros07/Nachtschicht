@@ -233,11 +233,18 @@ html.touch.mobil-quer #mblatt.an > .zu { grid-column:1 / -1; }
   border-radius:8px; color:#ffd447; font:700 12px/1 monospace; letter-spacing:2px; padding:16px; }
 #mtalk .uhr { height:3px; background:#ff3d8b; border-radius:2px; align-self:flex-start; }
 /* Quer ist das Gespraech eine Leiste unten - das Bild bleibt zu sehen. */
-html.touch.mobil-quer #mtalk { top:auto; max-height:80%;
-  background:rgba(5,4,12,.94); border-top:2px solid #ff3d8b; }
-html.touch.mobil-quer #mtalk .opt { padding:10px 11px; }
+/* Hoechstens 45 % der Hoehe: die Antworten stehen nebeneinander (bis zu drei Spalten),
+   der Text ist etwas kleiner; wird es doch mehr, scrollt die Liste. */
+html.touch.mobil-quer #mtalk { top:auto; max-height:45%; min-height:0;
+  background:rgba(5,4,12,.94); border-top:2px solid #ff3d8b;
+  padding:6px 10px calc(env(safe-area-inset-bottom,0px) + 6px); }
+html.touch.mobil-quer #mtalk .was { font-size:12px; line-height:1.35; }
+html.touch.mobil-quer #mtalk .liste { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:6px; align-content:end; min-height:0; }
+html.touch.mobil-quer #mtalk .opt { padding:8px 10px; font-size:12px; }
+html.touch.mobil-quer #mtalk .weiter { grid-column:1 / -1; padding:12px; }
 #mtalk .opt, #mtalk .weiter { min-height:44px; }
-html.touch.mobil-quer #mtalk { gap:6px; }
+html.touch.mobil-quer #mtalk { gap:5px; }
 `;
 document.head.appendChild(stil);
 
@@ -616,7 +623,7 @@ function beschrifte(elm,txt,code){
   if(!zeigen&&code){ elm.classList.remove('druck'); taste(code,false); }
 }
 /* Diese Aufschriften sind der Dauerzustand - sie sollen nicht pulsieren. */
-const ALLGEMEIN=['AKTION','WEITER','START','SCHLAG','KONTER','TIPPEN'];
+const ALLGEMEIN=['AKTION','WEITER','START','SCHLAG','KONTER','TIPPEN','WAEHLEN'];
 function kontextPflege(){
   let k={aktion:'AKTION',zwei:'SPRUNG',block:false,extras:null};
   if(typeof mobilKontext==='function'){ try{ k=Object.assign(k,mobilKontext()||{}); }catch(e){} }
@@ -624,6 +631,10 @@ function kontextPflege(){
      Knoepfe, die in ihr vorkommen. */
   if(window.LEHRE&&window.LEHRE.aktiv){
     try{ k=Object.assign({aktion:null,zwei:null,block:false,extras:null},window.LEHRE.mobilKontext()); }catch(e){}
+  }
+  /* Das Startmenue (nacht/menue.js): der Hauptknopf bestaetigt den markierten Eintrag. */
+  if(typeof MENUE!=='undefined'&&MENUE.aktiv&&MENUE.aktiv()){
+    try{ k=Object.assign({aktion:null,zwei:null,block:false,extras:null},MENUE.mobilKontext()); }catch(e){}
   }
   window.MOBIL.kontext=k;
   beschrifte(bAktion,k.aktion,'KeyE');
@@ -634,7 +645,7 @@ function kontextPflege(){
   const ex=k.extras||[];
   wahlSchalte(ex.length===2&&ex[0].code==='ArrowLeft'&&ex[1].code==='ArrowRight');
   /* Ohne Beweglichkeit (Titel, Zwischentext) verschwindet der ruhende Stick. */
-  stick.classList.toggle('still',!!k.aktion&&['START','WEITER','NOCHMAL'].includes(k.aktion)&&!k.zwei&&!k.block);
+  stick.classList.toggle('still',!!k.aktion&&['START','WEITER','NOCHMAL','WAEHLEN'].includes(k.aktion)&&!k.zwei&&!k.block);
   bX.forEach(function(elm,i){
     const e=ex[i];
     if(xCode[i]&&(!e||e.code!==xCode[i])) taste(xCode[i],false);   // alte Taste loslassen

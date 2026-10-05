@@ -93,6 +93,9 @@ let bildDt=1/60;
 function bild(jetzt){
   const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
   bildDt=dt;
+  /* Das Startmenue (nacht/menue.js): erscheint nur auf dem Titel von Level 1, gibt sich bei
+     jedem Fehler selbst auf - dann laeuft alles wie vorher. */
+  if(typeof MENUE!=='undefined'&&MENUE.laufe&&MENUE.laufe(dt)){ requestAnimationFrame(bild); return; }
   /* Das Zwischenbild vor dem Level (nacht/lehre.js): solange es laeuft,
      ruht das Level, und die Tasten gehoeren ihm. */
   if(window.LEHRE&&window.LEHRE.pruefe()){
