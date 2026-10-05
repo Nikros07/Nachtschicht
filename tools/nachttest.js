@@ -345,6 +345,12 @@ function konterLevel2(){
   return {ok,ergebnis};
 }
 
+/* Als Modul nutzbar (eigene Messungen):
+     const N=require('./tools/nachttest.js'); const L=N.lade('level5.html','?lektion=0');
+     L.api.ev('update(1/60)'); L.taste('KeyE',true); L.api.ev('S.modus')
+   Dann laeuft der Testlauf unten NICHT. Arbeitsordner muss die Projektwurzel sein. */
+if(require.main!==module){ module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm}; return; }
+
 /* ---- Lauf ----------------------------------------------------------------- */
 let hart=0;
 const zeile=(s,t)=>console.log(s.padEnd(14)+t);
