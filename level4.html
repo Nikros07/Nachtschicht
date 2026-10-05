@@ -152,7 +152,12 @@ const SPR={
   /* Tuersteher - breite Schultern, Glatze, Sonnenbrille, schwarzer Anzug */
   bossKopf:['.yyyyy.','yyxxxyy','.yyyyy.','..yyy..'],
   bossSteh:['.bbbbb..','bbwbbbbb','kbbbbb.k','.bbbbb..','..bpb...','..p.p...','.pp.pp..','kk...kk.'],
-  bossWind:['bb.bbbb..','bwbbbbbb.','kbbbbb..k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
+  /* Schwung holt breit aus (Arm weit zurueck, Silhouette verbreitert sich
+     nach links) - Jab bleibt eng am Koerper, die Faust zeigt schon nach
+     vorn (rotes 'r' tief in der Reihe). Vorher dieselbe Reihe fuer beide -
+     siehe NACHT-TODO.md: "nach dem zweiten Konter ist alles gesehen". */
+  bossWind:    ['bb.bbbb..','bwbbbbbb.','kbbbbb..k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
+  bossWindJab: ['.bbbbb...','bwbbbb...','kbbbbbr.k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
   bossSchlag:['.bbbbb..bb','bbwbbbbbrr','kbbbbb...k','.bbbbb....','..bpb.....','..p.p.....','.pp.pp....','kk...kk...'],
 
   /* Kulisse */
@@ -665,7 +670,7 @@ function zeichneArena(){
          Beinen auf dich zu. */
       const lauf=laufBild(b);
       if(lauf>=0&&(b.zustand==='frei'||b.zustand==='block')) rows=gehBeine(rows,lauf);
-      if(b.zustand==='ausholen') rows=SPR.bossWind;
+      if(b.zustand==='ausholen') rows=(b.art==='jab')?SPR.bossWindJab:SPR.bossWind;
       else if(b.zustand==='schlag') rows=SPR.bossSchlag;
       const blinkt=b.zustand==='getroffen'&&Math.floor(S.t*20)%2===0;
       const fuss=bodenY(b.t);
