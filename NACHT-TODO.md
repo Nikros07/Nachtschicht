@@ -34,14 +34,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Analyse nachholen: Level 1** — erster von acht Teilen (Level 1, 6, 7, 8, Karte,
-  Runner, Engine, Dramaturgie), weil die ganze Liste in einem Punkt zu groß war - neun
-  Prüfer sind schon am Nutzungslimit gescheitert (siehe PLAYTEST.md ganz unten). Lief in
-  der Nacht vom 5.10. als Analyse-Agent, Ergebnis noch nicht in PLAYTEST.md eingetragen
-  (Zeitbudget der Sitzung). Fertig wenn: eigener Abschnitt „Level 1" in PLAYTEST.md mit
-  Problem/Warum/Grad/Loesung-Tabelle, Funde mit Datei:Zeile belegt.
-- [ ] **P2 · Analyse nachholen: Level 6** — zweiter Teil, siehe oben.
-  Fertig wenn: eigener Abschnitt „Level 6" in PLAYTEST.md.
+- [ ] **P2 · Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken nirgends** — gefunden bei der
+  Level-1-Analyse vom 5.10., betrifft aber alle acht Level: `S.blitz`/`S.ruettel` werden
+  roh gezeichnet (z.B. index.html:1556/1569) statt durch `FX.blitz()`/`FX.wackel()` aus
+  nacht/komfort.js geschickt - projektweiter Grep bestaetigt null Treffer fuer
+  `FX.blitz`/`FX.wackel` ausserhalb von komfort.js selbst. Siehe PLAYTEST.md, Abschnitt
+  „Durchs ganze Spiel". Wo: nacht/komfort.js (FX.blitz/FX.wackel bestehen schon), jedes
+  Level, das S.blitz/S.ruettel zeichnet (grep zeigt die Stellen) · Fertig wenn: mit
+  FLACKERSCHUTZ aktiv bleibt ein Blitz/Wackel-Ereignis messbar schwaecher als mit
+  Schutz aus (z.B. S.blitz durch FX.blitz(S.blitz) ersetzt, Alpha-Wert niedriger).
+- [ ] **P2 · Analyse nachholen: Level 6** — zweiter von acht Teilen (Level 1 erledigt
+  5.10., dann 6, 7, 8, Karte, Runner, Engine, Dramaturgie), weil die ganze Liste in
+  einem Punkt zu groß war - neun Prüfer sind schon am Nutzungslimit gescheitert
+  (siehe PLAYTEST.md ganz unten). Fertig wenn: eigener Abschnitt „Level 6" in
+  PLAYTEST.md mit Problem/Warum/Grad/Loesung-Tabelle, Funde mit Datei:Zeile belegt.
 - [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
   Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
@@ -96,6 +102,18 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P2 · Analyse nachholen: Level 1 · `9508e31` · Erster von acht Teilen
+  des aufgeteilten Analyse-Punkts. Ein Analyse-Agent hat index.html und die elf
+  geladenen Engine-Dateien vollstaendig gelesen; Kernfunde stichprobenhaft gegen-
+  geprueft (grep auf FX.blitz/FX.wackel, TIEFE_PRO_SEITE, flagcheck.js fuer
+  HAUSMEISTER, S.variante-Code - alle bestaetigt). Neuer Abschnitt „Level 1" in
+  PLAYTEST.md mit sechs belegten Funden (toter Tiefen-Code, nie gelesene
+  HAUSMEISTER-Zuneigung, zwei ungenutzte TUNE-Werte, wirkungsloser Sprung,
+  hartcodierte Wurf-Physik, ein wirkungsloser Ausschluss in einer Spielart). Ein
+  siebter, projektweiter Fund (FLACKERSCHUTZ/WACKELN ohne Wirkung) gehoert nicht zu
+  Level 1 allein - als eigener neuer P2-Punkt unter „Offen" eingetragen. Keine
+  Spiellogik geaendert, nur Dokumentation.
 
 - [x] 2026-10-05 · P2 · Level 4: Jab und Schwung im Ausholen unterscheidbar · `926e612` ·
   Beide Angriffsarten nutzten dieselbe Windup-Sprite (SPR.bossWind). Neue
