@@ -101,8 +101,8 @@ function _kapitelZeichne(){
     if(k.zeit) textC(k.zeit,48,'#ffd447',3);
     if(k.ort) textC(k.ort,76,'#f2f0ff',2);
     if(k.zeile) textC(k.zeile,100,'#8d86a8',1);
-    KAPITEL.zeilen.forEach((z,i)=>textC(z,128+i*10,'#4a4363',1));
-    textC(IS_TOUCH?'TIPPEN':'E / TIPPEN',H-12,'#4a4363',1);
+    KAPITEL.zeilen.forEach((z,i)=>textC(z,128+i*10,'#8d86a8',1));   // #4a4363 war am Handy kaum zu lesen
+    textC(IS_TOUCH?'TIPPEN':'E / TIPPEN',H-12,'#6b6488',1);
   });
 }
 
@@ -139,7 +139,8 @@ const MOMENT={
 function _momentZeichne(){
   const t=(typeof TEXTE_MOMENTE!=='undefined')?TEXTE_MOMENTE[MOMENT_KARTE.n]:null; if(!t) return;
   const a=_blende(MOMENT_KARTE.t,MOMENT_KARTE.d,.25);
-  const w=132, h=74, x=Math.round((W-w)/2), y=Math.round((H-h)/2);
+  /* Die Karte waechst mit dem laengsten Satz (bis 38 Zeichen): sonst klebt die Schrift am Rand. */
+  const w=Math.min(W-8,Math.max(132,textW(t.l1||'')+10,textW(t.l2||'')+10)), h=74, x=Math.round((W-w)/2), y=Math.round((H-h)/2);
   _mitAlpha(a*.7,()=>{ ctx.fillStyle='#08060f'; ctx.fillRect(0,0,W,H); });
   _mitAlpha(a,()=>{
     ctx.fillStyle='#f2f0ff'; ctx.fillRect(x,y,w,h);
@@ -147,7 +148,7 @@ function _momentZeichne(){
     text('MOMENT '+MOMENT_KARTE.n+' VON '+ERZAEHL.MOMENT_GESAMT,x+4,y+3,'#ffd447');
     const g=ctx.createLinearGradient(0,y+14,0,y+52);
     g.addColorStop(0,'#2a2246'); g.addColorStop(1,'#1d1830');
-    ctx.fillStyle=g; ctx.fillRect(x+10,y+14,112,38);
+    ctx.fillStyle=g; ctx.fillRect(x+10,y+14,w-20,38);
     const mitte=(s,yy)=>text(s,Math.round(x+(w-textW(s))/2),yy,'#08060f');
     if(t.l1) mitte(t.l1,y+56);
     if(t.l2) mitte(t.l2,y+65);
@@ -214,11 +215,18 @@ const PLAUSCH={
     const y=this.y!=null?this.y:(IS_TOUCH?22:H-18);
     const a=_blende(j.t,j.dauer,ERZAEHL.PLAUSCH_BLENDE);
     const kopf=j.wer?j.wer+': ':'', gesamt=kopf+j.text;
-    const x=Math.round((W-textW(gesamt))/2), ty=y+Math.round((ERZAEHL.PLAUSCH_HOEHE-5)/2);
-    _mitAlpha(a*ERZAEHL.PLAUSCH_BALKEN,()=>{ ctx.fillStyle='#000000'; ctx.fillRect(0,y,W,ERZAEHL.PLAUSCH_HOEHE); });
+    /* Lange Zeilen (bis 90 Zeichen) passen nicht in 320 Bildpunkte: umbrechen,
+       der Balken waechst nach unten mit. */
+    const zl=(typeof umbrich==='function'&&textW(gesamt)>W-16)?umbrich(gesamt,W-16):[gesamt];
+    const hoehe=ERZAEHL.PLAUSCH_HOEHE+(zl.length-1)*7;
+    _mitAlpha(a*ERZAEHL.PLAUSCH_BALKEN,()=>{ ctx.fillStyle='#000000'; ctx.fillRect(0,y,W,hoehe); });
     _mitAlpha(a,()=>{
-      if(kopf) text(kopf,x,ty,stimmeFarbe(j.wer));
-      text(j.text,x+kopf.length*4,ty,'#f2f0ff');
+      zl.forEach((z,i)=>{
+        const x=Math.round((W-textW(z))/2), ty=y+Math.round((ERZAEHL.PLAUSCH_HOEHE-5)/2)+i*7;
+        if(i===0&&kopf&&z.startsWith(kopf)){
+          text(kopf,x,ty,stimmeFarbe(j.wer)); text(z.slice(kopf.length),x+kopf.length*4,ty,'#f2f0ff');
+        } else text(z,x,ty,'#f2f0ff');
+      });
     });
   },
 };

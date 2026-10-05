@@ -137,6 +137,8 @@ window.LEHRE=(function(){
     if(!Z.aktiv) return;
     if(!runter){ Z.runter.delete(code); return; }
     Z.runter.add(code);
+    /* Der Tipp, der das Intro uebersprungen hat, darf nicht schon KNOPF abhaken. */
+    if(Z.t<.4&&code==='KeyE'&&typeof IS_TOUCH!=='undefined'&&IS_TOUCH) return;
     const weiter=(code==='Enter')||(code==='KeyE'&&Z.alleErledigt());
     if(weiter&&Z.alleErledigt()){ Z.beenden(); return; }
     L.schritte.forEach((s,i)=>{
@@ -151,7 +153,10 @@ window.LEHRE=(function(){
   Z.takt=function(dt){
     Z.t+=dt;
     /* ENTER halten ueberspringt - auch wenn noch nicht alles probiert ist. */
-    if(Z.runter.has('Enter')){ Z.skipT+=dt; if(Z.skipT>=LEHRE_SKIP) Z.beenden(); }
+    /* Am Handy gibt es keine Enter-Taste: dort zaehlt das Halten des Hauptknopfs (E),
+       langsamer, damit ein zu langes Tippen auf KNOPF nicht aus Versehen ueberspringt. */
+    const halt=Z.runter.has('Enter')?1:((typeof IS_TOUCH!=='undefined'&&IS_TOUCH&&Z.runter.has('KeyE')&&Z.t>1)?.5:0);
+    if(halt){ Z.skipT+=dt*halt; if(Z.skipT>=LEHRE_SKIP) Z.beenden(); }
     else Z.skipT=Math.max(0,Z.skipT-dt*2);
   };
 
@@ -182,8 +187,10 @@ window.LEHRE=(function(){
 
     /* Erklaerung */
     let y=40;
+    /* Quer am Handy liegen rechts Bogenknoepfe und Menue - der Text bleibt links davon. */
+    const schmal=window.MOBIL&&window.MOBIL.an&&!window.MOBIL.hoch;
     for(const absatz of L.text){
-      for(const z of umbruch(absatz,W-44)){ textC(z,y,P.weiss); y+=8; }
+      for(const z of umbruch(absatz,schmal?Math.min(W-44,176):W-44)){ textC(z,y,P.weiss); y+=8; }
       y+=2;
     }
 
@@ -202,8 +209,9 @@ window.LEHRE=(function(){
       ctx.fillStyle=fertig?'#a8841a':(naechste&&blink?P.gold:'#4a4363');
       ctx.fillRect(bx,y+7,bw,1);
       text(lab,bx+Math.round((bw-textW(lab))/2),y+1,fertig?P.ink:P.weiss);
-      text(s.was+(s.opt?' (OPTIONAL)':''),bx+bw+7,y+1,fertig?P.gruen:(s.opt?P.dunkel:P.dim));
-      if(fertig){ ctx.fillStyle=P.gruen; ctx.fillRect(W-24,y+2,5,5); ctx.fillStyle=P.ink; ctx.fillRect(W-23,y+3,3,3); ctx.fillStyle=P.gruen; ctx.fillRect(W-22,y+4,1,1); }
+      text(s.was+(s.opt&&!schmal?' (OPTIONAL)':''),bx+bw+7,y+1,fertig?P.gruen:(s.opt?P.dunkel:P.dim));
+      if(fertig){ const hx=schmal?9:W-24;   // quer am Handy liegt rechts das Menue
+        ctx.fillStyle=P.gruen; ctx.fillRect(hx,y+2,5,5); ctx.fillStyle=P.ink; ctx.fillRect(hx+1,y+3,3,3); ctx.fillStyle=P.gruen; ctx.fillRect(hx+2,y+4,1,1); }
       y+=rowH;
     });
 

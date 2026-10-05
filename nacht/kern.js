@@ -27,9 +27,24 @@ if(IS_TOUCH) document.documentElement.classList.add('touch');
 
 const imVollbild=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 
+/* Aussparungen (Notch) am Handy: das Bild darf nicht darunter liegen. Eine unsichtbare
+   Messmarke liest env(safe-area-inset-*) aus; ohne Aussparung ist alles 0. */
+let _sichereMarke=null;
+function sichereBreite(){
+  if(!IS_TOUCH||!document.body) return 0;
+  try{
+    if(!_sichereMarke){
+      _sichereMarke=document.createElement('div');
+      _sichereMarke.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)';
+      document.body.appendChild(_sichereMarke);
+    }
+    const c=getComputedStyle(_sichereMarke);
+    return (parseFloat(c.paddingLeft)||0)+(parseFloat(c.paddingRight)||0);
+  }catch(e){ return 0; }
+}
 function anpassen(){
   const rand=(imVollbild()||IS_TOUCH)?0:46;
-  const vw=innerWidth-rand, vh=innerHeight-rand;
+  const vw=innerWidth-rand-sichereBreite(), vh=innerHeight-rand;
   /* Breite waechst mit dem Bildschirm mit, damit auf langen Handys keine
      schwarzen Balken bleiben. Die Hoehe bleibt fest. */
   W=Math.max(320,Math.min(432,Math.round(H*(vw/vh)/2)*2));

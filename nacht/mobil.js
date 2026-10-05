@@ -43,6 +43,8 @@ window.MOBIL = { an:false, hoch:false, kontext:null, vibration:true };
    stumm haelt, merkt davon nichts - deshalb ist es nur Zugabe, nie Info. */
 function mobilVibriere(muster){
   if(!window.MOBIL.an || !window.MOBIL.vibration || !navigator.vibrate) return;
+  /* Chrome blockt vibrate (mit Konsolenfehler) vor der ersten echten Beruehrung. */
+  if(navigator.userActivation&&!navigator.userActivation.hasBeenActive) return;
   try{ navigator.vibrate(muster); }catch(e){}
 }
 
@@ -154,6 +156,12 @@ html.links #mrechts { right:auto; left:0; }
                    50%     { box-shadow:0 0 0 12px rgba(255,212,71,0); } }
 .mtaste.haupt.ruf { animation:mpuls 1.1s ease-in-out infinite; }
 html.touch.mobil-quer .mtaste { opacity:.66; }
+/* Titelbild: die Schwierigkeit sind zwei flache Knoepfe links und rechts der
+   Schwierigkeitszeile, keine losen Kreise im Text. */
+.mtaste.wahl { border-radius:22px; font-size:11px; letter-spacing:1px; padding:0 6px; }
+html.touch.mobil-quer .mtaste.wahl { opacity:.9; }
+/* Wo der Stick nichts zu tun hat (Titel, Zwischentext), liegt er nicht ueber dem Text. */
+#mstick.still:not(.zieht) { opacity:0; }
 
 /* ---- Die Tafel in der Mitte (nur hochkant) ---- */
 #minfo { position:absolute; left:0; right:0; top:8px; padding:0 14px;
@@ -173,21 +181,26 @@ html.touch.mobil-quer #minfo { display:none; }
 /* ---- Der Menue-Knopf ---- */
 #mmenubtn { position:absolute; z-index:4; background:rgba(20,16,34,.82);
   border:1px solid #3a3160; border-radius:8px; color:#cfc8e6;
-  font:700 10px/1 monospace; letter-spacing:2px; padding:9px 11px; }
+  font:700 10px/1 monospace; letter-spacing:.5px; padding:14px 3px; min-height:44px; min-width:46px; text-align:center; }
 #mmenubtn::after { content:''; position:absolute; inset:-8px; }
-/* Auf Hoehe von rund einem Viertel: darueber liegt die Anzeige des Spiels (Uhr, Phase), darunter der Bogen der Knoepfe. */
-html.touch.mobil-quer #mmenubtn { right:6px; top:calc(env(safe-area-inset-top,0px) + 24%); }
+/* Auf Hoehe von rund 40 %: darueber liegen HUD, Hinweiszeilen und die Plausch-Leiste, darunter der Bogen der Knoepfe - am rechten Rand ist dort frei. 8 px Randabstand mit Absicht: der Bogen (WERFEN, BLOCK) reicht bis 20 px an den Rand, Menue und Bogen duerfen sich nicht beruehren. */
+html.touch.mobil-quer #mmenubtn { right:calc(env(safe-area-inset-right,0px) + 8px); top:calc(env(safe-area-inset-top,0px) + 40%); }
 html.touch:not(.mobil-quer) #mmenubtn { right:8px; top:6px; }
 
 /* ---- Blaetter: Menue, Levelwahl, Einstellungen ---- */
 #mblatt { position:absolute; inset:0; display:none; flex-direction:column; gap:8px;
   padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 14px);
   background:rgba(5,4,12,.96); overflow:auto; z-index:6; }
-#mblatt.an { display:flex; }
+#mblatt.an { display:flex; touch-action:pan-y; }
+/* Quer ist wenig Hoehe: die Knoepfe liegen in zwei Spalten, Ueberschrift, Zeilen und
+   Zurueck/Weiter ueber die ganze Breite - sonst muesste man scrollen. */
+html.touch.mobil-quer #mblatt.an { display:grid; grid-template-columns:1fr 1fr; align-content:start; gap:8px; }
+html.touch.mobil-quer #mblatt.an > h2, html.touch.mobil-quer #mblatt.an > .zeile,
+html.touch.mobil-quer #mblatt.an > .zu { grid-column:1 / -1; }
 #mblatt h2 { margin:0 0 4px; font:700 12px/1 monospace; letter-spacing:3px; color:#ff3d8b; }
 #mblatt .zeile { display:flex; align-items:center; gap:8px; }
 #mblatt .zeile > span { flex:1; font:700 11px/1.2 monospace; letter-spacing:1px; color:#8d86a8; }
-#mblatt button, #mblatt a.lv { text-decoration:none; text-align:left; color:#cfc8e6;
+#mblatt button, #mblatt a.lv { text-decoration:none; line-height:1.3; min-height:44px; text-align:left; color:#cfc8e6;
   background:rgba(255,255,255,.06); border:1px solid #2a2246; border-radius:8px;
   font:700 12px/1 monospace; letter-spacing:1px; padding:15px 12px; }
 #mblatt button:active, #mblatt a.lv:active { background:rgba(255,61,139,.26); color:#fff; }
@@ -210,7 +223,7 @@ html.touch:not(.mobil-quer) #mmenubtn { right:8px; top:6px; }
 #mtalk.an { display:flex; }
 #mtalk .wer { font:700 10px/1 monospace; letter-spacing:2px; color:#42d9ff; }
 #mtalk .was { font:400 13px/1.45 monospace; color:#f2f0ff; flex:0 0 auto; }
-#mtalk .liste { flex:1; display:flex; flex-direction:column; gap:8px;
+#mtalk .liste { touch-action:pan-y; flex:1; display:flex; flex-direction:column; gap:8px;
   justify-content:flex-end; overflow:auto; }
 #mtalk .opt { background:rgba(255,255,255,.05); border:1px solid #2a2246;
   border-left:3px solid #ff3d8b; border-radius:8px; color:#cfc8e6;
@@ -223,6 +236,8 @@ html.touch:not(.mobil-quer) #mmenubtn { right:8px; top:6px; }
 html.touch.mobil-quer #mtalk { top:auto; max-height:80%;
   background:rgba(5,4,12,.94); border-top:2px solid #ff3d8b; }
 html.touch.mobil-quer #mtalk .opt { padding:10px 11px; }
+#mtalk .opt, #mtalk .weiter { min-height:44px; }
+html.touch.mobil-quer #mtalk { gap:6px; }
 `;
 document.head.appendChild(stil);
 
@@ -288,7 +303,7 @@ function platziere(){
     setze(elm,cx-vz*Math.cos(a)*radius,cy-Math.sin(a)*radius,d); };
   bogen(bZwei,8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
   bogen(bBlock,62,R,s);               // darueber: Blocken
-  bogen(bX[0],30,R2,Math.round(s*0.9));   // zweiter Ring: nur was dieses Level kann
+  bogen(bX[0],quer?30:45,R2,Math.round(s*0.9));   // hochkant steiler, sonst ragt er in den Stick   // zweiter Ring: nur was dieses Level kann
   bogen(bX[1],78,R2,Math.round(s*0.9));
   /* Stick: Groesse und Ruhestellung auf der anderen Seite */
   stickGr=Math.max(100,Math.round(k*1.15));
@@ -297,6 +312,24 @@ function platziere(){
   stickHeimPos={ x:links?(dw-heimX):heimX,
                  y:dh-Math.max(rand+sU,0)-stickGr*0.62 };
   if(stickId===null) stickHeim();
+  if(wahlAn) wahlSetze();
+}
+/* Schwierigkeits-Knoepfe des Titelbilds: Zeile bei Bildpunkt-Hoehe 60 (Level 1).
+   Links und rechts vom Text, 44 px hoch - ueber nichts anderem. */
+let wahlAn=false;
+function wahlSetze(){
+  const cr=cv.getBoundingClientRect(), dr=deck.getBoundingClientRect();
+  const sc=cr.width/W, mx=cr.left-dr.left+cr.width/2, my=cr.top-dr.top+58.5*sc;
+  const halb=((typeof textW==='function'?textW('SCHWIERIGKEIT: NORMAL'):84)/2+4)*sc;
+  const w=Math.max(84,Math.round(sc*38)), h=44, lueck=Math.round(6*sc/2+4);
+  [[bX[0],mx-halb-lueck-w/2],[bX[1],mx+halb+lueck+w/2]].forEach(function(p){
+    const e=p[0]; e.style.width=w+'px'; e.style.height=h+'px';
+    e.style.left=Math.round(p[1]-w/2)+'px'; e.style.top=Math.round(my-h/2)+'px'; });
+}
+function wahlSchalte(an){
+  if(an===wahlAn) return;
+  wahlAn=an; bX.forEach(function(e){ e.classList.toggle('wahl',an); });
+  platziere();
 }
 
 /* --------------------------------------------------------------------------
@@ -427,6 +460,7 @@ deck.addEventListener('contextmenu',function(e){ e.preventDefault(); });
    -------------------------------------------------------------------------- */
 let selbstPausiert=false;
 function menueAuf(){
+  allesLos();                       // ein Daumen am Stick: nichts bleibt gedrueckt haengen
   /* Das Menue haelt das Spiel an - sonst steht man darin mitten im Kampf. */
   if(typeof pauseTaste==='function'&&typeof S!=='undefined'&&S&&S.modus!=='pause'){
     pauseTaste(); selbstPausiert=(S.modus==='pause');
@@ -465,9 +499,19 @@ function zeigeBlatt(was){
     knopfIn(blatt,'WEITER',menueZu,'zu');
     knopfIn(blatt,typeof muted!=='undefined'&&muted?'TON AN':'TON AUS',function(b){
       ensureAudio(); tipp('KeyM'); setTimeout(function(){ b.textContent=muted?'TON AN':'TON AUS'; },80); });
-    knopfIn(blatt,'VOLLBILD',function(){ vollbild(); });
+    /* iPhone-Safari kennt keine Vollbild-Schnittstelle: dort hilft nur der Home-Bildschirm
+       (die Seite ist dafuer eingerichtet: apple-mobile-web-app-capable). Als App gestartet
+       ist man ohnehin im Vollbild. */
+    const de=document.documentElement, kannVoll=!!(de.requestFullscreen||de.webkitRequestFullscreen);
+    const alsApp=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches));
+    if(!alsApp) knopfIn(blatt,kannVoll?'VOLLBILD':'VOLLBILD?',function(b){
+      if(kannVoll) vollbild();
+      else b.textContent='SAFARI: TEILEN-KNOPF, DANN "ZUM HOME-BILDSCHIRM" - DANN VOLLBILD OHNE LEISTEN'; });
     if(typeof handyAuf==='function') knopfIn(blatt,'HANDY',function(){ menueZu(); handyAuf(); });
-    if(typeof MENUE!=='undefined'&&MENUE.galerie) knopfIn(blatt,'ENDEN',function(){ menueZu(); MENUE.galerie(); });
+    if(typeof MENUE!=='undefined'&&MENUE.galerie) knopfIn(blatt,'ENDEN',function(){
+      /* Die Galerie liegt ueber dem Spiel - es bleibt angehalten, bis sie zu ist. */
+      blatt.classList.remove('an'); MENUE.galerie();
+      const t=setInterval(function(){ if(!MENUE.galerieOffen()){ clearInterval(t); menueZu(); } },150); });
     knopfIn(blatt,'LEVEL WECHSELN',function(){ zeigeBlatt('level'); });
     knopfIn(blatt,'EINSTELLUNGEN',function(){ zeigeBlatt('einst'); });
   } else if(was==='level'){
@@ -588,6 +632,9 @@ function kontextPflege(){
   beschrifte(bZwei,k.zwei,'Space');
   beschrifte(bBlock,k.block?'BLOCK':null,'ShiftLeft');
   const ex=k.extras||[];
+  wahlSchalte(ex.length===2&&ex[0].code==='ArrowLeft'&&ex[1].code==='ArrowRight');
+  /* Ohne Beweglichkeit (Titel, Zwischentext) verschwindet der ruhende Stick. */
+  stick.classList.toggle('still',!!k.aktion&&['START','WEITER','NOCHMAL'].includes(k.aktion)&&!k.zwei&&!k.block);
   bX.forEach(function(elm,i){
     const e=ex[i];
     if(xCode[i]&&(!e||e.code!==xCode[i])) taste(xCode[i],false);   // alte Taste loslassen

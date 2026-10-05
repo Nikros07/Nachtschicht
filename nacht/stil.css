@@ -73,3 +73,17 @@ canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; 
 /* Am Handy uebernimmt nacht/mobil.js das Layout. Was es nicht selbst
    ausblendet, steht hier: Schriftzug, Fussleiste, Vollbild-Knopf. */
 html.touch #marquee, html.touch #base, html.touch #fs { display:none; }
+
+/* Der Toast der Handy-Nachrichten (handy.js) lag nur verschoben ausserhalb:
+   unten lugte ein rosa Streifen am Bildrand heraus. */
+html #htoast:not(.an) { opacity:0; visibility:hidden; }
+html #htoast.an { opacity:1; visibility:visible; }
+
+/* Am Handy: Flaechen des Nachrichtenfensters und der Galerie mindestens 44 px hoch,
+   und die Galerie darf mit dem Finger gescrollt werden (body ist touch-action:none). */
+html.touch .hmsg button { min-height:44px; padding:12px 10px; }
+html.touch #hzu { min-height:48px; font-size:13px; }
+html.touch #galliste { touch-action:pan-y; overscroll-behavior:contain; }
+
+/* Notch: das Bild quer nicht unter die Aussparung schieben (mobil.js setzt .mobil-quer). */
+html.touch.mobil-quer #screen { padding-left:env(safe-area-inset-left,0px); padding-right:env(safe-area-inset-right,0px); }
