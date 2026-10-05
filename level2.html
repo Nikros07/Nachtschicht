@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051654">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051823">
 </head>
 <body>
 <div id="cab">
@@ -37,24 +37,24 @@
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051654"></script>
-<script src="nacht/geraet.js?v=202610051654"></script>
-<script src="nacht/bild.js?v=202610051654"></script>
-<script src="nacht/hud.js?v=202610051654"></script>
-<script src="nacht/ton.js?v=202610051654"></script>
-<script src="nacht/komfort.js?v=202610051654"></script>
-<script src="nacht/stand.js?v=202610051654"></script>
-<script src="nacht/welt.js?v=202610051654"></script>
-<script src="nacht/nacht.js?v=202610051654"></script>
-<script src="nacht/dialog.js?v=202610051654"></script>
-<script src="nacht/eingabe.js?v=202610051654"></script>
-<script src="nacht/lehre.js?v=202610051654"></script>
-<script src="nacht/mobil.js?v=202610051654"></script>
-<script src="nacht/handy.js?v=202610051654"></script>
-<script src="nacht/texte.js?v=202610051654"></script>
-<script src="nacht/erzaehl.js?v=202610051654"></script>
-<script src="nacht/epilog.js?v=202610051654"></script>
-<script src="nacht/menue.js?v=202610051654"></script>
+<script src="nacht/kern.js?v=202610051823"></script>
+<script src="nacht/geraet.js?v=202610051823"></script>
+<script src="nacht/bild.js?v=202610051823"></script>
+<script src="nacht/hud.js?v=202610051823"></script>
+<script src="nacht/ton.js?v=202610051823"></script>
+<script src="nacht/komfort.js?v=202610051823"></script>
+<script src="nacht/stand.js?v=202610051823"></script>
+<script src="nacht/welt.js?v=202610051823"></script>
+<script src="nacht/nacht.js?v=202610051823"></script>
+<script src="nacht/dialog.js?v=202610051823"></script>
+<script src="nacht/eingabe.js?v=202610051823"></script>
+<script src="nacht/lehre.js?v=202610051823"></script>
+<script src="nacht/mobil.js?v=202610051823"></script>
+<script src="nacht/handy.js?v=202610051823"></script>
+<script src="nacht/texte.js?v=202610051823"></script>
+<script src="nacht/erzaehl.js?v=202610051823"></script>
+<script src="nacht/epilog.js?v=202610051823"></script>
+<script src="nacht/menue.js?v=202610051823"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -1161,8 +1161,11 @@ function titelbild(){
   textC('LEVEL 2 - VORGLUEHEN',44,P.dim);
   const zeilen=['DER BUS FAEHRT UM 22:00','VIER LEUTE. KEINER WILL LOS.','MACH SIE FERTIG.'];
   zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
-  const st=IS_TOUCH?[['STICK','LAUFEN'],['SPRUNG','SPRINGEN'],['KNOPF','REDEN, SUCHEN, TRINKEN']]
-                   :[['WASD','LAUFEN'],['LEER','SPRINGEN'],['E','REDEN, SUCHEN, TRINKEN']];
+  /* Kein SPRUNG/LEER hier: Springen und Tiefe (W/S) haben in dieser flachen
+     Wohnung keine Wirkung (TIEFE_PRO_SEITE['level2.html']=false, keine
+     Hindernisse) - beigebracht wurde eine Taste, die nichts tut. */
+  const st=IS_TOUCH?[['STICK','LAUFEN'],['KNOPF','REDEN, SUCHEN, TRINKEN']]
+                   :[['A D','LAUFEN'],['E','REDEN, SUCHEN, TRINKEN']];
   st.forEach((z,i)=>{ text(z[0],70,108+i*9,P.gold); text(z[1],104,108+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),140,P.neon2);

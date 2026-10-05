@@ -36,7 +36,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051654">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051823">
 <style>:root{ --raum:#140f26; --glanz:rgba(80,200,255,.08); }</style>
 </head>
 <body>
@@ -60,24 +60,24 @@
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051654"></script>
-<script src="nacht/geraet.js?v=202610051654"></script>
-<script src="nacht/bild.js?v=202610051654"></script>
-<script src="nacht/hud.js?v=202610051654"></script>
-<script src="nacht/ton.js?v=202610051654"></script>
-<script src="nacht/komfort.js?v=202610051654"></script>
-<script src="nacht/stand.js?v=202610051654"></script>
-<script src="nacht/welt.js?v=202610051654"></script>
-<script src="nacht/nacht.js?v=202610051654"></script>
-<script src="nacht/dialog.js?v=202610051654"></script>
-<script src="nacht/eingabe.js?v=202610051654"></script>
-<script src="nacht/lehre.js?v=202610051654"></script>
-<script src="nacht/mobil.js?v=202610051654"></script>
-<script src="nacht/handy.js?v=202610051654"></script>
-<script src="nacht/texte.js?v=202610051654"></script>
-<script src="nacht/erzaehl.js?v=202610051654"></script>
-<script src="nacht/epilog.js?v=202610051654"></script>
-<script src="nacht/menue.js?v=202610051654"></script>
+<script src="nacht/kern.js?v=202610051823"></script>
+<script src="nacht/geraet.js?v=202610051823"></script>
+<script src="nacht/bild.js?v=202610051823"></script>
+<script src="nacht/hud.js?v=202610051823"></script>
+<script src="nacht/ton.js?v=202610051823"></script>
+<script src="nacht/komfort.js?v=202610051823"></script>
+<script src="nacht/stand.js?v=202610051823"></script>
+<script src="nacht/welt.js?v=202610051823"></script>
+<script src="nacht/nacht.js?v=202610051823"></script>
+<script src="nacht/dialog.js?v=202610051823"></script>
+<script src="nacht/eingabe.js?v=202610051823"></script>
+<script src="nacht/lehre.js?v=202610051823"></script>
+<script src="nacht/mobil.js?v=202610051823"></script>
+<script src="nacht/handy.js?v=202610051823"></script>
+<script src="nacht/texte.js?v=202610051823"></script>
+<script src="nacht/erzaehl.js?v=202610051823"></script>
+<script src="nacht/epilog.js?v=202610051823"></script>
+<script src="nacht/menue.js?v=202610051823"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -696,8 +696,11 @@ addEventListener('keydown',e=>{
   if(['KeyE','Enter'].includes(e.code)){ e.preventDefault(); aktionGehalten=true; druckAktion(); }
   if(['ShiftLeft','ShiftRight'].includes(e.code)){ e.preventDefault(); schleichAn=true; }
   if(e.code==='KeyQ'){ e.preventDefault(); lampeSchalten(); }
+  /* "HANDY STUMM/LAUT" hiess das frueher - verwechselbar mit dem Engine-Handy
+     (T, nacht/handy.js), einer ganz anderen Oberflaeche. S.stumm/nachricht()/
+     laerm() bleiben unveraendert, nur das Wort HANDY faellt aus der Meldung. */
   if(e.code==='KeyH'){ e.preventDefault(); S.stumm=!S.stumm;
-                       meldung(S.stumm?'HANDY STUMM':'HANDY LAUT',1.2); piep(S.stumm?300:600,.06); }
+                       meldung(S.stumm?'TON AUS':'TON AN',1.2); piep(S.stumm?300:600,.06); }
   if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
   if(S.modus==='titel'&&e.code==='KeyG'&&typeof MENUE!=='undefined'&&MENUE.galerie){ e.preventDefault(); MENUE.galerie(); }
   if(S.modus==='titel'&&e.code==='KeyU'){ e.preventDefault(); location.href='ueber.html'; }
@@ -2171,9 +2174,12 @@ function titelbild(){
               ['KNOPF','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],86,y,P.dim); });
   } else {
+    /* Nur die vier Grundtasten - Lampe (Q), Wurf (R) kommen schon als
+       eigene, ausprobierbare Schritte in der Lektion (nacht/lehre.js),
+       H ist nur Audio und nicht spielentscheidend. Sieben Zeilen hier
+       waren eine Bedienungsanleitung zum Lesen statt zum Merken. */
     const st=[['A D','LAUFEN'],['SHIFT','SCHLEICHEN'],['W S','AN DER TREPPE'],
-              ['E','TUER, SPIND, DURCHSUCHEN'],['Q','TASCHENLAMPE'],
-              ['R','WAS WERFEN - LENKT SIE AB'],['H','HANDY STUMM']];
+              ['E','TUER, SPIND, DURCHSUCHEN']];
     st.forEach((z,i)=>{ const y=100+i*8; text(z[0],44,y,P.gold); text(z[1],78,y,P.dim); });
   }
   /* Schwierigkeit. Die alte Crew-Zeile stand hier - aber ein Start setzt

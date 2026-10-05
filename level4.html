@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051654">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051823">
 </head>
 <body>
 <div id="cab">
@@ -37,25 +37,25 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051654"></script>
-<script src="nacht/geraet.js?v=202610051654"></script>
-<script src="nacht/bild.js?v=202610051654"></script>
-<script src="nacht/hud.js?v=202610051654"></script>
-<script src="nacht/ton.js?v=202610051654"></script>
-<script src="nacht/komfort.js?v=202610051654"></script>
-<script src="nacht/stand.js?v=202610051654"></script>
-<script src="nacht/welt.js?v=202610051654"></script>
-<script src="nacht/kampf.js?v=202610051654"></script>
-<script src="nacht/nacht.js?v=202610051654"></script>
-<script src="nacht/dialog.js?v=202610051654"></script>
-<script src="nacht/eingabe.js?v=202610051654"></script>
-<script src="nacht/lehre.js?v=202610051654"></script>
-<script src="nacht/mobil.js?v=202610051654"></script>
-<script src="nacht/handy.js?v=202610051654"></script>
-<script src="nacht/texte.js?v=202610051654"></script>
-<script src="nacht/erzaehl.js?v=202610051654"></script>
-<script src="nacht/epilog.js?v=202610051654"></script>
-<script src="nacht/menue.js?v=202610051654"></script>
+<script src="nacht/kern.js?v=202610051823"></script>
+<script src="nacht/geraet.js?v=202610051823"></script>
+<script src="nacht/bild.js?v=202610051823"></script>
+<script src="nacht/hud.js?v=202610051823"></script>
+<script src="nacht/ton.js?v=202610051823"></script>
+<script src="nacht/komfort.js?v=202610051823"></script>
+<script src="nacht/stand.js?v=202610051823"></script>
+<script src="nacht/welt.js?v=202610051823"></script>
+<script src="nacht/kampf.js?v=202610051823"></script>
+<script src="nacht/nacht.js?v=202610051823"></script>
+<script src="nacht/dialog.js?v=202610051823"></script>
+<script src="nacht/eingabe.js?v=202610051823"></script>
+<script src="nacht/lehre.js?v=202610051823"></script>
+<script src="nacht/mobil.js?v=202610051823"></script>
+<script src="nacht/handy.js?v=202610051823"></script>
+<script src="nacht/texte.js?v=202610051823"></script>
+<script src="nacht/erzaehl.js?v=202610051823"></script>
+<script src="nacht/epilog.js?v=202610051823"></script>
+<script src="nacht/menue.js?v=202610051823"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -156,7 +156,12 @@ const SPR={
   /* Tuersteher - breite Schultern, Glatze, Sonnenbrille, schwarzer Anzug */
   bossKopf:['.yyyyy.','yyxxxyy','.yyyyy.','..yyy..'],
   bossSteh:['.bbbbb..','bbwbbbbb','kbbbbb.k','.bbbbb..','..bpb...','..p.p...','.pp.pp..','kk...kk.'],
-  bossWind:['bb.bbbb..','bwbbbbbb.','kbbbbb..k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
+  /* Schwung holt breit aus (Arm weit zurueck, Silhouette verbreitert sich
+     nach links) - Jab bleibt eng am Koerper, die Faust zeigt schon nach
+     vorn (rotes 'r' tief in der Reihe). Vorher dieselbe Reihe fuer beide -
+     siehe NACHT-TODO.md: "nach dem zweiten Konter ist alles gesehen". */
+  bossWind:    ['bb.bbbb..','bwbbbbbb.','kbbbbb..k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
+  bossWindJab: ['.bbbbb...','bwbbbb...','kbbbbbr.k','.bbbbb...','..bpb....','..p.p....','.pp.pp...','kk...kk..'],
   bossSchlag:['.bbbbb..bb','bbwbbbbbrr','kbbbbb...k','.bbbbb....','..bpb.....','..p.p.....','.pp.pp....','kk...kk...'],
 
   /* Kulisse */
@@ -735,7 +740,7 @@ function zeichneArena(){
          Beinen auf dich zu. */
       const lauf=laufBild(b);
       if(lauf>=0&&(b.zustand==='frei'||b.zustand==='block')) rows=gehBeine(rows,lauf);
-      if(b.zustand==='ausholen') rows=SPR.bossWind;
+      if(b.zustand==='ausholen') rows=(b.art==='jab')?SPR.bossWindJab:SPR.bossWind;
       else if(b.zustand==='schlag') rows=SPR.bossSchlag;
       const blinkt=b.zustand==='getroffen'&&Math.floor(S.t*20)%2===0;
       const fuss=bodenY(b.t);

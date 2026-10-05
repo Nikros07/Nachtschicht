@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051654">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051823">
 </head>
 <body>
 <div id="cab">
@@ -37,25 +37,25 @@
   <div id="base"><span>LEVEL 5 - CLUB</span><span>E ANSPRECHEN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051654"></script>
-<script src="nacht/geraet.js?v=202610051654"></script>
-<script src="nacht/bild.js?v=202610051654"></script>
-<script src="nacht/hud.js?v=202610051654"></script>
-<script src="nacht/ton.js?v=202610051654"></script>
-<script src="nacht/komfort.js?v=202610051654"></script>
-<script src="nacht/stand.js?v=202610051654"></script>
-<script src="nacht/welt.js?v=202610051654"></script>
-<script src="nacht/nacht.js?v=202610051654"></script>
-<script src="nacht/dialog.js?v=202610051654"></script>
-<script src="nacht/kampf.js?v=202610051654"></script>
-<script src="nacht/eingabe.js?v=202610051654"></script>
-<script src="nacht/lehre.js?v=202610051654"></script>
-<script src="nacht/mobil.js?v=202610051654"></script>
-<script src="nacht/handy.js?v=202610051654"></script>
-<script src="nacht/texte.js?v=202610051654"></script>
-<script src="nacht/erzaehl.js?v=202610051654"></script>
-<script src="nacht/epilog.js?v=202610051654"></script>
-<script src="nacht/menue.js?v=202610051654"></script>
+<script src="nacht/kern.js?v=202610051823"></script>
+<script src="nacht/geraet.js?v=202610051823"></script>
+<script src="nacht/bild.js?v=202610051823"></script>
+<script src="nacht/hud.js?v=202610051823"></script>
+<script src="nacht/ton.js?v=202610051823"></script>
+<script src="nacht/komfort.js?v=202610051823"></script>
+<script src="nacht/stand.js?v=202610051823"></script>
+<script src="nacht/welt.js?v=202610051823"></script>
+<script src="nacht/nacht.js?v=202610051823"></script>
+<script src="nacht/dialog.js?v=202610051823"></script>
+<script src="nacht/kampf.js?v=202610051823"></script>
+<script src="nacht/eingabe.js?v=202610051823"></script>
+<script src="nacht/lehre.js?v=202610051823"></script>
+<script src="nacht/mobil.js?v=202610051823"></script>
+<script src="nacht/handy.js?v=202610051823"></script>
+<script src="nacht/texte.js?v=202610051823"></script>
+<script src="nacht/erzaehl.js?v=202610051823"></script>
+<script src="nacht/epilog.js?v=202610051823"></script>
+<script src="nacht/menue.js?v=202610051823"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -370,6 +370,9 @@ const LIEFERANT={ x:1250, t:0.5,
    ========================================================================== */
 
 const MIA_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'MIA', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   start:{ wer:'MIA', text:'Ja? Kann ich dir helfen?',
     wahl:[
       { txt:'Hi. Ich wollte einfach hallo sagen.',          geh:'ehrlich',  tu:{mag:['MIA',8]} },
@@ -462,12 +465,20 @@ const MIA_BAUM = {
 };
 
 const SOPHIE_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'SOPHIE', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   start:{ wer:'SOPHIE', text:'Du stehst zwischen mir und der Bar. Das kostet dich einen Shot.',
     wahl:[
       { txt:'Deal. Aber du trinkst mit.',       wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:12, mag:['SOPHIE',8]} },
       { txt:'Ich stand hier zuerst.',           geh:'konter', tu:{mag:['SOPHIE',6]} },
       { txt:'Oh. Sorry.',                       geh:'langweilig', tu:{mag:['SOPHIE',-6]} },
+      { txt:'Shot? Gib mir gleich drei.',       wenn:{pegel:55}, geh:'besoffen' },
     ], zeit:8, standard:2 },
+
+  /* Wie bei Mia (wenn:{pegel:55}): zu betrunken wirkt hier nicht mutig,
+     sondern abschreckend - dieselbe Schwelle, dasselbe Ergebnis. */
+  besoffen:{ wer:'SOPHIE', text:'Okay, du hast schon genug. Trink lieber Wasser.', geh:'@nein' },
 
   langweilig:{ wer:'SOPHIE', text:'Sorry? Gott. Na gut, du darfst nochmal.',
     wahl:[
@@ -534,6 +545,9 @@ const SOPHIE_BAUM = {
 };
 
 const KIRA_BAUM = {
+  /* Wird nur angesprungen, wenn vorher schon jemand anders im Club einen
+     Korb gegeben hat - siehe redeMit(). Eine Zeile, dann normal weiter. */
+  startAbfuhr:{ wer:'KIRA', text:'Ich hab gehoert, du bist heute schon abgeblitzt.', geh:'start' },
   /* Wer betrunken ankommt, sieht die ruhigen Antworten gar nicht erst -
      {pegel:-54} heisst "hoechstens 54". Kira ist die eine, bei der Pegel
      nichts oeffnet, sondern alles schliesst. */
@@ -994,7 +1008,12 @@ function redeMit(z){
      Levelstart - und "betrunken" waere nie freigeschaltet. */
   speicherePegel(S.pegel);
   S.vx=0; S.vt=0;
-  starteGespraech(BAUM_FUER[z.id],'start',e=>gespraechEnde(z,e));
+  /* Eine Abfuhr bleibt nicht unter vier Augen (siehe TUNE (15)) - die naechste,
+     die man anspricht, hat schon davon gehoert. Nur einmal pro Figur, sonst
+     wiederholt sich die Zeile bei jedem erneuten Ansprechen. */
+  const abfuhrGehoert = !z._abfuhrGesagt && ZIELE.some(o=>o!==z&&o.stand==='nein');
+  if(abfuhrGehoert) z._abfuhrGesagt=true;
+  starteGespraech(BAUM_FUER[z.id], abfuhrGehoert?'startAbfuhr':'start', e=>gespraechEnde(z,e));
 }
 function gespraechEnde(z,e){
   S.pegel=ladePegel();        // Shots aus dem Gespraech zaehlen
@@ -1512,6 +1531,21 @@ function zeichneClub(){
       ctx.fillStyle=((by-29)/6)%2===0?'#ffd447':'#2a2440';
       ctx.fillRect(lx-5,by,11,4);
     }
+  }
+
+  /* Rueckwand-Banner ueber Bar, Raucherecke, Klos und Hinterausgang - dritter
+     und vierter Schritt gegen die leere Decke (PLAYTEST.md). Hohe Banner ueber
+     die volle Wandhoehe (y 20 bis TIEFE.hinten, Boden-Y der Rueckwand),
+     abwechselnd eingefaerbt, wiederholt ueber x 625-1400 (Bar, Raucherecke,
+     Klos, Hinterausgang, siehe ORTE). Ein erster, nur halb so hoher Versuch
+     (Rahmen bei y 38-105) liess die Wand darueber und darunter leer - deckt
+     jetzt die ganze Wand ab. */
+  for(let x=625;x<1400;x+=48){
+    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,20,40,TIEFE.hinten-20);
+    ctx.fillStyle=(Math.floor((x-625)/48)%2===0)?'#3a4452':'#4a2c38';
+    ctx.fillRect(x+3,23,34,TIEFE.hinten-26);
+    ctx.fillStyle='#ffffff22'; ctx.fillRect(x+3,23,34,1);
+    ctx.fillStyle='#00000055'; ctx.fillRect(x+3,TIEFE.hinten-3,34,1);
   }
 
   /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */

@@ -50,14 +50,14 @@ const LEKTIONEN={
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
       { gr:[['Space']], taste:'LEER', touch:'SPRUNG', was:'SPRINGEN (HINDERNISSE)', btn:'SPRUNG' },
       { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'REDEN, VERSTECKEN, SCHLAGEN', btn:'AKTION' },
-      { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN IM KAMPF', opt:true, block:true },
+      { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN GEGEN EINEN ANGRIFF', block:true, puppe:'block' },
     ]},
   'level4.html':{ titel:'DIE SCHLANGE',
     text:['EIN GEGNER. WARTE, BIS DER BALKEN GOLD IST - DANN E.',
           'RAMMEN KANN MAN NICHT KONTERN: AUSWEICHEN.'],
     schritte:[
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
-      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER' },
+      { gr:[['KeyE']], taste:'E', touch:'KNOPF', was:'KONTERN IM GOLDENEN BEREICH', btn:'KONTER', puppe:'konter' },
       { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN - KOSTET KRAFT', block:true },
       { gr:[['Space']], taste:'LEER', touch:'ROLLE', was:'ROLLEN - WEICHT AUS', btn:'ROLLE' },
       { gr:[['ArrowUp','KeyW'],['ArrowDown','KeyS']], taste:'W S', touch:'STICK', was:'NACH HINTEN, VORNE AUSWEICHEN', opt:true },
@@ -89,11 +89,22 @@ const LEKTIONEN={
       { gr:[['KeyA','ArrowLeft'],['KeyD','ArrowRight']], taste:'A D', touch:'STICK', was:'LAUFEN' },
       { gr:[['Space']], taste:'LEER', touch:'SPRUNG', was:'SPRINGEN UEBER ALLES', btn:'SPRUNG' },
       { gr:[['ShiftLeft','ShiftRight']], taste:'SHIFT', touch:'BLOCK', was:'BLOCKEN IM KAMPF', opt:true, block:true },
+      { gr:[['Space']], taste:'LEER', touch:'ROLLE', was:'ROLLEN GEGEN EINEN ANGRIFF', btn:'ROLLE', puppe:'rolle' },
     ]},
 };
 
 const LEHRE_SKIP=0.6;       // so lange ENTER halten, dann ist die Lektion uebersprungen
 const LEHRE_KEY='nachtschicht.lektion.';
+
+/* Uebungspuppe: ein Schritt mit puppe:'konter'|'block'|'rolle' gilt erst nach
+   der jeweils richtigen Antwort auf einen Ausholer als erledigt - nicht nach
+   irgendeinem Tastendruck. 'wann' greift nur auf den Zustand der Puppe zu,
+   nie auf Level-4-Phasenlogik (siehe NACHT-TODO.md). */
+const PUPPE_ARTEN={
+  konter:{ codes:['KeyE'], wann:p=>typeof imKonterfenster==='function'&&imKonterfenster(p,KAMPF.konterAnteil) },
+  block:{ codes:['ShiftLeft','ShiftRight'], wann:p=>p.zustand==='ausholen'||p.zustand==='schlag' },
+  rolle:{ codes:['Space'], wann:p=>p.zustand==='ausholen'||p.zustand==='schlag' },
+};
 
 window.LEHRE=(function(){
   const seite=((typeof location!=='undefined'&&location.pathname)||'').split('/').pop().toLowerCase()||'index.html';
@@ -123,7 +134,16 @@ window.LEHRE=(function(){
     if(typeof kapitelAktiv==='function'&&kapitelAktiv()) return false;   // erst die Kapitelkarte
     Z.aktiv=true; Z.t=0; Z.skipT=0; Z.runter.clear();
     Z.erledigt=L.schritte.map(()=>false);
-    L.schritte.forEach((s,i)=>{ s._offen=s.gr.map(()=>true); });
+    L.schritte.forEach((s,i)=>{
+      s._offen=s.gr.map(()=>true);
+      /* Uebungspuppe: eine stillstehende Figur, die immer wieder ausholt -
+         nur kaempfer()/kaempferTakt() aus kampf.js, keine Level-Phasenlogik
+         (siehe NACHT-TODO.md). Fuenf von acht Leveln laden kampf.js nicht. */
+      if(s.puppe&&typeof kaempfer==='function'){
+        s._puppe=kaempfer({x:0,t:0,ausholenDauer:1.2,schlagDauer:.2});
+        s._puppe.zustand='ausholen';
+      }
+    });
     return true;
   };
 
@@ -142,6 +162,16 @@ window.LEHRE=(function(){
     const weiter=(code==='Enter')||(code==='KeyE'&&Z.alleErledigt());
     if(weiter&&Z.alleErledigt()){ Z.beenden(); return; }
     L.schritte.forEach((s,i)=>{
+      /* Puppe: nur die richtige Antwort auf einen Ausholer zaehlt - eine
+         Taste zur falschen Zeit bleibt wirkungslos, der Schritt bleibt offen. */
+      if(s.puppe){
+        const art=PUPPE_ARTEN[s.puppe];
+        if(art&&art.codes.includes(code)&&!Z.erledigt[i]&&s._puppe&&art.wann(s._puppe)){
+          s._offen[0]=false; Z.erledigt[i]=true;
+          try{ if(typeof piep==='function') piep(520+i*70,.05,'square',.04); }catch(e){}
+        }
+        return;
+      }
       s.gr.forEach((g,k)=>{ if(s._offen[k]&&g.includes(code)) s._offen[k]=false; });
       if(!Z.erledigt[i]&&s._offen.every(o=>!o)){
         Z.erledigt[i]=true;
@@ -158,6 +188,12 @@ window.LEHRE=(function(){
     const halt=Z.runter.has('Enter')?1:((typeof IS_TOUCH!=='undefined'&&IS_TOUCH&&Z.runter.has('KeyE')&&Z.t>1)?.5:0);
     if(halt){ Z.skipT+=dt*halt; if(Z.skipT>=LEHRE_SKIP) Z.beenden(); }
     else Z.skipT=Math.max(0,Z.skipT-dt*2);
+    /* Puppe: holt endlos neu aus, bis der Schritt per Konter erledigt ist. */
+    L.schritte.forEach(s=>{
+      if(!s._puppe||typeof kaempferTakt!=='function') return;
+      kaempferTakt(s._puppe,dt);
+      if(s._puppe.zustand==='frei'){ s._puppe.zustand='ausholen'; s._puppe.zT=0; }
+    });
   };
 
   /* Am Handy richtet sich das Bedienfeld nach der Lektion: nur die Knoepfe,

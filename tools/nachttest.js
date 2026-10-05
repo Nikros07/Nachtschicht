@@ -313,8 +313,8 @@ function baeume(L,seite){
     while(rand.length){ const k=rand.pop(); if(gesehen.has(k)||!(k in b)||!b[k]) continue; gesehen.add(k);
       if(b[k].geh) rand.push(b[k].geh); for(const w of b[k].wahl||[]) if(w.geh) rand.push(w.geh); }
     const tot=Object.keys(b).filter(k=>b[k]&&!gesehen.has(k));
-    /* tanzGut/tanzSchlecht werden von aussen betreten - das ist gewollt. */
-    const fremd=tot.filter(k=>!/^(tanzGut|tanzSchlecht)$/.test(k));
+    /* tanzGut/tanzSchlecht/startAbfuhr werden von aussen betreten - das ist gewollt. */
+    const fremd=tot.filter(k=>!/^(tanzGut|tanzSchlecht|startAbfuhr)$/.test(k));
     if(fremd.length) fehler.push(n+': unerreichbar ab start: '+fremd.join(', '));
   }
   return {zahl,knoten,fehler};
@@ -383,7 +383,7 @@ for(const seite of SEITEN){
   try{
     L.taste('Space',true); L.taste('Space',false);
     for(let i=0;i<4000&&E('S.modus')==='intro';i++){ E('S.szeneT+=99'); E('update(1/60)'); }
-    const tasten=['KeyA','KeyD','KeyD','KeyE','Space','ShiftLeft','KeyW','KeyS','KeyR','KeyQ'];
+    const tasten=['KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyD','KeyA','KeyE','Space','ShiftLeft','KeyW','KeyS','KeyR','KeyQ'];
     let gedrueckt=null;
     const modi=new Set([E('S.modus')]);
     let leerSumme=0, leerN=0;
@@ -430,7 +430,30 @@ for(const seite of SEITEN){
       if(!EQ('LEHRE.pruefe()')) meld(seite,'Lektion startet nicht im Intro');
       for(let i=0;i<3;i++){ EQ('LEHRE.takt(1/60)'); EQ('LEHRE.zeichne()'); }
       const gr=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.gr.map(g=>g[0]))');
-      for(const grp of gr) for(const code of grp){ Q.taste(code,true); Q.taste(code,false); }
+      const puppen=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.puppe||null)');
+      for(let si=0;si<gr.length;si++){
+        const art=puppen[si];
+        if(art){
+          /* Uebungspuppe: nur die richtige Antwort (art) zur richtigen Zeit
+             zaehlt. Steht die Puppe noch ausserhalb des Fensters, erst
+             pruefen, dass ein Druck jetzt NICHT erledigt, dann takten bis
+             PUPPE_ARTEN[art].wann() zutrifft. */
+          const code=EQ('PUPPE_ARTEN["'+art+'"].codes[0]');
+          const vorFenster=EQ('!PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe||{})');
+          if(vorFenster){
+            Q.taste(code,true); Q.taste(code,false);
+            if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') zur falschen Zeit schon erledigt');
+            let guard=0;
+            while(!EQ('LEHRE.L.schritte['+si+']._puppe&&PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe)')&&guard<600){
+              EQ('LEHRE.takt(1/60)'); guard++;
+            }
+          }
+          Q.taste(code,true); Q.taste(code,false);
+          if(!EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') im Fenster nicht erledigt');
+        } else {
+          for(const code of gr[si]){ Q.taste(code,true); Q.taste(code,false); }
+        }
+      }
       EQ('LEHRE.zeichne()');
       if(!EQ('LEHRE.alleErledigt()')) meld(seite,'Lektion: nicht alle Schritte lassen sich erledigen');
       const mk=EQ('LEHRE.mobilKontext()');

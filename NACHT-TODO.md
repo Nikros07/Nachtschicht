@@ -32,8 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke: Banner oder Galerie an der Rückwand** — Dritter Schritt für Bar und Raucherecke. Siehe „Blockiert": die vorgeschriebene Messung (node tools/nachttest.js) erreicht diesen Bereich nicht, bevor hier weitergebaut wird, muss erst das geklärt sein.
-  Wo: level5.html (zeichneClub) · Fertig wenn: leere Bildzeilen im Club höchstens 48 %. Erst danach gilt die obere Bildhälfte im Club als erledigt.
 ### P2
 
 - [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
@@ -103,6 +101,65 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
   Wo: nacht/menue.js · Fertig wenn: entschieden (gewollt) oder Levelfortschritt gespeichert.
 
+- [ ] **P2 · Level 1 und 6: toter Tiefen-Code** — beide Level haben
+  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59), rechnen aber trotzdem mit
+  S.tiefe/TUNE.tiefe*/tiefeNah() weiter (index.html: Sichtkegel-Trapez :1744-1751,
+  Meldung „ZU WEIT VORNE" :964/968, TUNE.tiefeWelt/tiefeTempo/kegelOeffnung/
+  tuerTiefe; level6.html: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo :110-113,
+  TUNE.redeTiefe :107 in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`,
+  jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA :242-291 nur noch
+  Zeichenreihenfolge). Gefunden bei den Analysen vom 5.10. (PLAYTEST.md, Abschnitte
+  „Level 1"/„Level 6"). Zwei Level mit demselben Muster - lohnt eine gemeinsame
+  Entscheidung statt zwei Einzel-Fixes.
+  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html · Fertig wenn: für
+  jedes der beiden Level einzeln entschieden und gemessen - Tiefe bewusst aktiviert
+  (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich) ODER die toten
+  TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+- [ ] **P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht** —
+  TUNE.pegelAbbauProSek=1,3 (level6.html:89, genutzt :543) senkt den Pegel gemessen
+  unabhaengig vom Spielerverhalten in 77s von 100 auf 0 - schneller als der
+  TUNE-Kommentar fuer eine Hin-Strecke plus Schleife ansetzt (~18s mehrfach, :116-119).
+  Wo: level6.html (TUNE.pegelAbbauProSek oder TUNE.proKlarheit) · Fertig wenn:
+  gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber 77s (oder bewusst belassen,
+  wenn das Verblassen Teil des Zeitdrucks sein soll - dann Punkt nach
+  „Entscheidung noetig" verschieben statt bauen).
+- [ ] **P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung** — `mobilKontext()`
+  liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (level6.html:693), obwohl
+  Level 6 keine Hindernisse, keine Luecken und keine Tiefe hat (siehe Tiefe-Punkt
+  oben); die eigene Lektion lehrt Sprung gar nicht erst.
+  Wo: level6.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
+  eine echte Funktion).
+- [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
+  Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
+  Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
+  Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
+  Fertig wenn: eigener Abschnitt „Runner" in PLAYTEST.md.
+- [ ] **P2 · Analyse nachholen: Engine** — siebter Teil, siehe oben. Wo: nacht/*.js ·
+  Fertig wenn: eigener Abschnitt „Engine" in PLAYTEST.md (Dateien, die quer durch alle
+  Level wirken, z.B. gemeinsame Zustaende, Tabellen).
+- [ ] **P2 · Analyse nachholen: Dramaturgie über die ganze Nacht** — achter und letzter
+  Teil, siehe oben. Fertig wenn: eigener Abschnitt „Dramaturgie" in PLAYTEST.md (Bogen
+  über alle acht Level hinweg, nicht einzelne Level).
+
+### P3
+
+- [ ] **P3 · Level 6: hartcodierte Pegelzahl neben echtem TUNE-Wert** — `aufwachen()`
+  (level6.html:678) zieht den Pegel um den hartcodierten Wert `10` ab, direkt neben
+  `TUNE.aufwachenMit`, das fuer dieselbe Funktion schon im TUNE-Block steht - verstoesst
+  gegen „jede Stellschraube steht im TUNE-Block". Wo: level6.html (`aufwachen`) ·
+  Fertig wenn: `10` ist ein eigener TUNE-Wert.
+- [ ] **P3 · Level 6: ein Hinweistext, zwei unabhaengige Trigger** — „DIESEN RAUM GAB
+  ES SCHON EINMAL" wird sowohl beim Betreten des wiederholten Raums (level6.html:560)
+  als auch beim Anstossen an die Schleifenwand (:588) ausgeloest - koennen ueberlappend
+  auf dem Schirm stehen. Wo: level6.html · Fertig wenn: beide Stellen zeigen
+  unterschiedliche Texte.
+- [ ] **P3 · Level 6: `NACHTECHOS[].name` wird nirgends gelesen** — die Anzeige nutzt
+  ausschliesslich die hartcodierte Fallunterscheidung in `echoName()` (level6.html:668),
+  die `.name` dupliziert. Wo: level6.html · Fertig wenn: Feld entfernt oder `echoName()`
+  liest `e.name`.
 - [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
@@ -146,6 +203,170 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
 - [x] 2026-10-05 · Sitzung · Launch-Ausbau auf `claude/launch`: Story (Bibel, acht Level, Abspann mit zehn Enden), Erzähl-Engine (Kapitelkarte, Plausch, Momente), Startmenü und Enden-Galerie, Geräte-Schutz und Offline-Modus, Handy-Abnahme im Emulator · `42c3b93` bis `44a236f`.
+- [x] 2026-10-05 · P2 · Analyse nachholen: Level 6 · `7e60128` · Zweiter von acht Teilen.
+  Ein Analyse-Agent hat level6.html vollstaendig gelesen; Kernfunde stichprobenhaft
+  gegengeprueft (grep auf TIEFE_PRO_SEITE, pegelAbbauProSek, mobilKontext zwei:,
+  aufwachen(), mag:['MORITZ',...]). Neuer Abschnitt „Level 6" in PLAYTEST.md mit
+  sechs belegten Funden. Der bereits behobene FLACKERSCHUTZ-Fund und die bereits
+  dokumentierte MORITZ-Luecke wurden gegengeprueft, aber bewusst nicht erneut
+  gemeldet. Die sechs Einzelfunde als neue Punkte unter „Offen" eingetragen (zwei
+  P2, drei P3 - der Tiefe-Fund zusammen mit dem gleichartigen aus Level 1). Keine
+  Spiellogik geaendert, nur Dokumentation.
+
+- [x] 2026-10-05 · P2 · Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken jetzt · `727f73e` ·
+  Betraf alle acht Level: S.blitz/S.ruettel (in Level 5 zusaetzlich das Stroboskop
+  S.flacker) wurden roh gezeichnet statt durch FX.blitz()/FX.wackel() geschickt. An
+  jeder der acht Lesestellen jetzt durchgereicht, der Pegel-Wobble ('wack') blieb
+  unberuehrt (anderer Effekt). Gemessen (Software-Canvas, index.html): FX.blitz(1)
+  1,000 ohne Flackerschutz, 0,120 mit; FX.wackel(6) 6,00 ohne, 3,00 mit. Alle vier
+  Pruefungen gruen (kampf.test.js einmal durch einen bestehenden, unabhaengigen Flake
+  rot, danach fuenfmal in Folge 22/0).
+
+- [x] 2026-10-05 · P2 · Analyse nachholen: Level 1 · `9508e31` · Erster von acht Teilen
+  des aufgeteilten Analyse-Punkts. Ein Analyse-Agent hat index.html und die elf
+  geladenen Engine-Dateien vollstaendig gelesen; Kernfunde stichprobenhaft gegen-
+  geprueft (grep auf FX.blitz/FX.wackel, TIEFE_PRO_SEITE, flagcheck.js fuer
+  HAUSMEISTER, S.variante-Code - alle bestaetigt). Neuer Abschnitt „Level 1" in
+  PLAYTEST.md mit sechs belegten Funden (toter Tiefen-Code, nie gelesene
+  HAUSMEISTER-Zuneigung, zwei ungenutzte TUNE-Werte, wirkungsloser Sprung,
+  hartcodierte Wurf-Physik, ein wirkungsloser Ausschluss in einer Spielart). Ein
+  siebter, projektweiter Fund (FLACKERSCHUTZ/WACKELN ohne Wirkung) gehoert nicht zu
+  Level 1 allein - als eigener neuer P2-Punkt unter „Offen" eingetragen. Keine
+  Spiellogik geaendert, nur Dokumentation.
+
+- [x] 2026-10-05 · P2 · Level 4: Jab und Schwung im Ausholen unterscheidbar · `926e612` ·
+  Beide Angriffsarten nutzten dieselbe Windup-Sprite (SPR.bossWind). Neue
+  SPR.bossWindJab: enger an den Schultern, mit sichtbarer roter Faust statt blossem
+  Torso. Zeichenfunktion waehlt jetzt per `b.art==='jab'` zwischen beiden. Gemessen
+  (Software-Canvas, Zeichenketten verglichen): 6 von 72 Zeichen zwischen bossWind und
+  bossWindJab unterschiedlich (vorher 0, identisch). Alle vier Pruefungen gruen.
+
+- [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Rolle in Level 8 · `d62c683` ·
+  Dritter und letzter Teil (Konter Level 4 `2e60b48`, Block Level 3 `59d5066`). Neuer
+  Schritt in LEKTIONEN['level8.html'] mit `puppe:'rolle'`, gleiche Taste wie der
+  bestehende SPRUNG-Schritt (Space - ausserhalb des Kampfes Sprung, im Kampf Rolle,
+  siehe `rolleGedrueckt` in level8.html). `PUPPE_ARTEN.rolle` stand schon seit dem
+  Block-Punkt, keine weitere Logikaenderung noetig. Gemessen per Simulation
+  (node tools/nachttest.js level8): Lektion jetzt mit 4 statt 3 Schritten, LEER
+  erledigt den neuen Schritt nur waehrend die Puppe ausholt/schlaegt. Alle vier
+  Pruefungen gruen.
+
+- [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Block in Level 3 · `59d5066` ·
+  Zweiter Teil (erster: Konter Level 4, siehe unten), vorher in zwei Punkte geteilt, weil
+  beides zusammen ueber ~15 Minuten ging. `puppe`-Schritt-Typ in nacht/lehre.js verall-
+  gemeinert: `PUPPE_ARTEN` haelt je Art (konter/block/rolle) Taste und Zeitfenster.
+  Level 3s SHIFT-Schritt war bisher optional und zaehlte bei jedem Druck - jetzt
+  `puppe:'block'`, nicht mehr optional, erledigt erst waehrend die Puppe ausholt/schlaegt.
+  tools/nachttest.js generalisiert: prueft fuer 'block' (anders als 'konter') folgerichtig
+  keinen Fruehdruck-Fehlschlag, weil deren Fenster von Anfang an offen ist. Gemessen per
+  Simulation (node tools/nachttest.js level3): Lektion ok, SHIFT erledigt den Schritt nur
+  waehrend ausholen/schlag. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-05 · P2 · Lektionen: Uebungspuppe fuer Level 4, nur Konter · `2e60b48` ·
+  Neuer Schritt-Typ `puppe` in nacht/lehre.js, wie am 4.10. geplant: eine stillstehende
+  `kaempfer()`-Instanz (ausholenDauer 1,2s) holt in `Z.takt()` endlos aus, `Z.taste()`
+  zaehlt ein E nur, wenn `imKonterfenster(s._puppe,KAMPF.konterAnteil)` wahr ist - alles
+  hinter `typeof kaempfer`/`typeof kaempferTakt`-Wachen, da fuenf von acht Leveln
+  kampf.js nicht laden. Level 4s eigene Boss-Phasenlogik (`starteAngriff`/`bossPhase`)
+  blieb unberuehrt. Die generische Lektionspruefung in tools/nachttest.js druckte bisher
+  jede Taste sofort - ergaenzt um einen Fruehdruck-Check (darf den Puppe-Schritt nicht
+  erledigen) und ein Takten bis ins Fenster (muss ihn erledigen). Gemessen per Simulation:
+  Druck vor dem Fenster laesst `LEHRE.erledigt[i]` false, Druck ab zT>=0,792s (Fenster-
+  anfang bei ausholenDauer*(1-konterAnteil)) setzt es true - beides jetzt automatisch in
+  nachttest.js geprueft. Alle vier Pruefungen gruen (auch die fuenf Seiten ohne kampf.js).
+
+- [x] 2026-10-05 · P1 · Club-Decke, vierter Schritt: Banner jetzt auch ueber Klos und
+  Hinterausgang · `2981c28` · Die Rueckwand-Banner-Schleife (Bar/Raucherecke, `3243c27`)
+  lief bisher nur bis x=1065 - kleinster Eingriff: dieselbe Schleife bis x=1400 verlaengert,
+  keine neue Zeichenroutine. Der urspruengliche Messweg (56,7 %/59,4 % bei Kamera auf
+  x=1150/x=1300) war nicht mehr rekonstruierbar (Vergleichslaeufe mit S.x-Settle und
+  direktem S.kamX ergaben andere Werte als die alte Notiz) - eigene, dokumentierte Methode
+  verwendet: S.kamX direkt gesetzt (1150 bzw. 1300), Spieler per S.x=-500 ausserhalb des
+  Bildes (sonst verzerrt der Spieler-Umriss die Zeilenstatistik), modus:'spiel', ein
+  draw()-Aufruf. Gemessen damit: leere Bildzeilen 70,0 % -> 27,2 % (kamX=1150) bzw.
+  86,7 % -> 32,2 % (kamX=1300) - beide jetzt unter 50 %. Alle vier Pruefungen gruen,
+  flagcheck.js unveraendert bei 7 verloren.
+
+- [x] 2026-10-04 · P2 · Level 1: H-Meldung heisst nicht mehr HANDY · `6ce23e2` ·
+  H (index.html, S.stumm) und das Engine-Handy (T, nacht/handy.js) sind zwei echte,
+  unterschiedliche Mechaniken, keine tote Dopplung - H macht das eigene Handy beim
+  Nachrichtenempfang unhoerbar/ohne Laerm (echte Schleich-Konsequenz ueber laerm() in
+  nachricht()), T oeffnet das Engine-Handy mit den HANDY_DREHBUCH-Nachrichten der Nacht.
+  Index.html laedt beide Module gleichzeitig - die Verwechslung war echt. Eine
+  Zusammenlegung haette die Laerm-Konsequenz in die gemeinsame, levelneutrale
+  nacht/handy.js tragen muessen - zu gross fuer einen Punkt. Kleinster sicherer Schritt:
+  nur die Meldung bei H heisst jetzt TON AUS/TON AN statt HANDY STUMM/HANDY LAUT;
+  S.stumm/nachricht()/laerm() unveraendert. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-04 · P2 · Level 1: Titelbild zeigt nur noch vier Grundtasten · `08af616` ·
+  Sieben Tastenzeilen waren eine Bedienungsanleitung zum Lesen. Gemessen (Software-Canvas,
+  Zeilen 95-160): die Ueberlappung aus der Beschreibung gab es nicht mehr (sieben sauber
+  getrennte Zeilen y 100-152) - nur die Zeilenzahl verfehlte das Ziel. Lampe (Q) und Wurf
+  (R) kommen schon als eigene Schritte in der Lektion (nacht/lehre.js, opt:true), H ist
+  nur Audio. Jetzt nur noch A D/SHIFT/W S/E (vier Zeilen, deckungsgleich mit der
+  Touch-Fassung). Gemessen: y 100-128, vier getrennte Zeilen. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-04 · P2 · Club: Sophie reagiert auf Pegel, Lena ist ansprechbar · `b6a6d00` ·
+  Sophie hatte als einzige der drei keine Pegel-Bedingung (Mia/Kira schon) - neue Wahl ab
+  pegel:55, gleiche Schwelle wie Mia, fuehrt zu einer eigenen Abfuhr. Lena stand seit der
+  ersten Fassung neben der Tanzflaeche, aber naechstesZiel() kannte sie nicht - neuer
+  LENA_BAUM (zwei kurze Zweige, keine Werte-Aenderung), als 'lena' verdrahtet. Ein erster
+  Versuch mit tu:{mag:['LENA',6]} haette eine neue, nie gelesene Beziehung angelegt
+  (flagcheck.js 9->10) - wieder entfernt. Gemessen per Headless-Lauf: Sophie bei Pegel 60
+  zeigt die neue Wahl; naechstesZiel() bei Lena liefert {art:'lena'}. Alle vier Pruefungen
+  gruen, flagcheck.js unveraendert bei 7 verloren/9 Beziehungen.
+
+- [x] 2026-10-04 · P2 · Club: eine Abfuhr spricht sich jetzt im Gespraech herum · `0e73e3a` ·
+  Der Ruf-Abschlag wirkte schon, aber keine andere Figur erwaehnte eine Abfuhr. Neuer
+  Knoten startAbfuhr in allen drei Baeumen (MIA/SOPHIE/KIRA_BAUM), eine Zeile dann normal
+  weiter zu start; redeMit() waehlt ihn, sobald eine ANDERE der drei schon einen Korb
+  gegeben hat, nur einmal pro Figur. tools/nachttest.js: startAbfuhr zur Liste der von
+  aussen betretenen Knoten ergaenzt (wie tanzGut/tanzSchlecht). Gemessen per Headless-
+  Baumdurchlauf: Mia abblitzen lassen, danach startet das Gespraech mit Sophie bei
+  startAbfuhr statt bei start. Alle vier Pruefungen gruen, flagcheck.js unveraendert
+  bei 7 verloren.
+
+- [x] 2026-10-04 · P2 · Level 2: Titelbild bringt keine wirkungslose Taste mehr bei · `c04f355` ·
+  SPRUNG/LEER stand als Steuerung auf dem Titelbild, aber Level 2 ist flach (keine Tiefe,
+  keine Hindernisse) - Springen hatte nie eine Spielwirkung. "WASD" als Sammelbegriff hatte
+  dasselbe Problem: nur A/D bewegen, W/S (Tiefe) tun hier nichts. Die Lektion
+  (nacht/lehre.js) lehrte beides schon vorher nicht. Titelbild zeigt jetzt nur noch A D
+  (LAUFEN) und E (REDEN, SUCHEN, TRINKEN); der Sprung selbst bleibt im Code, wird nur nicht
+  mehr beworben. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-04 · P2 · Level 2: mobilKontext() - Knopf zeigt an, was E tut · `794c62b` ·
+  Ohne eigenes mobilKontext() griff der ALLGEMEIN-Fallback aus nacht/mobil.js - der Knopf
+  hiess immer AKTION. Jetzt dieselbe Vorrangregel wie die echte Aktionsaufloesung in
+  update() (Personen vor Moebeln, das Naehere gewinnt), plus Titel/Intro/Cutscene/Ende/
+  Pause/Kampf/Gespraech. Gemessen per Headless-Lauf: REDEN bei Max Ferdi, NEHMEN am
+  Kuehlschrank, TRINKEN an den Getraenken, SPIEGEL am Spiegel, SUCHEN/LEER am Tisch je
+  nach S.durchsucht, WEITER waehrend des Mitnehmen-Gespraechs, KONTER im Kampf - vorher
+  ueberall AKTION. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-04 · P1 · Club-Decke: Banner an der Rueckwand ueber Bar und Raucherecke · `3243c27` ·
+  Dritter Schritt gegen die leere obere Bildhaelfte im Club, nach Lautsprecherreihe und
+  Discokugeln. War zweimal blockiert (siehe „Blockiert"), weil der Zufallslauf diesen
+  Teil des Levels nie erreichte - seit `66ecc5f` (Tastenmix-Punkt oben) geht das. Erster
+  Versuch nur ein halb so hoher Rahmen (y 38-105) - kam auf 48,4 % statt der
+  geforderten hoechstens 48, weil die Wand darueber und darunter leer blieb. Banner
+  jetzt ueber die volle Wandhoehe (y 20 bis TIEFE.hinten). Gemessen (node
+  tools/nachttest.js level5): leere Bildzeilen 46,5 % (gefordert hoechstens 48 %).
+  Alle vier Pruefungen gruen, flagcheck.js unveraendert bei 7 verloren.
+
+- [x] 2026-10-04 · P2 · nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level · `66ecc5f` ·
+  Tastenmix fuer den 60-s-Spiellauf war fast ausgeglichen (2x KeyD gegen 1x KeyA, dazu
+  sieben Tasten ohne Seitwaertswirkung) - im Schnitt nur 10% der Hoechstgeschwindigkeit
+  nach rechts. Erster Versuch (`c1e717e`, KeyD 5x) war in einem Wegwerf-Skript ohne
+  draw()-Aufrufe gemessen und daher falsch: draw() zieht selbst aus Math.random()
+  (Bildzittern), das im Nachttest an denselben Seed gekoppelt ist wie die
+  Tastenauswahl - ohne draw() lief die Zufallsfolge anders als im echten
+  `node tools/nachttest.js`. Mit dem echten Skript blieb derselbe Tastenmix bei
+  x=639,8 nach 59 s haengen. KeyD jetzt 9x statt 2x (17 statt 10 Eintraege), KeyA
+  weiterhin 1x, mit dem echten `node tools/nachttest.js level5` gemessen: x
+  ueberschreitet 900 bei 41,4 s, Lauf endet bei x=1354 (Modi jetzt sogar
+  spiel/mini/cutscene/ende - der Lauf kommt bis zum Ausgang). Macht den
+  Club-Decke-Punkt (siehe „Blockiert" unten) wieder pruefbar. Alle vier Pruefungen
+  weiterhin gruen, „verloren" bei flagcheck.js unveraendert bei 7.
 
 - [x] 2026-10-03 · P2 · Bus: Fahrschein rettet nur noch eine Kontrolle, nicht die Fahrt · `a13acb2` ·
   Zwei zusammenhängende Fehler zugleich erledigt: (1) S.ticket machte für den Rest der
@@ -302,6 +523,24 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
 
+- **2026-10-05 · P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — nicht
+  gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe „Zweifelst du..." in
+  routinen/nacht.md), kein gescheiterter Bauversuch. Phase 2 entwertet die Phase-1-Antwort
+  bereits echt: `naechsteArt()` schaltet den Rammstoss dazu, und `konterVersuch()` lehnt
+  `opt.unblockbar` explizit ab (kampf.js Zeile 267) - Rammen MUSS man ausweichen, Kontern
+  geht nicht mehr. Phase 3 aendert laut `naechsteArt()`/`starteAngriff()` nur noch Zahlen
+  (kuerzere Fenster/Pausen ueber `TUNE.phaseWindupKuerzer`/`phasePauseKuerzer`) - keine neue
+  Antwort. Eine echte vierte Antwort fuer Phase 3 braucht einen neuen Angriff, der Kontern
+  UND Ausweichen beide entwertet (vermutlich: nur per Block zu entschaerfen) - das heisst
+  `unblockbarJetzt` in eine fuer Konter und fuer Block getrennte Fahne aufzuspalten
+  (aktuell eine gemeinsame, siehe level4.html Zeile 364 und kampf.js `opt.unblockbar` in
+  `loeseTreffer`/`konterVersuch`), eine neue Windup-Pose UND eine Balance-Entscheidung
+  (wie stark, wie oft) - das ist Gestaltung, kein kleinster Eingriff, und schlecht
+  geraten haette den ohnehin knappen Kampf (siehe „Finale in Level 8 entschaerfen?" unter
+  Entscheidung noetig) eher kaputt gemacht als verbessert.
+  Fertig wenn weiterhin: Phase 2 und 3 verlangen je eine andere Antwort als Phase 1 -
+  Phase 2 erfuellt das schon (Ramme), Phase 3 noch nicht.
+
 - **2026-10-02 · P1 · Club-Decke: Banner oder Galerie an der Rückwand** — zweimal
   gebaut (zuerst bei y 24, dann tiefer bei y 56, beides x 630-1060 ueber Bar und
   Raucherecke), beide Male per `git restore level5.html` zurueckgerollt, weil die
@@ -316,6 +555,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Lauf - mit dem jetzigen Zufallslauf ist das Ziel so nicht pruefbar. Bleibt
   offen, bis der neue Punkt „Nichtstun-Zufallslauf Level 5 kommt nie ueber
   x=400 hinaus" entschieden ist.
+  **Erledigt am 4.10.** (siehe „Erledigt (Nacht)"): der Zufallslauf erreicht den
+  Bereich seit `66ecc5f`, das Banner steht seit `3243c27`.
 
 - **2026-10-01 · P1 · Obere Bildhälfte füllen** — nicht gebaut, kein Code geändert.
   Grund: das Ziel (Club unter 45 % leere Zeilen, gemessen gerade bei ~78 %) verlangt

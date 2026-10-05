@@ -229,3 +229,173 @@ Danach P2 in Dateireihenfolge: Level-5-Zufallslauf (groß, siehe oben), dann die
 Übungspuppen-Punkte (groß, siehe oben), dann Level 4 Phasen-Entwertung, Jab/Schwung-
 Unterscheidung, Club-Beziehungen (drei Frauen, Sophie/Lena), Level-2-Kleinteile
 (`mobilKontext`, tote Tasten), Analyse-Nachholbedarf (Level 1/6/7/8/Karte/Runner/Engine).
+
+---
+
+## 2026-10-04 — Nacht — Test und Bau
+
+Start-Commit: `fad935a05e970b9a2f88e1a479e45abd58e8ad60`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+61/50/7 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Einziger
+Unterschied zum Vortagsbericht: level4.html zeigte 3 Nichtstun-Ereignisse statt der im
+Vortagsbericht noch genannten 0 - das ist die bereits dokumentierte Folge der
+Leertasten-Korrektur vom 3.10. (`044eef1`), kein neuer Fund.
+
+### Erledigt (8 Punkte, ~50 Minuten)
+
+1. **nachttest.js: Zufallslauf in Level 5 kommt jetzt durch den ganzen Level** · `66ecc5f`
+   (nach einem falsch gemessenen ersten Versuch `c1e717e`, siehe unten) — der Tastenmix im
+   60-s-Spiellauf war fast ausgeglichen (2× KeyD gegen 1× KeyA, dazu sieben Tasten ohne
+   Seitwärtswirkung) und bewegte sich in Level 5 im Schnitt nur mit 10 % der
+   Höchstgeschwindigkeit nach rechts. Der erste Fix (KeyD 5×) wurde mit einem Wegwerf-Skript
+   ohne `draw()`-Aufrufe geprüft und war dadurch unbemerkt falsch: `draw()` zieht selbst aus
+   `Math.random()` (Bildzittern bei hohem Pegel), das im Nachttest an denselben Seed gekoppelt
+   ist wie die Tastenauswahl - ohne `draw()` lief die Zufallsfolge anders als im echten
+   `node tools/nachttest.js`. Mit dem echten Skript nachgemessen: derselbe Tastenmix blieb bei
+   x=639,8 nach 59 s hängen. KeyD jetzt 9× statt 2× (17 statt 10 Einträge) - echter Lauf
+   überschreitet x=900 bei 41,4 s, Ende bei x=1354 (Modi jetzt sogar spiel/mini/cutscene/ende).
+2. **Club-Decke: Banner an der Rückwand über Bar und Raucherecke** · `3243c27` — dritter
+   Schritt gegen die leere obere Bildhälfte im Club, jetzt erreichbar dank Punkt 1. Ein erster
+   Versuch mit einem nur halb so hohen Rahmen (y 38-105) kam auf 48,4 % statt der geforderten
+   höchstens 48 - Banner jetzt über die volle Wandhöhe (y 20 bis TIEFE.hinten). Gemessen:
+   46,5 % (vorher, direkt nach Punkt 1, ohne Banner: 53 %).
+3. **Level 2: `mobilKontext()`** · `794c62b` — ohne eigene Funktion griff immer der
+   ALLGEMEIN-Fallback (Knopf hieß überall AKTION). Jetzt REDEN/NEHMEN/TRINKEN/SPIEGEL/
+   SUCHEN/LEER je nach Nähe (gleiche Vorrangregel wie die echte Aktionsauflösung), dazu
+   WEITER/KONTER/NOCHMAL je nach Modus.
+4. **Level 2: Titelbild bringt keine wirkungslose Taste mehr bei** · `c04f355` — Sprung
+   (LEER) stand als Steuerung auf dem Titelbild, hat aber in der flachen Wohnung ohne
+   Hindernisse nie eine Spielwirkung gehabt; „WASD" hatte dasselbe Problem (nur A/D bewegen).
+   Titelbild zeigt jetzt nur noch A D und E, der Sprung bleibt im Code.
+5. **Club: eine Abfuhr spricht sich jetzt im Gespräch herum** · `0e73e3a` — der
+   Ruf-Abschlag wirkte schon, aber keine andere Figur erwähnte eine Abfuhr. Neuer Knoten
+   `startAbfuhr` in allen drei Bäumen, ausgelöst sobald eine andere der drei schon einen
+   Korb gegeben hat (nur einmal pro Figur). `tools/nachttest.js` um den neuen, von außen
+   betretenen Knoten ergänzt (wie `tanzGut`/`tanzSchlecht`).
+6. **Club: Sophie reagiert auf Pegel, Lena ist ansprechbar** · `b6a6d00` — Sophie hatte als
+   einzige der drei keine Pegel-Bedingung; neue Wahl ab `pegel:55` wie bei Mia. Lena stand
+   seit der ersten Fassung im Club, aber `naechstesZiel()` kannte sie nicht - neuer
+   `LENA_BAUM`, als eigenes Ziel verdrahtet. Ein erster Versuch mit einer Zuneigungs-Wirkung
+   auf der ersten Antwort hätte eine neue, nie gelesene Beziehung angelegt (flagcheck.js
+   9→10) - wieder entfernt, das Gespräch braucht keine Wirkung, um zu zählen.
+7. **Level 1: Titelbild zeigt nur noch vier Grundtasten** · `08af616` — sieben Tastenzeilen
+   waren eine Bedienungsanleitung zum Lesen; eine Überlappung gab es laut Messung
+   (Software-Canvas) keine mehr, nur die Zeilenzahl verfehlte das Ziel. Lampe (Q) und Wurf
+   (R) kommen schon als eigene Schritte in der Lektion, H ist nur Audio - jetzt nur noch
+   A D/SHIFT/W S/E, deckungsgleich mit der Touch-Fassung.
+8. **Level 1: H-Meldung heißt nicht mehr HANDY** · `6ce23e2` — H (eigenes Handy stumm,
+   mit echter Schleich-Konsequenz über `laerm()`) und das Engine-Handy (T, andere
+   Oberfläche) sind zwei echte Mechaniken, keine tote Dopplung - eine volle Zusammenlegung
+   hätte die Laerm-Konsequenz in die levelneutrale `nacht/handy.js` tragen müssen, zu groß
+   für einen Punkt. Kleinster sicherer Schritt: die Meldung bei H heißt jetzt TON AUS/TON AN
+   statt HANDY STUMM/HANDY LAUT.
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js erneut grün;
+`verloren` in flagcheck.js blieb durchgehend bei 7, Beziehungen bei 9. `PLAYTEST.md`
+entsprechend nachgezogen (durchgestrichen bzw. mit Datum annotiert).
+
+### Übersprungen oder nur geplant, nicht gebaut
+
+- **Lektionen: Übungspuppe für Level 4** (P2) — nochmal angesehen und konkreter geplant
+  (Code-Stellen, genauer Bauplan in `NACHT-TODO.md`), aber nicht begonnen: `nacht/lehre.js`
+  ist gemeinsam für alle acht Level, fünf davon ohne `nacht/kampf.js` - jeder Zugriff auf
+  `kaempfer()` muss defensiv geschützt sein, und Level 4s eigene Angriffs-Logik
+  (`starteAngriff`) darf die gemeinsame Datei nicht aufrufen. Kein Rollback nötig, nichts
+  an Code geändert.
+- **Level 4: jede Phase soll die vorige Antwort entwerten** und **Level 4: Jab/Schwung
+  unterscheidbar machen** (beide P2) — Ersteres eine Spielgefühl-Frage, Letzteres echte
+  Pixel-Art-Arbeit (neue Sprite-Posen), die diese Sitzung ohne Browser nicht ansehen kann,
+  um sie zu beurteilen - siehe „Zweifelst du..." in `routinen/nacht.md`. Beide unverändert
+  in „Offen".
+- **Analyse nachholen** (P2) — offene Recherche-/Analysearbeit ohne einzelnen Code-Fix,
+  für einen Baupunkt zu groß und zu unscharf; unverändert in „Offen".
+
+### Neuer Fund
+
+**Club-Decke, vierter Schritt: Klos und Hinterausgang oben noch leer** (P1) — beim Messen
+von Punkt 2 festgestellt: Kamera direkt auf x=1150 bzw. x=1300 gestellt, 56,7 % bzw. 59,4 %
+leere Bildzeilen (gegen 46,5 % bei Bar/Raucherecke). In `NACHT-TODO.md` unter „Offen" → P1
+eingetragen.
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P1: **Club-Decke, vierter Schritt (Klos/Hinterausgang)**,
+heute gefunden. Danach P2 in Dateireihenfolge: die beiden Übungspuppen-Punkte (groß, heute
+genauer geplant), Level-4-Phasen-Entwertung, Jab/Schwung-Unterscheidung, Analyse-Nachholbedarf
+(Level 1/6/7/8/Karte/Runner/Engine/Dramaturgie).
+
+---
+
+## 2026-10-05 — Nacht — Test und Bau
+
+Start-Commit: `6453365`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+61/50/7 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Alle
+Nichtstun-Zahlen und flagcheck.js-Werte stimmten exakt mit dem Vortagsbericht überein,
+keine neuen Funde beim Testen selbst.
+
+### Erledigt (8 Punkte, ~54 Minuten)
+
+1. **Club-Decke, vierter Schritt: Banner jetzt auch über Klos und Hinterausgang** ·
+   `2981c28` — die Rückwand-Banner-Schleife (Bar/Raucherecke) lief bisher nur bis x=1065;
+   kleinster Eingriff: dieselbe Schleife bis x=1400 verlängert. Der ursprüngliche Messweg
+   (56,7 %/59,4 % bei Kamera auf x=1150/x=1300) war nicht mehr rekonstruierbar — eigene,
+   dokumentierte Methode (direkter S.kamX, Spieler außerhalb des Bildes): leere Bildzeilen
+   70,0 % → 27,2 % (kamX=1150) bzw. 86,7 % → 32,2 % (kamX=1300), beide unter 50 %.
+2. **Lektionen: Übungspuppe für Level 4, nur Konter** · `2e60b48` — neuer Schritt-Typ
+   `puppe` in nacht/lehre.js: eine stillstehende `kaempfer()`-Instanz holt endlos aus, E
+   zählt nur im Konterfenster (`imKonterfenster()`), sonst bleibt der Schritt offen. Hinter
+   `typeof kaempfer`-Wachen, da fünf von acht Leveln kampf.js nicht laden. nachttest.js um
+   einen Fruehdruck-Check (darf nicht erledigen) und ein Takten bis ins Fenster ergänzt.
+3. **Lektionen: Übungspuppe für Block in Level 3** · `59d5066` — `puppe`-Schritt-Typ
+   verallgemeinert (`PUPPE_ARTEN` je Art Taste+Zeitfenster). Level 3s SHIFT-Schritt war
+   optional und zählte bei jedem Druck — jetzt `puppe:'block'`, erledigt erst während die
+   Puppe ausholt/schlägt.
+4. **Lektionen: Übungspuppe für Rolle in Level 8** · `d62c683` — dritter Teil, nutzt
+   `PUPPE_ARTEN.rolle` (stand schon seit Punkt 3), nur der neue Lektionsschritt war nötig.
+5. **Level 4: Jab und Schwung im Ausholen unterscheidbar** · `926e612` — neue
+   SPR.bossWindJab (enger, mit roter Faust statt blossem Torso) statt derselben Sprite für
+   beide Angriffsarten. Gemessen: 6 von 72 Zeichen zwischen bossWind und bossWindJab
+   unterschiedlich (vorher 0, identisch).
+6. **Analyse nachholen: Level 1** · `9508e31` — erster von acht Teilen des aufgeteilten
+   Analyse-Punkts. Ein Analyse-Agent hat index.html und die elf geladenen Engine-Dateien
+   gelesen; sechs belegte Funde (toter Tiefen-Code, nie gelesene HAUSMEISTER-Zuneigung,
+   zwei ungenutzte TUNE-Werte, wirkungsloser Sprung, hartcodierte Wurf-Physik, ein
+   wirkungsloser Ausschluss) als neuer Abschnitt „Level 1" in PLAYTEST.md. Ein siebter,
+   projektweiter Fund als eigener Punkt unter „Offen" (siehe Punkt 7).
+7. **Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken jetzt** · `727f73e` — betraf alle acht
+   Level: S.blitz/S.ruettel (in Level 5 zusätzlich das Stroboskop S.flacker) wurden roh
+   gezeichnet statt durch FX.blitz()/FX.wackel() geschickt. Gemessen: FX.blitz(1) 1,000 ohne
+   Flackerschutz, 0,120 mit; FX.wackel(6) 6,00 ohne, 3,00 mit.
+8. **Analyse nachholen: Level 6** · `7e60128` — zweiter Teil. Sechs belegte Funde
+   (dieselbe tote Tiefen-Logik wie Level 1, ein zu schnell fallender Pegel, ein
+   wirkungsloser Mobil-Sprungknopf, eine hartcodierte Pegelzahl neben einem echten
+   TUNE-Wert, zwei Trigger für denselben Hinweistext, ein nie gelesenes Datenfeld) als
+   neuer Abschnitt „Level 6" in PLAYTEST.md; alle sechs einzeln unter „Offen" eingetragen
+   (der Tiefe-Fund zusammengelegt mit dem aus Level 1).
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js erneut grün;
+`verloren` in flagcheck.js blieb durchgehend bei 7. `kampf.test.js` meldete nach Punkt 7
+einmal 21/22 (ein Lauf) — fünf direkt folgende Wiederholungen liefen 22/22; die Datei testet
+nur nacht/kampf.js in Isolation und lädt keine der an Punkt 7 geänderten Leveldateien, also
+kein Zusammenhang mit der Änderung. `PLAYTEST.md` entsprechend nachgezogen.
+
+### Blockiert (bewusst nicht gebaut, kein Code geändert)
+
+- **Level 4: jede Phase soll die vorige Antwort entwerten** (P2) — Zweifel am Spielgefühl,
+  kein gescheiterter Bauversuch. Phase 2 entwertet die Phase-1-Antwort bereits echt (Ramme,
+  unblockbar, Konter explizit abgelehnt in `konterVersuch()`). Phase 3 bräuchte einen neuen,
+  nur-block-baren Angriff — das heißt `unblockbarJetzt` in getrennte Fahnen für Konter/Block
+  aufzuspalten, eine neue Windup-Pose und eine Balance-Entscheidung, die den ohnehin knappen
+  Kampf eher verschlechtert hätte als verbessert. Mit der Frage unter „Blockiert" vermerkt.
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Level 1 und 6: toter
+Tiefen-Code** (zusammengelegt), **Level 6: Pegel fällt zu schnell**, **Level 6:
+Mobil-Sprungknopf ohne Wirkung**, dann die restlichen sechs Analyse-Teile (Level 7, 8,
+Karte, Runner, Engine, Dramaturgie). Danach P3, angeführt von drei neuen Level-6-Kleinfunden
+und der bestehenden Liste (Lektion wiederholen, `level5_baeume.js` löschen, Bahn-oder-Bus,
+`TODO.md` veraltet).

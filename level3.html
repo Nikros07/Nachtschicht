@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051654">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051823">
 </head>
 <body>
 <div id="cab">
@@ -37,25 +37,25 @@
   <div id="base"><span>LEVEL 3 - DER NACHTBUS</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051654"></script>
-<script src="nacht/geraet.js?v=202610051654"></script>
-<script src="nacht/bild.js?v=202610051654"></script>
-<script src="nacht/hud.js?v=202610051654"></script>
-<script src="nacht/ton.js?v=202610051654"></script>
-<script src="nacht/komfort.js?v=202610051654"></script>
-<script src="nacht/stand.js?v=202610051654"></script>
-<script src="nacht/welt.js?v=202610051654"></script>
-<script src="nacht/nacht.js?v=202610051654"></script>
-<script src="nacht/dialog.js?v=202610051654"></script>
-<script src="nacht/kampf.js?v=202610051654"></script>
-<script src="nacht/eingabe.js?v=202610051654"></script>
-<script src="nacht/lehre.js?v=202610051654"></script>
-<script src="nacht/mobil.js?v=202610051654"></script>
-<script src="nacht/handy.js?v=202610051654"></script>
-<script src="nacht/texte.js?v=202610051654"></script>
-<script src="nacht/erzaehl.js?v=202610051654"></script>
-<script src="nacht/epilog.js?v=202610051654"></script>
-<script src="nacht/menue.js?v=202610051654"></script>
+<script src="nacht/kern.js?v=202610051823"></script>
+<script src="nacht/geraet.js?v=202610051823"></script>
+<script src="nacht/bild.js?v=202610051823"></script>
+<script src="nacht/hud.js?v=202610051823"></script>
+<script src="nacht/ton.js?v=202610051823"></script>
+<script src="nacht/komfort.js?v=202610051823"></script>
+<script src="nacht/stand.js?v=202610051823"></script>
+<script src="nacht/welt.js?v=202610051823"></script>
+<script src="nacht/nacht.js?v=202610051823"></script>
+<script src="nacht/dialog.js?v=202610051823"></script>
+<script src="nacht/kampf.js?v=202610051823"></script>
+<script src="nacht/eingabe.js?v=202610051823"></script>
+<script src="nacht/lehre.js?v=202610051823"></script>
+<script src="nacht/mobil.js?v=202610051823"></script>
+<script src="nacht/handy.js?v=202610051823"></script>
+<script src="nacht/texte.js?v=202610051823"></script>
+<script src="nacht/erzaehl.js?v=202610051823"></script>
+<script src="nacht/epilog.js?v=202610051823"></script>
+<script src="nacht/menue.js?v=202610051823"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -278,6 +278,7 @@ const SFX={
   sprung:  ()=>piep(430,.06,'square',.032),
   landen:  ()=>piep(160,.05,'triangle',.028),
   stolper: ()=>{ rauschen(.12,.05); piep(140,.08,'sawtooth',.03); },
+  fund:    ()=>{ piep(880,.08); setTimeout(()=>piep(1320,.1),80); setTimeout(()=>piep(1760,.15),170); },   // Polaroid
   verstecken:()=>piep(220,.05,'sine',.03),
   auftauchen:()=>piep(340,.05,'sine',.03),
   warn:    ()=>piep(880,.07,'square',.05),

@@ -1,7 +1,7 @@
 # NACHT-BERICHT
 
-Datum: 2026-10-03
-Start-Commit: 30d6ae97b3fa047b02921abd4a3f3673d281e5e5
+Datum: 2026-10-05
+Start-Commit: 6453365
 
 ## Die vier Prüfungen
 
@@ -17,13 +17,13 @@ reparieren" entfällt.
 
 ## Nichtstun-Zahlen je Level (300 s)
 
-| Level | Ereignisse | Letztes bei | Vergleich zum Vortag (2026-10-02) |
+| Level | Ereignisse | Letztes bei | Vergleich mit dem Vortag (2026-10-04) |
 |:--|--:|--:|:--|
 | index.html (Level 1) | 1 | 165 s | stimmt überein |
 | level2.html | 0 | 0 s | stimmt überein |
 | level3.html (Bus) | 1 | 34 s | stimmt überein |
-| level4.html | 0 | 0 s | Referenz routinen/nacht.md: null — stimmt überein |
-| level5.html (Club) | 16 | 295 s | **anders** (Vortag-Bericht: 4, 107 s) — Bericht vom 2.10. wurde vor der Nachtbau-Phase geschrieben; die dort gebaute „Club-Uhr: Ambient-Ereignisse" (Commit `afea7a1`) steckt jetzt im getesteten Stand. Kein neuer Fund, nur ein späterer Messzeitpunkt. |
+| level4.html | 3 | 9 s | stimmt überein |
+| level5.html (Club) | 16 | 295 s | stimmt überein |
 | level6.html | 12 | 291 s | stimmt überein |
 | level7.html | 0 | 0 s | stimmt überein |
 | level8.html | 6 | 59 s | stimmt überein |
@@ -31,11 +31,11 @@ reparieren" entfällt.
 
 ## Funde
 
-Keine neuen, belegten Funde über das hinaus, was bereits in `NACHT-TODO.md` unter
-„Offen" steht. `flagcheck.js` bestätigt die dort bereits erfassten 7 verlorenen Flags
+Keine neuen, belegten Funde. `flagcheck.js` bestätigt dieselben 7 verlorenen Flags
 (`busDurchDieCrew`, `endeHeim`, `fightVerloren`, `friedlich`, `geantwortet_kira`,
-`geantwortet_mia`, `geantwortet_sophie`) und die 5 nie gelesenen Beziehungen
-(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — unverändert zum Vortag.
+`geantwortet_mia`, `geantwortet_sophie`) und dieselben 5 nie gelesenen Beziehungen
+(HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI) — unverändert zum Vortag. Alle in
+`NACHT-TODO.md` bereits erfasst.
 
 ## Nicht geprüft
 
