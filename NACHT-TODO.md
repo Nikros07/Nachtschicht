@@ -32,16 +32,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
-- [ ] **P1 · Club-Decke, vierter Schritt: Klos und Hinterausgang oben noch leer** — Eingang/
-  Tanzflaeche (Discokugeln, Lautsprecherreihe) und jetzt Bar/Raucherecke (Banner, `3243c27`)
-  haben eine Decke/Wanddeko. Klos (1060-1200) und Hinterausgang (1200-1400) haben nur
-  Boden-Deko (Waschbecken, Kisten/Lieferant) - die Wand darueber ist leer. Gefunden beim
-  Messen des Club-Decke-Punkts: Kamera direkt auf x=1150 bzw. x=1300 gestellt (Software-
-  Canvas, `modus:'spiel'`), 56,7 % bzw. 59,4 % leere Bildzeilen - deutlich mehr als die
-  46,5 % bei Bar/Raucherecke.
-  Wo: level5.html (zeichneClub, ORTE Klos/Hinterausgang) · Fertig wenn: leere Bildzeilen bei
-  Kamera auf x=1150 und auf x=1300 (gleiche Methode wie oben) je hoechstens 50 %.
-
 ### P2
 
 - [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — am 4.10. nochmal angesehen und
@@ -119,6 +109,18 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-05 · P1 · Club-Decke, vierter Schritt: Banner jetzt auch ueber Klos und
+  Hinterausgang · `2981c28` · Die Rueckwand-Banner-Schleife (Bar/Raucherecke, `3243c27`)
+  lief bisher nur bis x=1065 - kleinster Eingriff: dieselbe Schleife bis x=1400 verlaengert,
+  keine neue Zeichenroutine. Der urspruengliche Messweg (56,7 %/59,4 % bei Kamera auf
+  x=1150/x=1300) war nicht mehr rekonstruierbar (Vergleichslaeufe mit S.x-Settle und
+  direktem S.kamX ergaben andere Werte als die alte Notiz) - eigene, dokumentierte Methode
+  verwendet: S.kamX direkt gesetzt (1150 bzw. 1300), Spieler per S.x=-500 ausserhalb des
+  Bildes (sonst verzerrt der Spieler-Umriss die Zeilenstatistik), modus:'spiel', ein
+  draw()-Aufruf. Gemessen damit: leere Bildzeilen 70,0 % -> 27,2 % (kamX=1150) bzw.
+  86,7 % -> 32,2 % (kamX=1300) - beide jetzt unter 50 %. Alle vier Pruefungen gruen,
+  flagcheck.js unveraendert bei 7 verloren.
 
 - [x] 2026-10-04 · P2 · Level 1: H-Meldung heisst nicht mehr HANDY · `6ce23e2` ·
   H (index.html, S.stumm) und das Engine-Handy (T, nacht/handy.js) sind zwei echte,
