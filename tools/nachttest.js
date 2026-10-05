@@ -425,6 +425,8 @@ for(const seite of SEITEN){
     if(EQ('typeof LEKTIONEN!=="undefined"&&!!LEKTIONEN["'+seite+'"]')){
       Q.taste('Space',true); Q.taste('Space',false);
       EQ('S.modus="intro"');
+      /* Die Kapitelkarte (nacht/erzaehl.js) haelt die Lektion bewusst an - hier beenden. */
+      EQ('typeof KAPITEL!=="undefined"&&(KAPITEL.aktiv=false)');
       if(!EQ('LEHRE.pruefe()')) meld(seite,'Lektion startet nicht im Intro');
       for(let i=0;i<3;i++){ EQ('LEHRE.takt(1/60)'); EQ('LEHRE.zeichne()'); }
       const gr=EQ('LEKTIONEN["'+seite+'"].schritte.map(s=>s.gr.map(g=>g[0]))');

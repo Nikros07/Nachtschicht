@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051115">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051122">
 </head>
 <body>
 <div id="cab">
@@ -37,22 +37,22 @@
   <div id="base"><span>DIE STADT - ZWISCHEN DEN LEVELN</span><span>M TON &nbsp; T HANDY &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051115"></script>
-<script src="nacht/geraet.js?v=202610051115"></script>
-<script src="nacht/bild.js?v=202610051115"></script>
-<script src="nacht/hud.js?v=202610051115"></script>
-<script src="nacht/ton.js?v=202610051115"></script>
-<script src="nacht/komfort.js?v=202610051115"></script>
-<script src="nacht/stand.js?v=202610051115"></script>
-<script src="nacht/nacht.js?v=202610051115"></script>
-<script src="nacht/dialog.js?v=202610051115"></script>
-<script src="nacht/eingabe.js?v=202610051115"></script>
-<script src="nacht/mobil.js?v=202610051115"></script>
-<script src="nacht/handy.js?v=202610051115"></script>
-<script src="nacht/texte.js?v=202610051115"></script>
-<script src="nacht/erzaehl.js?v=202610051115"></script>
-<script src="nacht/epilog.js?v=202610051115"></script>
-<script src="nacht/menue.js?v=202610051115"></script>
+<script src="nacht/kern.js?v=202610051122"></script>
+<script src="nacht/geraet.js?v=202610051122"></script>
+<script src="nacht/bild.js?v=202610051122"></script>
+<script src="nacht/hud.js?v=202610051122"></script>
+<script src="nacht/ton.js?v=202610051122"></script>
+<script src="nacht/komfort.js?v=202610051122"></script>
+<script src="nacht/stand.js?v=202610051122"></script>
+<script src="nacht/nacht.js?v=202610051122"></script>
+<script src="nacht/dialog.js?v=202610051122"></script>
+<script src="nacht/eingabe.js?v=202610051122"></script>
+<script src="nacht/mobil.js?v=202610051122"></script>
+<script src="nacht/handy.js?v=202610051122"></script>
+<script src="nacht/texte.js?v=202610051122"></script>
+<script src="nacht/erzaehl.js?v=202610051122"></script>
+<script src="nacht/epilog.js?v=202610051122"></script>
+<script src="nacht/menue.js?v=202610051122"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - DIE STADTKARTE
@@ -77,13 +77,13 @@ const P = {
 /* Die Stationen der Nacht - Lage auf der Karte als Anteil von Breite und
    Hoehe, damit sie auf breiten Handys mitwachsen. */
 const STATIONEN=[
-  { n:1, name:'DIE SCHULE',   zeit:'17:30', x:0.08, y:0.72, seite:'index.html' },
-  { n:2, name:'BEI MORITZ',   zeit:'21:40', x:0.20, y:0.40, seite:'level2.html' },
-  { n:3, name:'NACHTBUS',     zeit:'22:15', x:0.34, y:0.66, seite:'level3.html' },
-  { n:4, name:'DIE SCHLANGE', zeit:'22:25', x:0.47, y:0.34, seite:'level4.html' },
-  { n:5, name:'CLUB',         zeit:'22:30', x:0.58, y:0.58, seite:'level5.html' },
+  { n:1, name:'DIE SCHULE',   zeit:'16:40', x:0.08, y:0.72, seite:'index.html' },
+  { n:2, name:'BEI MORITZ',   zeit:'21:10', x:0.20, y:0.40, seite:'level2.html' },
+  { n:3, name:'NACHTBUS',     zeit:'22:00', x:0.34, y:0.66, seite:'level3.html' },
+  { n:4, name:'DIE SCHLANGE', zeit:'22:40', x:0.47, y:0.34, seite:'level4.html' },
+  { n:5, name:'CLUB',         zeit:'22:50', x:0.58, y:0.58, seite:'level5.html' },
   { n:6, name:'AFTERHOUR',    zeit:'02:00', x:0.71, y:0.30, seite:'level6.html' },
-  { n:7, name:'SPAETI',       zeit:'03:30', x:0.82, y:0.62, seite:'level7.html' },
+  { n:7, name:'SPAETI',       zeit:'03:15', x:0.82, y:0.62, seite:'level7.html' },
   { n:8, name:'HEIMWEG',      zeit:'04:10', x:0.93, y:0.80, seite:'level8.html' },
 ];
 
@@ -94,12 +94,13 @@ const UMWEGE={
   1:{ name:'DOENERLADEN', baum:{
     start:{ wer:'ALI', text:'Einmal alles?',
       wahl:[
-        { txt:'Einmal alles. 4 EURO',  wenn:{geld:4}, tu:{geld:-4, kondition:20}, geh:'satt' },
-        { txt:'Nur ne Cola. 2 EURO',   wenn:{geld:2}, tu:{geld:-2, mut:1},        geh:'cola' },
+        { txt:'Einmal alles. 4 EURO',  wenn:{geld:4}, tu:{geld:-4, kondition:20, flag:'aliNummer'}, geh:'satt' },
+        { txt:'Nur ne Cola. 2 EURO',   wenn:{geld:2}, tu:{geld:-2, mut:1, flag:'aliNummer'}, geh:'cola' },
         { txt:'Nee, danke.',           geh:'@ende' },
       ], zeit:0 },
-    satt:{ wer:'ALI', text:'Grundlage. Deine Mutter waere stolz.', geh:'@ende' },
-    cola:{ wer:'ALI', text:'Cola. Wie ein Kind. Na gut.', geh:'@ende' },
+    satt:{ wer:'ALI', text:'Grundlage. Deine Mutter waere stolz.', geh:'tuete' },
+    cola:{ wer:'ALI', text:'Cola. Wie ein Kind. Na gut.', geh:'tuete' },
+    tuete:{ wer:'ALI', text:'Name und Nummer? Ich ruf, wenn er fertig ist.', geh:'@ende' },
   }},
   2:{ name:'GELDAUTOMAT', baum:{
     start:{ wer:'GELDAUTOMAT', text:'Deine Karte. Das Konto fuer die Klassenfahrt. Guthaben: 140 Euro.',

@@ -36,7 +36,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610051115">
+<link rel="stylesheet" href="nacht/stil.css?v=202610051122">
 <style>:root{ --raum:#140f26; --glanz:rgba(80,200,255,.08); }</style>
 </head>
 <body>
@@ -60,24 +60,24 @@
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610051115"></script>
-<script src="nacht/geraet.js?v=202610051115"></script>
-<script src="nacht/bild.js?v=202610051115"></script>
-<script src="nacht/hud.js?v=202610051115"></script>
-<script src="nacht/ton.js?v=202610051115"></script>
-<script src="nacht/komfort.js?v=202610051115"></script>
-<script src="nacht/stand.js?v=202610051115"></script>
-<script src="nacht/welt.js?v=202610051115"></script>
-<script src="nacht/nacht.js?v=202610051115"></script>
-<script src="nacht/dialog.js?v=202610051115"></script>
-<script src="nacht/eingabe.js?v=202610051115"></script>
-<script src="nacht/lehre.js?v=202610051115"></script>
-<script src="nacht/mobil.js?v=202610051115"></script>
-<script src="nacht/handy.js?v=202610051115"></script>
-<script src="nacht/texte.js?v=202610051115"></script>
-<script src="nacht/erzaehl.js?v=202610051115"></script>
-<script src="nacht/epilog.js?v=202610051115"></script>
-<script src="nacht/menue.js?v=202610051115"></script>
+<script src="nacht/kern.js?v=202610051122"></script>
+<script src="nacht/geraet.js?v=202610051122"></script>
+<script src="nacht/bild.js?v=202610051122"></script>
+<script src="nacht/hud.js?v=202610051122"></script>
+<script src="nacht/ton.js?v=202610051122"></script>
+<script src="nacht/komfort.js?v=202610051122"></script>
+<script src="nacht/stand.js?v=202610051122"></script>
+<script src="nacht/welt.js?v=202610051122"></script>
+<script src="nacht/nacht.js?v=202610051122"></script>
+<script src="nacht/dialog.js?v=202610051122"></script>
+<script src="nacht/eingabe.js?v=202610051122"></script>
+<script src="nacht/lehre.js?v=202610051122"></script>
+<script src="nacht/mobil.js?v=202610051122"></script>
+<script src="nacht/handy.js?v=202610051122"></script>
+<script src="nacht/texte.js?v=202610051122"></script>
+<script src="nacht/erzaehl.js?v=202610051122"></script>
+<script src="nacht/epilog.js?v=202610051122"></script>
+<script src="nacht/menue.js?v=202610051122"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -379,10 +379,13 @@ const NACHRICHTEN = {
 /* Notizen, die man beim Durchsuchen findet - reine Welt, kein Nutzen. */
 const NOTIZEN = [
   'ZETTEL: NACHSITZEN BIS 16:30 - UNTERSCHRIFT FEHLT',
-  'ZETTEL: KLASSENFAHRT ABGESAGT. SCHON WIEDER.',
+  'ZETTEL: KLASSENFAHRT ABGESAGT. SCHON WIEDER. - LEA',
   'ZETTEL: HAUSMEISTER SUCHT SEINEN ZWEITSCHLUESSEL',
   'ZETTEL: WER DAS LIEST SCHULDET MIR ZEHN EURO',
   'ZETTEL: LETZTER SCHULTAG. ENDLICH.',
+  'ZETTEL: SPIND LEEREN BIS 17:00. DANN IST ZU.',
+  'ZETTEL: ABSCHLUSSZEITUNG. SEITEN BIS FREITAG. LEA',
+  'ZETTEL: WER HAT MEINE KAMERA? - LEA',
 ];
 
 /* Freigeschaltete Jungs bleiben ueber Runden hinweg erhalten. */
@@ -408,6 +411,8 @@ const ROUTINEN = [
 ];
 /* Max Ferdis Spind - verschlossen, drei Ziffern. */
 const CODESPIND = { e:2, x:300 };
+/* Polaroid moment1: liegt neben Ferdis Spind, erst wenn er offen ist. */
+const POLAROID = { e:2, x:332 };
 
 const LEHRER_START = [
   { e:0, von:180, bis:600, x:400, v:1 },
@@ -420,6 +425,7 @@ const LEHRER_START = [
    ========================================================================== */
 let S={};
 function neuesSpiel(){
+  PLAUSCH.lade([]);
   S={
     modus:'titel',            // titel | spiel | raum | gefangen | cutscene | ende | pause
     t:0, zeit:0,
@@ -519,6 +525,7 @@ let sprungPuffer=[], aktionPuffer=[];
 
 function druckSprung(){
   ensureAudio();
+  if(S.modus!=='titel'&&erzaehlTaste()) return;
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
@@ -528,6 +535,7 @@ function druckSprung(){
   sprungPuffer.push(S.t); sprungAn=true;
 }
 function druckAktion(){
+  if(S.modus!=='titel'&&erzaehlTaste()) return;
   /* Laeuft ein Gespraech, ist E die Bestaetigung - sonst nichts. */
   if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ ensureAudio(); gespraechBestaetigen(); return; }
   ensureAudio();
@@ -553,6 +561,7 @@ function druckAktion(){
    sie sich hier an - und nur dort, wo sie auch etwas bewirken.
    ========================================================================== */
 function mobilKontext(){
+  const ek=erzaehlKontext(); if(ek) return ek;
   if(S.modus==='titel')    return {aktion:'START',  zwei:null,
     extras:[{txt:'LEICHTER',code:'ArrowLeft'},{txt:'SCHWERER',code:'ArrowRight'}]};
   if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
@@ -576,6 +585,7 @@ function mobilKontext(){
   let was=null;
   if(S.codeOffen)            return {aktion:'PROBIEREN', zwei:null};
   if(amCodespind())          was=flag('ferdiSpindOffen')?'LEER':'CODE';
+  else if(amPolaroid())      was='FOTO';
   else if(amAusgang(S.x))    was=S.hatSchluessel?'RAUS':'ZU';
   else if(hm)                 was=(hm.suchtX!=null||hm.abgelenkt>0)?'KLAUEN':'REDEN';
   else if(raumBei(S.etage,S.x)>=0)  was=zuWeitVorne?'NACH HINTEN':'TUER';
@@ -609,7 +619,8 @@ function introText(i){
    zurueck: ein zweiter Durchlauf brachte Crew, Geld, Flags und Beziehungen
    aus dem ersten mit - und damit waeren die Enden nicht mehr erreichbar
    gewesen, die von einer frischen Nacht ausgehen. */
-function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
+function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04);
+  kapitelZeigen(1); }
 function starteLevel(){ S.modus='spiel';
   setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('LEISE GEHEN HALBIERT IHRE SICHTWEITE',4); },4200);
   zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
@@ -688,6 +699,8 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyH'){ e.preventDefault(); S.stumm=!S.stumm;
                        meldung(S.stumm?'HANDY STUMM':'HANDY LAUT',1.2); piep(S.stumm?300:600,.06); }
   if(e.code==='KeyR'){ e.preventDefault(); wirf(); }
+  if(S.modus==='titel'&&e.code==='KeyG'&&typeof MENUE!=='undefined'&&MENUE.galerie){ e.preventDefault(); MENUE.galerie(); }
+  if(S.modus==='titel'&&e.code==='KeyU'){ e.preventDefault(); location.href='ueber.html'; }
   if(S.modus==='titel'&&['ArrowLeft','KeyA'].includes(e.code)){ wechsleSchwierigkeit(-1); piep(440,.05); }
   if(S.modus==='titel'&&['ArrowRight','KeyD'].includes(e.code)){ wechsleSchwierigkeit(1); piep(660,.05); }
 });
@@ -699,6 +712,13 @@ addEventListener('keyup',e=>{ keys[e.code]=false;
   if(['KeyE','Enter'].includes(e.code)) aktionGehalten=false;
   if(e.code==='Space') sprungAn=false;
 });
+addEventListener('pointerdown',e=>{
+  if(!S||S.modus!=='titel') return;
+  const cv=ctx.canvas, b=cv.getBoundingClientRect();
+  if(!b.width) return;
+  const px=(e.clientX-b.left)/b.width*W, py=(e.clientY-b.top)/b.height*H;
+  if(px>W-56&&py>H-16){ e.preventDefault(); e.stopPropagation(); location.href='ueber.html'; }
+},true);
 addEventListener('blur',()=>{ linksAn=rechtsAn=sprungAn=hochAn=touchRunterAn=schleichAn=aktionGehalten=false; });
 
 
@@ -801,6 +821,7 @@ const zielKurz=()=>{
    AKTUALISIEREN
    ========================================================================== */
 function update(dt){
+  if(erzaehlTakt(dt)) return;
   S.t+=dt; musik();
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   S.blitz=Math.max(0,S.blitz-dt*2.2);
@@ -964,6 +985,7 @@ function update(dt){
     const ri=raumBei(S.etage,S.x), si=spindBei(S.etage,S.x);
     const hm=S.lehrer.find(L=>L.hausmeister&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<14);
     if(amCodespind()){ codeOeffnen(); }
+    else if(amPolaroid()){ MOMENT.fund(1); }
     else if(amAusgang(S.x)){
       if(S.hatSchluessel&&S.erwischtZahl>0&&!S.direktorGesprochen){
         S.direktorGesprochen=true;
@@ -977,8 +999,8 @@ function update(dt){
       if(!(hm.suchtX!=null||hm.abgelenkt>0)){ starteHausmeisterGespraech(hm); }
       else if(hm.suchtX!=null||hm.abgelenkt>0){
         hm.hatSchluessel=false; S.hatSchluessel=true;
-        SFX.fund(); S.blitz=1;
-        meldung('SCHLUESSEL VOM GUERTEL GEZOGEN',2.4);
+        SFX.fund(); S.blitz=1; nimmDing('SCHLUESSEL');
+        meldung('SCHLUESSEL VOM GUERTEL GEZOGEN',2.4); meldung('ROTE WOLLE AM SCHLUESSEL.',2);
         zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
       } else { meldung('ER SCHAUT DIREKT HIN'); SFX.nichts(); }
     } else if(ri>=0){
@@ -1039,8 +1061,8 @@ function imRaum(dt){
         meldung('DEIN HANDY - EINGEZOGEN UND WIEDER DA',2.6);
         zeigeHinweis('JETZT SCHREIBEN DIR DIE JUNGS WIEDER',3);
       } else if(S.raum===S.schluesselRaum && S.suchZiel===S.schluesselMoebel && !S.hatSchluessel){
-        S.hatSchluessel=true; SFX.fund(); S.blitz=1;
-        meldung('SCHLUESSEL GEFUNDEN',2.4); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
+        S.hatSchluessel=true; SFX.fund(); S.blitz=1; nimmDing('SCHLUESSEL');
+        meldung('SCHLUESSEL GEFUNDEN',2.4); meldung('ROTE WOLLE AM SCHLUESSEL.',2); zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
         nachricht('schluessel');
       } else if(RAEUME[S.raum].moebel[S.suchZiel]==='sicherung'){
         /* Der Sicherungskasten: der Flur wird dunkel. Die Lehrer sehen
@@ -1279,7 +1301,10 @@ function lehrerLogik(dt){
    haengt daran, wie die Nacht bisher lief (Mut, Ruf, wer dabei ist).
    ========================================================================== */
 const HAUSMEISTER_GESPRAECH = {
-  start:{ wer:'HAUSMEISTER', text:'Was machst du hier? Schule ist seit zwei stunden aus.',
+  start:{ wer:'HAUSMEISTER', text:'Ich schliess jeden Abend ab. Ihr seht die Schule am Tag.', geh:'sage2' },
+  sage2:{ wer:'HAUSMEISTER', text:'Ich seh sie, wenn ihr weg seid.', geh:'frage' },
+
+  frage:{ wer:'HAUSMEISTER', text:'Was machst du hier? Schule ist seit zwei stunden aus.',
     wahl:[
       { txt:'Ich hab mein handy vergessen.',            geh:'handy' },
       { txt:'Ich bin beim nachsitzen eingepennt.',      geh:'ehrlich' },
@@ -1311,7 +1336,10 @@ const HAUSMEISTER_GESPRAECH = {
       { txt:'Ich sag ihm schoene gruesse.',    geh:'ende', tu:{ruf:2} },
     ], zeit:7, standard:1 },
 
-  schluessel:{ wer:'HAUSMEISTER', text:'Der zweitschluessel haengt am haken. Nimm ihn und tu ihn zurueck.',
+  schluessel:{ wer:'HAUSMEISTER', text:'Der zweitschluessel haengt am haken. Nimm ihn.',
+    geh:'wolle' },
+
+  wolle:{ wer:'HAUSMEISTER', text:'Rote Wolle dran. Damit ich ihn finde. Tu ihn zurueck.',
     geh:'ende' },
 
   ende:null,
@@ -1324,8 +1352,8 @@ function starteHausmeisterGespraech(hm){
     /* Wer ihn ueberzeugt hat, bekommt den Schluessel ohne Klauerei. */
     if(flag('hausmeisterHilft')&&hm.hatSchluessel){
       hm.hatSchluessel=false; S.hatSchluessel=true;
-      SFX.fund(); S.blitz=1;
-      meldung('ER GIBT DIR DEN SCHLUESSEL',2.4);
+      SFX.fund(); S.blitz=1; nimmDing('SCHLUESSEL');
+      meldung('ROTE WOLLE AM SCHLUESSEL.',2);
       zeigeHinweis('RAUS HIER - ERDGESCHOSS',3);
     }
   });
@@ -1337,6 +1365,8 @@ function starteHausmeisterGespraech(hm){
    Links/rechts waehlt die Stelle, hoch/runter die Ziffer, E probiert.
    Falsche Versuche machen Laerm - das ist der Preis fuers Raten.
    ========================================================================== */
+const amPolaroid=()=>flag('ferdiSpindOffen')&&typeof MOMENT!=='undefined'&&!MOMENT.hat(1)
+  &&S.etage===POLAROID.e&&Math.abs(S.x-(POLAROID.x+4))<12&&(!tiefeAn()||S.tiefe<=TUNE.tuerTiefe);
 const amCodespind=()=>S.etage===CODESPIND.e&&Math.abs(S.x-(CODESPIND.x+3))<12
   &&(!tiefeAn()||S.tiefe<=TUNE.tuerTiefe);
 function codeOeffnen(){
@@ -1454,6 +1484,10 @@ const SZENEN=[
   { d:2.2,  txt:'DU: ANGEBER' },
   { d:2.4,  txt:'MAX FERDI: KOMM, ICH GEB DAS TEMPO VOR' },
   { d:2.6,  txt:'MAX FERDI IST JETZT DABEI  -  +15% TEMPO' },
+  { d:2.4,  txt:'DU: DU BIST DURCHS FENSTER GESPRUNGEN.' },
+  { d:2.4,  txt:'MAX FERDI: REDEN WIR NIE WIEDER DRUEBER.' },
+  { d:2.2,  txt:'MAX FERDI: BIS GLEICH!' },
+  { d:2.6,  txt:'MORITZ: 21 UHR BEI MIR.|ICH HAB ALLES VORBEREITET.' },
   { d:2.4,  txt:'LEVEL 1 GESCHAFFT' },
 ];
 const SZENE_DRAUSSEN=9;                 // ab hier spielt es vor der Schule
@@ -1568,14 +1602,15 @@ function zeichneDraussen(){
 /* ==========================================================================
    ZEICHNEN
    ========================================================================== */
-function draw(dt){
+function draw(dt){ zeichneAlles(dt); erzaehlZeichne(); }
+function zeichneAlles(dt){
   staubUpdate(dt);
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
   if(S.modus==='intro'){ zeichneIntro(); return; }
 
   ctx.save();
-  const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel;
+  const wk=FX.wackel(S.ruettel), rx=(Math.random()-.5)*wk, ry=(Math.random()-.5)*wk;
   ctx.translate(Math.round(rx),Math.round(ry));
 
   if(S.modus==='cutscene'&&S.szene>=SZENE_DRAUSSEN) zeichneDraussen();
@@ -1588,7 +1623,7 @@ function draw(dt){
     ctx.fillStyle=`rgba(2,2,10,${Math.min(.55,S.stromAus*.3).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   hud();
   zeichneCode();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${FX.blitz(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   zeichneGespraech();
   bildschirme();
 }
@@ -1680,6 +1715,12 @@ function zeichneKorridor(){
           text('E',CODESPIND.x+2,sy-15,P.gold);
       }
       ctx.globalAlpha=1;
+    }
+
+    if(POLAROID.e===e&&flag('ferdiSpindOffen')&&typeof MOMENT!=='undefined'){
+      MOMENT.zeichneFund(POLAROID.x,by-9,1);
+      if(!fern&&amPolaroid()&&S.modus==='spiel'&&Math.floor(S.t*4)%2===0)
+        text(IS_TOUCH?'FOTO':'E: FOTO',POLAROID.x+4-textW(IS_TOUCH?'FOTO':'E: FOTO')/2,by-18,P.gold);
     }
 
     /* Tueren */
@@ -2117,6 +2158,7 @@ function titelbild(){
   for(let i=0;i<50;i++){ const x=(i*79)%W, y=(i*53)%H;
     ctx.fillStyle=i%7===0?'#2a2440':'#15121f'; ctx.fillRect(x,y,1,1); }
   textGlowC('NACHTSCHICHT',24,P.neon,3);
+  textC('PARTY GAME DRUNK',34,P.dim);
   textC('LEVEL 1 - DIE SCHULE',46,P.dim);
   const zeilen=[
     'DU BIST NACH SCHULSCHLUSS EINGESPERRT',
@@ -2149,7 +2191,9 @@ function titelbild(){
     const b='TASTE 2    LEVEL 2 - BEI MORITZ';
     text(a,(W-textW(a))/2,H-11,P.dunkel);
     text(b,(W-textW(b))/2,H-5,P.neon2);
+    text('G: ENDEN',2,H-10,P.dim);
   }
+  text(IS_TOUCH?'UEBER':'U: UEBER',W-textW(IS_TOUCH?'UEBER':'U: UEBER')-2,H-10,P.dim);
 }
 function bildschirme(){
   if(S.modus==='pause'){
@@ -2167,7 +2211,10 @@ function bildschirme(){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
     const s=SZENEN[S.szene];
-    if(s&&s.txt) textC(s.txt,H-26,P.weiss);
+    if(s&&s.txt){
+      if(s.txt.includes('|')&&typeof zeichneKarte==='function') zeichneKarte(s.txt,H-31,P.weiss,1);
+      else textC(s.txt.replace('|',' '),H-26,P.weiss);
+    }
     if(Math.floor(S.t*2)%2===0) text('E',W-12,H-10,P.dunkel);
   }
   if(S.modus==='ende'){

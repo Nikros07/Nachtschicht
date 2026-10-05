@@ -135,6 +135,7 @@ let d=E('MENUE.galerieDaten()');
 pruefe('leer: 0 von 10, 8 Momente ???',
   d.enden.length===10&&d.endenGesehen===0&&d.enden.every(e=>!e.gesehen)&&d.momenteAnzahl===0&&d.momente.length===8);
 E("NACHT.gesehen=['HEIM - OHNE EINEN SCHLAG','SCHICHTWECHSEL']; NACHT.knotenBest={'HEIM - OHNE EINEN SCHLAG':2,'SCHICHTWECHSEL':3}; NACHT.momenteBest=[2,7]");
+E('delete TEXTE_MOMENTE[7]');
 E("TEXTE_MOMENTE[2]={titel:'DIE PINNWAND',l1:'ZEILE EINS',l2:'ZEILE ZWEI'}");
 d=E('MENUE.galerieDaten()');
 pruefe('zwei Enden gesehen mit Knoten',

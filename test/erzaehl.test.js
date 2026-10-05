@@ -97,7 +97,7 @@ E('erzaehlTakt(1)'); E('erzaehlTaste()');
 pruefe('Taste nach 0,8 s: Ausblenden', E('MOMENT_KARTE.t')>=2.75);
 E('erzaehlTakt(1)'); pruefe('Karte nach 3 s aus', E('MOMENT_KARTE.aktiv')===false);
 pruefe('zweites fund(2) false, nichts doppelt', E('MOMENT.fund(2)')===false&&E('NACHT.momenteBest.length')===1);
-E('MOMENT.fund(5)'); pruefe('fund ohne Text: zaehlt trotzdem, keine Karte', E('MOMENT.anzahl()')===2&&E('MOMENT_KARTE.aktiv')===false);
+E('delete TEXTE_MOMENTE[5]'); E('MOMENT.fund(5)'); pruefe('fund ohne Text: zaehlt trotzdem, keine Karte', E('MOMENT.anzahl()')===2&&E('MOMENT_KARTE.aktiv')===false);
 pruefe('zeichneFund ohne Fehler', (()=>{ try{ E('MOMENT.zeichneFund(10,10,3); MOMENT.zeichneFund(10,10,2)'); return true; }catch(e){ return false; } })());
 E('nachtZuruecksetzen()');
 pruefe('Neuanfang: Flags weg, momenteBest bleibt', E('MOMENT.anzahl()')===0&&JSON.stringify(E('NACHT.momenteBest'))==='[2,5]');
