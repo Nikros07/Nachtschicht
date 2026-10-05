@@ -795,13 +795,14 @@ function draw(dt){
   /* 4) Alles Bedienbare bleibt scharf - egal wie stark es gerade wabert */
   zeichnePrompts();
   hud();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  { const blitzA=FX.blitz(S.blitz); if(blitzA>0){ ctx.fillStyle=`rgba(255,255,255,${(blitzA*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); } }
   bildschirme();
 }
 
 function zeichneFlur(){
   ctx.save();
-  const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel*.6;
+  const ruettelW=FX.wackel(S.ruettel);
+  const rx=(Math.random()-.5)*ruettelW, ry=(Math.random()-.5)*ruettelW*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
   const kx=Math.round(S.kamX);
   ctx.translate(-kx,0);

@@ -828,14 +828,15 @@ function draw(dt){
   ctx.save();
   const p=S.pegel/100;
   const wack = S.pegel>TUNE.wackelnAb ? (S.pegel-TUNE.wackelnAb)/45*3 : 0;
-  const rx=(Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack;
-  const ry=(Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6;
+  const ruettelW=FX.wackel(S.ruettel);
+  const rx=(Math.random()-.5)*ruettelW+Math.sin(S.t*7)*wack;
+  const ry=(Math.random()-.5)*ruettelW+Math.cos(S.t*5.2)*wack*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
   zeichneWohnung();
   ctx.restore();
 
   hud();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  { const blitzA=FX.blitz(S.blitz); if(blitzA>0){ ctx.fillStyle=`rgba(255,255,255,${(blitzA*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); } }
   zeichneGespraech();
   bildschirme();
 }

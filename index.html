@@ -1553,7 +1553,8 @@ function draw(dt){
   if(S.modus==='intro'){ zeichneIntro(); return; }
 
   ctx.save();
-  const rx=(Math.random()-.5)*S.ruettel, ry=(Math.random()-.5)*S.ruettel;
+  const ruettelW=FX.wackel(S.ruettel);
+  const rx=(Math.random()-.5)*ruettelW, ry=(Math.random()-.5)*ruettelW;
   ctx.translate(Math.round(rx),Math.round(ry));
 
   if(S.modus==='cutscene'&&S.szene>=SZENE_DRAUSSEN) zeichneDraussen();
@@ -1566,7 +1567,7 @@ function draw(dt){
     ctx.fillStyle=`rgba(2,2,10,${Math.min(.55,S.stromAus*.3).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   hud();
   zeichneCode();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  { const blitzA=FX.blitz(S.blitz); if(blitzA>0){ ctx.fillStyle=`rgba(255,255,255,${(blitzA*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); } }
   zeichneGespraech();
   bildschirme();
 }

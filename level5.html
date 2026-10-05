@@ -1365,8 +1365,9 @@ function draw(dt){
 
   ctx.save();
   const wack=S.pegel>TUNE.wackelnAb?(S.pegel-TUNE.wackelnAb)/45*3:0;
-  const rx=(Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack;
-  const ry=(Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6;
+  const ruettelW=FX.wackel(S.ruettel);
+  const rx=(Math.random()-.5)*ruettelW+Math.sin(S.t*7)*wack;
+  const ry=(Math.random()-.5)*ruettelW+Math.cos(S.t*5.2)*wack*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
   zeichneClub();
   ctx.restore();
@@ -1374,12 +1375,12 @@ function draw(dt){
   /* Stroboskop - deckt die Spielwelt ab, nicht das HUD darunter, damit
      Pegel und Uhr immer lesbar bleiben. */
   if(S.dunkel>0){ ctx.fillStyle=`rgba(4,2,10,${S.dunkel.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
-  if(S.flacker>0){ ctx.fillStyle=`rgba(255,255,255,${S.flacker.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  { const flackerA=FX.blitz(S.flacker); if(flackerA>0){ ctx.fillStyle=`rgba(255,255,255,${flackerA.toFixed(3)})`; ctx.fillRect(0,0,W,H); } }
 
   hud();
   zeichneGespraech();
   if(S.modus==='ecke') zeichneEcke();
-  if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${(S.blitz*.4).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+  { const blitzA=FX.blitz(S.blitz); if(blitzA>0){ ctx.fillStyle=`rgba(255,255,255,${(blitzA*.4).toFixed(3)})`; ctx.fillRect(0,0,W,H); } }
   bildschirme();
 }
 
