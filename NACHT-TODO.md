@@ -46,11 +46,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Nacht zum 6.10., Commit `6cd95f1`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
   `beziehung('SEMIH')>=10` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
   SEMIH nicht mehr unter „nie gelesen".
-- [ ] **P2 · Beziehung zu LEA wird gesetzt, aber nirgends gelesen** — gesetzt in
-  level6.html:414-416, level7.html:432, level8.html:539, nacht/handy.js:33-34, keine
-  Lesestelle. Vierter von vier Punkten.
-  Wo: level8.html (Leas Tschuess-Szene) oder nacht/epilog.js · Fertig wenn:
-  `node tools/flagcheck.js` zaehlt LEA nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu LEA wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `c9602d9`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('LEA')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  LEA nicht mehr unter „nie gelesen".
 - [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
   Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt, dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei Start 40 der Wettlauf verloren gehen kann; Werte stehen hier.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
@@ -218,6 +217,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-06 · P2 · LEA-Zuneigung fliesst in den Abspann ein · `c9602d9` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('LEA')>=14`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt LEA nicht
+  mehr unter „nie gelesen" - damit sind DENNIS/MARVIN/SEMIH/LEA alle vier erledigt.
+  Alle vier Pruefungen gruen.
 
 - [x] 2026-10-06 · P2 · SEMIH-Zuneigung fliesst in den Abspann ein · `6cd95f1` ·
   Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('SEMIH')>=10`
