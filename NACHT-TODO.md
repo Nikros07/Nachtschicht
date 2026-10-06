@@ -34,6 +34,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
+- [ ] **P2 · Vier Beziehungen werden gesetzt, aber nirgends gelesen: DENNIS, MARVIN, SEMIH, LEA** —
+  `tools/flagcheck.js` zaehlt sie seit dem Launch-Merge (6.10.) zu den „nie gelesenen"
+  Beziehungen, zusaetzlich zu den schon bekannten HAUSMEISTER/DER LAUTE/DIE FRAU/JONAS/TOBI.
+  `mag:[...]` fuer diese vier wird in mehreren Gespraechen gesetzt (level4.html:235-236,
+  level5.html:654-663, level6.html:414-416, level7.html:401-432, level8.html:536-539/671,
+  nacht/handy.js:33-34), aber `grep -n "mag(\|\.mag" nacht/epilog.js nacht/nacht.js` findet
+  keine einzige Lesestelle fuer diese vier Namen - jede dieser Entscheidungen hat aktuell
+  keine Spielwirkung.
+  Wo: nacht/epilog.js oder nacht/nacht.js (eine Lesestelle, z.B. im Abspann/Epilog je Figur) ·
+  Fertig wenn: `node tools/flagcheck.js` zaehlt DENNIS, MARVIN, SEMIH, LEA nicht mehr unter
+  „nie gelesen".
 - [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
   Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt, dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei Start 40 der Wettlauf verloren gehen kann; Werte stehen hier.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
