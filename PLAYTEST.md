@@ -76,8 +76,12 @@ gesetzt und von keiner Zeile im Spiel je gelesen — darunter geschlossen
 alles, was man im Bus tut (7 Flags), wie Level 1 ausgegangen ist (3) und
 was man im Traum begreift (2).
 
-Die Zuneigung zu **MORITZ** — dem besten Freund, dessen Wohnung Level 2
-ist — wird in Level 2 und 6 verändert und **nirgends abgefragt**.
+~~Die Zuneigung zu **MORITZ** — dem besten Freund, dessen Wohnung Level 2
+ist — wird in Level 2 und 6 verändert und **nirgends abgefragt**.~~ Behoben
+(spaetestens mit dem Launch-Merge, nachgemessen 6.10.): `beziehung('MORITZ')`
+wird in level8.html (NACHHALL) gelesen. Dasselbe Muster fehlte noch fuer
+DENNIS, MARVIN, SEMIH, LEA - in der Nacht zum 6.10. ergaenzt (siehe
+NACHT-TODO.md, Erledigt).
 
 ~~Behoben: das Ende liest jetzt 17 Entscheidungen mehr. Weil alle
 gleichzeitig eine halbe Minute Abspann wären, liegt ein Vorrat mit Gewicht

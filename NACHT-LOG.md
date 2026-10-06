@@ -399,3 +399,69 @@ Mobil-Sprungknopf ohne Wirkung**, dann die restlichen sechs Analyse-Teile (Level
 Karte, Runner, Engine, Dramaturgie). Danach P3, angeführt von drei neuen Level-6-Kleinfunden
 und der bestehenden Liste (Lektion wiederholen, `level5_baeume.js` löschen, Bahn-oder-Bus,
 `TODO.md` veraltet).
+
+---
+
+## 2026-10-06 — Nacht — Test und Bau
+
+Start-Commit: `1e803e0`
+
+**Testergebnis:** Baseline grün (pruefe.js 10/10, kampf.test.js 22/22, flagcheck.js
+82/78/0 verloren, nachttest.js ohne harten Fehler) — kein Reparatur-Commit nötig. Zwischen
+dem Bericht vom 5.10. und heute wurde der Launch-Branch nach `claude/nacht` gemergt
+(`1e803e0`, nicht von dieser Routine) — Spielinhalt und -umfang grundlegend anders, daher
+im Bericht nur eingeschränkt mit dem Vortag vergleichbar (Details: NACHT-BERICHT.md).
+Neuer Fund: `flagcheck.js` zählt seit dem Merge 9 statt 5 nie gelesene Beziehungen
+(DENNIS, MARVIN, SEMIH, LEA neu dazu).
+
+### Erledigt (8 Punkte, ~20 Minuten)
+
+1. **DENNIS-Zuneigung fließt in den Abspann ein** · `bb2369d` — neue NACHHALL-Zeile in
+   level8.html nach dem bestehenden MORITZ-Muster: `beziehung('DENNIS')>=8`. Gemessen:
+   flagcheck.js zählt DENNIS nicht mehr unter „nie gelesen".
+2. **MARVIN-Zuneigung fließt in den Abspann ein** · `56a1674` — gleiches Muster,
+   `beziehung('MARVIN')>=14`.
+3. **SEMIH-Zuneigung fließt in den Abspann ein** · `6cd95f1` — gleiches Muster,
+   `beziehung('SEMIH')>=10`.
+4. **LEA-Zuneigung fließt in den Abspann ein** · `c9602d9` — gleiches Muster,
+   `beziehung('LEA')>=14`. Damit lesen alle neun seit dem Merge betroffenen Beziehungen
+   außer den fünf schon vorher bekannten (HAUSMEISTER, DER LAUTE, DIE FRAU, JONAS, TOBI)
+   wieder irgendwo im Spiel.
+5. **Level 8: Wettlauf-Balance nachgemessen, bereits erfüllt** · kein Code geändert,
+   Hash des Dokumentations-Commits `cba5f49` — ein Wegwerf-Bot (Node, nicht im Repo)
+   springt rechtzeitig über alle elf Hindernisse (ohne Sprung verliert jeder Lauf sofort
+   an den Hindernissen, nicht an der Sonne — das wäre die falsche Messung gewesen).
+   Ergebnis: Start-Licht 0/7/14/21/28 mit MAX FERDI kommt immer an (Licht 57–85 % an der
+   Haustür), Start-Licht 40 ohne MAX FERDI mit allen fünf Abschieden geht verloren (Licht
+   100 % bei x=4849 von 5160), Gegenprobe mit MAX FERDI ohne Abschiede kommt bei Start 40
+   knapp an (97,1 %). Beide Hälften des „Fertig wenn" erfüllt.
+6. **nachttest.js Level 5: x>900-Kriterium nachgemessen, bereits erfüllt** · kein Code
+   geändert — der Fix vom 4.10. (`66ecc5f`) hält auch nach dem Launch-Merge: maxX=1386 im
+   60-s-Zufallslauf (gefordert >900), gemessen mit einer Protokoll-Kopie von
+   tools/nachttest.js (inklusive der draw()-Aufrufe wie im Original — ohne sie läuft die
+   Zufallsfolge anders, siehe die Notiz zum ursprünglichen Fix).
+7. **Level 2: Mobil-Sprungknopf verschwindet, da Sprung hier nichts tut** · `a438b31` —
+   Titelbild/Lektion waren schon seit `c04f355` (4.10.) bereinigt, `mobilKontext()` zeigte
+   SPRUNG aber weiterhin in jedem Zustand. Jetzt `zwei:null` an allen drei Stellen.
+8. **Fünf stehengebliebene Duplikate in NACHT-TODO aufgeräumt** · kein Code geändert —
+   Lektionen-Übungspuppe (Level 3/4/8), Level-4-Jab/Schwung, Club-Abfuhr, Club-Sophie/Lena
+   standen trotz längst erledigter Commits (`2e60b48`, `59d5066`, `d62c683`, `926e612`,
+   `0e73e3a`, `b6a6d00`) noch unter „Offen" — vom Launch-Merge mitgebracht, der eine ältere
+   NACHT-TODO.md-Fassung enthielt. Je per grep gegen den aktuellen Code gegengeprüft.
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js --kurz erneut grün;
+`python3 tools/version.py` nach jeder Änderung an einer `*.html`-Seite. `verloren` in
+flagcheck.js blieb bei 0. PLAYTEST.md: die MORITZ-Zeile unter „Die Hälfte aller
+Entscheidungen verpufft" durchgestrichen (seit dem Merge gelesen, DENNIS/MARVIN/SEMIH/LEA
+jetzt ebenfalls).
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Gesprächsleiste quer: mehr
+als 3 lange Antworten scrollen** (braucht eine echte Layout-Messung im Browser — mobil.js
+ist aus dem Software-Canvas-Lader ausgenommen, `nachttest.js` kann das nicht prüfen, wurde
+deshalb heute Nacht übersprungen), dann **Analyse nachholen: Level 1, 6, 7, 8, Karte,
+Runner, Engine, Dramaturgie** und die restlichen Level-6-Einzelfunde. Lohnt sich: einmal
+komplett durch NACHT-TODO.md gehen und prüfen, ob der Launch-Merge noch weitere erledigte
+Punkte unter „Offen" stehen gelassen hat — heute wurden nur die ersten ~20 Zeilen von P2
+durchgesehen.
