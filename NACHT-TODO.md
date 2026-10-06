@@ -67,15 +67,18 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
 
-- [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
-  60-s-Spiellauf (`SPIEL_SEK`) bewegt sich mit dem festen Seed nur von x=40 bis x≈371
-  (Eingang, ein Stück Tanzfläche), dann füllt ein Minispiel die restliche Zeit. Bar,
-  Raucherecke, Klos und Hinterausgang (x 620-1400) werden von der „leere Bildzeilen"-
-  Messung dieses Laufs nie gesehen - jede künftige Deko dort ist mit `node
-  tools/nachttest.js level5` nicht prüfbar (siehe „Blockiert", Club-Decke-Galerie).
+- [x] ~~**P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus**~~ (bereits
+  erfuellt, nachgemessen in der Nacht zum 6.10. — kein Code geaendert) — Befund war veraltet,
+  der eigentliche Fix (Commit `66ecc5f`, 4.10.) hat das schon geloest, und haelt auch nach dem
+  Launch-Merge: eine Kopie von tools/nachttest.js mit einer Protokollzeile fuer `S.x` je Bild
+  (sonst identisch, inklusive der draw()-Aufrufe alle 6 Bilder - ohne die laeuft die
+  Zufallsfolge anders, siehe die Notiz zum Fix selbst) zeigt fuer `node
+  tools/nachttest.js level5`: maxX=1386 (gefordert: x>900 irgendwann in den 60 s). Modi bleiben
+  seit dem Launch-Merge bei "spiel" (kein "mini/cutscene/ende" mehr in diesem Lauf) - anderer
+  Levelinhalt, aber das Kriterium selbst (x>900) ist weiterhin erfuellt.
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
-  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
+  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund. ERFUELLT (maxX=1386).
 - [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
   eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
   einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
@@ -229,6 +232,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-06 · P2 · nachttest.js Level 5: x>900-Kriterium nachgemessen, bereits erfuellt ·
+  (kein Code geaendert, nur gemessen) · Protokoll-Kopie von tools/nachttest.js (mit draw()-
+  Aufrufen wie im Original, sonst unveraendert) zeigt maxX=1386 fuer den 60-s-Zufallslauf in
+  Level 5 - der Fix vom 4.10. (`66ecc5f`) haelt auch nach dem Launch-Merge, nur die Modi-Liste
+  hat sich geaendert (kein "mini" mehr in diesem Lauf, anderer Levelinhalt).
 
 - [x] 2026-10-06 · P2 · Level 8: Wettlauf-Balance gemessen, bereits erfuellt · `cba5f49`
   (kein Spielcode geaendert, nur gemessen) · Wegwerf-Bot (Node,
