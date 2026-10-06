@@ -42,10 +42,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Nacht zum 6.10., Commit `56a1674`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
   `beziehung('MARVIN')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
   MARVIN nicht mehr unter „nie gelesen".
-- [ ] **P2 · Beziehung zu SEMIH wird gesetzt, aber nirgends gelesen** — gesetzt in
-  level5.html:662-663, level7.html:430, keine Lesestelle. Dritter von vier Punkten.
-  Wo: level7.html oder level8.html (Semihs Tschuess-Szene) · Fertig wenn:
-  `node tools/flagcheck.js` zaehlt SEMIH nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu SEMIH wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `6cd95f1`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('SEMIH')>=10` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  SEMIH nicht mehr unter „nie gelesen".
 - [ ] **P2 · Beziehung zu LEA wird gesetzt, aber nirgends gelesen** — gesetzt in
   level6.html:414-416, level7.html:432, level8.html:539, nacht/handy.js:33-34, keine
   Lesestelle. Vierter von vier Punkten.
@@ -218,6 +218,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-06 · P2 · SEMIH-Zuneigung fliesst in den Abspann ein · `6cd95f1` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('SEMIH')>=10`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt SEMIH nicht
+  mehr unter „nie gelesen". Alle vier Pruefungen gruen.
 
 - [x] 2026-10-06 · P2 · MARVIN-Zuneigung fliesst in den Abspann ein · `56a1674` ·
   Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('MARVIN')>=14`
