@@ -230,8 +230,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
-- [x] 2026-10-06 · P2 · Level 8: Wettlauf-Balance gemessen, bereits erfuellt · (kein Code
-  geaendert, nur gemessen - Hash des NACHT-TODO-Eintrags folgt im Log) · Wegwerf-Bot (Node,
+- [x] 2026-10-06 · P2 · Level 8: Wettlauf-Balance gemessen, bereits erfuellt · `cba5f49`
+  (kein Spielcode geaendert, nur gemessen) · Wegwerf-Bot (Node,
   $TMPDIR) mit Sprung ueber alle elf Hindernisse: Start-Licht 0-28 mit MAX FERDI kommt immer
   an (Licht 57-85 % an der Haustuer), Start-Licht 40 ohne MAX FERDI mit allen fuenf Abschieden
   geht verloren (Licht 100 % bei x=4849 von 5160), Gegenprobe mit MAX FERDI und ohne Abschiede
