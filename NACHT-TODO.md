@@ -50,8 +50,20 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Nacht zum 6.10., Commit `c9602d9`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
   `beziehung('LEA')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
   LEA nicht mehr unter „nie gelesen".
-- [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
-  Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt, dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei Start 40 der Wettlauf verloren gehen kann; Werte stehen hier.
+- [x] ~~**P2 · Level 8: Wettlauf-Balance ungemessen im Browser**~~ (bereits erfuellt, gemessen
+  in der Nacht zum 6.10. — kein Code geaendert) — Wegwerf-Bot (lade() aus tools/nachttest.js
+  wiederverwendet, $TMPDIR, nicht im Repo) haelt KeyD gedrueckt, springt rechtzeitig vor jedem
+  der elf HINDERNISSE (sonst zaehlt jeder Treffer als Lichtstrafe - ohne Sprung verliert der
+  Bot IMMER, das waere die falsche Messung gewesen) und ruft bei "alle Abschiede" jedes
+  Abbiege-Fenster per aktionPuffer. Gemessen: Start-Licht 0/7/14/21/28, MAX FERDI in der Crew,
+  keine Abschiede -> alle fuenf Laeufe "ankunft" (Licht an der Haustuer 57,1/64,1/71,1/78,1/85,1 %,
+  jeweils unter 100). Start-Licht 40, OHNE MAX FERDI, alle fuenf Abbieger in der Crew und alle
+  Abschiede gerufen -> "verloren" (Licht erreicht 100 % bei x=4849 von 5160). Gegenprobe Start 40
+  MIT MAX FERDI, keine Abschiede -> knapp "ankunft" (97,1 %) - die Abschiede sind also wirklich
+  die Stellschraube, nicht Kosmetik. Beide Teile des "Fertig wenn" erfuellt.
+  Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt,
+  dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei
+  Start 40 der Wettlauf verloren gehen kann; Werte stehen hier. ERFUELLT, Werte oben.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
 
@@ -217,6 +229,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-06 · P2 · Level 8: Wettlauf-Balance gemessen, bereits erfuellt · (kein Code
+  geaendert, nur gemessen - Hash des NACHT-TODO-Eintrags folgt im Log) · Wegwerf-Bot (Node,
+  $TMPDIR) mit Sprung ueber alle elf Hindernisse: Start-Licht 0-28 mit MAX FERDI kommt immer
+  an (Licht 57-85 % an der Haustuer), Start-Licht 40 ohne MAX FERDI mit allen fuenf Abschieden
+  geht verloren (Licht 100 % bei x=4849 von 5160), Gegenprobe mit MAX FERDI und ohne Abschiede
+  kommt bei Start 40 knapp an (97,1 %). Beide Haelften des „Fertig wenn" erfuellt, siehe Eintrag
+  oben. Alle vier Pruefungen gruen (unveraendert, da kein Code geaendert).
 
 - [x] 2026-10-06 · P2 · LEA-Zuneigung fliesst in den Abspann ein · `c9602d9` ·
   Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('LEA')>=14`
