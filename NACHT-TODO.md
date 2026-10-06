@@ -79,38 +79,36 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
   Protokoll der x-Werte wie in der Untersuchung zu diesem Fund. ERFUELLT (maxX=1386).
-- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
-  eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
-  einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
-  bestehenden Schritt „KONTERN IM GOLDENEN BEREICH" ersetzt, statt nur eine Taste einmal zu
-  pruefen). Am 3.10. geteilt - zuerst nur Level 4, Block/Rolle (Level 3, 8) folgen als eigene
-  Punkte, erst wenn der Mechanismus hier steht.
-  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`), nacht/kampf.js (`kaempferTakt` wiederverwenden,
-  nicht duplizieren) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
-  Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
-  Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
-  falschen Zeit = nicht).
-- [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
-  Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
-  von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
+- [x] ~~**P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter**~~ (bereits erfuellt, war schon
+  am 3.10. gebaut - Commit `2e60b48` - und im Launch-Merge erhalten geblieben: dieser Offen-
+  Eintrag war ein stehengebliebenes Duplikat) — `grep -n puppe nacht/lehre.js` zeigt
+  `puppe:'konter'` am E-Schritt von LEKTIONEN['level4.html'], `PUPPE_ARTEN` und die Puppen-
+  Simulation (`_puppe`/`kaempferTakt`) stehen in nacht/lehre.js:99-195. Nachgemessen in der
+  Nacht zum 6.10., kein Code geaendert.
+- [x] ~~**P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)**~~ (ebenfalls
+  bereits erfuellt - Commits `59d5066` und `d62c683` am 5.10., dasselbe stehengebliebene
+  Duplikat) — `puppe:'block'` (Level 3) und `puppe:'rolle'` (Level 8) stehen in nacht/lehre.js
+  neben `puppe:'konter'` oben. Nachgemessen in der Nacht zum 6.10., kein Code geaendert.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
   Wo: level4.html (`bossPhase`, `naechsteArt`) · Fertig wenn: Phase 2 und 3 verlangen
   je eine andere Antwort als Phase 1.
-- [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
-  Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
-  Ausholen verschieden aus.
-- [ ] **P2 · Club: Die drei Frauen kennen sich** — Der Kommentar im Code verspricht,
-  dass sich eine Abfuhr herumspricht. `S.abfuhren` gibt es schon.
-  Wo: level5.html (`gespraechEnde`, die drei Bäume) · Fertig wenn: nach einer Abfuhr
-  erwähnt mindestens eine andere Figur sie, gemessen per Baum-Durchlauf.
-- [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
-  Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
-  Lena hat ein kurzes Gespräch.
+- [x] ~~**P2 · Level 4: Jab und Schwung unterscheidbar machen**~~ (bereits erfuellt - Commit
+  `926e612` am 5.10., stehengebliebenes Duplikat) — `SPR.bossWindJab` existiert neben
+  `SPR.bossWind`, `rows=(b.art==='jab')?SPR.bossWindJab:SPR.bossWind` in level4.html:743.
+- [x] ~~**P2 · Club: Die drei Frauen kennen sich**~~ (bereits erfuellt - Commit `0e73e3a` am
+  4.10., stehengebliebenes Duplikat) — `startAbfuhr`-Knoten in allen drei Baeumen
+  (level5.html:375/470/550), `abfuhrGehoert?'startAbfuhr':'start'` in `redeMit()`.
+- [x] ~~**P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar**~~ (bereits
+  erfuellt - Commit `b6a6d00` am 4.10., stehengebliebenes Duplikat) — Sophie hat
+  `wenn:{pegel:55}` (level5.html:476), LENA_BAUM existiert und ist verdrahtet.
 - [x] ~~**P2 · Level 2: kein `mobilKontext()`**~~ (erledigt in der Sitzung 3.-5.10., Commit 427135a) — am Handy heißt jeder Knopf „AKTION".
   Wo: level2.html, Muster aus index.html · Fertig wenn: Knopfaufschriften je Modus.
-- [ ] **P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts** —
+- [x] ~~**P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts**~~ (erledigt
+  in der Nacht zum 6.10., Commit `a438b31`) — Titelbild/Lektion waren schon seit `c04f355`
+  (4.10.) bereinigt, aber `mobilKontext()` zeigte den SPRUNG-Knopf weiterhin in jedem
+  Zustand. Jetzt `zwei:null` an allen drei Stellen.
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
 - [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
   neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
@@ -233,6 +231,17 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-06 · P2 · Level 2: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `a438b31` · `mobilKontext()` zeigte SPRUNG trotz des Fixes vom 4.10. (c04f355, Titelbild/
+  Lektion) weiterhin in jedem Zustand. Jetzt `zwei:null` an allen drei Stellen. Gemessen:
+  nachttest.js level2 weiterhin gruen. Alle vier Pruefungen gruen.
+- [x] 2026-10-06 · P2 · Fuenf stehengebliebene Duplikate in NACHT-TODO aufgeraeumt (kein
+  Code geaendert, nur nachgemessen) — Lektionen-Uebungspuppe (Level 4 Konter `2e60b48`,
+  Level 3 Block `59d5066`, Level 8 Rolle `d62c683`), Level 4 Jab/Schwung (`926e612`), Club
+  Abfuhr spricht sich herum (`0e73e3a`), Club Sophie/Lena (`b6a6d00`) standen trotz laengst
+  erledigter Commits noch unter „Offen" - vermutlich vom Launch-Merge mitgebracht, der eine
+  aeltere Fassung von NACHT-TODO.md enthielt. Jeweils per grep gegen den aktuellen Code
+  gegengeprueft und mit Verweis auf den bestehenden Commit als bereits erfuellt markiert.
 - [x] 2026-10-06 · P2 · nachttest.js Level 5: x>900-Kriterium nachgemessen, bereits erfuellt ·
   (kein Code geaendert, nur gemessen) · Protokoll-Kopie von tools/nachttest.js (mit draw()-
   Aufrufen wie im Original, sonst unveraendert) zeigt maxX=1386 fuer den 60-s-Zufallslauf in
