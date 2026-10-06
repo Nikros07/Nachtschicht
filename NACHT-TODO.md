@@ -38,11 +38,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Nacht zum 6.10., Commit `bb2369d`) — neue NACHHALL-Zeile in level8.html (gleiches Muster
   wie die bestehende MORITZ-Zeile): `beziehung('DENNIS')>=8` zeigt „DENNIS SCHREIBT: BIST DU
   GUT ANGEKOMMEN." im Abspann. `tools/flagcheck.js` zaehlt DENNIS nicht mehr unter „nie gelesen".
-- [ ] **P2 · Beziehung zu MARVIN wird gesetzt, aber nirgends gelesen** — gesetzt in
-  level5.html:654, level7.html:401, level8.html:671, keine Lesestelle. Zweiter von vier
-  Punkten (siehe DENNIS oben).
-  Wo: level8.html (Marvin-Szenen) oder nacht/epilog.js · Fertig wenn: `node tools/flagcheck.js`
-  zaehlt MARVIN nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu MARVIN wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `56a1674`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('MARVIN')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  MARVIN nicht mehr unter „nie gelesen".
 - [ ] **P2 · Beziehung zu SEMIH wird gesetzt, aber nirgends gelesen** — gesetzt in
   level5.html:662-663, level7.html:430, keine Lesestelle. Dritter von vier Punkten.
   Wo: level7.html oder level8.html (Semihs Tschuess-Szene) · Fertig wenn:
@@ -219,6 +218,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-06 · P2 · MARVIN-Zuneigung fliesst in den Abspann ein · `56a1674` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('MARVIN')>=14`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt MARVIN nicht
+  mehr unter „nie gelesen". Alle vier Pruefungen gruen.
 
 - [x] 2026-10-06 · P2 · DENNIS-Zuneigung fliesst in den Abspann ein · `bb2369d` ·
   Neue NACHHALL-Zeile in level8.html nach dem MORITZ-Muster: `beziehung('DENNIS')>=8`
