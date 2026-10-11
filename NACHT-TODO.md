@@ -110,12 +110,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   (4.10.) bereinigt, aber `mobilKontext()` zeigte den SPRUNG-Knopf weiterhin in jedem
   Zustand. Jetzt `zwei:null` an allen drei Stellen.
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
-- [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
-  neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
-  Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
-- [ ] **P2 · Level 1: Titelbild ist eine Bedienungsanleitung** — sieben Tastenzeilen,
-  zwei davon laufen ineinander. Wo: index.html `titelbild()` · Fertig wenn: höchstens
-  vier Zeilen, nichts überlappt.
 - [ ] **P2 · Zwei Handys auf zwei Tasten** — `H` stumm (Level 1), `T` Engine-Handy.
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
@@ -231,6 +225,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-11 · P2 · Zwei stehengebliebene Duplikate aufgeraeumt (kein Code
+  geaendert, nur nachgemessen) — „Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner,
+  Engine, Dramaturgie" war der urspruengliche Sammelpunkt, laengst in acht Einzelpunkte
+  aufgeteilt (Level 1 `9508e31`, Level 6 `7e60128` erledigt; Level 7/8/Karte/Runner/
+  Engine/Dramaturgie stehen als eigene Punkte weiter unten unter „Offen") — der
+  Sammelpunkt selbst war nur noch ein Karteileiche. „Level 1: Titelbild ist eine
+  Bedienungsanleitung" war seit `08af616` (4.10.) erledigt: `grep -n "const
+  st=\[\['A D'" index.html` zeigt die vier Zeilen A D/SHIFT/W S/E, keine sieben mehr.
+  Beide Male gegen den aktuellen Code/die aktuelle Liste gegengeprueft und entfernt.
 - [x] 2026-10-06 · P2 · Level 2: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
   `a438b31` · `mobilKontext()` zeigte SPRUNG trotz des Fixes vom 4.10. (c04f355, Titelbild/
   Lektion) weiterhin in jedem Zustand. Jetzt `zwei:null` an allen drei Stellen. Gemessen:
