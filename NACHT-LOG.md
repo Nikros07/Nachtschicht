@@ -465,3 +465,81 @@ Runner, Engine, Dramaturgie** und die restlichen Level-6-Einzelfunde. Lohnt sich
 komplett durch NACHT-TODO.md gehen und prüfen, ob der Launch-Merge noch weitere erledigte
 Punkte unter „Offen" stehen gelassen hat — heute wurden nur die ersten ~20 Zeilen von P2
 durchgesehen.
+
+---
+
+## 2026-10-11 — Nacht — Test und Bau
+
+Start-Commit: `6bf05c5`
+
+**Testergebnis:** Baseline grün, exakt wie am 6.10. — pruefe.js 10/10, kampf.test.js
+22/0, flagcheck.js 82/78/**0 verloren**, nachttest.js ohne harten Fehler. Alle neun
+Nichtstun-Zahlen (300 s) decken sich exakt mit dem Bericht vom 6.10. — keine Regression,
+kein Reparatur-Commit nötig. Die vom 6.10. offen gelassene Frage, ob level4.html bei
+Nichtstun in der „schlange"-Phase softlockt, ist geklärt: kein Softlock, nur dieselbe
+„eine Taste zum Weiterlesen"-Mechanik wie jeder andere einzeilige Gesprächsknoten im
+Spiel (Details: `NACHT-BERICHT.md`, Commit `50b0c26`).
+
+### Erledigt (8 Punkte, ~22 Minuten)
+
+1. **Zwei stehengebliebene Duplikate in NACHT-TODO aufgeräumt** · `4dfd398` — kein Code
+   geändert. „Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie"
+   war der ursprüngliche Sammelpunkt, längst in acht Einzelpunkte aufgeteilt (zwei
+   erledigt, sechs standen schon einzeln weiter unten) — nur noch eine Karteileiche.
+   „Level 1: Titelbild ist eine Bedienungsanleitung" war seit `08af616` (4.10.) erledigt
+   (vier statt sieben Tastenzeilen, per grep bestätigt).
+2. **Level 6: Mobil-Sprungknopf verschwindet, da Sprung hier nichts bewirkt** · `7abf9e1`
+   — gleiches Muster wie Level 2 (`a438b31`, 6.10.): `S.y` wirkt nur kosmetisch (keine
+   Kollision, keine Hindernisse, keine Tiefe), `mobilKontext()` zeigte trotzdem überall
+   SPRUNG. Jetzt `zwei:null`.
+3. **Analyse nachholen: Level 7 und Level 8** · `5027b0b` — dritter und vierter von acht
+   nachgeholten Teilen (Level 1/6 waren schon erledigt). Je ein neuer, belegter Abschnitt
+   in PLAYTEST.md (vier bzw. fünf Funde), Kernfunde stichprobenhaft gegen den Code
+   geprüft. Daraus vier neue Einzelpunkte unter „Offen" (zwei davon gleich mitgebaut,
+   siehe 4 und 7) sowie zwei P3-Kleinigkeiten (Level-7-Kassentexte, siehe „Was als
+   Nächstes") und den bestehenden Tiefen-Code-Punkt um Level 7 erweitert.
+4. **Level 7: Mobil-Sprungknopf verschwindet, da Sprung hier nichts bewirkt** · `9423159`
+   — direkt aus der Level-7-Analyse, gleiches Muster wie Punkt 2 und `a438b31`.
+5. **Level 8: JONAS- und TOBI-Zuneigung fließt in den Abspann ein** · `dc4a169` — direkt
+   aus der Level-8-Analyse: `mag:['JONAS',…]`/`mag:['TOBI',…]` wurden seit Level 3/7
+   gesetzt, nie gelesen (`tools/flagcheck.js` zählte beide unter „nie gelesen"). Zwei
+   neue NACHHALL-Zeilen nach dem MORITZ/DENNIS/MARVIN/SEMIH/LEA-Muster:
+   `beziehung('JONAS')>=10`/`beziehung('TOBI')>=20`. Gemessen: flagcheck.js zählt beide
+   nicht mehr unter „nie gelesen" (nur noch HAUSMEISTER/DER LAUTE/DIE FRAU, keine Crew).
+6. **Level 7: Introzeile nennt jetzt die echte Ruhezeit** · `1189657` — „FUENF MINUTEN
+   RUHE" passte zu keinem TUNE-Wert (30 Spielminuten laut startMinute/endMinute, 75
+   echte Sekunden laut levelSekunden, aus der Level-7-Analyse). Jetzt „DREISSIG MINUTEN
+   RUHE".
+
+Nach jedem Punkt: pruefe.js, kampf.test.js, flagcheck.js, nachttest.js --kurz erneut
+grün; zusätzlich erzaehl.test.js/epilog.test.js bei Punkt 5 (Abspann/NACHHALL
+betroffen). `python3 tools/version.py` nach jeder Änderung an einer `*.html`-Seite.
+`verloren` in flagcheck.js blieb durchgehend bei 0.
+
+### Blockiert (untersucht, bewusst nicht gebaut)
+
+- **Level 6: Pegel fällt schneller als die eigene Rechnung vorsieht** · `083f3b6` —
+  Zweifel am Spielgefühl. Gemessen: `TUNE.pegelAbbauProSek` hängt an keiner Verlust-
+  oder Blockierbedingung, nur an Sichteffekten und der Kondition-Abbaurate — „zu
+  schnell" ist eine Tempo-/Stimmungsfrage, keine messbare Fehlfunktion. Offene Frage in
+  NACHT-TODO.md unter „Blockiert" für eine Entscheidung.
+- **Level 1, 6 und 7: toter Tiefen-Code** · `e7c8590` (um Level 7 erweitert in `5027b0b`)
+  — Zweifel am Spielgefühl UND zu groß für einen kleinsten Eingriff. Befund bestätigt,
+  aber harmlos: `tWelt()` liefert bei abgeschalteter Tiefe immer 0, der Code ist toter
+  Ballast, kein Bug. Entfernen betrifft die Zeichenreihenfolge in drei großen Dateien und
+  ist ohne Browser nicht gegenzuprüfen; eine echte Aktivierung ist eine
+  Spielgefühl-Entscheidung. Offene Frage in NACHT-TODO.md unter „Blockiert".
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Gesprächsleiste quer: mehr
+als 3 lange Antworten scrollen** (weiterhin nicht prüfbar ohne echten Browser — CSS-
+Grid-Layout, nicht einmal eine Canvas-Pixelmessung; `nachttest.js` hat kein DOM/CSS, der
+Punkt wurde deshalb heute wieder übersprungen), dann **Zwei Handys auf zwei Tasten**
+(echte Design-Entscheidung, zwei verschiedene Mechaniken zusammenlegen - zu groß für
+einen kleinsten Eingriff, siehe Blockiert-Begründung oben für denselben Grundsatz), dann
+die beiden offenen Blockiert-Fragen oben, dann **Level 7: Kassenpreise dreifach
+hartcodiert statt TUNE** (P3) und die vier neuen Level-8-Punkte aus der heutigen Analyse
+(Kopfkommentar/KAMPF8/Lektion-SPRUNG-ROLLE/toter Code), dann **Analyse nachholen: Karte**
+— die letzten vier der ursprünglich acht Teile (Karte, Runner, Engine, Dramaturgie)
+stehen noch aus.
