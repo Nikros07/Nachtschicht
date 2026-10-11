@@ -607,6 +607,30 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
 
+- **2026-10-11 · P2 · Level 1 und 6: toter Tiefen-Code** — nicht gebaut, kein Code
+  geaendert. Grund: Zweifel am Spielgefuehl UND zu gross fuer einen kleinsten Eingriff
+  (siehe „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
+  Nachgemessen, der Befund stimmt: `TIEFE_PRO_SEITE['index.html']` und `['level6.html']`
+  stehen auf `false` (nacht/welt.js:54/59), beide Level rechnen trotzdem mit `S.tiefe`/
+  `TUNE.tiefe*`/`tiefeNah()` weiter. ABER: das ist nicht kaputt - `tWelt()` (nacht/welt.js:98)
+  liefert bei abgeschalteter Tiefe immer 0, darum wird z.B. der Sichtkegel in index.html
+  (`imSichtkegel(...,S.tiefe,...)`, Zeile 1286) dadurch automatisch zur reinen Linie
+  (`seit=0<=grenze`, also nie blockierend) - der Code ist toter Ballast, aber ungefaehrlich,
+  genau wie es der Kopfkommentar von welt.js verspricht. Das macht die Sache zu einer reinen
+  Aufraeum-Entscheidung, keiner Fehlerkorrektur: Entfernen heisst, in zwei grossen Dateien
+  (index.html: Sichtkegel-Trapez, ZU WEIT VORNE-Meldung, vier TUNE-Werte; level6.html: vier
+  TUNE-Werte, sechs `tiefeNah()`-Aufrufe, `.t`-Felder an sechs Objektlisten) jede Stelle
+  einzeln zu pruefen, ohne dabei die Zeichenreihenfolge (die `.t`-Felder sortieren immer noch
+  `zeichneNachTiefe()`) zu verschieben - das ist kein 15-Minuten-Punkt, und ein hastiger
+  Schnitt haette eher die Zeichenreihenfolge verdorben als aufgeraeumt (nicht pruefbar ohne
+  Browser - "Pixel, Layout" sind in dieser Sitzung explizit nicht messbar). Die Alternative
+  (Tiefe fuer eines der beiden Level bewusst einschalten) ist eine echte Spielgefuehl-
+  Entscheidung. Frage fuer eine Entscheidung: Tiefe fuer Level 1 und/oder 6 aktivieren (was
+  wuerde sie dort bringen?), oder den toten Code in beiden entfernen (grosse, aber risikoarme
+  Aufraeumarbeit mit Browser-Nachkontrolle)?
+  Fertig wenn weiterhin: für jedes der beiden Level einzeln entschieden und gemessen - Tiefe
+  bewusst aktiviert ODER die toten TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+
 - **2026-10-11 · P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht**
   — nicht gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe
   „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
