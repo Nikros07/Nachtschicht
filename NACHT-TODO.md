@@ -124,20 +124,23 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
   Wo: nacht/menue.js · Fertig wenn: entschieden (gewollt) oder Levelfortschritt gespeichert.
 
-- [ ] **P2 · Level 1 und 6: toter Tiefen-Code** — beide Level haben
-  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59), rechnen aber trotzdem mit
+- [ ] **P2 · Level 1, 6 und 7: toter Tiefen-Code** — drei Level haben
+  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59/60), rechnen aber trotzdem mit
   S.tiefe/TUNE.tiefe*/tiefeNah() weiter (index.html: Sichtkegel-Trapez :1744-1751,
   Meldung „ZU WEIT VORNE" :964/968, TUNE.tiefeWelt/tiefeTempo/kegelOeffnung/
   tuerTiefe; level6.html: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo :110-113,
   TUNE.redeTiefe :107 in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`,
   jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA :242-291 nur noch
-  Zeichenreihenfolge). Gefunden bei den Analysen vom 5.10. (PLAYTEST.md, Abschnitte
-  „Level 1"/„Level 6"). Zwei Level mit demselben Muster - lohnt eine gemeinsame
-  Entscheidung statt zwei Einzel-Fixes.
-  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html · Fertig wenn: für
-  jedes der beiden Level einzeln entschieden und gemessen - Tiefe bewusst aktiviert
-  (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich) ODER die toten
-  TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+  Zeichenreihenfolge; level7.html: TUNE.tiefeVorne/tiefeWelt/tiefeTempo/redeTiefe
+  :105-108, PFAND_PLAETZE-Kommentar „man muss auch in die Tiefe" :289 verspricht
+  eine Mechanik, die es gar nicht gibt). Gefunden bei den Analysen vom 5.10./11.10.
+  (PLAYTEST.md, Abschnitte „Level 1"/„Level 6"/„Level 7"). Drei Level mit demselben
+  Muster - lohnt eine gemeinsame Entscheidung statt drei Einzel-Fixes. Siehe auch
+  „Blockiert" unten (Grund, warum die Routine das nicht blind baut).
+  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html, level7.html ·
+  Fertig wenn: für jedes der drei Level einzeln entschieden und gemessen - Tiefe
+  bewusst aktiviert (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich)
+  ODER die toten TUNE-Werte/Code-Stellen entfernt (grep danach leer).
 - [ ] **P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht** —
   TUNE.pegelAbbauProSek=1,3 (level6.html:89, genutzt :543) senkt den Pegel gemessen
   unabhaengig vom Spielerverhalten in 77s von 100 auf 0 - schneller als der
@@ -151,10 +154,55 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   statt `zwei:'SPRUNG'` in `mobilKontext()`.
   Wo: level6.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
   eine echte Funktion). ERFUELLT.
-- [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
-  Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
-- [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
-  Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+- [x] ~~**P2 · Analyse nachholen: Level 7**~~ (erledigt in der Nacht zum 11.10.) —
+  dritter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
+  ERFUELLT, vier Funde (siehe PLAYTEST.md und die drei neuen Punkte unten).
+- [ ] **P2 · Level 7: Sprung ohne jede Spielwirkung** — komplette Sprungphysik
+  (TUNE.sprungKraft/kurzsprung/coyoteMs/puffermMs/luftKontrolle level7.html:74-79)
+  verdrahtet, aber kein Hindernis/keine Luecke im ganzen Level; `mobilKontext()`
+  zeigt trotzdem `zwei:'SPRUNG'` in praktisch jedem Zustand (:799). Gleiches Muster
+  wie Level 2 (`a438b31`) und Level 6 (`7abf9e1`).
+  Wo: level7.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
+  eine echte Funktion).
+- [ ] **P3 · Level 7: Kassenpreise dreifach hartcodiert statt TUNE** — "2 EURO"/
+  "3 EURO" stehen woertlich in `kassenWahl()` (level7.html:312/314) und der Regal-
+  Meldung (:660), statt TUNE.preisWasser/TUNE.preisSnack (:114-115) zu lesen -
+  Logik und Anzeige koennen auseinanderlaufen.
+  Wo: level7.html · Fertig wenn: alle drei Texte lesen TUNE.preisWasser/preisSnack
+  per Template-String, `grep -n "EURO" level7.html` zeigt keine wortgleiche Zahl mehr.
+- [ ] **P3 · Level 7: Introzeile verspricht "FUENF MINUTEN", TUNE sagt anderes** —
+  "WASSER. SNACKS. FUENF MINUTEN RUHE." (level7.html:569) passt weder zu
+  TUNE.startMinute/endMinute (30 Spielminuten, :93-94) noch zu TUNE.levelSekunden
+  (75 echte Sekunden, :95). Gleiches Fehlerbild wie „Bahn oder Bus?" beim Bus-Level.
+  Wo: level7.html (Intro-Text) · Fertig wenn: Introzeile nennt eine der beiden echten
+  Zahlen.
+- [x] ~~**P2 · Analyse nachholen: Level 8**~~ (erledigt in der Nacht zum 11.10.) —
+  vierter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+  ERFUELLT, fuenf Funde (siehe PLAYTEST.md und die neuen Punkte unten).
+- [ ] **P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst nicht in den Abspann ein** —
+  `tschuessRufen()` setzt `mag:['JONAS',b]`/`mag:['TOBI',b]` (level8.html:538/540),
+  aber keine NACHHALL-Zeile liest sie, anders als MORITZ/DENNIS/MARVIN/SEMIH/LEA.
+  `node tools/flagcheck.js` zaehlt beide unter „nie gelesen".
+  Wo: level8.html (NACHHALL-Liste, Muster aus den vier bestehenden Zeilen) ·
+  Fertig wenn: `tools/flagcheck.js` zaehlt JONAS und TOBI nicht mehr unter „nie
+  gelesen".
+- [ ] **P2 · Level 8: Kopfkommentar widerspricht dem Kampf gegen den Anfuehrer** —
+  „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" (level8.html:63-64), obwohl
+  ein vollstaendiger Nahkampf (`KAMPF8`, `starteGrossenKampf()`) existiert.
+  Wo: level8.html (Kopfkommentar) · Fertig wenn: Kommentar nennt den Kampf.
+- [ ] **P3 · Level 8: Kampfwerte (KAMPF8) stehen ausserhalb des TUNE-Blocks** —
+  anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
+  Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
+  TUNE zusammengefuehrt oder direkt danebengestellt.
+- [ ] **P3 · Level 8: Lektion ueberschreibt SPRUNG-Knopfbeschriftung mit ROLLE** —
+  zwei Lektionsschritte teilen sich Space (SPRUNG :90, ROLLE :92); `Z.mobilKontext()`
+  (nacht/lehre.js:201-212) ueberschreibt `k.zwei` stur, der letzte Schritt gewinnt.
+  Wo: nacht/lehre.js (`Z.mobilKontext`) · Fertig wenn: der Knopf zeigt im SPRUNG-
+  Schritt SPRUNG, nicht ROLLE.
+- [ ] **P3 · Level 8: toter Code nach `return`, falscher Kommentar** — `starteLevel()`
+  (level8.html:453) kehrt sofort zurueck; der Kommentar „alter Direkteinstieg, bleibt
+  fuer Tests erreichbar" behauptet faelschlich Erreichbarkeit.
+  Wo: level8.html (`starteLevel`) · Fertig wenn: toter Code und Kommentar entfernt.
 - [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
   Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
@@ -607,28 +655,32 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
 
-- **2026-10-11 · P2 · Level 1 und 6: toter Tiefen-Code** — nicht gebaut, kein Code
+- **2026-10-11 · P2 · Level 1, 6 und 7: toter Tiefen-Code** — nicht gebaut, kein Code
   geaendert. Grund: Zweifel am Spielgefuehl UND zu gross fuer einen kleinsten Eingriff
   (siehe „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
-  Nachgemessen, der Befund stimmt: `TIEFE_PRO_SEITE['index.html']` und `['level6.html']`
-  stehen auf `false` (nacht/welt.js:54/59), beide Level rechnen trotzdem mit `S.tiefe`/
-  `TUNE.tiefe*`/`tiefeNah()` weiter. ABER: das ist nicht kaputt - `tWelt()` (nacht/welt.js:98)
-  liefert bei abgeschalteter Tiefe immer 0, darum wird z.B. der Sichtkegel in index.html
-  (`imSichtkegel(...,S.tiefe,...)`, Zeile 1286) dadurch automatisch zur reinen Linie
-  (`seit=0<=grenze`, also nie blockierend) - der Code ist toter Ballast, aber ungefaehrlich,
-  genau wie es der Kopfkommentar von welt.js verspricht. Das macht die Sache zu einer reinen
-  Aufraeum-Entscheidung, keiner Fehlerkorrektur: Entfernen heisst, in zwei grossen Dateien
-  (index.html: Sichtkegel-Trapez, ZU WEIT VORNE-Meldung, vier TUNE-Werte; level6.html: vier
-  TUNE-Werte, sechs `tiefeNah()`-Aufrufe, `.t`-Felder an sechs Objektlisten) jede Stelle
-  einzeln zu pruefen, ohne dabei die Zeichenreihenfolge (die `.t`-Felder sortieren immer noch
+  Nachgemessen, der Befund stimmt: `TIEFE_PRO_SEITE['index.html']`, `['level6.html']`
+  und `['level7.html']` stehen auf `false` (nacht/welt.js:54/59/60), alle drei Level
+  rechnen trotzdem mit `S.tiefe`/`TUNE.tiefe*`/`tiefeNah()` weiter. ABER: das ist nicht
+  kaputt - `tWelt()` (nacht/welt.js:98) liefert bei abgeschalteter Tiefe immer 0, darum
+  wird z.B. der Sichtkegel in index.html (`imSichtkegel(...,S.tiefe,...)`, Zeile 1286)
+  dadurch automatisch zur reinen Linie (`seit=0<=grenze`, also nie blockierend) - der
+  Code ist toter Ballast, aber ungefaehrlich, genau wie es der Kopfkommentar von welt.js
+  verspricht. Das macht die Sache zu einer reinen Aufraeum-Entscheidung, keiner
+  Fehlerkorrektur: Entfernen heisst, in drei grossen Dateien (index.html: Sichtkegel-
+  Trapez, ZU WEIT VORNE-Meldung, vier TUNE-Werte; level6.html: vier TUNE-Werte, sechs
+  `tiefeNah()`-Aufrufe, `.t`-Felder an sechs Objektlisten; level7.html: vier TUNE-Werte,
+  `tiefeNah()`-Aufrufe in `naechstesZiel()`, `.t`-Felder an DINGE/PFAND_PLAETZE/
+  NACHTMENSCHEN, der irrefuehrende PFAND-Kommentar) jede Stelle einzeln zu pruefen,
+  ohne dabei die Zeichenreihenfolge (die `.t`-Felder sortieren immer noch
   `zeichneNachTiefe()`) zu verschieben - das ist kein 15-Minuten-Punkt, und ein hastiger
   Schnitt haette eher die Zeichenreihenfolge verdorben als aufgeraeumt (nicht pruefbar ohne
   Browser - "Pixel, Layout" sind in dieser Sitzung explizit nicht messbar). Die Alternative
-  (Tiefe fuer eines der beiden Level bewusst einschalten) ist eine echte Spielgefuehl-
-  Entscheidung. Frage fuer eine Entscheidung: Tiefe fuer Level 1 und/oder 6 aktivieren (was
-  wuerde sie dort bringen?), oder den toten Code in beiden entfernen (grosse, aber risikoarme
-  Aufraeumarbeit mit Browser-Nachkontrolle)?
-  Fertig wenn weiterhin: für jedes der beiden Level einzeln entschieden und gemessen - Tiefe
+  (Tiefe fuer eines der drei Level bewusst einschalten) ist eine echte Spielgefuehl-
+  Entscheidung. Frage fuer eine Entscheidung: Tiefe fuer Level 1, 6 und/oder 7 aktivieren
+  (was wuerde sie dort bringen? bei Level 7 koennte sie das Pfand-Sammeln raeumlich machen,
+  wie der eigene, bisher falsche Kommentar es verspricht), oder den toten Code in allen
+  drei entfernen (grosse, aber risikoarme Aufraeumarbeit mit Browser-Nachkontrolle)?
+  Fertig wenn weiterhin: für jedes der drei Level einzeln entschieden und gemessen - Tiefe
   bewusst aktiviert ODER die toten TUNE-Werte/Code-Stellen entfernt (grep danach leer).
 
 - **2026-10-11 · P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht**
