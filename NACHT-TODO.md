@@ -168,12 +168,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Logik und Anzeige koennen auseinanderlaufen.
   Wo: level7.html · Fertig wenn: alle drei Texte lesen TUNE.preisWasser/preisSnack
   per Template-String, `grep -n "EURO" level7.html` zeigt keine wortgleiche Zahl mehr.
-- [ ] **P3 · Level 7: Introzeile verspricht "FUENF MINUTEN", TUNE sagt anderes** —
-  "WASSER. SNACKS. FUENF MINUTEN RUHE." (level7.html:569) passt weder zu
-  TUNE.startMinute/endMinute (30 Spielminuten, :93-94) noch zu TUNE.levelSekunden
-  (75 echte Sekunden, :95). Gleiches Fehlerbild wie „Bahn oder Bus?" beim Bus-Level.
+- [x] ~~**P3 · Level 7: Introzeile verspricht "FUENF MINUTEN", TUNE sagt anderes**~~
+  (erledigt in der Nacht zum 11.10., Commit `1189657`) — Introzeile nennt jetzt
+  „DREISSIG MINUTEN RUHE" (passt zu TUNE.startMinute/endMinute, 30 Spielminuten).
   Wo: level7.html (Intro-Text) · Fertig wenn: Introzeile nennt eine der beiden echten
-  Zahlen.
+  Zahlen. ERFUELLT.
 - [x] ~~**P2 · Analyse nachholen: Level 8**~~ (erledigt in der Nacht zum 11.10.) —
   vierter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
   ERFUELLT, fuenf Funde (siehe PLAYTEST.md und die neuen Punkte unten).
@@ -269,6 +268,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-11 · P3 · Level 7: Introzeile nennt die echte Ruhezeit · `1189657` ·
+  „FUENF MINUTEN RUHE" passte zu keinem TUNE-Wert (30 Spielminuten laut
+  startMinute/endMinute, 75 echte Sekunden laut levelSekunden) - jetzt
+  „DREISSIG MINUTEN RUHE". Alle vier Pruefungen gruen.
 
 - [x] 2026-10-11 · P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst in den Abspann ein ·
   `dc4a169` · Zwei neue NACHHALL-Zeilen, gleiches Muster wie MORITZ/DENNIS/MARVIN/SEMIH/
