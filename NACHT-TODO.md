@@ -157,13 +157,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [x] ~~**P2 · Analyse nachholen: Level 7**~~ (erledigt in der Nacht zum 11.10.) —
   dritter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
   ERFUELLT, vier Funde (siehe PLAYTEST.md und die drei neuen Punkte unten).
-- [ ] **P2 · Level 7: Sprung ohne jede Spielwirkung** — komplette Sprungphysik
-  (TUNE.sprungKraft/kurzsprung/coyoteMs/puffermMs/luftKontrolle level7.html:74-79)
-  verdrahtet, aber kein Hindernis/keine Luecke im ganzen Level; `mobilKontext()`
-  zeigt trotzdem `zwei:'SPRUNG'` in praktisch jedem Zustand (:799). Gleiches Muster
-  wie Level 2 (`a438b31`) und Level 6 (`7abf9e1`).
+- [x] ~~**P2 · Level 7: Sprung ohne jede Spielwirkung**~~ (erledigt in der Nacht zum
+  11.10., Commit `9423159`) — gleiches Muster wie Level 2 (`a438b31`) und Level 6
+  (`7abf9e1`): `zwei:null` statt `zwei:'SPRUNG'` in `mobilKontext()`.
   Wo: level7.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
-  eine echte Funktion).
+  eine echte Funktion). ERFUELLT.
 - [ ] **P3 · Level 7: Kassenpreise dreifach hartcodiert statt TUNE** — "2 EURO"/
   "3 EURO" stehen woertlich in `kassenWahl()` (level7.html:312/314) und der Regal-
   Meldung (:660), statt TUNE.preisWasser/TUNE.preisSnack (:114-115) zu lesen -
@@ -271,6 +269,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-11 · P2 · Level 7: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `9423159` · Gleiches Muster wie Level 2 (a438b31) und Level 6 (7abf9e1): S.y wirkt nur
+  kosmetisch, keine Hindernisse/Luecken. `zwei:null` in mobilKontext(). Gemessen:
+  nachttest.js level7 weiterhin gruen. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-11 · P2 · Level 6: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
   `7abf9e1` · mobilKontext() zeigte SPRUNG in praktisch jedem Spielzustand, obwohl S.y in
