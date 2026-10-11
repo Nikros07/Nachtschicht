@@ -146,12 +146,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber 77s (oder bewusst belassen,
   wenn das Verblassen Teil des Zeitdrucks sein soll - dann Punkt nach
   „Entscheidung noetig" verschieben statt bauen).
-- [ ] **P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung** — `mobilKontext()`
-  liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (level6.html:693), obwohl
-  Level 6 keine Hindernisse, keine Luecken und keine Tiefe hat (siehe Tiefe-Punkt
-  oben); die eigene Lektion lehrt Sprung gar nicht erst.
+- [x] ~~**P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung**~~ (erledigt in der
+  Nacht zum 11.10., Commit `7abf9e1`) — gleicher Fix wie Level 2 (`a438b31`): `zwei:null`
+  statt `zwei:'SPRUNG'` in `mobilKontext()`.
   Wo: level6.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
-  eine echte Funktion).
+  eine echte Funktion). ERFUELLT.
 - [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
   Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
@@ -224,6 +223,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-11 · P2 · Level 6: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `7abf9e1` · mobilKontext() zeigte SPRUNG in praktisch jedem Spielzustand, obwohl S.y in
+  Level 6 nur kosmetisch wirkt (keine Kollision, keine Hindernisse, keine Tiefe). Gleicher
+  Fix wie Level 2 (a438b31, 6.10.): `zwei:null`. Gemessen: nachttest.js level6 weiterhin
+  gruen. Alle vier Pruefungen gruen.
 
 - [x] 2026-10-11 · P2 · Zwei stehengebliebene Duplikate aufgeraeumt (kein Code
   geaendert, nur nachgemessen) — „Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner,
