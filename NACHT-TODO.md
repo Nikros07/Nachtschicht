@@ -177,13 +177,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [x] ~~**P2 · Analyse nachholen: Level 8**~~ (erledigt in der Nacht zum 11.10.) —
   vierter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
   ERFUELLT, fuenf Funde (siehe PLAYTEST.md und die neuen Punkte unten).
-- [ ] **P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst nicht in den Abspann ein** —
-  `tschuessRufen()` setzt `mag:['JONAS',b]`/`mag:['TOBI',b]` (level8.html:538/540),
-  aber keine NACHHALL-Zeile liest sie, anders als MORITZ/DENNIS/MARVIN/SEMIH/LEA.
-  `node tools/flagcheck.js` zaehlt beide unter „nie gelesen".
+- [x] ~~**P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst nicht in den Abspann ein**~~
+  (erledigt in der Nacht zum 11.10., Commit `dc4a169`) — zwei neue NACHHALL-Zeilen,
+  gleiches Muster wie MORITZ/DENNIS/MARVIN/SEMIH/LEA: `beziehung('JONAS')>=10` und
+  `beziehung('TOBI')>=20` zeigen je eine Nachricht im Abspann.
   Wo: level8.html (NACHHALL-Liste, Muster aus den vier bestehenden Zeilen) ·
   Fertig wenn: `tools/flagcheck.js` zaehlt JONAS und TOBI nicht mehr unter „nie
-  gelesen".
+  gelesen". ERFUELLT.
 - [ ] **P2 · Level 8: Kopfkommentar widerspricht dem Kampf gegen den Anfuehrer** —
   „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" (level8.html:63-64), obwohl
   ein vollstaendiger Nahkampf (`KAMPF8`, `starteGrossenKampf()`) existiert.
@@ -269,6 +269,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-11 · P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst in den Abspann ein ·
+  `dc4a169` · Zwei neue NACHHALL-Zeilen, gleiches Muster wie MORITZ/DENNIS/MARVIN/SEMIH/
+  LEA: `beziehung('JONAS')>=10`/`beziehung('TOBI')>=20`. Gemessen: flagcheck.js zaehlt
+  beide nicht mehr unter „nie gelesen" (nur noch HAUSMEISTER/DER LAUTE/DIE FRAU, keine
+  Crew). Alle vier Pruefungen gruen, dazu erzaehl.test.js (52/0) und epilog.test.js (60/0).
 
 - [x] 2026-10-11 · P2 · Level 7: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
   `9423159` · Gleiches Muster wie Level 2 (a438b31) und Level 6 (7abf9e1): S.y wirkt nur
