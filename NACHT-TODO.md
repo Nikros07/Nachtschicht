@@ -607,6 +607,28 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
 
+- **2026-10-11 · P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht**
+  — nicht gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe
+  „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
+  Nachgemessen (level6.html): `TUNE.pegelAbbauProSek=1,3` haengt an **keiner**
+  Verlust- oder Blockierbedingung - `grep -n "S\.pegel" level6.html` zeigt nur
+  Sichteffekte (Wobble, Nachbild, Farbwasch, HUD-Balken) und die Abbaurate von
+  `S.kondition` (Zeile 613); ein Pegel von 0 beendet das Level nicht und
+  verhindert nichts. Der Pegel ist die visuelle Umsetzung von „die Nacht wird
+  langsam nuechtern" - *wie schnell* das gegenueber der eigentlichen Erschoepfung
+  (echter Zeitdruck ueber Kondition/Sofas) laufen soll, ist eine Tempo-/
+  Stimmungsentscheidung, keine messbare Fehlfunktion. Selbst mit korrekt
+  eingeschaetzter Lauflaenge (Hin-Strecke + Schleife im Raum 101 + Rueckweg zu
+  LEA, mehrere AUFGABEN unterwegs) waere eine „richtige" Abbaurate nur zu
+  erraten, nicht zu messen - das birgt dasselbe Risiko wie beim Level-4-Punkt
+  unten: unter Zeitdruck geraten haette es das Spielgefuehl eher verschlechtert
+  als verbessert. Frage fuer eine Entscheidung: soll der Pegel langsamer
+  abbauen (dann welche Zahl?), oder ist das schnelle Nuechterwerden so gewollt
+  (dann bitte den TUNE-Kommentar entsprechend praezisieren, damit der naechste
+  Fund nicht wieder von einer falschen Erwartung ausgeht)?
+  Fertig wenn weiterhin: gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber
+  77s (oder bewusst belassen).
+
 - **2026-10-05 · P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — nicht
   gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe „Zweifelst du..." in
   routinen/nacht.md), kein gescheiterter Bauversuch. Phase 2 entwertet die Phase-1-Antwort
