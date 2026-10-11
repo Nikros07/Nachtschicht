@@ -34,59 +34,82 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P2
 
-- [ ] **P2 · Level 8: Wettlauf-Balance ungemessen im Browser** — die Abbiegungen (1,5 s Sonne je Tschüss, Fenster nur bei Vorsprung > 8 s und 4 s Reserve) wurden nur mit einem Bot im Node-Test gemessen (Licht an der Haustür 65,7 ohne bis 77,4 mit allen Abschieden bei Start 0).
-  Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt, dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei Start 40 der Wettlauf verloren gehen kann; Werte stehen hier.
+- [x] ~~**P2 · Beziehung zu DENNIS wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `bb2369d`) — neue NACHHALL-Zeile in level8.html (gleiches Muster
+  wie die bestehende MORITZ-Zeile): `beziehung('DENNIS')>=8` zeigt „DENNIS SCHREIBT: BIST DU
+  GUT ANGEKOMMEN." im Abspann. `tools/flagcheck.js` zaehlt DENNIS nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu MARVIN wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `56a1674`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('MARVIN')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  MARVIN nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu SEMIH wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `6cd95f1`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('SEMIH')>=10` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  SEMIH nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Beziehung zu LEA wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
+  Nacht zum 6.10., Commit `c9602d9`) — neue NACHHALL-Zeile in level8.html, gleiches Muster:
+  `beziehung('LEA')>=14` zeigt eine Nachricht im Abspann. `tools/flagcheck.js` zaehlt
+  LEA nicht mehr unter „nie gelesen".
+- [x] ~~**P2 · Level 8: Wettlauf-Balance ungemessen im Browser**~~ (bereits erfuellt, gemessen
+  in der Nacht zum 6.10. — kein Code geaendert) — Wegwerf-Bot (lade() aus tools/nachttest.js
+  wiederverwendet, $TMPDIR, nicht im Repo) haelt KeyD gedrueckt, springt rechtzeitig vor jedem
+  der elf HINDERNISSE (sonst zaehlt jeder Treffer als Lichtstrafe - ohne Sprung verliert der
+  Bot IMMER, das waere die falsche Messung gewesen) und ruft bei "alle Abschiede" jedes
+  Abbiege-Fenster per aktionPuffer. Gemessen: Start-Licht 0/7/14/21/28, MAX FERDI in der Crew,
+  keine Abschiede -> alle fuenf Laeufe "ankunft" (Licht an der Haustuer 57,1/64,1/71,1/78,1/85,1 %,
+  jeweils unter 100). Start-Licht 40, OHNE MAX FERDI, alle fuenf Abbieger in der Crew und alle
+  Abschiede gerufen -> "verloren" (Licht erreicht 100 % bei x=4849 von 5160). Gegenprobe Start 40
+  MIT MAX FERDI, keine Abschiede -> knapp "ankunft" (97,1 %) - die Abschiede sind also wirklich
+  die Stellschraube, nicht Kosmetik. Beide Teile des "Fertig wenn" erfuellt.
+  Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt,
+  dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei
+  Start 40 der Wettlauf verloren gehen kann; Werte stehen hier. ERFUELLT, Werte oben.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
 
-- [ ] **P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus** — Der
-  60-s-Spiellauf (`SPIEL_SEK`) bewegt sich mit dem festen Seed nur von x=40 bis x≈371
-  (Eingang, ein Stück Tanzfläche), dann füllt ein Minispiel die restliche Zeit. Bar,
-  Raucherecke, Klos und Hinterausgang (x 620-1400) werden von der „leere Bildzeilen"-
-  Messung dieses Laufs nie gesehen - jede künftige Deko dort ist mit `node
-  tools/nachttest.js level5` nicht prüfbar (siehe „Blockiert", Club-Decke-Galerie).
+- [x] ~~**P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus**~~ (bereits
+  erfuellt, nachgemessen in der Nacht zum 6.10. — kein Code geaendert) — Befund war veraltet,
+  der eigentliche Fix (Commit `66ecc5f`, 4.10.) hat das schon geloest, und haelt auch nach dem
+  Launch-Merge: eine Kopie von tools/nachttest.js mit einer Protokollzeile fuer `S.x` je Bild
+  (sonst identisch, inklusive der draw()-Aufrufe alle 6 Bilder - ohne die laeuft die
+  Zufallsfolge anders, siehe die Notiz zum Fix selbst) zeigt fuer `node
+  tools/nachttest.js level5`: maxX=1386 (gefordert: x>900 irgendwann in den 60 s). Modi bleiben
+  seit dem Launch-Merge bei "spiel" (kein "mini/cutscene/ende" mehr in diesem Lauf) - anderer
+  Levelinhalt, aber das Kriterium selbst (x>900) ist weiterhin erfuellt.
   Wo: tools/nachttest.js (der Tastenmix/die Gewichtung im Spiellauf) · Fertig wenn:
   derselbe Lauf erreicht x>900 irgendwann innerhalb der 60 s, gemessen über ein
-  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund.
-- [ ] **P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter** — zu groß für einen Punkt (mehr als
-  eine Datenstruktur-Änderung: ein neuer Schritt-Typ in `nacht/lehre.js`, der waehrend der Lektion
-  einen Mini-Kampf gegen eine reglose Puppe mit `kaempferTakt()`-Windup laufen laesst und den
-  bestehenden Schritt „KONTERN IM GOLDENEN BEREICH" ersetzt, statt nur eine Taste einmal zu
-  pruefen). Am 3.10. geteilt - zuerst nur Level 4, Block/Rolle (Level 3, 8) folgen als eigene
-  Punkte, erst wenn der Mechanismus hier steht.
-  Wo: nacht/lehre.js (neuer Schritt-Typ `puppe`), nacht/kampf.js (`kaempferTakt` wiederverwenden,
-  nicht duplizieren) · Fertig wenn: der Schritt in LEKTIONEN['level4.html'] verlangt einen im
-  Fenster getroffenen Konter gegen eine stillstehende Puppe, bevor er als erledigt gilt; per
-  Simulation im Nachttest auslösbar (Taste zur richtigen Zeit drücken = Schritt fertig, zur
-  falschen Zeit = nicht).
-- [ ] **P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)** — baut auf dem
-  Level-4-Mechanismus oben auf, sobald der steht. Wo: nacht/lehre.js · Fertig wenn: die Lektion
-  von Level 3 verlangt einen Block, die von Level 8 eine Rolle gegen dieselbe Puppe.
+  Protokoll der x-Werte wie in der Untersuchung zu diesem Fund. ERFUELLT (maxX=1386).
+- [x] ~~**P2 · Lektionen: Übungspuppe, nur Level 4, nur Konter**~~ (bereits erfuellt, war schon
+  am 3.10. gebaut - Commit `2e60b48` - und im Launch-Merge erhalten geblieben: dieser Offen-
+  Eintrag war ein stehengebliebenes Duplikat) — `grep -n puppe nacht/lehre.js` zeigt
+  `puppe:'konter'` am E-Schritt von LEKTIONEN['level4.html'], `PUPPE_ARTEN` und die Puppen-
+  Simulation (`_puppe`/`kaempferTakt`) stehen in nacht/lehre.js:99-195. Nachgemessen in der
+  Nacht zum 6.10., kein Code geaendert.
+- [x] ~~**P2 · Lektionen: Übungspuppe auch für Block (Level 3) und Rolle (Level 8)**~~ (ebenfalls
+  bereits erfuellt - Commits `59d5066` und `d62c683` am 5.10., dasselbe stehengebliebene
+  Duplikat) — `puppe:'block'` (Level 3) und `puppe:'rolle'` (Level 8) stehen in nacht/lehre.js
+  neben `puppe:'konter'` oben. Nachgemessen in der Nacht zum 6.10., kein Code geaendert.
 
 - [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
   die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
   Wo: level4.html (`bossPhase`, `naechsteArt`) · Fertig wenn: Phase 2 und 3 verlangen
   je eine andere Antwort als Phase 1.
-- [ ] **P2 · Level 4: Jab und Schwung unterscheidbar machen** — eigene Haltung je Angriff.
-  Wo: level4.html (`SPR`, Zeichnen des Bosses) · Fertig wenn: beide Muster sehen im
-  Ausholen verschieden aus.
-- [ ] **P2 · Club: Die drei Frauen kennen sich** — Der Kommentar im Code verspricht,
-  dass sich eine Abfuhr herumspricht. `S.abfuhren` gibt es schon.
-  Wo: level5.html (`gespraechEnde`, die drei Bäume) · Fertig wenn: nach einer Abfuhr
-  erwähnt mindestens eine andere Figur sie, gemessen per Baum-Durchlauf.
-- [ ] **P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar** —
-  Wo: level5.html (`SOPHIE_BAUM`, `LENA`) · Fertig wenn: Sophie reagiert auf Pegel,
-  Lena hat ein kurzes Gespräch.
+- [x] ~~**P2 · Level 4: Jab und Schwung unterscheidbar machen**~~ (bereits erfuellt - Commit
+  `926e612` am 5.10., stehengebliebenes Duplikat) — `SPR.bossWindJab` existiert neben
+  `SPR.bossWind`, `rows=(b.art==='jab')?SPR.bossWindJab:SPR.bossWind` in level4.html:743.
+- [x] ~~**P2 · Club: Die drei Frauen kennen sich**~~ (bereits erfuellt - Commit `0e73e3a` am
+  4.10., stehengebliebenes Duplikat) — `startAbfuhr`-Knoten in allen drei Baeumen
+  (level5.html:375/470/550), `abfuhrGehoert?'startAbfuhr':'start'` in `redeMit()`.
+- [x] ~~**P2 · Club: Sophie hat keine Pegel-Bedingung, Lena ist nicht ansprechbar**~~ (bereits
+  erfuellt - Commit `b6a6d00` am 4.10., stehengebliebenes Duplikat) — Sophie hat
+  `wenn:{pegel:55}` (level5.html:476), LENA_BAUM existiert und ist verdrahtet.
 - [x] ~~**P2 · Level 2: kein `mobilKontext()`**~~ (erledigt in der Sitzung 3.-5.10., Commit 427135a) — am Handy heißt jeder Knopf „AKTION".
   Wo: level2.html, Muster aus index.html · Fertig wenn: Knopfaufschriften je Modus.
-- [ ] **P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts** —
+- [x] ~~**P2 · Level 2: Springen/Hoch/Runter werden beigebracht und tun nichts**~~ (erledigt
+  in der Nacht zum 6.10., Commit `a438b31`) — Titelbild/Lektion waren schon seit `c04f355`
+  (4.10.) bereinigt, aber `mobilKontext()` zeigte den SPRUNG-Knopf weiterhin in jedem
+  Zustand. Jetzt `zwei:null` an allen drei Stellen.
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
-- [ ] **P2 · Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner, Engine, Dramaturgie** —
-  neun Prüfer sind am Nutzungslimit gescheitert, siehe PLAYTEST.md ganz unten.
-  Fertig wenn: je Bereich Bugs, Schwachstellen und Ideen in PLAYTEST.md ergänzt.
-- [ ] **P2 · Level 1: Titelbild ist eine Bedienungsanleitung** — sieben Tastenzeilen,
-  zwei davon laufen ineinander. Wo: index.html `titelbild()` · Fertig wenn: höchstens
-  vier Zeilen, nichts überlappt.
 - [ ] **P2 · Zwei Handys auf zwei Tasten** — `H` stumm (Level 1), `T` Engine-Handy.
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
@@ -101,20 +124,23 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
   Wo: nacht/menue.js · Fertig wenn: entschieden (gewollt) oder Levelfortschritt gespeichert.
 
-- [ ] **P2 · Level 1 und 6: toter Tiefen-Code** — beide Level haben
-  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59), rechnen aber trotzdem mit
+- [ ] **P2 · Level 1, 6 und 7: toter Tiefen-Code** — drei Level haben
+  `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59/60), rechnen aber trotzdem mit
   S.tiefe/TUNE.tiefe*/tiefeNah() weiter (index.html: Sichtkegel-Trapez :1744-1751,
   Meldung „ZU WEIT VORNE" :964/968, TUNE.tiefeWelt/tiefeTempo/kegelOeffnung/
   tuerTiefe; level6.html: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo :110-113,
   TUNE.redeTiefe :107 in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`,
   jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA :242-291 nur noch
-  Zeichenreihenfolge). Gefunden bei den Analysen vom 5.10. (PLAYTEST.md, Abschnitte
-  „Level 1"/„Level 6"). Zwei Level mit demselben Muster - lohnt eine gemeinsame
-  Entscheidung statt zwei Einzel-Fixes.
-  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html · Fertig wenn: für
-  jedes der beiden Level einzeln entschieden und gemessen - Tiefe bewusst aktiviert
-  (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich) ODER die toten
-  TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+  Zeichenreihenfolge; level7.html: TUNE.tiefeVorne/tiefeWelt/tiefeTempo/redeTiefe
+  :105-108, PFAND_PLAETZE-Kommentar „man muss auch in die Tiefe" :289 verspricht
+  eine Mechanik, die es gar nicht gibt). Gefunden bei den Analysen vom 5.10./11.10.
+  (PLAYTEST.md, Abschnitte „Level 1"/„Level 6"/„Level 7"). Drei Level mit demselben
+  Muster - lohnt eine gemeinsame Entscheidung statt drei Einzel-Fixes. Siehe auch
+  „Blockiert" unten (Grund, warum die Routine das nicht blind baut).
+  Wo: nacht/welt.js (TIEFE_PRO_SEITE), index.html, level6.html, level7.html ·
+  Fertig wenn: für jedes der drei Level einzeln entschieden und gemessen - Tiefe
+  bewusst aktiviert (S.tiefe aendert sich nach 2s gehaltenem W/HOCH nachweislich)
+  ODER die toten TUNE-Werte/Code-Stellen entfernt (grep danach leer).
 - [ ] **P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht** —
   TUNE.pegelAbbauProSek=1,3 (level6.html:89, genutzt :543) senkt den Pegel gemessen
   unabhaengig vom Spielerverhalten in 77s von 100 auf 0 - schneller als der
@@ -123,16 +149,57 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber 77s (oder bewusst belassen,
   wenn das Verblassen Teil des Zeitdrucks sein soll - dann Punkt nach
   „Entscheidung noetig" verschieben statt bauen).
-- [ ] **P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung** — `mobilKontext()`
-  liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (level6.html:693), obwohl
-  Level 6 keine Hindernisse, keine Luecken und keine Tiefe hat (siehe Tiefe-Punkt
-  oben); die eigene Lektion lehrt Sprung gar nicht erst.
+- [x] ~~**P2 · Level 6: Mobil-Sprungknopf ohne jede Spielwirkung**~~ (erledigt in der
+  Nacht zum 11.10., Commit `7abf9e1`) — gleicher Fix wie Level 2 (`a438b31`): `zwei:null`
+  statt `zwei:'SPRUNG'` in `mobilKontext()`.
   Wo: level6.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
-  eine echte Funktion).
-- [ ] **P2 · Analyse nachholen: Level 7** — dritter Teil, siehe oben.
-  Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
-- [ ] **P2 · Analyse nachholen: Level 8** — vierter Teil, siehe oben.
-  Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+  eine echte Funktion). ERFUELLT.
+- [x] ~~**P2 · Analyse nachholen: Level 7**~~ (erledigt in der Nacht zum 11.10.) —
+  dritter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 7" in PLAYTEST.md.
+  ERFUELLT, vier Funde (siehe PLAYTEST.md und die drei neuen Punkte unten).
+- [x] ~~**P2 · Level 7: Sprung ohne jede Spielwirkung**~~ (erledigt in der Nacht zum
+  11.10., Commit `9423159`) — gleiches Muster wie Level 2 (`a438b31`) und Level 6
+  (`7abf9e1`): `zwei:null` statt `zwei:'SPRUNG'` in `mobilKontext()`.
+  Wo: level7.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
+  eine echte Funktion). ERFUELLT.
+- [ ] **P3 · Level 7: Kassenpreise dreifach hartcodiert statt TUNE** — "2 EURO"/
+  "3 EURO" stehen woertlich in `kassenWahl()` (level7.html:312/314) und der Regal-
+  Meldung (:660), statt TUNE.preisWasser/TUNE.preisSnack (:114-115) zu lesen -
+  Logik und Anzeige koennen auseinanderlaufen.
+  Wo: level7.html · Fertig wenn: alle drei Texte lesen TUNE.preisWasser/preisSnack
+  per Template-String, `grep -n "EURO" level7.html` zeigt keine wortgleiche Zahl mehr.
+- [x] ~~**P3 · Level 7: Introzeile verspricht "FUENF MINUTEN", TUNE sagt anderes**~~
+  (erledigt in der Nacht zum 11.10., Commit `1189657`) — Introzeile nennt jetzt
+  „DREISSIG MINUTEN RUHE" (passt zu TUNE.startMinute/endMinute, 30 Spielminuten).
+  Wo: level7.html (Intro-Text) · Fertig wenn: Introzeile nennt eine der beiden echten
+  Zahlen. ERFUELLT.
+- [x] ~~**P2 · Analyse nachholen: Level 8**~~ (erledigt in der Nacht zum 11.10.) —
+  vierter Teil, siehe oben. Fertig wenn: eigener Abschnitt „Level 8" in PLAYTEST.md.
+  ERFUELLT, fuenf Funde (siehe PLAYTEST.md und die neuen Punkte unten).
+- [x] ~~**P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst nicht in den Abspann ein**~~
+  (erledigt in der Nacht zum 11.10., Commit `dc4a169`) — zwei neue NACHHALL-Zeilen,
+  gleiches Muster wie MORITZ/DENNIS/MARVIN/SEMIH/LEA: `beziehung('JONAS')>=10` und
+  `beziehung('TOBI')>=20` zeigen je eine Nachricht im Abspann.
+  Wo: level8.html (NACHHALL-Liste, Muster aus den vier bestehenden Zeilen) ·
+  Fertig wenn: `tools/flagcheck.js` zaehlt JONAS und TOBI nicht mehr unter „nie
+  gelesen". ERFUELLT.
+- [ ] **P2 · Level 8: Kopfkommentar widerspricht dem Kampf gegen den Anfuehrer** —
+  „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" (level8.html:63-64), obwohl
+  ein vollstaendiger Nahkampf (`KAMPF8`, `starteGrossenKampf()`) existiert.
+  Wo: level8.html (Kopfkommentar) · Fertig wenn: Kommentar nennt den Kampf.
+- [ ] **P3 · Level 8: Kampfwerte (KAMPF8) stehen ausserhalb des TUNE-Blocks** —
+  anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
+  Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
+  TUNE zusammengefuehrt oder direkt danebengestellt.
+- [ ] **P3 · Level 8: Lektion ueberschreibt SPRUNG-Knopfbeschriftung mit ROLLE** —
+  zwei Lektionsschritte teilen sich Space (SPRUNG :90, ROLLE :92); `Z.mobilKontext()`
+  (nacht/lehre.js:201-212) ueberschreibt `k.zwei` stur, der letzte Schritt gewinnt.
+  Wo: nacht/lehre.js (`Z.mobilKontext`) · Fertig wenn: der Knopf zeigt im SPRUNG-
+  Schritt SPRUNG, nicht ROLLE.
+- [ ] **P3 · Level 8: toter Code nach `return`, falscher Kommentar** — `starteLevel()`
+  (level8.html:453) kehrt sofort zurueck; der Kommentar „alter Direkteinstieg, bleibt
+  fuer Tests erreichbar" behauptet faelschlich Erreichbarkeit.
+  Wo: level8.html (`starteLevel`) · Fertig wenn: toter Code und Kommentar entfernt.
 - [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
   Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
@@ -201,6 +268,84 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-11 · P3 · Level 7: Introzeile nennt die echte Ruhezeit · `1189657` ·
+  „FUENF MINUTEN RUHE" passte zu keinem TUNE-Wert (30 Spielminuten laut
+  startMinute/endMinute, 75 echte Sekunden laut levelSekunden) - jetzt
+  „DREISSIG MINUTEN RUHE". Alle vier Pruefungen gruen.
+
+- [x] 2026-10-11 · P1 · Level 8: JONAS- und TOBI-Zuneigung fliesst in den Abspann ein ·
+  `dc4a169` · Zwei neue NACHHALL-Zeilen, gleiches Muster wie MORITZ/DENNIS/MARVIN/SEMIH/
+  LEA: `beziehung('JONAS')>=10`/`beziehung('TOBI')>=20`. Gemessen: flagcheck.js zaehlt
+  beide nicht mehr unter „nie gelesen" (nur noch HAUSMEISTER/DER LAUTE/DIE FRAU, keine
+  Crew). Alle vier Pruefungen gruen, dazu erzaehl.test.js (52/0) und epilog.test.js (60/0).
+
+- [x] 2026-10-11 · P2 · Level 7: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `9423159` · Gleiches Muster wie Level 2 (a438b31) und Level 6 (7abf9e1): S.y wirkt nur
+  kosmetisch, keine Hindernisse/Luecken. `zwei:null` in mobilKontext(). Gemessen:
+  nachttest.js level7 weiterhin gruen. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-11 · P2 · Level 6: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `7abf9e1` · mobilKontext() zeigte SPRUNG in praktisch jedem Spielzustand, obwohl S.y in
+  Level 6 nur kosmetisch wirkt (keine Kollision, keine Hindernisse, keine Tiefe). Gleicher
+  Fix wie Level 2 (a438b31, 6.10.): `zwei:null`. Gemessen: nachttest.js level6 weiterhin
+  gruen. Alle vier Pruefungen gruen.
+
+- [x] 2026-10-11 · P2 · Zwei stehengebliebene Duplikate aufgeraeumt (kein Code
+  geaendert, nur nachgemessen) — „Analyse nachholen: Level 1, 6, 7, 8, Karte, Runner,
+  Engine, Dramaturgie" war der urspruengliche Sammelpunkt, laengst in acht Einzelpunkte
+  aufgeteilt (Level 1 `9508e31`, Level 6 `7e60128` erledigt; Level 7/8/Karte/Runner/
+  Engine/Dramaturgie stehen als eigene Punkte weiter unten unter „Offen") — der
+  Sammelpunkt selbst war nur noch ein Karteileiche. „Level 1: Titelbild ist eine
+  Bedienungsanleitung" war seit `08af616` (4.10.) erledigt: `grep -n "const
+  st=\[\['A D'" index.html` zeigt die vier Zeilen A D/SHIFT/W S/E, keine sieben mehr.
+  Beide Male gegen den aktuellen Code/die aktuelle Liste gegengeprueft und entfernt.
+- [x] 2026-10-06 · P2 · Level 2: Mobil-Sprungknopf verschwindet (Sprung tut hier nichts) ·
+  `a438b31` · `mobilKontext()` zeigte SPRUNG trotz des Fixes vom 4.10. (c04f355, Titelbild/
+  Lektion) weiterhin in jedem Zustand. Jetzt `zwei:null` an allen drei Stellen. Gemessen:
+  nachttest.js level2 weiterhin gruen. Alle vier Pruefungen gruen.
+- [x] 2026-10-06 · P2 · Fuenf stehengebliebene Duplikate in NACHT-TODO aufgeraeumt (kein
+  Code geaendert, nur nachgemessen) — Lektionen-Uebungspuppe (Level 4 Konter `2e60b48`,
+  Level 3 Block `59d5066`, Level 8 Rolle `d62c683`), Level 4 Jab/Schwung (`926e612`), Club
+  Abfuhr spricht sich herum (`0e73e3a`), Club Sophie/Lena (`b6a6d00`) standen trotz laengst
+  erledigter Commits noch unter „Offen" - vermutlich vom Launch-Merge mitgebracht, der eine
+  aeltere Fassung von NACHT-TODO.md enthielt. Jeweils per grep gegen den aktuellen Code
+  gegengeprueft und mit Verweis auf den bestehenden Commit als bereits erfuellt markiert.
+- [x] 2026-10-06 · P2 · nachttest.js Level 5: x>900-Kriterium nachgemessen, bereits erfuellt ·
+  (kein Code geaendert, nur gemessen) · Protokoll-Kopie von tools/nachttest.js (mit draw()-
+  Aufrufen wie im Original, sonst unveraendert) zeigt maxX=1386 fuer den 60-s-Zufallslauf in
+  Level 5 - der Fix vom 4.10. (`66ecc5f`) haelt auch nach dem Launch-Merge, nur die Modi-Liste
+  hat sich geaendert (kein "mini" mehr in diesem Lauf, anderer Levelinhalt).
+
+- [x] 2026-10-06 · P2 · Level 8: Wettlauf-Balance gemessen, bereits erfuellt · `cba5f49`
+  (kein Spielcode geaendert, nur gemessen) · Wegwerf-Bot (Node,
+  $TMPDIR) mit Sprung ueber alle elf Hindernisse: Start-Licht 0-28 mit MAX FERDI kommt immer
+  an (Licht 57-85 % an der Haustuer), Start-Licht 40 ohne MAX FERDI mit allen fuenf Abschieden
+  geht verloren (Licht 100 % bei x=4849 von 5160), Gegenprobe mit MAX FERDI und ohne Abschiede
+  kommt bei Start 40 knapp an (97,1 %). Beide Haelften des „Fertig wenn" erfuellt, siehe Eintrag
+  oben. Alle vier Pruefungen gruen (unveraendert, da kein Code geaendert).
+
+- [x] 2026-10-06 · P2 · LEA-Zuneigung fliesst in den Abspann ein · `c9602d9` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('LEA')>=14`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt LEA nicht
+  mehr unter „nie gelesen" - damit sind DENNIS/MARVIN/SEMIH/LEA alle vier erledigt.
+  Alle vier Pruefungen gruen.
+
+- [x] 2026-10-06 · P2 · SEMIH-Zuneigung fliesst in den Abspann ein · `6cd95f1` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('SEMIH')>=10`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt SEMIH nicht
+  mehr unter „nie gelesen". Alle vier Pruefungen gruen.
+
+- [x] 2026-10-06 · P2 · MARVIN-Zuneigung fliesst in den Abspann ein · `56a1674` ·
+  Neue NACHHALL-Zeile in level8.html nach demselben Muster: `beziehung('MARVIN')>=14`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt MARVIN nicht
+  mehr unter „nie gelesen". Alle vier Pruefungen gruen.
+
+- [x] 2026-10-06 · P2 · DENNIS-Zuneigung fliesst in den Abspann ein · `bb2369d` ·
+  Neue NACHHALL-Zeile in level8.html nach dem MORITZ-Muster: `beziehung('DENNIS')>=8`
+  zeigt eine Nachricht im Abspann. Gemessen: `tools/flagcheck.js` zaehlt DENNIS nicht
+  mehr unter „nie gelesen" (vorher dabei, seit dem Launch-Merge). Alle vier Pruefungen
+  gruen.
 
 - [x] 2026-10-05 · Sitzung · Launch-Ausbau auf `claude/launch`: Story (Bibel, acht Level, Abspann mit zehn Enden), Erzähl-Engine (Kapitelkarte, Plausch, Momente), Startmenü und Enden-Galerie, Geräte-Schutz und Offline-Modus, Handy-Abnahme im Emulator · `42c3b93` bis `44a236f`.
 - [x] 2026-10-05 · P2 · Analyse nachholen: Level 6 · `7e60128` · Zweiter von acht Teilen.
@@ -522,6 +667,56 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Blockiert
 
 *(Was die Routine zweimal versucht hat und zurückgerollt hat — mit Grund.)*
+
+- **2026-10-11 · P2 · Level 1, 6 und 7: toter Tiefen-Code** — nicht gebaut, kein Code
+  geaendert. Grund: Zweifel am Spielgefuehl UND zu gross fuer einen kleinsten Eingriff
+  (siehe „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
+  Nachgemessen, der Befund stimmt: `TIEFE_PRO_SEITE['index.html']`, `['level6.html']`
+  und `['level7.html']` stehen auf `false` (nacht/welt.js:54/59/60), alle drei Level
+  rechnen trotzdem mit `S.tiefe`/`TUNE.tiefe*`/`tiefeNah()` weiter. ABER: das ist nicht
+  kaputt - `tWelt()` (nacht/welt.js:98) liefert bei abgeschalteter Tiefe immer 0, darum
+  wird z.B. der Sichtkegel in index.html (`imSichtkegel(...,S.tiefe,...)`, Zeile 1286)
+  dadurch automatisch zur reinen Linie (`seit=0<=grenze`, also nie blockierend) - der
+  Code ist toter Ballast, aber ungefaehrlich, genau wie es der Kopfkommentar von welt.js
+  verspricht. Das macht die Sache zu einer reinen Aufraeum-Entscheidung, keiner
+  Fehlerkorrektur: Entfernen heisst, in drei grossen Dateien (index.html: Sichtkegel-
+  Trapez, ZU WEIT VORNE-Meldung, vier TUNE-Werte; level6.html: vier TUNE-Werte, sechs
+  `tiefeNah()`-Aufrufe, `.t`-Felder an sechs Objektlisten; level7.html: vier TUNE-Werte,
+  `tiefeNah()`-Aufrufe in `naechstesZiel()`, `.t`-Felder an DINGE/PFAND_PLAETZE/
+  NACHTMENSCHEN, der irrefuehrende PFAND-Kommentar) jede Stelle einzeln zu pruefen,
+  ohne dabei die Zeichenreihenfolge (die `.t`-Felder sortieren immer noch
+  `zeichneNachTiefe()`) zu verschieben - das ist kein 15-Minuten-Punkt, und ein hastiger
+  Schnitt haette eher die Zeichenreihenfolge verdorben als aufgeraeumt (nicht pruefbar ohne
+  Browser - "Pixel, Layout" sind in dieser Sitzung explizit nicht messbar). Die Alternative
+  (Tiefe fuer eines der drei Level bewusst einschalten) ist eine echte Spielgefuehl-
+  Entscheidung. Frage fuer eine Entscheidung: Tiefe fuer Level 1, 6 und/oder 7 aktivieren
+  (was wuerde sie dort bringen? bei Level 7 koennte sie das Pfand-Sammeln raeumlich machen,
+  wie der eigene, bisher falsche Kommentar es verspricht), oder den toten Code in allen
+  drei entfernen (grosse, aber risikoarme Aufraeumarbeit mit Browser-Nachkontrolle)?
+  Fertig wenn weiterhin: für jedes der drei Level einzeln entschieden und gemessen - Tiefe
+  bewusst aktiviert ODER die toten TUNE-Werte/Code-Stellen entfernt (grep danach leer).
+
+- **2026-10-11 · P2 · Level 6: Pegel faellt schneller als die eigene Rechnung vorsieht**
+  — nicht gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe
+  „Zweifelst du..." in routinen/nacht.md), kein gescheiterter Bauversuch.
+  Nachgemessen (level6.html): `TUNE.pegelAbbauProSek=1,3` haengt an **keiner**
+  Verlust- oder Blockierbedingung - `grep -n "S\.pegel" level6.html` zeigt nur
+  Sichteffekte (Wobble, Nachbild, Farbwasch, HUD-Balken) und die Abbaurate von
+  `S.kondition` (Zeile 613); ein Pegel von 0 beendet das Level nicht und
+  verhindert nichts. Der Pegel ist die visuelle Umsetzung von „die Nacht wird
+  langsam nuechtern" - *wie schnell* das gegenueber der eigentlichen Erschoepfung
+  (echter Zeitdruck ueber Kondition/Sofas) laufen soll, ist eine Tempo-/
+  Stimmungsentscheidung, keine messbare Fehlfunktion. Selbst mit korrekt
+  eingeschaetzter Lauflaenge (Hin-Strecke + Schleife im Raum 101 + Rueckweg zu
+  LEA, mehrere AUFGABEN unterwegs) waere eine „richtige" Abbaurate nur zu
+  erraten, nicht zu messen - das birgt dasselbe Risiko wie beim Level-4-Punkt
+  unten: unter Zeitdruck geraten haette es das Spielgefuehl eher verschlechtert
+  als verbessert. Frage fuer eine Entscheidung: soll der Pegel langsamer
+  abbauen (dann welche Zahl?), oder ist das schnelle Nuechterwerden so gewollt
+  (dann bitte den TUNE-Kommentar entsprechend praezisieren, damit der naechste
+  Fund nicht wieder von einer falschen Erwartung ausgeht)?
+  Fertig wenn weiterhin: gemessene Pegel-Nullzeit bei Nichtstun deutlich ueber
+  77s (oder bewusst belassen).
 
 - **2026-10-05 · P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — nicht
   gebaut, kein Code geaendert. Grund: Zweifel am Spielgefuehl (siehe „Zweifelst du..." in

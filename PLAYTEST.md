@@ -76,8 +76,12 @@ gesetzt und von keiner Zeile im Spiel je gelesen — darunter geschlossen
 alles, was man im Bus tut (7 Flags), wie Level 1 ausgegangen ist (3) und
 was man im Traum begreift (2).
 
-Die Zuneigung zu **MORITZ** — dem besten Freund, dessen Wohnung Level 2
-ist — wird in Level 2 und 6 verändert und **nirgends abgefragt**.
+~~Die Zuneigung zu **MORITZ** — dem besten Freund, dessen Wohnung Level 2
+ist — wird in Level 2 und 6 verändert und **nirgends abgefragt**.~~ Behoben
+(spaetestens mit dem Launch-Merge, nachgemessen 6.10.): `beziehung('MORITZ')`
+wird in level8.html (NACHHALL) gelesen. Dasselbe Muster fehlte noch fuer
+DENNIS, MARVIN, SEMIH, LEA - in der Nacht zum 6.10. ergaenzt (siehe
+NACHT-TODO.md, Erledigt).
 
 ~~Behoben: das Ende liest jetzt 17 Entscheidungen mehr. Weil alle
 gleichzeitig eine halbe Minute Abspann wären, liegt ein Vorrat mit Gewicht
@@ -149,10 +153,39 @@ level6.html vollständig gelesen; `node tools/pruefe.js`/`nachttest.js level6`/
 |:--|:--|:--|:--|
 | Die Tiefe ist für Level 6 abgeschaltet (`TIEFE_PRO_SEITE['level6.html']=false`, nacht/welt.js:59), aber level6.html rechnet trotzdem mit ihr: TUNE.tiefeHinten/tiefeVorne/tiefeWelt/tiefeTempo (:110-113) und TUNE.redeTiefe (:107, in allen sechs `tiefeNah()`-Aufrufen in `naechstesZiel()`) sind tot - genau das Muster aus der Level-1-Analyse. Gemessen: 2 s HOCH halten ändert `S.tiefe` nicht (bleibt exakt 0,26) | Fünf Regler, die wie Stellschrauben aussehen, aber nichts tun; jedes `.t`-Feld in DINGE/SOFAS/TUEREN/ECHOS/NACHTECHOS/LEA (:242-291) ist nur noch Zeichenreihenfolge, keine echte Position | hoch | Tiefe bewusst aktivieren (passt zum „wabernden Flur") oder die toten TUNE-Werte/`tiefeNah`-Aufrufe/`.t`-Felder entfernen |
 | TUNE.pegelAbbauProSek=1,3 (:89, genutzt :543) senkt den Pegel gemessen unabhängig vom Spielerverhalten in 77 s von 100 auf 0 - schneller, als TUNE's eigener Kommentar für eine Hin-Strecke plus Schleife ansetzt (~18 s mehrfach, :116-119) | Das als „Kern des Levels" beschriebene Wabern verblasst meist durch reines Abwarten, nicht durch das eigentliche Ziel (Erinnerungen finden, proKlarheit=14/Fund) | mittel | pegelAbbauProSek senken oder an die Levellänge koppeln, proKlarheit stärker gewichten |
-| `mobilKontext()` liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (:693), obwohl Level 6 keine Hindernisse, keine Lücken und (siehe oben) keine Tiefe hat; die Lektion des Levels (nacht/lehre.js) lehrt Sprung gar nicht erst | Mobile Spieler sehen die ganze Spielzeit einen zweiten Aktionsknopf für eine Aktion ohne jede Spielwirkung | mittel | `zwei:null` für Level 6, oder Sprung eine echte Funktion geben |
+| ~~`mobilKontext()` liefert in praktisch jedem Spielzustand `zwei:'SPRUNG'` (:693), obwohl Level 6 keine Hindernisse, keine Lücken und (siehe oben) keine Tiefe hat; die Lektion des Levels (nacht/lehre.js) lehrt Sprung gar nicht erst~~ | Mobile Spieler sahen die ganze Spielzeit einen zweiten Aktionsknopf für eine Aktion ohne jede Spielwirkung | mittel | ~~`zwei:null` für Level 6 (11.10., `7abf9e1`)~~ |
 | `aufwachen()` (:678) zieht den Pegel um den hartcodierten Wert `10` ab, direkt neben `TUNE.aufwachenMit`, das für dieselbe Funktion schon im TUNE-Block steht | Verstößt gegen „jede Stellschraube steht im TUNE-Block" - derselbe Fehlertyp wie `wirf()` in Level 1 | niedrig | `10` als eigenen TUNE-Wert in den Block ziehen |
 | Derselbe Hinweistext „DIESEN RAUM GAB ES SCHON EINMAL" wird von zwei unabhängigen Triggern ausgelöst: beim Betreten des wiederholten Raums (:560) und beim Anstoßen an die Schleifenwand ein paar Schritte weiter (:588) | Wirkt wie zwei Entwürfe derselben Idee statt zwei unterschiedlichen Meldungen, können kurz nacheinander überlappend auf dem Schirm stehen | niedrig | Einen der beiden Texte ändern (z.B. :560 auf einen reinen Ortshinweis) |
 | `NACHTECHOS[].name` (:287-289, z.B. `name:'MORITZ'`) wird nirgends gelesen - die Anzeige nutzt ausschließlich die hartcodierte Fallunterscheidung in `echoName()` (:668), die `.name` dupliziert | Totes Datenfeld, das bei einer Änderung fälschlich mitgepflegt wird, ohne etwas zu bewirken | niedrig | Feld entfernen oder `echoName()` `e.name` lesen lassen |
+
+## Level 7 — Spaeti
+
+Analyse vom 11.10. (siehe NACHT-TODO.md, dritter von acht nachgeholten Teilen).
+level7.html vollständig gelesen, dazu die geladenen Engine-Dateien;
+`node tools/pruefe.js`/`nachttest.js level7`/`flagcheck.js` zur Gegenprüfung.
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| Die Tiefe ist für Level 7 abgeschaltet (`TIEFE_PRO_SEITE['level7.html']=false`, nacht/welt.js:60), aber level7.html rechnet trotzdem mit ihr: TUNE.tiefeVorne/tiefeWelt/tiefeTempo/redeTiefe (:105-108, in setzeTiefenband :505, im bewegeTiefe-Term :627, in jedem tiefeNah()-Aufruf aus naechstesZiel() :694) sind tot - `bodenY()` liefert bei abgeschalteter Tiefe immer TIEFE.flach, `tiefeNah()` kurzschließt sofort auf wahr (nacht/welt.js:91,122). Der eigene Kommentar bei PFAND_PLAETZE (:289: „man muss auch in die Tiefe") verspricht eine Mechanik, die es in diesem Level gar nicht gibt - jedes `.t`-Feld in DINGE/PFAND_PLAETZE/NACHTMENSCHEN/S.crew ist nur noch Zeichenreihenfolge, keine echte Position | Vier Regler sehen wie Stellschrauben aus (`redeTiefe` klingt wie eine Reichweiten-Einstellung), drehen aber ins Leere; der Kommentar verspricht räumliches Pfandsuchen, das Spiel bietet nur eine flache Leiste - dasselbe Muster wie Level 1 und Level 6 | hoch | Tiefe bewusst aktivieren (passt zum Pfand-Sammeln querbeet) oder die toten TUNE-Werte/tiefeNah-Aufrufe/den PFAND-Kommentar entfernen |
+| ~~Sprung ist in Level 7 komplett verdrahtet (TUNE.sprungKraft/kurzsprung/coyoteMs/puffermMs/luftKontrolle :74-79, volle Physik in update() :635-644, SFX.sprung/landen, SPR.sprung/fall) aber ohne jede Spielwirkung - kein Hindernis, keine Lücke, keine Höhenprüfung im ganzen Level; die Lektion (nacht/lehre.js:79-84) lehrt Sprung konsequent gar nicht. mobilKontext() zeigte trotzdem in praktisch jedem Spielzustand `zwei:'SPRUNG'` (:799)~~ | Mobile Spieler sahen die ganze Spielzeit einen zweiten Aktionsknopf für eine Aktion ohne jede Wirkung - dasselbe Muster wie Level 6 | mittel | ~~`zwei:null` für Level 7 (11.10., `9423159`)~~ |
+| Die Kassentexte nennen den Preis dreifach hartcodiert ("2 EURO"/"3 EURO" in kassenWahl() :312/314 und in der Regal-Meldung :660) statt TUNE.preisWasser/TUNE.preisSnack (:114-115) zu lesen - Logik (`geld:TUNE.preisWasser` usw.) und Anzeige laufen getrennt | Verstößt gegen „jede Stellschraube steht im TUNE-Block" - wer den Preis in TUNE ändert, zahlt einen anderen Betrag als auf dem Bildschirm steht; derselbe Fehlertyp wie `wirf()` in Level 1 und `aufwachen()` in Level 6 | mittel | Texte per Template-String aus TUNE.preisWasser/preisSnack bauen statt literal zu schreiben |
+| ~~Die Introzeile „WASSER. SNACKS. FUENF MINUTEN RUHE." (:569) passte zu keinem der beiden Uhr-Werte im TUNE-Block: die angezeigte Spieluhr läuft 30 Minuten (TUNE.startMinute 3:15 bis TUNE.endMinute 3:45, :93-94), die echte Spielzeit dafür sind TUNE.levelSekunden=75 Sekunden (:95, Berechnung :607-608) - fünf Minuten waren weder das eine noch das andere~~ | Erster Eindruck des Levels nannte eine Dauer, die zu keiner im Code hinterlegten Zahl passte - dasselbe Fehlerbild wie „Bahn oder Bus?" beim Bus-Level | niedrig | ~~Introtext nennt jetzt „DREISSIG MINUTEN RUHE" (11.10., `1189657`)~~ |
+
+## Level 8 — Heimweg
+
+Analyse vom 11.10. (siehe NACHT-TODO.md, vierter von acht nachgeholten Teilen).
+level8.html vollständig gelesen (Intro, Vor-dem-Kampf-Gespräch, der große Fight gegen
+den Anführer, der Wettlauf gegen die Sonne, Finale/Abspann/Enden), dazu die geladenen
+Engine-Dateien, insbesondere nacht/kampf.js, nacht/lehre.js und nacht/epilog.js;
+`node tools/pruefe.js`/`nachttest.js level8`/`flagcheck.js` zur Gegenprüfung.
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| ~~Die Beziehung zu JONAS und TOBI wurde in `tschuessRufen()` gesetzt (`mag:['JONAS',b]` level8.html:538, `mag:['TOBI',b]` :540), aber projektweit nirgends gelesen - `node tools/flagcheck.js` bestätigte: „nie gelesen: ... JONAS, TOBI". Dasselbe Muster wurde für MORITZ/DENNIS/MARVIN/SEMIH/LEA bereits über NACHHALL-Zeilen behoben, JONAS und TOBI fehlten aber in der NACHHALL-Liste~~ | Der Abschied von JONAS und TOBI kostete Sonne-Vorsprung, wirkte wie eine Entscheidung mit Gewicht, blieb aber - anders als bei den vier bereits reparierten Crew-Mitgliedern - für den Rest der Nacht folgenlos | hoch | ~~Zwei neue NACHHALL-Einträge: `beziehung('JONAS')>=10`/`beziehung('TOBI')>=20` im Abspann (11.10., `dc4a169`)~~ |
+| Der Kopfkommentar behauptet „Kein Kampf, kein Türsteher, kein Gegner mit Fäusten - der Endgegner ist die Sonne selbst" (:63-64), aber das Level hat einen vollständigen Nahkampf gegen einen Anführer mit 9 HP, Handlangern und Flaschenwürfen (`KAMPF8`, `starteGrossenKampf()` :1528, `kampf8()` :1651) - gemessen: die Modusfolge ist `reden/kampf/spiel/ende`, der Kampf startet schon 9 s nach Levelbeginn, vor dem eigentlichen Wettlauf | Die Doku am wichtigsten Einstiegspunkt des Levels widerspricht dem tatsächlichen Code - wer sich beim Ändern nur auf den Kopfkommentar verlässt, übersieht den vorgeschalteten Kampfzustandsautomat | mittel | Kommentar auf den aktuellen Stand bringen (Kampf gegen den Anführer vor dem Wettlauf erwähnen) |
+| Die Kampfwerte stehen in einem eigenen `KAMPF8`-Block (:1480-1514, u.a. `anfuehrerHp`, Windup-/Schlagzeiten, `lichtStrafeBeiNiederlage`), weit entfernt vom `TUNE`-Block am Dateianfang - anders als Level 3 und 4, die ihre Boss-/Kampfwerte direkt im einen `TUNE`-Block halten | Verstößt gegen „jede Stellschraube steht im TUNE-Block" - wer das Level balanciert, muss zwei getrennte Blöcke kennen statt einen | mittel | `KAMPF8` in `TUNE` zusammenführen oder zumindest direkt daneben platzieren, nach dem Level-3/4-Muster |
+| `LEKTIONEN['level8.html']` hat zwei Schritte mit identischer Taste `Space` - SPRUNG (:90) und ROLLE (:92, `puppe:'rolle'`). `Z.mobilKontext()` (nacht/lehre.js:201-212) setzt `k.zwei` für jeden Schritt mit `c==='Space'` neu, ohne Rücksicht auf vorherige Treffer - der letzte Space-Schritt (ROLLE) gewinnt immer | Am Handy zeigt der zweite Bedienknopf während der ganzen Lektion „ROLLE", auch während des SPRUNG-Schritts, der explizit zum Ausprobieren von Space/Sprung aufruft - die Aufschrift passt nicht zur verlangten Aktion | mittel | `Z.mobilKontext()` je nach offenem/nächstem Schritt wählen lassen statt stur zu überschreiben |
+| `starteLevel()` (:453) ruft `starteKonfrontation(); return;`, danach folgt hinter dem `return` toter Code mit dem Kommentar „alter Direkteinstieg, bleibt fuer Tests erreichbar" - der ist aber nie erreichbar, der `return` davor schneidet ihn ab | Ein Kommentar, der die eigene Erreichbarkeit falsch behauptet, verschleiert, dass der Codepfad seit zwei Umbauten tot ist | niedrig | Toten Code (und den irreführenden Kommentar) entfernen |
 
 ## Level 2 — die Entscheidung der Nacht
 
