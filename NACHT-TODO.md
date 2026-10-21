@@ -114,10 +114,19 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
   Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
   Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
-- [ ] **P2 · Stufe 3 aus docs/gameplay/PLAN.md: Pausemenue am Rechner (Esc)** — WEITER, NEU
-  STARTEN, EINSTELLUNGEN, ZUM MENUE; heute pausiert nur P ohne Menue. Wo: nacht/eingabe.js,
-  nacht/menue.js · Fertig wenn: Esc oeffnet in allen acht Leveln ein Menue mit den vier
-  Punkten, test/menue.test.js um diese vier Punkte erweitert und gruen.
+- [ ] **P2 · Pause: NEU STARTEN und ZUM MENUE im Browser durchspielen** — nur mit Attrappen
+  getestet (test/pause.test.js). Wo: nacht/pause.js (aktiviere) · Fertig wenn: in level2.html
+  fuehrt Esc > NEU STARTEN > JA zu S.modus 'titel', und Esc > ZUM MENUE laedt index.html mit
+  sichtbarem Startmenue (MENUE.aktiv() true).
+- [ ] **P2 · App: beim Zurueckholen automatisch Pause** — Store-Erwartung laut
+  docs/gameplay/recherche-store.md (Lebenszyklus): heute laeuft das Spiel nach visibilitychange
+  sofort weiter, mitten im Kampf. Wo: nacht/geraet.js (visibilitychange) + PAUSE.auf() ·
+  Fertig wenn: am Rechner oeffnet ein Tab-Wechsel waehrend S.modus 'spiel' das Pausemenue
+  (PAUSE.aktiv() true nach dem Zurueckkommen), test/pause.test.js um diesen Fall erweitert.
+- [ ] **P3 · Store-Doku: (prüfen)-Stellen klaeren** — docs/store/ANLEITUNG.md und texte.md
+  haben zusammen 25 Stellen "(prüfen)" (Gebuehren, Menuenamen, Befehle). Wo: docs/store/ ·
+  Fertig wenn: jede Stelle mit Quelle belegt oder begruendet offen; `grep -c "(prüfen)" docs/store/*.md`
+  halbiert.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
 
@@ -311,10 +320,15 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **Level 8: Soll eine Kampfniederlage ein Scheitern sein?** — Heute (TUNE.kampfNiederlageEndet:
   false) geht der Heimweg nach einer Niederlage weiter, der Story-Zweig "MIT BLAUEM AUGE" bleibt.
   Mit true startet NOCHMAL direkt am Kampf neu, dann ist dieser Zweig nicht mehr erreichbar.
+- [ ] **App-ID endgueltig festlegen** — Platzhalter `de.nachtschicht.spiel` in capacitor.config.json;
+  die Recherche schlaegt `io.github.nikros07.nachtschicht` vor. Nach dem ersten Upload nie mehr aenderbar.
+- [ ] **Datenschutz: reicht der Anker in ueber.html?** — Stores verlangen eine Datenschutz-URL; die
+  Recherche empfiehlt eine eigene datenschutz.html (App-Fassung ohne GitHub-Hinweise).
 - [ ] **Store: Konten, Gebuehren, Altersfreigabe** — App Store braucht ein Apple-Entwicklerkonto
   (jaehrlich) und einen Mac oder Cloud-Mac; Google Play ein Konto (einmalig) und 12 Tester ueber
   14 Tage. Alkohol-Thema heisst wahrscheinlich Apple 18+ und USK/PEGI 16. Details:
-  docs/gameplay/recherche-store.md. Nur Nick kann Konten anlegen und bezahlen.
+  docs/gameplay/recherche-store.md. Nur Nick kann Konten anlegen und bezahlen. Fragebogen-Vorschlag mit
+  8 Stellen ENTSCHEIDUNG NOETIG: docs/store/texte.md (Abschnitt 8).
 - [ ] **Am echten Telefon prüfen (Android Chrome UND iPhone Safari)** — Service Worker/Offline/Installieren, Ton nach iOS-Unterbrechung, Multitouch (Stick + Knöpfe), Vollbild/Orientierung, Daumenreichweite, Stroboskop-Wirkung. Im Emulator nicht prüfbar. Start: `python tools/server.py --lan`. Liste: `LAUNCH.md`, `docs/launch/endabnahme.md`.
 - [ ] **Impressum, Lizenz, Inhaltshinweis-Wortlaut** — `ueber.html` hat Platzhalter [NAME]/[ANSCHRIFT]/[E-MAIL]; keine Lizenz gewählt. Kein Rechtsrat; Details in `LAUNCH.md` unter OFFENE ENTSCHEIDUNGEN.
 - [ ] **Marvin als Spiegel des Spielers** — passt das zur echten Mannschaftsgeschichte? Ebenso Moritz' Umzug, Jonas' Angst, Dennis' Kampf, Semihs Wunsch gefragt zu werden: gegen die echten Menschen lesen (`docs/launch/story-ist.md` Abschnitt Personen; Austauschtabelle `AUSBLICK` in `nacht/epilog.js`; Umbenennen mit `python tools/umbenennen.py`).
@@ -338,6 +352,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-21 · P2 · Gameplay Stufe 3: Pausemenue am Rechner (Esc: WEITER, NEU STARTEN,
+  EINSTELLUNGEN, ZUM MENUE; nacht/pause.js in allen acht Leveln) und Store-Geruest (package.json mit
+  Capacitor 8, capacitor.config.json, tools/www.py, docs/store/ANLEITUNG.md und texte.md, Schluessel in
+  .gitignore) · Sitzung · test/pause.test.js 52 ok, test/www.test.js 15 bestanden, alle 18 Pruefungen
+  gruen; im Browser (stumm) gesehen: Menue und Einstellungen, Spielzeit in der Pause +0,00 s/s, danach +1,03 s/s.
 - [x] 2026-10-21 · P1 · Gameplay Stufe 2: alle acht Level mit Musik (nacht/musik.js, songs.js),
   Saft (nacht/saft.js), Rang S/A/B/C (nacht/wertung.js) und je einem neuen Element (L1 Flucht nach
   dem Schluessel, L2 Aufgabenliste + Einschenken, L3 Neustart im Bus + Kurven, L4 Combo + Phasen-

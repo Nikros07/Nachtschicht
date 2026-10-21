@@ -33,7 +33,8 @@ Dazu eine **Stadtkarte** zwischen den Leveln mit Umwegen, ein **Handy**, das dir
 schreibt, und ein **Bonus-Level** (Runner) außerhalb der Nacht.
 
 Was du sagst und tust, merkt sich die Nacht: Mut, Ruf, Geld, wer dabei ist, was in der Tasche liegt.
-Es gibt keinen Punktestand — nur verschiedene Nächte.
+Am Ende jedes Levels gibt es einen **Rang** (S, A, B oder C) – der beste bleibt im Startmenü
+stehen. Die Nacht selbst hat keinen Punktestand, nur verschiedene Enden.
 
 ### Enden und Momente
 

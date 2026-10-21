@@ -1,0 +1,19 @@
+{
+  "appId": "de.nachtschicht.spiel",
+  "appName": "NACHTSCHICHT",
+  "webDir": "www",
+  "backgroundColor": "#04030a",
+  "android": {
+    "backgroundColor": "#04030a"
+  },
+  "ios": {
+    "backgroundColor": "#04030a",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "showSpinner": false
+    }
+  }
+}

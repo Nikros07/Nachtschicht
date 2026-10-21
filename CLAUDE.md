@@ -43,6 +43,12 @@ node test/menue.test.js     # Startmenü
 node test/geraet.test.js    # Fehlerschutz, Service-Worker-Anmeldung, ?reset
 node test/sw.test.js        # Service Worker (Offline, Stempelprüfung)
 node test/launch.test.js    # Tests der Startwerkzeuge
+node test/musik.test.js     # Musik-Planer (Notenstau, Klangbudget)
+node test/songs.test.js     # Songs (Laenge, Ebenen, Tonhoehen)
+node test/saft.test.js      # Hitstop, Wackeln, Teilchen, Flackerschutz
+node test/wertung.test.js   # Rang S/A/B/C und Bestrang
+node test/pause.test.js     # Pausemenue am Rechner (Esc)
+node test/www.test.js       # tools/www.py (Kopie fuer die App-Huellen)
 python tools/version.py --pruefen   # alles gestempelt? (sonst: python tools/version.py)
 node tools/launchcheck.js   # Startprüfung, muss BEREIT sagen
 ```

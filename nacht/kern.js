@@ -108,6 +108,12 @@ function bild(jetzt){
     window.LEHRE.takt(dt); window.LEHRE.zeichne();
     requestAnimationFrame(bild); return;
   }
+  /* Pausemenue am Rechner (nacht/pause.js, Esc): die Welt steht, das Bild bleibt
+     darunter stehen, das Menue liegt darueber. */
+  if(typeof PAUSE!=='undefined'&&PAUSE.aktiv&&PAUSE.aktiv()){
+    draw(0); PAUSE.zeichne();
+    requestAnimationFrame(bild); return;
+  }
   /* Hitstop und Zeitlupe (nacht/saft.js): das Level bekommt die Spielzeit, die Effekte
      laufen in echter Zeit weiter. */
   const spielDt=(typeof SAFT!=='undefined')?SAFT.takt(dt):dt;

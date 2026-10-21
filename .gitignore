@@ -22,3 +22,19 @@ dist/
 
 # Sicherung von tools/umbenennen.py (die Originale vor einer Umbenennung, fuer --zurueck)
 .umbenennen-sicherung.json
+
+# Kopie fuer die App-Huellen (tools/www.py) - wird bei jedem Bau neu erzeugt
+www/
+
+# Signier-Schluessel der App-Huellen: NIE ins Repo (das Repo ist oeffentlich)
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+keystore.properties
+
+# Bau-Ordner der App-Huellen (werden von Android Studio/Xcode erzeugt)
+android/app/build/
+android/.gradle/
+ios/App/build/

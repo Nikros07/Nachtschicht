@@ -39,19 +39,24 @@ Reihenfolge der Script-Tags ist die Ladereihenfolge — `kern.js` zuerst, danach
 (damit auch spätere Ladefehler gefangen werden). Die Tabelle steht in dieser Reihenfolge
 (`kampf.js` nur in den Seiten mit Kampf):
 
-`kern → geraet → bild → hud → ton → komfort → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → epilog → menue`
+`kern → geraet → bild → hud → ton → komfort → musik → songs → saft → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → epilog → wertung → menue → pause`
+
+(`pause` nur in den acht Leveln, nicht in `karte.html` und `runner.html`.)
 
 Eine neue Engine-Datei hängt `python tools/engine_einbinden.py NAME --nach VORGAENGER` in alle
 Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach `python tools/version.py`.
 
 | Datei | Verantwortung |
 |:--|:--|
-| `kern.js` | Canvas, Skalierung, Vollbild, `keys`, Spielschleife `bild()`. Legt `cv`, `ctx`, `W`, `H`, `IS_TOUCH` an (`?touch=1` erzwingt Touch am Rechner). Fragt in jedem Bild erst `MENUE.laufe`, dann `LEHRE.pruefe`, dann erst das Level. |
+| `kern.js` | Canvas, Skalierung, Vollbild, `keys`, Spielschleife `bild()`. Legt `cv`, `ctx`, `W`, `H`, `IS_TOUCH` an (`?touch=1` erzwingt Touch am Rechner). Fragt in jedem Bild erst `MENUE.laufe`, dann `LEHRE.pruefe`, dann `PAUSE.aktiv`, dann erst das Level. Treibt `MUSIK.takt`, gibt dem Level die Spielzeit aus `SAFT.takt` (Hitstop, Zeitlupe), verschiebt `draw()` um `SAFT.versatz()` und zeichnet danach `SAFT` und `WERTUNG` darüber. |
 | `geraet.js` | Alles fürs fertige Spiel auf fremden Geräten: Fehlerschutz mit Fehlerseite statt weißer Fläche, Toasts (`GERAET.hinweis`), Ton aus im Hintergrund, Speichertest, Service-Worker-Anmeldung samt „NEUE VERSION“-Hinweis, die Notausgänge (`?reset`, `?fehlertest`, `?sw`). Trägt `GERAET.version` und `GERAET.build`. Alles in try/catch, benutzt nur DOM und Browser-APIs, nie spätere Engine-Dateien. |
 | `bild.js` | 3×5-Bitmap-Font, Sprite-Cache, `text*`, `sprite`, `outline`, `verlauf`, `gehBeine` |
 | `hud.js` | Gemeinsame Anzeigen (Herzen, Balken u. ä.) |
 | `ton.js` | Audio-Grundlagen: `AC`, `muted`, `piep`, `glissando`, `rauschen`. SFX und Musik bleiben im Level. |
 | `komfort.js` | Einstellungen des Spielers und die Schutzschalter für Effekte: `KOMFORT` (Flackerschutz, Wackeln, Röhren-Look, Inhaltshinweis bestätigt) und `FX` (siehe unten) |
+| `musik.js` | Musik-Planer `MUSIK`: spielt Songs mit Vorlauf (holt nie verpasste Noten nach), Abschnitte, Spannung (Ebenen), Tempo, Stinger, Dämpfen. Höchstens 32 Klänge gleichzeitig. |
+| `songs.js` | Reine Daten: `SONGS`, ein Song je Level und für Menü und Karte, mit Akkorden, Lead und Abschnitten |
+| `saft.js` | Spielgefühl `SAFT`: Hitstop, Zeitlupe, Wackeln (Trauma), Teilchen, Popups, Blitz – Blitz und Wackeln nur über `FX`. Rezepte `treffer`, `landung`, `fund`, `schaden`, `erfolg`. |
 | `stand.js` | Crew, Pegel, Bestzeiten, **Schwierigkeit** |
 | `welt.js` | **Tiefe** (dritte Achse), Sichtkegel, Zeichenreihenfolge, Laufanimation |
 | `nacht.js` | Der Speicherstand der Nacht: Werte, Beziehungen, Inventar, Flags, Kapitel |
@@ -64,7 +69,9 @@ Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach `python tool
 | `texte.js` | Reine Daten: Kapitelkarten (`TEXTE_KAPITEL`), Rückblick-Zeilen (`TEXTE_BISHER`), Polaroid-Texte (`TEXTE_MOMENTE`), Menütexte (`TEXTE_MENUE`) |
 | `erzaehl.js` | Was die Nacht erzählt, ohne anzuhalten: `STIMMEN` (Farbe und Ton je Sprecher), `zeichneKarte`, Kapitelkarte (`kapitelZeigen`), `PLAUSCH` (Untertitel beim Gehen), `MOMENT` (Polaroids) |
 | `epilog.js` | Was nach dem Finale kommt: Epilog-Folien je Crew-Figur, Gruppenchat, Album, „Was wir nie wieder erwähnen“, Kater, die Wolle mit den drei Knoten, `ENDEN_ALLE` und `endeRegistrieren` |
+| `wertung.js` | Rang am Levelende `WERTUNG`: `abschluss(level,punkte,zeilen)` gibt S/A/B/C, merkt den Bestrang je Level (`nachtschicht.rangN`), zeichnet Tafel und Abzeichen im Modus `ende` |
 | `menue.js` | Startmenü (Titel von Level 1), Einstellungen, Enden-Galerie und Momente-Sammlung (`MENUE.galerie()`), Credits |
+| `pause.js` | Pausemenü am Rechner (Esc): WEITER, NEU STARTEN, EINSTELLUNGEN, ZUM MENÜ. Am Handy tut es nichts, dort gibt es das Menü aus `mobil.js`. |
 
 ## Die vier zentralen Tabellen
 
