@@ -31,8 +31,8 @@
    eigenen Speicher (nicht in die anderer Projekte derselben github.io-Adresse).
    ========================================================================== */
 
-const BUILD='202610110313';      // wird von tools/version.py gestempelt
-const INHALT='5bcbe04b1a27a643';          // Pruefsumme der Dateien (python tools/version.py --pruefen)
+const BUILD='202610211232';      // wird von tools/version.py gestempelt
+const INHALT='51ee9707165c8fab';          // Pruefsumme der Dateien (python tools/version.py --pruefen)
 const CACHE_PRAEFIX='nachtschicht-';
 const CACHE=CACHE_PRAEFIX+BUILD;
 const KERN='index.html';  // ohne diese Datei wird nichts installiert
@@ -71,12 +71,16 @@ const PRECACHE=[
   'nacht/lehre.js',
   'nacht/menue.js',
   'nacht/mobil.js',
+  'nacht/musik.js',
   'nacht/nacht.js',
+  'nacht/saft.js',
+  'nacht/songs.js',
   'nacht/stand.js',
   'nacht/stil.css',
   'nacht/texte.js',
   'nacht/ton.js',
   'nacht/welt.js',
+  'nacht/wertung.js',
   'runner.html',
   'ueber.html',
 ];

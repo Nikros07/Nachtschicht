@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610110313">
+<link rel="stylesheet" href="nacht/stil.css?v=202610211232">
 </head>
 <body>
 <div id="cab">
@@ -37,24 +37,28 @@
   <div id="base"><span>LEVEL 6 - AFTERHOUR</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610110313"></script>
-<script src="nacht/geraet.js?v=202610110313"></script>
-<script src="nacht/bild.js?v=202610110313"></script>
-<script src="nacht/hud.js?v=202610110313"></script>
-<script src="nacht/ton.js?v=202610110313"></script>
-<script src="nacht/komfort.js?v=202610110313"></script>
-<script src="nacht/stand.js?v=202610110313"></script>
-<script src="nacht/welt.js?v=202610110313"></script>
-<script src="nacht/nacht.js?v=202610110313"></script>
-<script src="nacht/dialog.js?v=202610110313"></script>
-<script src="nacht/eingabe.js?v=202610110313"></script>
-<script src="nacht/lehre.js?v=202610110313"></script>
-<script src="nacht/mobil.js?v=202610110313"></script>
-<script src="nacht/handy.js?v=202610110313"></script>
-<script src="nacht/texte.js?v=202610110313"></script>
-<script src="nacht/erzaehl.js?v=202610110313"></script>
-<script src="nacht/epilog.js?v=202610110313"></script>
-<script src="nacht/menue.js?v=202610110313"></script>
+<script src="nacht/kern.js?v=202610211232"></script>
+<script src="nacht/geraet.js?v=202610211232"></script>
+<script src="nacht/bild.js?v=202610211232"></script>
+<script src="nacht/hud.js?v=202610211232"></script>
+<script src="nacht/ton.js?v=202610211232"></script>
+<script src="nacht/komfort.js?v=202610211232"></script>
+<script src="nacht/musik.js?v=202610211232"></script>
+<script src="nacht/songs.js?v=202610211232"></script>
+<script src="nacht/saft.js?v=202610211232"></script>
+<script src="nacht/stand.js?v=202610211232"></script>
+<script src="nacht/welt.js?v=202610211232"></script>
+<script src="nacht/nacht.js?v=202610211232"></script>
+<script src="nacht/dialog.js?v=202610211232"></script>
+<script src="nacht/eingabe.js?v=202610211232"></script>
+<script src="nacht/lehre.js?v=202610211232"></script>
+<script src="nacht/mobil.js?v=202610211232"></script>
+<script src="nacht/handy.js?v=202610211232"></script>
+<script src="nacht/texte.js?v=202610211232"></script>
+<script src="nacht/erzaehl.js?v=202610211232"></script>
+<script src="nacht/epilog.js?v=202610211232"></script>
+<script src="nacht/wertung.js?v=202610211232"></script>
+<script src="nacht/menue.js?v=202610211232"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 6: AFTERHOUR
@@ -78,7 +82,7 @@ const TUNE = {
   bremsung:      1200,
   luftKontrolle:   0.55,
   gravitation:    920,
-  sprungKraft:   -230,
+  sprungKraft:   -156,     // Schwebesprung: ca. 40 px Hoehe bei traumGrav (v = wurzel(2*g*h))
   kurzsprung:      0.45,
   coyoteMs:        95,
   puffermMs:      130,
@@ -126,6 +130,24 @@ const TUNE = {
   sofaErholung:    24,     // pro Sekunde auf dem Sofa
   aufwachenMit:    45,     // Kondition nach dem Wegknicken
   schwereAb:       30,     // darunter wird man langsamer und das Bild zieht zu
+
+  /* (8) SCHWEBESPRUNG - im Traum faellt man langsam (Night in the Woods).
+     Sprung wie gehabt (Leertaste, am Handy der zweite Knopf SPRUNG).
+     Schwerkraft = gravitation * traumGrav. Taste halten = langsames Sinken. */
+  traumGrav:       0.33,
+  schwebeSink:    18,      // px/s Sinkgeschwindigkeit bei gehaltener Taste
+
+  /* (9) SCHWEBENDE LICHTER - Beruehren = Wachheit */
+  lichtWach:       14,     // Wachheit je Licht
+  lichtRadius:     12,     // Trefferradius in Pixeln
+  lichtKoerper:     6,     // Mitte der Figur liegt so viel ueber den Fuessen
+
+  /* (10) RANG (WERTUNG): Erinnerungen 40, Lichter 25, Wachheit 20, Zeit 15.
+     Je Kriterium linear zwischen schlecht und gut. Zeit: gut ist die kleinere. */
+  rang:{ erinnerungSchlecht:0, erinnerungGut:3,
+         lichtSchlecht:0,      lichtGut:3,
+         wachSchlecht:20,      wachGut:80,
+         zeitSchlecht:600,     zeitGut:240 },
 };
 
 const P = {
@@ -195,20 +217,17 @@ const SFX={
   erledigt:()=>{ piep(600,.08,'sine'); setTimeout(()=>piep(900,.12,'sine'),90); },
   sieg:    ()=>{ [520,660,880,1100].forEach((f,i)=>setTimeout(()=>piep(f,.16,'sine'),i*130)); },
 };
-/* Musik: ein traeges, leicht verstimmtes Drone-Motiv. Je hoeher der Pegel,
-   desto mehr schwimmt die Stimmung - genau wie das Bild. */
-const DROHN=[73,0,0,0, 87,0,0,0, 65,0,0,0, 98,0,0,0];
-
+/* Musik: der Traum-Song (nacht/songs.js). Die Muedigkeit ist die Spannung:
+   je weniger Wachheit, desto mehr Ebenen. Auf dem Sofa der zweite Abschnitt. */
 function musik(){
-  if(!AC||muted||S.modus==='pause'||S.modus==='titel') return;
-  const st=60/70/4;
-  while(MUS.next<AC.currentTime+.12){
-    const i=MUS.step%DROHN.length, f=DROHN[i];
-    const wobble=1+(S.pegel/100)*0.04*Math.sin(MUS.step*1.7);
-    if(f){ ton(f*wobble,MUS.next,st*1.6,'sine',.045);
-      if(i%4===0) ton(f*2*wobble,MUS.next+st*0.5,st*0.8,'triangle',.02); }
-    MUS.next+=st; MUS.step++;
-  }
+  if(typeof MUSIK==='undefined') return;
+  MUSIK.spiele('traum');
+  MUSIK.spannung(Math.max(0,Math.min(1,1-S.kondition/100)));
+  const ab=(S.ruht||S.modus==='schwarz')?'B':'A';
+  if(S.musikAb!==ab){ S.musikAb=ab; MUSIK.abschnitt(ab); }
+  const handy=!!(window.HANDY&&HANDY.offen);
+  const karte=typeof kapitelAktiv==='function'&&kapitelAktiv();
+  MUSIK.daempfen(S.modus==='pause'||handy||karte);
 }
 
 /* ==========================================================================
@@ -261,6 +280,14 @@ const alleErinnerungen=()=>AUFGABEN.every(a=>S.erledigt[a.id]);
 /* Sofas: der einzige Ort, an dem die Erschoepfung zurueckgeht - und der
    Punkt, an dem man nach dem Wegknicken aufwacht. */
 const SOFAS=[ { x:70, t:0.16 }, { x:790, t:0.12 }, { x:1340, t:0.18 } ];
+
+/* Drei schwebende Erinnerungs-Lichter, 34-38 px ueber dem Boden. Mit dem
+   Schwebesprung erreichbar. Beruehren = Wachheit (lichtBeruehrt). */
+const LICHTER=[
+  { id:'licht1', x:250,  t:0.12, hoehe:36 },
+  { id:'licht2', x:520,  t:0.10, hoehe:38 },
+  { id:'licht3', x:1010, t:0.14, hoehe:34 },
+];
 
 /* TRAUMLOGIK. Eine Regel, die man lernen kann: am Ende des zweiten
    Raum 101 steht eine Wand. Wer weitergeht, steht wieder am Anfang
@@ -451,6 +478,9 @@ function traumEnde(e){
    ========================================================================== */
 
 
+/* SAFT nur, wenn die Engine geladen ist (Fehlerfall, Testlauf). */
+const saft=f=>{ if(typeof SAFT!=='undefined') f(SAFT); };
+
 const BEST_KEY='nachtschicht.bestzeit6';
 const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
 /* Der Pegel ist levelübergreifend. Hier LESEN wir ihn als Startwert -
@@ -473,10 +503,11 @@ function neuesSpiel(){
     reden:null, redeZeile:0, redeT:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     suchT:0, suchZiel:null,
-    ruettel:0, blitz:0,
+    blitz:0, lichtGef:{}, schwebeGezeigt:false, musikAb:null,
     szene:0, szeneT:0, skipT:0,
     gewonnen:false, faenger:'', wiederholungGezeigt:false, neueBestzeit:false,
   };
+  if(typeof WERTUNG!=='undefined') WERTUNG.reset();
   PLAUSCH.lade(PLAUSCH_ZEILEN);
   PLAUSCH.y=IS_TOUCH?56:H-11;   // frei von Meldung, Hinweis und Aufgabenliste
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
@@ -587,7 +618,6 @@ function update(dt){
   PLAUSCH.sperre=S.modus!=='spiel'||gespraechAktiv();
   if(erzaehlTakt(dt)) return;
   S.t+=dt; musik();
-  S.ruettel=Math.max(0,S.ruettel-dt*16);
   S.blitz=Math.max(0,S.blitz-dt*2.2);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
@@ -644,6 +674,7 @@ function update(dt){
   if(S.x>SCHLEIFE.x&&S.x<SCHLEIFE.x+12&&!S.erledigt[SCHLEIFE.braucht]){
     S.x=SCHLEIFE.zurueck; S.kamX=Math.max(0,S.x-W/2); S.schleifen++; S.blitz=.4;
     SFX.nichts();
+    saft(s=>s.treffer(S.x-S.kamX,BODEN-8,-1,0.5));
     meldung(S.schleifen===1?'DIESEN RAUM GAB ES SCHON EINMAL':
             S.schleifen===2?'SCHON WIEDER RAUM 101':'WAS IST IM CHEMIERAUM PASSIERT?',2.4);
   }
@@ -657,12 +688,26 @@ function update(dt){
     const t0=sprungPuffer.shift();
     if(S.t-t0>TUNE.puffermMs/1000) continue;
     if(S.amBoden||(S.t-S.letzterBoden)<TUNE.coyoteMs/1000){
-      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung(); }
+      S.vy=TUNE.sprungKraft; S.amBoden=false; SFX.sprung();
+      if(!S.schwebeGezeigt){ S.schwebeGezeigt=true; zeigeHinweis('SPRUNG HALTEN: SCHWEBEN. LICHTER!',4); } }
   }
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
-  S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+  /* Traum: Schwerkraft ein Drittel. Taste halten = langsames Sinken. */
+  S.vy+=TUNE.gravitation*TUNE.traumGrav*dt;
+  if(sprungAn&&!S.amBoden&&S.vy>TUNE.schwebeSink) S.vy=TUNE.schwebeSink;
+  S.y+=S.vy*dt;
+  if(S.y>=BODEN){ const aufprall=S.vy; S.y=BODEN;
+    if(!S.amBoden){ SFX.landen();
+      saft(s=>s.landung(Math.round(S.x-S.kamX),Math.round(bodenY(S.tiefe)),Math.min(1,aufprall/260))); }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
+
+  /* Schwebende Lichter: beruehren (auch im Sprung) = Wachheit */
+  const fuesse=bodenY(S.tiefe)+(S.y-BODEN);
+  for(const L of LICHTER){
+    if(S.lichtGef[L.id]) continue;
+    const dx=S.x-L.x, dy=(fuesse-TUNE.lichtKoerper)-(bodenY(L.t)-L.hoehe);
+    if(dx*dx+dy*dy<TUNE.lichtRadius*TUNE.lichtRadius) lichtBeruehrt(L);
+  }
 
   if(S.suchT>0){
     S.suchT-=dt;
@@ -733,11 +778,22 @@ function redeImTraum(z){
    Flags aus dem Club. */
 const echoName=e=>e.id==='moritz'?'MORITZ':e.id==='sie'?sieEcho().name:marvinEcho().name;
 
+/* Ein Licht beruehrt: Wachheit, Saft, Meldung. Jedes Licht nur einmal. */
+function lichtBeruehrt(L){
+  S.lichtGef[L.id]=true;
+  S.kondition=Math.min(100,S.kondition+TUNE.lichtWach);
+  const n=Object.keys(S.lichtGef).length;
+  saft(s=>s.fund(Math.round(L.x-S.kamX),Math.round(bodenY(L.t)-L.hoehe),'WACHER'));
+  meldung('LICHT '+n+' VON '+LICHTER.length,1.8);
+  SFX.erledigt();
+}
+
 /* Wegknicken. Kein Game Over - man wacht am letzten Sofa auf, Zeit ist
    vergangen, und der Pegel ist ein Stueck runter. */
 function wegknicken(){
   S.modus='schwarz'; S.schwarzT=0; S.weggeknickt++; S.vx=0; S.vt=0;
   SFX.nichts();
+  saft(s=>s.schaden(0.8));
 }
 function aufwachen(){
   S.modus='spiel'; S.x=S.sofa.x+8; S.tiefe=S.sofa.t+0.1;
@@ -757,7 +813,7 @@ function mobilKontext(){
   const z=naechstesZiel();
   const txt=!z?null:{ding:S.durchsucht[z.obj.art]?'LEER':'SUCHEN',sofa:'AUSRUHEN',tuer:'TUER',
                      echo:'REDEN',nachtecho:'REDEN',lea:'LEA',foto:'FOTO'}[z.art];
-  return {aktion:txt, zwei:null};
+  return {aktion:txt, zwei:'SPRUNG'};
 }
 
 /* ---- Erinnerungen suchen ---- */
@@ -770,11 +826,13 @@ function suchErgebnis(){
   S.durchsucht[d.art]=true;
   const info=ERINNERUNGEN[d.art];
   if(info&&!S.erledigt[d.art]){
-    S.erledigt[d.art]=true; SFX.fund(); S.blitz=.5; S.ruettel=4;
+    S.erledigt[d.art]=true; SFX.fund(); S.blitz=.5; saft(s=>s.trauma(Math.min(1,4/12)));
     S.pegel=Math.max(0,S.pegel-TUNE.proKlarheit);
     meldung(info,2.4); SFX.erledigt();
     const fehlt=AUFGABEN.length-AUFGABEN.filter(a=>S.erledigt[a.id]).length;
     zeigeHinweis(fehlt>0?('NOCH '+fehlt+' ERINNERUNGEN'):'GEH ZURUECK ZU LEA',3);
+    saft(s=>s.fund(Math.round(S.x-S.kamX),Math.round(bodenY(S.tiefe)-40),'ERINNERUNG'));
+    if(fehlt===0) saft(s=>s.erfolg(W/2,40,'ALLE DREI'));
     return;
   }
   SFX.nichts(); meldung(pick(['NICHTS','NUR STAUB','LEER','KALT']),1);
@@ -799,8 +857,28 @@ const SZENEN=[
   { d:2.4, txt:'LEVEL 6 GESCHAFFT' },
 ];
 function starteCutscene(){ S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; SFX.sieg(); }
+/* Rang (WERTUNG): Erinnerungen 40, Lichter 25, Wachheit am Ende 20, Zeit 15. */
+function rangAbschluss(){
+  if(typeof WERTUNG==='undefined') return;
+  const r=TUNE.rang, lin=(w,s,g)=>Math.max(0,Math.min(1,(w-s)/(g-s)));
+  const erl=AUFGABEN.filter(a=>S.erledigt[a.id]).length;
+  const lic=LICHTER.filter(L=>S.lichtGef[L.id]).length;
+  const pErl=Math.round(40*lin(erl,r.erinnerungSchlecht,r.erinnerungGut));
+  const pLic=Math.round(25*lin(lic,r.lichtSchlecht,r.lichtGut));
+  const pWach=Math.round(20*lin(S.kondition,r.wachSchlecht,r.wachGut));
+  const pZeit=Math.round(15*lin(S.zeit,r.zeitSchlecht,r.zeitGut));
+  const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
+  WERTUNG.abschluss(6, pErl+pLic+pWach+pZeit, [
+    {name:'ERINNERUNG', wert:erl+'/'+AUFGABEN.length, pkt:pErl},
+    {name:'LICHTER', wert:lic+'/'+LICHTER.length, pkt:pLic},
+    {name:'WACHHEIT', wert:String(Math.round(S.kondition)), pkt:pWach},
+    {name:'ZEIT', wert:min+':'+String(sek).padStart(2,'0'), pkt:pZeit} ]);
+}
 function levelGeschafft(){
   speichereCrew('LEA');
+  if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
+  saft(s=>s.erfolg(W/2,H/2-20,'GESCHAFFT'));
+  rangAbschluss();
   /* Wie wach man aus der Afterhour rauskommt, traegt man in den Heimweg. */
   setzeWert('kondition',Math.round(S.kondition));
   setzeKapitel(7);
@@ -869,8 +947,6 @@ function draw(dt){
 
 function zeichneFlur(){
   ctx.save();
-  const rw=FX.wackel(S.ruettel), rx=(Math.random()-.5)*rw, ry=(Math.random()-.5)*rw*.6;
-  ctx.translate(Math.round(rx),Math.round(ry));
   const kx=Math.round(S.kamX);
   ctx.translate(-kx,0);
 
@@ -931,6 +1007,12 @@ function zeichneFlur(){
       const rows=SPR.steh, y=bodenY(e.t)-rows.length+Math.round(Math.sin(S.t*2+e.x)*1);
       sprite(rows,e.x-3,y,1,e.tint,.7);
       if(Math.abs(e.x-S.x)<70){ const n=echoName(e); text(n,e.x+2-textW(n)/2,y-9,e.tint); } }}); }
+  for(const L of LICHTER){ if(S.lichtGef[L.id]) continue; liste.push({t:L.t, mal:()=>{
+    const x=Math.round(L.x), y=Math.round(bodenY(L.t)-L.hoehe), p=0.5+0.5*Math.sin(S.t*3+L.x);
+    ctx.globalAlpha=0.16+0.14*p; ctx.fillStyle=P.gold;
+    ctx.beginPath(); ctx.arc(x,y,6+2*p,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=0.6+0.4*p; ctx.fillStyle=P.weiss; ctx.fillRect(x-1,y-1,3,3);
+    ctx.globalAlpha=1; }}); }
   liste.push({t:LEA.t, mal:()=>{
     const rows=SPR.lea, y=bodenY(LEA.t)-rows.length;
     outline(rows,LEA.x-3,y,1,.7); sprite(rows,LEA.x-3,y);

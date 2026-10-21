@@ -205,7 +205,11 @@ MENUE.eintraege=function(modus){
   if(modus==='neuSicher') return [{ id:'abbrechen', txt:'ABBRECHEN' },{ id:'neuJa', txt:'JA, NEUE NACHT' }];
   if(modus==='level'){
     const l=[];
-    for(let n=1;n<=fort.erreicht;n++) l.push({ id:'level'+n, txt:MENUE.levelText(n), level:n });
+    for(let n=1;n<=fort.erreicht;n++){
+      // Bestrang hinter dem Namen; typeof: ohne wertung.js bleibt die Zeile wie bisher
+      const b=(typeof WERTUNG!=='undefined'&&WERTUNG&&typeof WERTUNG.best==='function')?WERTUNG.best(n):null;
+      l.push({ id:'level'+n, txt:MENUE.levelText(n)+(b?'  '+b:''), level:n });
+    }
     l.push({ id:'zurueck', txt:'ZURUECK' });
     return l;
   }

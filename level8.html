@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610110313">
+<link rel="stylesheet" href="nacht/stil.css?v=202610211232">
 </head>
 <body>
 <div id="cab">
@@ -37,25 +37,29 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610110313"></script>
-<script src="nacht/geraet.js?v=202610110313"></script>
-<script src="nacht/bild.js?v=202610110313"></script>
-<script src="nacht/hud.js?v=202610110313"></script>
-<script src="nacht/ton.js?v=202610110313"></script>
-<script src="nacht/komfort.js?v=202610110313"></script>
-<script src="nacht/stand.js?v=202610110313"></script>
-<script src="nacht/welt.js?v=202610110313"></script>
-<script src="nacht/kampf.js?v=202610110313"></script>
-<script src="nacht/nacht.js?v=202610110313"></script>
-<script src="nacht/dialog.js?v=202610110313"></script>
-<script src="nacht/eingabe.js?v=202610110313"></script>
-<script src="nacht/lehre.js?v=202610110313"></script>
-<script src="nacht/mobil.js?v=202610110313"></script>
-<script src="nacht/handy.js?v=202610110313"></script>
-<script src="nacht/texte.js?v=202610110313"></script>
-<script src="nacht/erzaehl.js?v=202610110313"></script>
-<script src="nacht/epilog.js?v=202610110313"></script>
-<script src="nacht/menue.js?v=202610110313"></script>
+<script src="nacht/kern.js?v=202610211232"></script>
+<script src="nacht/geraet.js?v=202610211232"></script>
+<script src="nacht/bild.js?v=202610211232"></script>
+<script src="nacht/hud.js?v=202610211232"></script>
+<script src="nacht/ton.js?v=202610211232"></script>
+<script src="nacht/komfort.js?v=202610211232"></script>
+<script src="nacht/musik.js?v=202610211232"></script>
+<script src="nacht/songs.js?v=202610211232"></script>
+<script src="nacht/saft.js?v=202610211232"></script>
+<script src="nacht/stand.js?v=202610211232"></script>
+<script src="nacht/welt.js?v=202610211232"></script>
+<script src="nacht/kampf.js?v=202610211232"></script>
+<script src="nacht/nacht.js?v=202610211232"></script>
+<script src="nacht/dialog.js?v=202610211232"></script>
+<script src="nacht/eingabe.js?v=202610211232"></script>
+<script src="nacht/lehre.js?v=202610211232"></script>
+<script src="nacht/mobil.js?v=202610211232"></script>
+<script src="nacht/handy.js?v=202610211232"></script>
+<script src="nacht/texte.js?v=202610211232"></script>
+<script src="nacht/erzaehl.js?v=202610211232"></script>
+<script src="nacht/epilog.js?v=202610211232"></script>
+<script src="nacht/wertung.js?v=202610211232"></script>
+<script src="nacht/menue.js?v=202610211232"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -136,6 +140,30 @@ const TUNE = {
   finaleFrei:       0.4,     // so lange sperrt eine Karte das Wegtippen
   ueberspringen:    0.7,     // E halten, dann kommt der Abspann
   abspannFrei:      0.4,
+
+  /* (9) NEUSTART AM ABSCHNITT - Scheitern im Wettlauf startet am Wettlauf neu
+     (Licht vom damaligen Start). Kampf: false = Niederlage wie bisher, der Heimweg
+     geht weiter (Story-Zweig "MIT BLAUEM AUGE" bleibt erhalten). true = Kampfniederlage
+     ist Scheitern, NOCHMAL startet direkt den Kampf (ohne Gespraech). */
+  kampfNiederlageEndet: false,
+
+  /* (10) PHASEN-ANSAGE UND MUSIK */
+  zeitlupeFaktor:   0.3,     // Rundenwechsel im Kampf: Spielzeit auf diesen Anteil ...
+  zeitlupeSek:      0.8,     // ... fuer so viele Sekunden
+  ansageSek:        1.5,     // Dauer der grossen RUNDE-Ansage
+  ansageSatz2:      'DIE ANDEREN KOMMEN DAZU.',
+  ansageSatz3:      'JETZT FLIEGT WAS.',
+  tempoBasis:       112,     // Song-Tempo; auf dem Weg kommt Licht * tempoJeLicht dazu
+  tempoJeLicht:     40,
+  spannungKampf:    0.8,     // Musik-Spannung im Kampf (0..1)
+
+  /* (11) RANG - Summe 100. Je Kriterium linear zwischen "schlecht" und "gut". */
+  rang:{
+    licht:    {schlecht:100, gut:20,  punkte:40},   // Sonne bei Ankunft: weniger ist besser
+    kampf:    {frieden:30, gewonnen:30, verloren:8}, // Ergebnis des Kampfes (fest)
+    tschuess: {punkte:15},                           // Anteil der Abbieger, dem du Tschuess gesagt hast
+    zeit:     {schlecht:180, gut:80, punkte:15},     // Sekunden auf dem Weg: weniger ist besser
+  },
 };
 
 const P = {
@@ -217,20 +245,25 @@ const SFX={
   sieg:   ()=>{ [660,880,1100,1320,1568].forEach((f,i)=>setTimeout(()=>piep(f,.16),i*110)); },
   erwischt:()=>{ rauschen(.4,.1); glissando(300,60,.5,'sawtooth',.07); },
 };
-/* Musik: ruhiger Puls, der schneller und drängender wird, je heller es wird */
-const BASS=[110,0,110,0, 98,0,98,0, 87,0,87,0, 98,0,110,0];
-
+/* Musik (nacht/musik.js): Song 'heimweg'. Auf dem Weg steigt das Tempo mit dem Licht,
+   im Kampf die Spannung, im Finale der Abschnitt 'finale'. Gedaempft bei Pause, offenem
+   Handy und Kapitelkarte. Ohne MUSIK passiert nichts. */
 function musik(){
-  if(!AC||muted||S.modus==='pause') return;
-  const drang=Math.min(1,S.licht/100);
-  const st=60/(112+drang*40)/4;
-  while(MUS.next<AC.currentTime+.12){
-    const i=MUS.step%BASS.length, f=BASS[i];
-    const laut=S.modus==='spiel'?.02+drang*.02:.012;
-    if(f) ton(f,MUS.next,st*.85,'square',laut);
-    if(S.modus==='spiel'&&i%4===0) ton(55,MUS.next,.09,'sine',.045);
-    MUS.next+=st; MUS.step++;
-  }
+  if(typeof MUSIK==='undefined') return;
+  const gedaempft=S.modus==='pause'||!!(window.HANDY&&window.HANDY.offen)
+    ||(typeof kapitelAktiv==='function'&&!!kapitelAktiv());
+  if(S.musikGedaempft!==gedaempft){ S.musikGedaempft=gedaempft; MUSIK.daempfen(gedaempft); }
+  MUSIK.spiele('heimweg');
+  const m=S.modus;
+  const ab=(m==='finale'||m==='cutscene')?'finale':null;
+  if(S.musikAb!==ab){ S.musikAb=ab; MUSIK.abschnitt(ab); }
+  let w=0;
+  if(m==='kampf') w=TUNE.spannungKampf;
+  else if(m==='spiel') w=S.licht/100;
+  else if(m==='finale'||m==='cutscene'||m==='ende') w=1;
+  MUSIK.spannung(w);
+  const tempo=m==='spiel'?Math.round(TUNE.tempoBasis+TUNE.tempoJeLicht*S.licht/100):null;
+  if(S.musikTempo!==tempo){ S.musikTempo=tempo; MUSIK.tempo(tempo); }
 }
 
 /* ==========================================================================
@@ -304,6 +337,9 @@ const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return 
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 
 let S={};
+/* Was nur fuer einen Heimweg gilt (Neustart und neues Spiel setzen es zurueck). */
+const WEG_FLAGS=['marvinMitkommen','tschuessGesagt','bisGleichAmEnde',
+  'tschuess_jonas','tschuess_dennis','tschuess_semih','tschuess_lea','tschuess_tobi'];
 function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
@@ -321,15 +357,19 @@ function neuesSpiel(){
     szene:0, szeneT:0, skipT:0,
     gewonnen:false, faenger:'', neueBestzeit:false,
     abb:abbiegungenPlanen(), fin:null, registriert:false,
+    /* Neustart am Abschnitt: Schnappschuss des Wettlaufs, Ziel des Scheiterns, Zaehler */
+    absch:null, retry:null, tschuessZahl:0, neustartGezeigt:false,
+    ansage:'', ansageSatz:'', ansageT:0,
+    musikAb:'start', musikTempo:null, musikGedaempft:null,
   };
   /* Was nur fuer diesen Heimweg gilt - ein Wiederholungsversuch (Leertaste im
      Endbildschirm) soll nichts aus dem letzten Durchgang mitbringen. */
-  ['marvinMitkommen','tschuessGesagt','bisGleichAmEnde',
-   'tschuess_jonas','tschuess_dennis','tschuess_semih','tschuess_lea','tschuess_tobi']
-    .forEach(f=>setzeFlag(f,false));
+  WEG_FLAGS.forEach(f=>setzeFlag(f,false));
   PLAUSCH.lade(PLAUSCH_ZEILEN);
   PLAUSCH.y=IS_TOUCH?56:H-11;   // frei von Meldung und Hinweis
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
+  if(typeof MUSIK!=='undefined') MUSIK.tempo(null);
+  if(typeof WERTUNG!=='undefined') WERTUNG.reset();
 }
 
 /* Wer abbiegt: nur Crew-Figuren, je ein Slot in der festen Reihenfolge. MAX FERDI
@@ -379,7 +419,8 @@ function druckAktion(){
     /* Kein Level 9 - E fuehrt zurueck zum Anfang des GANZEN Spiels.
        Leertaste (druckSprung) startet stattdessen nur dieses Level neu. */
     if(S.gewonnen){ location.href='index.html'; return; }
-    neuesSpiel(); return;
+    /* Nach einem Scheitern: E = NOCHMAL am Abschnitt, Leertaste = GANZ VON VORN (druckSprung). */
+    neustartAbschnitt(); return;
   }
   /* Finale und Abspann: jede Karte ist antippbar. */
   if(S.modus==='finale'){ finaleTippen(); return; }
@@ -413,7 +454,7 @@ function mobilKontext(){
   if(S.modus==='titel')    return {aktion:'START',  zwei:null};
   if(S.modus==='intro'||S.modus==='cutscene'||S.modus==='finale') return {aktion:'WEITER', zwei:null};
   /* Endbildschirm: E (Aktion) = ganzes Spiel neu, Leertaste (zwei) = nur dieses Level. */
-  if(S.modus==='ende')     return S.gewonnen?{aktion:'GANZ NEU', zwei:'LEVEL 8'}:{aktion:'NOCHMAL', zwei:null};
+  if(S.modus==='ende')     return S.gewonnen?{aktion:'GANZ NEU', zwei:'LEVEL 8'}:{aktion:'NOCHMAL', zwei:'GANZ VON VORN'};
   /* Das Abbiegefenster blendet TSCHUESS ein - ruhig, ohne Blinken. */
   if(S.modus==='spiel'&&S.abb&&S.abb.fenster) return {aktion:'TSCHUESS', zwei:'SPRUNG'};
   if(S.modus==='pause')    return {aktion:null, zwei:null};
@@ -474,12 +515,15 @@ function pruefeSonne(){
   /* Wer auf den Sonnenaufgang wartet, verliert nicht gegen die Sonne - er
      sieht sie. Die Nacht endet dann genau hier. */
   if(endeWeg()==='sonne'){ starteFinale(); return true; }
-  S.modus='ende'; S.gewonnen=false;
+  S.modus='ende'; S.gewonnen=false; S.retry='wettlauf';
   S.faenger='DIE SONNE HAT DICH ERWISCHT.'; SFX.erwischt();
+  if(typeof MUSIK!=='undefined') MUSIK.stinger('fail');
+  if(typeof SAFT!=='undefined') SAFT.schaden(1);
   return true;
 }
 function pruefeZiel(){
   if(S.x<ZIEL_X||!S.amBoden||S.modus==='ende') return false;
+  if(typeof SAFT!=='undefined') SAFT.fund(Math.round(S.x-S.kamX),BODEN-20,'ZU HAUSE');
   starteFinale();
   return true;
 }
@@ -530,6 +574,8 @@ function abbiegeTakt(dt){
    flagcheck ihn liest. */
 function tschuessRufen(name){
   const A=S.abb;
+  S.tschuessZahl++;
+  if(typeof SAFT!=='undefined') SAFT.erfolg(Math.round(S.x-TUNE.abbiegeAbstand-S.kamX),BODEN-26,'TSCHUESS');
   A.fenster=null; A.steht=TUNE.abbiegeKosten; A.figur={ name, rest:TUNE.abbiegeKosten };
   S.hinweisT=0; S.vx=0;
   const b=TUNE.abbiegeBeziehung;
@@ -544,12 +590,14 @@ function tschuessRufen(name){
 function update(dt){
   /* Im Wettlauf darf geplauscht werden, sonst nicht (nacht/erzaehl.js). */
   PLAUSCH.sperre=S.modus!=='spiel';
+  musik();                       /* vor der Kapitelkarte, damit die Musik dort gedaempft wird */
   if(erzaehlTakt(dt)) return;
-  S.t+=dt; musik();
+  S.t+=dt;
   if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
+  if(S.ansageT>0) S.ansageT-=bildDt;   // Ansage laeuft in Echtzeit, auch in der Zeitlupe
   if(S.modus==='pause'||S.modus==='titel') return;
   if(S.modus==='intro'){ intro(dt); return; }
   if(S.modus==='kampf'){ kampf8(dt); return; }
@@ -592,7 +640,8 @@ function update(dt){
   }
   if(!sprungAn&&S.vy<0) S.vy*=(1-TUNE.kurzsprung*dt*12);
   S.vy+=TUNE.gravitation*dt; S.y+=S.vy*dt;
-  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden) SFX.landen();
+  if(S.y>=BODEN){ S.y=BODEN; if(!S.amBoden){ SFX.landen();
+      if(typeof SAFT!=='undefined') SAFT.landung(Math.round(S.x-S.kamX),BODEN-2,0.4); }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
   /* Reine Menue-Eingaben in diesem Modus ignorieren (kein Reden/Suchen hier) */
@@ -611,7 +660,8 @@ function update(dt){
     if(Math.abs(S.x-effX)<TUNE.hindernisRadius+breite*.3&&S.y>BODEN-TUNE.hindernisHoehe){
       S.hinTreffer[i]=true;
       S.licht=Math.min(100,S.licht+TUNE.hindernisStrafe);
-      S.ruettel=TUNE.hindernisRuettel;   // Zeichnen: FX.wackel
+      S.ruettel=TUNE.hindernisRuettel;
+      schuettle(TUNE.hindernisRuettel); if(typeof SAFT!=='undefined') SAFT.schaden(0.5);
       S.vx-=Math.sign(S.vx||1)*TUNE.hindernisKnockback;
       SFX.aua(); meldung(pick(['AUA','MIST','VORSICHT']),1.2);
     }
@@ -763,6 +813,8 @@ function starteCutscene(){
   S.szenen=baueEnde(); S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.vx=0; SFX.sieg();
 }
 function levelGeschafft(){
+  if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
+  rangAbschluss8();
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
@@ -821,9 +873,9 @@ function zeichneBild(dt){
   const p=S.pegel/100;
   /* Wackeln (Rest-Pegel, Treffer) laeuft ueber FX: aus bei "Wackeln aus", halb bei Flackerschutz. */
   const wack = FX.wackel(S.pegel>TUNE.wackelnAb ? (S.pegel-TUNE.wackelnAb)/45*3 : 0);
-  const rw=FX.wackel(S.ruettel);
-  const rx=(Math.random()-.5)*rw+Math.sin(S.t*7)*wack;
-  const ry=(Math.random()-.5)*rw+Math.cos(S.t*5.2)*wack*.6;
+  /* Treffer-Wackeln kommt von SAFT (kern.js verschiebt das Bild); hier bleibt nur das Pegel-Schwanken. */
+  const rx=Math.sin(S.t*7)*wack;
+  const ry=Math.cos(S.t*5.2)*wack*.6;
   ctx.translate(Math.round(rx),Math.round(ry));
   zeichneStrasse();
   ctx.restore();
@@ -1230,11 +1282,12 @@ function bildschirme(){
     } else {
       textGlowC('ERWISCHT',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
-      /* Fail-Karte statt Strafe: kein Ende, nur ein Satz vor dem Neustart. */
-      zeichneKarte('DER HAUSMEISTER HAT ABGESCHLOSSEN.|ES IST NOCH FREITAG.',98,P.dim);
+      /* Kein Ende, nur ein Satz: man startet an diesem Abschnitt neu. */
+      zeichneKarte(S.retry==='kampf'?'DIE GRUPPE WAR ZU STARK.|DU STARTEST HIER NEU.'
+        :'DIE SONNE WAR SCHNELLER.|DU STARTEST HIER NEU.',98,P.dim);
     }
     /* Nach dem Sieg stehen E und Leertaste schon oben - eine dritte Aufforderung widerspricht ihnen. */
-    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'NOCHMAL HIER - ODER GANZ VON VORN':'E: NOCHMAL HIER - LEERTASTE: GANZ VON VORN',H-18,P.gold);
   }
 }
 
@@ -1299,6 +1352,7 @@ function starteKonfrontation(){
   starteGespraech(vorDemKampf(),'start',e=>{
     if(e==='@frieden'){
       setzeFlag('fightFrieden');
+      merkeWettlauf();
       S.modus='spiel'; meldung(anfuehrerName()+' GEHT EINFACH',2.4);
       zeigeHinweis('JETZT NACH HAUSE',3);
       return;
@@ -1554,6 +1608,9 @@ function starteGrossenKampf(){
 
 function wechsleArena(neu){
   S.arena=neu; S.arenaWechselT=1.6;
+  if(typeof SAFT!=='undefined') SAFT.zeitlupe(TUNE.zeitlupeFaktor,TUNE.zeitlupeSek);
+  S.ansage='RUNDE '+(neu+1); S.ansageSatz=neu>=2?TUNE.ansageSatz3:TUNE.ansageSatz2;
+  S.ansageT=TUNE.ansageSek;
   S.flaschen.length=0;
   meldung(ARENEN[neu].name,2);
   SFX.aua();
@@ -1686,12 +1743,15 @@ function kampf8(dt){
     rasteAufGegner(s,[g].concat(S.handlanger),KAMPF8.anfuehrerReich);
     /* Konter zuerst - gegen den Anfuehrer und gegen jeden Handlanger. */
     let gekontert=konterVersuch(s,g,{schaden:2,unblockbar:g.unblockbarJetzt});
+    let kontertWer=g;
     if(!gekontert){
       for(const h of S.handlanger){
-        if(h.hp>0&&konterVersuch(s,h,{schaden:2})){ gekontert=true; break; }
+        if(h.hp>0&&konterVersuch(s,h,{schaden:2})){ gekontert=true; kontertWer=h; break; }
       }
     }
-    if(gekontert){ S.ruettel=5; SFX.warn(); meldung(pick(['SITZT','KONTER','BAM']),1.0); continue; }
+    if(gekontert){ S.ruettel=5; schuettle(5); SFX.warn(); meldung(pick(['SITZT','KONTER','BAM']),1.0);
+      if(typeof SAFT!=='undefined'){ const p=bild8(kontertWer,14); SAFT.treffer(p.x,p.y,s.blick,1); }
+      continue; }
     schlage(s);
   }
 
@@ -1706,7 +1766,7 @@ function kampf8(dt){
     if(Math.abs(f.x-s.x)<7&&Math.abs(f.t-s.t)<=KAMPF.tiefeToleranz){
       if(s.unverwundbar<=0&&s.zustand!=='rolle'){
         s.hp-=KAMPF8.flascheSchaden; s.unverwundbar=KAMPF.unverwundbarNachTreffer;
-        S.ruettel=5; SFX.aua(); meldung('FLASCHE',1.1);
+        S.ruettel=5; schuettle(5); if(typeof SAFT!=='undefined') SAFT.schaden(0.5); SFX.aua(); meldung('FLASCHE',1.1);
       }
       return false;
     }
@@ -1715,23 +1775,25 @@ function kampf8(dt){
 
   /* ---- Treffer ---- */
   if(s.zustand==='schlag'&&!s.trefferGesetzt){
+    let ziel=g;
     let r=loeseTreffer(s,g,{schaden:1});
-    if(!r) for(const h of S.handlanger){ if(h.hp>0){ r=loeseTreffer(s,h,{schaden:1}); if(r) break; } }
-    if(r==='treffer'){ S.ruettel=3; SFX.warn(); }
+    if(!r) for(const h of S.handlanger){ if(h.hp>0){ r=loeseTreffer(s,h,{schaden:1}); if(r){ ziel=h; break; } } }
+    if(r==='treffer'){ S.ruettel=3; schuettle(3); SFX.warn();
+      if(typeof SAFT!=='undefined'){ const p=bild8(ziel,14); SAFT.treffer(p.x,p.y,s.blick,0.5); } }
     else if(r==='block') meldung('GEBLOCKT',0.7);
   }
   if(g.zustand==='schlag'&&g.art!=='wurf'&&!g.trefferGesetzt){
     const r=loeseTreffer(g,s,{schaden:1,unblockbar:g.unblockbarJetzt,
       reichweite:g.reichweite,betaeubung:0.35});
-    if(r==='treffer'||r==='gardebruch'){ S.ruettel=6; SFX.aua();
+    if(r==='treffer'||r==='gardebruch'){ S.ruettel=6; schuettle(6); if(typeof SAFT!=='undefined') SAFT.schaden(0.8); SFX.aua();
       meldung(g.art==='ramme'?'UMGERANNT':'VOLL DRAUF',1.2); }
-    else if(r==='block'){ S.ruettel=2; meldung('GEBLOCKT',0.7); }
+    else if(r==='block'){ S.ruettel=2; schuettle(2); meldung('GEBLOCKT',0.7); }
     else if(r==='daneben') meldung('AUSGEWICHEN',0.9);
   }
   for(const h of S.handlanger){
     if(h.hp>0&&h.zustand==='schlag'&&!h.trefferGesetzt){
       const r=loeseTreffer(h,s,{schaden:1,reichweite:h.reichweite});
-      if(r==='treffer'||r==='gardebruch'){ S.ruettel=4; SFX.aua(); meldung('VON HINTEN',1.0); }
+      if(r==='treffer'||r==='gardebruch'){ S.ruettel=4; schuettle(4); if(typeof SAFT!=='undefined') SAFT.schaden(0.6); SFX.aua(); meldung('VON HINTEN',1.0); }
     }
   }
 
@@ -1747,6 +1809,14 @@ function kampf8(dt){
 function beendeGrossenKampf(gewonnen){
   document.documentElement.classList.remove('kampf');
   S.kampfGewonnen=gewonnen;
+  /* Niederlage als Scheitern (TUNE.kampfNiederlageEndet): kein Flag, kein Heimweg.
+     Das Ende bietet NOCHMAL direkt am Kampf an. */
+  if(!gewonnen&&TUNE.kampfNiederlageEndet){
+    S.modus='ende'; S.gewonnen=false; S.retry='kampf';
+    S.faenger=anfuehrerName()+' HAT EUCH AUFGEHALTEN.';
+    if(typeof MUSIK!=='undefined') MUSIK.stinger('fail');
+    SFX.aua(); return;
+  }
   setzeFlag(gewonnen?'fightGewonnen':'fightVerloren');
   if(gewonnen){
     meldung('ER BLEIBT LIEGEN',2.2); SFX.sieg();
@@ -1756,6 +1826,7 @@ function beendeGrossenKampf(gewonnen){
     aendereWert('ruf',-8);
     S.licht=Math.min(95,S.licht+KAMPF8.lichtStrafeBeiNiederlage);
   }
+  merkeWettlauf();
   S.modus='spiel';
   zeigeHinweis(gewonnen?'UND JETZT NACH HAUSE':'LOS - BEVOR DIE SONNE DA IST',3);
 }
@@ -1839,11 +1910,84 @@ function hudKampf8(){
   zeichneAusholbalken(g, g.art==='schwung'?'SCHWUNG':g.art==='jab'?'JAB'
                        :g.art==='ramme'?'RAMME - AUSWEICHEN':'WURF', 30);
 
+  zeichneAnsage8();
   if(S.arenaWechselT>0) textGlowC(ARENEN[S.arena].name,H/2-4,P.gold,2);
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
     textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+}
+
+/* ==========================================================================
+   NEUSTART AM ABSCHNITT, SAFT-HELFER, RANG, PHASEN-ANSAGE
+   Scheitern im Wettlauf: NOCHMAL startet am Wettlauf neu, mit dem Licht vom damaligen
+   Start (kein Titel, kein Intro). Kampf nur mit TUNE.kampfNiederlageEndet, dann direkt
+   der Kampf ohne Gespraech. Leertaste im Endbildschirm = GANZ VON VORN (druckSprung).
+   ========================================================================== */
+/* Schnappschuss beim Start des Weges (nach dem Gespraech oder nach dem Kampf). */
+function merkeWettlauf(){ S.absch={x:S.x,licht:S.licht,zeit:S.zeit,pegel:S.pegel}; }
+function hinweisNeustart(){
+  if(S.neustartGezeigt) return;
+  S.neustartGezeigt=true;
+  zeigeHinweis('NOCHMAL VON HIER - OHNE TITEL UND INTRO',4);
+}
+function neustartAbschnitt(){
+  if(S.retry==='kampf') return neustartKampf();
+  if(S.retry==='wettlauf'&&S.absch) return neustartWettlauf();
+  neuesSpiel();
+}
+function neustartWettlauf(){
+  const k=S.absch;
+  WEG_FLAGS.forEach(f=>setzeFlag(f,false));
+  S.modus='spiel'; S.gewonnen=false; S.faenger=''; S.retry=null; S.fin=null;
+  S.x=k.x; S.licht=k.licht; S.zeit=k.zeit; S.pegel=k.pegel; S.tschuessZahl=0;
+  S.vx=0; S.vy=0; S.y=BODEN; S.amBoden=true; S.letzterBoden=S.t; S.ruettel=0;
+  S.hinTreffer={}; S.abb=abbiegungenPlanen();
+  S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
+  S.meldung=''; S.meldungT=0; S.ansageT=0;
+  sprungPuffer.length=0; aktionPuffer.length=0;
+  hinweisNeustart();
+}
+function neustartKampf(){
+  S.gewonnen=false; S.retry=null; S.faenger=''; S.ansageT=0; S.blockAn=false;
+  sprungPuffer.length=0; aktionPuffer.length=0;
+  starteGrossenKampf();
+  hinweisNeustart();
+}
+/* Treffer-Wackeln: S.ruettel bleibt als Wert, das Bild wackelt ueber SAFT.trauma. */
+function schuettle(n){ if(typeof SAFT!=='undefined') SAFT.trauma(Math.min(1,n/12)); }
+/* Bildschirmposition eines Kaempfers im Kampf (dort gibt es keine Kamera). */
+function bild8(k,hoch){ return {x:Math.round(k.x+4), y:Math.round(bodenY(k.t)-hoch)}; }
+
+/* Phasen-Ansage: grosse Schrift mittig, mit dem Satz darunter (wie Level 4). */
+function zeichneAnsage8(){
+  if(!(S.ansageT>0)) return;
+  ctx.globalAlpha=Math.min(1,S.ansageT/0.3);
+  textGlowC(S.ansage,H/2-26,P.gold,3);
+  textC(S.ansageSatz,H/2+6,P.weiss);
+  ctx.globalAlpha=1;
+}
+
+/* Rang-Rechnung (nacht/wertung.js): vier Kriterien, Summe 100. */
+function linearAnteil(v,schlecht,gut){ return Math.max(0,Math.min(1,(v-schlecht)/(gut-schlecht))); }
+function rangAbschluss8(){
+  if(typeof WERTUNG==='undefined') return;
+  const R=TUNE.rang;
+  const k=endeKampf();
+  const pLicht=Math.round(R.licht.punkte*linearAnteil(S.licht,R.licht.schlecht,R.licht.gut));
+  const pKampf=R.kampf[k]||0;
+  const n=(S.abb&&S.abb.plan)?S.abb.plan.length:0;
+  const pTsch=n?Math.round(R.tschuess.punkte*Math.min(1,S.tschuessZahl/n)):R.tschuess.punkte;
+  const pZeit=Math.round(R.zeit.punkte*linearAnteil(S.zeit,R.zeit.schlecht,R.zeit.gut));
+  const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
+  const KAMPF_WORT={frieden:'FRIEDEN',gewonnen:'GEWONNEN',verloren:'VERLOREN'};
+  const zeilen=[
+    {name:'LICHT',    wert:Math.round(S.licht)+'%',   pkt:pLicht},
+    {name:'KAMPF',    wert:KAMPF_WORT[k]||'',         pkt:pKampf},
+    {name:'TSCHUESS', wert:n?(S.tschuessZahl+' VON '+n):'KEINER DA', pkt:pTsch},
+    {name:'ZEIT',     wert:min+':'+String(sek).padStart(2,'0'), pkt:pZeit},
+  ];
+  WERTUNG.abschluss(8,pLicht+pKampf+pTsch+pZeit,zeilen);
 }
 
 /* ==========================================================================

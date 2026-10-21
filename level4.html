@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610110313">
+<link rel="stylesheet" href="nacht/stil.css?v=202610211232">
 </head>
 <body>
 <div id="cab">
@@ -37,25 +37,29 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610110313"></script>
-<script src="nacht/geraet.js?v=202610110313"></script>
-<script src="nacht/bild.js?v=202610110313"></script>
-<script src="nacht/hud.js?v=202610110313"></script>
-<script src="nacht/ton.js?v=202610110313"></script>
-<script src="nacht/komfort.js?v=202610110313"></script>
-<script src="nacht/stand.js?v=202610110313"></script>
-<script src="nacht/welt.js?v=202610110313"></script>
-<script src="nacht/kampf.js?v=202610110313"></script>
-<script src="nacht/nacht.js?v=202610110313"></script>
-<script src="nacht/dialog.js?v=202610110313"></script>
-<script src="nacht/eingabe.js?v=202610110313"></script>
-<script src="nacht/lehre.js?v=202610110313"></script>
-<script src="nacht/mobil.js?v=202610110313"></script>
-<script src="nacht/handy.js?v=202610110313"></script>
-<script src="nacht/texte.js?v=202610110313"></script>
-<script src="nacht/erzaehl.js?v=202610110313"></script>
-<script src="nacht/epilog.js?v=202610110313"></script>
-<script src="nacht/menue.js?v=202610110313"></script>
+<script src="nacht/kern.js?v=202610211232"></script>
+<script src="nacht/geraet.js?v=202610211232"></script>
+<script src="nacht/bild.js?v=202610211232"></script>
+<script src="nacht/hud.js?v=202610211232"></script>
+<script src="nacht/ton.js?v=202610211232"></script>
+<script src="nacht/komfort.js?v=202610211232"></script>
+<script src="nacht/musik.js?v=202610211232"></script>
+<script src="nacht/songs.js?v=202610211232"></script>
+<script src="nacht/saft.js?v=202610211232"></script>
+<script src="nacht/stand.js?v=202610211232"></script>
+<script src="nacht/welt.js?v=202610211232"></script>
+<script src="nacht/kampf.js?v=202610211232"></script>
+<script src="nacht/nacht.js?v=202610211232"></script>
+<script src="nacht/dialog.js?v=202610211232"></script>
+<script src="nacht/eingabe.js?v=202610211232"></script>
+<script src="nacht/lehre.js?v=202610211232"></script>
+<script src="nacht/mobil.js?v=202610211232"></script>
+<script src="nacht/handy.js?v=202610211232"></script>
+<script src="nacht/texte.js?v=202610211232"></script>
+<script src="nacht/erzaehl.js?v=202610211232"></script>
+<script src="nacht/epilog.js?v=202610211232"></script>
+<script src="nacht/wertung.js?v=202610211232"></script>
+<script src="nacht/menue.js?v=202610211232"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -118,6 +122,28 @@ const TUNE = {
   phase3Ab:         0.33,
   phasePauseKuerzer: 0.22, // pro Phase weniger Verschnaufen
   phaseWindupKuerzer:0.12, // pro Phase kuerzere Vorwarnung
+
+  /* (8) COMBO, PERFEKT, PHASEN-ANSAGE (Scott Pilgrim) */
+  perfektAnteil:      0.3333, // Konter im letzten Drittel des Konterfensters = PERFEKT
+  comboPopupAb:       2,      // ab dieser Combo steht X2 (X3, ...) ueber dem Boss
+  comboStingerAb:     3,      // ab dieser Combo der Stinger 'combo'
+  zeitlupeFaktor:     0.3,    // Phasenwechsel: Spielzeit auf diesen Anteil ...
+  zeitlupeSek:        0.8,    // ... fuer so viele Sekunden
+  ansageSek:          1.5,    // Dauer der grossen PHASE-Ansage
+  ansageSatz2:        'JETZT REICHTS.',
+  ansageSatz3:        'LETZTE CHANCE.',
+
+  /* (9) MUSIK - Song 'tuer'; jeder Treffer, den DU kassierst, macht sie schneller */
+  tempoBasis:         120,    // Song-Tempo (bpm)
+  tempoJeTreffer:     4,
+
+  /* (10) RANG - Summe 100. Je Kriterium linear zwischen "schlecht" und "gut". */
+  rang:{
+    konter:  {schlecht:0.2, gut:0.85, punkte:35},  // Konterquote (Konter / Druecke)
+    kassiert:{schlecht:3,             punkte:30},  // Treffer kassiert: 0 = voll, schlecht = 0
+    combo:   {schlecht:1,   gut:5,    punkte:20},  // beste Combo
+    zeit:    {schlecht:150, gut:60,   punkte:15},  // Sekunden: weniger ist besser
+  },
 };
 
 const P = {
@@ -182,19 +208,62 @@ const SFX={
   sieg:    ()=>{ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>piep(f,.14),i*110)); },
   reden:   ()=>piep(520+Math.random()*180,.04,'square',.025),
 };
-/* Musik: dumpfer Bass vor dem Club, wird mit jedem Treffer etwas schneller */
-const BASS=[73,0,73,0, 98,0,73,0, 65,0,65,0, 87,0,98,110];
-
+/* Musik (nacht/musik.js): Song 'tuer'. Die Bossphase wechselt den Abschnitt, jeder Treffer,
+   den der Spieler kassiert, beschleunigt. Gedaempft bei Pause, offenem Handy, Kapitelkarte. */
 function musik(){
-  if(!AC||muted||S.modus==='pause'||S.modus==='titel') return;
-  const tempo=1+ (S.boss?(TUNE.bossTreffer-S.boss.hp):0)*TUNE.musikBeschleunigung;
-  const st=60/118/4/tempo;
-  while(MUS.next<AC.currentTime+.12){
-    const i=MUS.step%BASS.length, f=BASS[i];
-    if(f) ton(f,MUS.next,st*.85,'square',.03);
-    if(i%4===0) ton(48,MUS.next,.09,'sine',.045);
-    MUS.next+=st; MUS.step++;
-  }
+  if(typeof MUSIK==='undefined') return;
+  const gedaempft=S.modus==='pause'||!!(window.HANDY&&window.HANDY.offen)
+    ||(typeof kapitelAktiv==='function'&&!!kapitelAktiv());
+  MUSIK.daempfen(gedaempft);
+  MUSIK.spiele('tuer');
+  const b=S.boss, imKampf=S.modus==='kampf'&&!!b;
+  /* Abschnitt nach Bossphase; ohne Phase die Folge des Songs (Abschnitt A). */
+  const ph=imKampf?bossPhase(b):1;
+  const ab=ph>=3?'phase3':ph===2?'phase2':null;
+  if(S.musikAb!==ab){ S.musikAb=ab; MUSIK.abschnitt(ab); }
+  /* Spannung: steigt, je weniger Leben der Tuersteher hat. */
+  let w=0.3;
+  if(imKampf) w=0.3+0.7*Math.max(0,1-b.hp/b.maxHp);
+  else if(S.modus==='cutscene'||S.modus==='ende') w=1;
+  MUSIK.spannung(w);
+  /* Tempo: Song-Tempo plus je kassiertem Treffer. */
+  const tempo=S.herzVerlust>0?TUNE.tempoBasis+TUNE.tempoJeTreffer*S.herzVerlust:null;
+  if(S.musikTempo!==tempo){ S.musikTempo=tempo; MUSIK.tempo(tempo); }
+}
+
+/* Wackeln laeuft ueber SAFT.trauma (nacht/saft.js): Staerke N von 12 ist trauma N/12. */
+function wackel(n){ if(typeof SAFT!=='undefined') SAFT.trauma(Math.min(1,n/12)); }
+
+/* Bildschirmposition eines Kaempfers: Mitte, und so viele Pixel ueber dem Boden. */
+const bildPunkt=(e,hoch)=>({x:Math.round(e.x+4), y:Math.round(bodenY(e.t)-hoch)});
+
+/* Phasenwechsel des Tuerstehers: Zeitlupe und die grosse Ansage (zeichneAnsage). */
+function phaseWechsel(ph){
+  S.phase=ph;
+  if(typeof SAFT!=='undefined') SAFT.zeitlupe(TUNE.zeitlupeFaktor,TUNE.zeitlupeSek);
+  S.ansage='PHASE '+ph;
+  S.ansageSatz=ph>=3?TUNE.ansageSatz3:TUNE.ansageSatz2;
+  S.ansageT=TUNE.ansageSek;
+}
+
+/* Rang-Rechnung (nacht/wertung.js): vier Kriterien, Summe 100. */
+function linearAnteil(v,schlecht,gut){ return Math.max(0,Math.min(1,(v-schlecht)/(gut-schlecht))); }
+function rangAbschluss(){
+  if(typeof WERTUNG==='undefined') return;
+  const R=TUNE.rang;
+  const quote=S.versuche>0?S.konter/S.versuche:0;
+  const pKonter=Math.round(R.konter.punkte*linearAnteil(quote,R.konter.schlecht,R.konter.gut));
+  const pHerz=Math.round(R.kassiert.punkte*(1-linearAnteil(S.herzVerlust,0,R.kassiert.schlecht)));
+  const pCombo=Math.round(R.combo.punkte*linearAnteil(S.maxCombo,R.combo.schlecht,R.combo.gut));
+  const pZeit=Math.round(R.zeit.punkte*linearAnteil(S.zeit,R.zeit.schlecht,R.zeit.gut));
+  const min=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
+  const zeilen=[
+    {name:'KONTER',   wert:S.konter+'/'+S.versuche,  pkt:pKonter},
+    {name:'KASSIERT', wert:S.herzVerlust+' HERZ',    pkt:pHerz},
+    {name:'COMBO',    wert:'X'+S.maxCombo,            pkt:pCombo},
+    {name:'ZEIT',     wert:min+':'+String(sek).padStart(2,'0'), pkt:pZeit},
+  ];
+  WERTUNG.abschluss(4,pKonter+pHerz+pCombo+pZeit,zeilen);
 }
 
 /* ==========================================================================
@@ -265,14 +334,20 @@ function neuesSpiel(){
     maxHp:TUNE.leben+bonus.leben, hp:TUNE.leben+bonus.leben, fensterMult:bonus.fenster,
     pegelStart:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
     treffer:0, erholungT:0, herzVerlust:0, kappeT:0, kappeText:'', warteT:0, onkelT:0, onkelGesagt:false,
-    ruettel:0, blitz:0,
+    blitz:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
     szene:0, szeneT:0, skipT:0,
     boss:null, gewonnen:false, faenger:'', neueBestzeit:false,
     spieler:null, blockAn:false,
+    /* Combo und Phasen (NEU in Level 4): Zaehler fuer Rang und Anzeige */
+    konter:0, versuche:0, perfekt:0, combo:0, maxCombo:0, phase:1,
+    ansage:'', ansageSatz:'', ansageT:0, hinweisCombo:false,
+    musikAb:'start', musikTempo:null,
   };
   S.spieler=kaempfer({ x:96, t:0.5, blick:1, hp:S.maxHp, maxHp:S.maxHp });
   PLAUSCH.lade(PLAUSCH_ZEILEN);
+  if(typeof MUSIK!=='undefined') MUSIK.tempo(null);
+  if(typeof WERTUNG!=='undefined') WERTUNG.reset();
 }
 neuesSpiel();
 
@@ -430,7 +505,7 @@ function starteAngriff(b,art){
 }
 function fehlschlag(){
   if(S.erholungT>0) return;
-  S.erholungT=TUNE.fehlschlagErholung; S.ruettel=2; SFX.fehl();
+  S.erholungT=TUNE.fehlschlagErholung; wackel(2); SFX.fehl();
   meldung('DANEBEN',0.9);
 }
 function bossTakt(b,dt,ziel){
@@ -491,8 +566,11 @@ function kampf(dt){
   if(rolleGedrueckt){
     rolleGedrueckt=false;
     const r=(runterAn?1:0)-(hochAn?1:0);
-    if(!rolle(s,r||(s.t<0.5?1:-1))&&s.ausdauer<KAMPF.ausdauerRolle)
-      meldung('KEINE PUSTE',0.8);
+    const gerollt=rolle(s,r||(s.t<0.5?1:-1));
+    if(gerollt){
+      /* Abrollen nach der Rolle: Staub am Boden (es gibt in Level 4 keinen Sprung) */
+      if(typeof SAFT!=='undefined'){ const p=bildPunkt(s,0); SAFT.landung(p.x,p.y,0.5); }
+    } else if(s.ausdauer<KAMPF.ausdauerRolle) meldung('KEINE PUSTE',0.8);
   }
 
   /* ---- Blocken ----
@@ -518,11 +596,31 @@ function kampf(dt){
     aktionPuffer.shift();
     if(S.erholungT>0) continue;
     rasteAufGegner(s,[b],KAMPF.reichweite);
+    /* Druecke fuer die Konterquote zaehlen - ausser gegen den Rammstoss, der nicht kontert. */
+    if(!b.unblockbarJetzt) S.versuche++;
     if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); continue; }
+    /* PERFEKT: der Druck liegt im letzten Drittel des Konterfensters. Vor dem Konter messen,
+       der Konter setzt den Zustand des Tuerstehers um. */
+    const perfekt=b.zustand==='ausholen'
+      && b.zT>=b.ausholenDauer*(1-b.fensterAnteil*TUNE.perfektAnteil);
     if(konterVersuch(s,b,{konterAnteil:b.fensterAnteil,schaden:1,
                           unblockbar:b.unblockbarJetzt})){
-      S.treffer++; S.ruettel=5; S.blitz=.5; SFX.klatsch();
+      S.treffer++; S.konter++; S.combo++; S.maxCombo=Math.max(S.maxCombo,S.combo);
+      if(perfekt) S.perfekt++;
+      wackel(5); S.blitz=.5; SFX.klatsch();
       meldung(pick(['SITZT','KONTER','GEHT AUFS AUGE']),1.1);
+      if(typeof SAFT!=='undefined'){
+        const p=bildPunkt(b,12), pc=bildPunkt(b,18), pp=bildPunkt(b,30);
+        SAFT.treffer(p.x,p.y,s.blick,perfekt?1:0.5);
+        if(perfekt) SAFT.popup('PERFEKT!',pp.x,pp.y,'#ffd447');
+        if(S.combo>=TUNE.comboPopupAb) SAFT.popup('X'+S.combo,pc.x,pc.y,'#42d9ff');
+      }
+      if(S.combo>=TUNE.comboPopupAb){
+        if(S.combo===TUNE.comboPopupAb&&!S.hinweisCombo){
+          S.hinweisCombo=true; zeigeHinweis('COMBO: JEDER KONTER OHNE TREFFER ZAEHLT',3.5);
+        }
+        if(S.combo>=TUNE.comboStingerAb&&typeof MUSIK!=='undefined') MUSIK.stinger('combo');
+      }
       continue;
     }
     /* Kein Konter. In Reichweite zaehlt es als verfrueht - das ist die
@@ -542,7 +640,8 @@ function kampf(dt){
     const offen=b.zustand==='erholung'||b.zustand==='getroffen';
     const r=loeseTreffer(s,b,{schaden:offen?1:0.001});
     if(r==='treffer'&&offen){
-      S.treffer++; S.ruettel=3; SFX.klatsch(); meldung('NACHGESETZT',0.9);
+      S.treffer++; wackel(3); SFX.klatsch(); meldung('NACHGESETZT',0.9);
+      if(typeof SAFT!=='undefined'){ const p=bildPunkt(b,12); SAFT.treffer(p.x,p.y,s.blick,0.5); }
     } else if(r==='block'||r==='gardebruch'){
       meldung(r==='gardebruch'?'DECKUNG WEG':'ER BLOCKT',0.9);
     } else if(r==='treffer'){
@@ -553,25 +652,37 @@ function kampf(dt){
     const r=loeseTreffer(b,s,{schaden:1,unblockbar:b.unblockbarJetzt,
                               reichweite:b.reichweite,betaeubung:0.35});
     if(r==='treffer'||r==='gardebruch'){
-      S.herzVerlust++;
-      S.ruettel=6; S.blitz=.5; SFX.aua();
+      S.herzVerlust++; S.combo=0;
+      wackel(6); S.blitz=.5; SFX.aua();
+      if(typeof SAFT!=='undefined') SAFT.schaden(b.art==='ramme'?1:0.6);
       meldung(r==='gardebruch'?'DURCH DIE DECKUNG'
              :b.art==='ramme'?'UMGERANNT'
              :b.art==='schwung'?'VOLL ERWISCHT':'AUTSCH',1.2);
     } else if(r==='block'){
-      S.ruettel=2; meldung('GEBLOCKT',0.8);
+      wackel(2); meldung('GEBLOCKT',0.8);
     } else if(r==='daneben'){
       meldung('AUSGEWICHEN',0.9);
+      if(typeof SAFT!=='undefined'){
+        const p=bildPunkt(s,10);
+        SAFT.erfolg(p.x,p.y,b.art==='ramme'?'DRUEBER':'AUSGEWICHEN');
+      }
     }
   }
 
   if(S.onkelT>0) S.onkelT-=zdt;
   if(!S.onkelGesagt&&flag('jonasDabei')&&b.hp<=b.maxHp/2&&b.hp>0){ S.onkelGesagt=true; S.onkelT=ONKEL_DAUER; }
 
+  /* ---- Phasenwechsel: Zeitlupe und grosse Ansage (der Musikwechsel passiert in musik()) ---- */
+  if(b.hp>0&&S.modus==='kampf'&&!b.anlauf){
+    const ph=bossPhase(b);
+    if(ph>S.phase) phaseWechsel(ph);
+  }
+
   /* ---- Ausgang ---- */
   S.hp=Math.max(0,Math.ceil(s.hp));
   if(s.hp<=0&&S.modus==='kampf'){
     S.modus='ende'; S.gewonnen=false;
+    if(typeof MUSIK!=='undefined') MUSIK.stinger('fail');
     S.faenger=pick(['RAUSGESCHMISSEN','KEIN EINLASS HEUTE','DU LIEGST VOR DER TUER']);
     return;
   }
@@ -602,7 +713,10 @@ const SZENEN=[
 function szeneGueltig(i){ return !SZENEN[i].wenn||bedingungErfuellt(SZENEN[i].wenn); }
 function naechsteSzene(){ do{ S.szene++; }while(S.szene<SZENEN.length&&!szeneGueltig(S.szene)); S.szeneT=0; }
 function starteCutscene(){
+  const b=S.boss;
   S.modus='cutscene'; S.szene=0; S.szeneT=0; S.skipT=0; S.boss=null; SFX.sieg();
+  /* Levelziel: der Tuersteher liegt, der Weg ist frei */
+  if(b&&typeof SAFT!=='undefined'){ const p=bildPunkt(b,14); SAFT.fund(p.x,p.y,'DURCH!'); }
   /* Polaroid als Belohnung: nur wenn der Boss ohne Herzverlust faellt. */
   if(S.herzVerlust===0) MOMENT.fund(4);
 }
@@ -613,6 +727,8 @@ function levelGeschafft(){
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
+  if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
+  rangAbschluss();
   /* Der Pegel bleibt unveraendert - dieses Level wird nicht getrunken, aber
      der aktuelle Wert muss trotzdem weitergereicht werden, sonst startet
      Level 5 faelschlich bei 0. */
@@ -633,11 +749,13 @@ function cutscene(dt){
    AKTUALISIEREN
    ========================================================================== */
 function update(dt){
+  musik();                       /* vor der Kapitelkarte, damit die Musik dort gedaempft wird */
   if(erzaehlTakt(dt)) return;
   PLAUSCH.sperre=gespraechAktiv();
-  S.t+=dt; if(S.modus!=='titel') S.zeit+=dt; musik();
-  S.ruettel=Math.max(0,S.ruettel-dt*16);
+  S.t+=dt; if(S.modus!=='titel') S.zeit+=dt;
   S.blitz=Math.max(0,S.blitz-dt*2.2);
+  /* Ansage und Hinweise laufen in Echtzeit (bildDt), auch in der Zeitlupe */
+  if(S.ansageT>0) S.ansageT-=bildDt;
   if(S.hinweisT>0) S.hinweisT-=dt;
   if(S.meldungT>0) S.meldungT-=dt;
   if(S.modus==='pause'||S.modus==='titel'||S.modus==='ende'){ return; }
@@ -659,13 +777,16 @@ function draw(dt){
   const wack = S.pegelStart>TUNE.pegelWackelAb
     ? (S.pegelStart-TUNE.pegelWackelAb)/(100-TUNE.pegelWackelAb)*TUNE.pegelWackelMax : 0;
   const wk=FX.wackel(1);
-  const rx=((Math.random()-.5)*S.ruettel+Math.sin(S.t*7)*wack)*wk;
-  const ry=((Math.random()-.5)*S.ruettel+Math.cos(S.t*5.2)*wack*.6)*wk;
+  /* Das Stoss-Wackeln kommt jetzt von SAFT (kern.js verschiebt das Bild um SAFT.versatz());
+     hier bleibt nur das Pegel-Schwanken. */
+  const rx=Math.sin(S.t*7)*wack*wk;
+  const ry=Math.cos(S.t*5.2)*wack*.6*wk;
   ctx.translate(Math.round(rx),Math.round(ry));
   zeichneArena();
   ctx.restore();
 
   hud();
+  zeichneAnsage();
   if(S.blitz>0){ ctx.fillStyle=`rgba(255,255,255,${FX.blitz(S.blitz*.5).toFixed(3)})`; ctx.fillRect(0,0,W,H); }
   zeichneSchlange();
   zeichneGespraech();
@@ -831,6 +952,15 @@ function hud(){
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
     textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+}
+
+/* Phasen-Ansage: grosse Schrift mittig, mit dem Satz des Tuerstehers darunter. */
+function zeichneAnsage(){
+  if(!(S.ansageT>0)) return;
+  ctx.globalAlpha=Math.min(1,S.ansageT/0.3);
+  textGlowC(S.ansage,H/2-26,P.gold,3);
+  textC(S.ansageSatz,H/2+6,P.weiss);
+  ctx.globalAlpha=1;
 }
 
 /* ---- Bildschirme ---- */

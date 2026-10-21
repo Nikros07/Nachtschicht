@@ -33,6 +33,34 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
 ### P2
+- [ ] **P2 · Level 6: Sprung-Hinweis und Schweben im Browser pruefen** — Schwebesprung
+  (Leertaste halten = 18 px/s Sinken, Schwerkraft 0.33) ist nur gemessen, nicht gesehen oder
+  gehoert. Wo: level6.html (update, zeichneFlur, Lichter) · Fertig wenn: im Browser
+  springt man ueber alle drei Lichter, Hinweis "SPRUNG HALTEN" erscheint beim ersten Sprung.
+- [ ] **P2 · Level 6: Handy-Sprungknopf testen** — zweiter Knopf SPRUNG (mobilKontext
+  `zwei:'SPRUNG'`) sendet Space; Lichter per Handy erreichbar. Wo: level6.html · Fertig wenn:
+  Handy-Test (Chrome-Geraet oder Browser-Emulation 375x812) erreicht alle drei Lichter.
+- [ ] **P3 · Level 6: Scheitern-Stinger verdrahten** — Level 6 hat keinen Scheiterpfad
+  (wegknicken startet neu). Erst relevant, wenn ein Scheitern dazukommt. Wo: level6.html
+  (levelGeschafft, traumEnde) · Fertig wenn: Scheiter-Pfad vorhanden und MUSIK.stinger('fail') ruft.
+- [ ] **P3 · nachttest.js ohne Filter zu langsam** — laeuft ueber 120 s (alle Seiten,
+  300 s Nichtstun). Wo: tools/nachttest.js · Fertig wenn: Gesamtlauf unter 60 s oder --kurz
+  als Standard fuer Routinen.
+- [ ] **P2 · Level 4: Tempo-Basis und Rang-Grenzen kalibrieren** — Rang-Grenzen (Zeit 150/60 s,
+  Konterquote 0.2/0.85) und TUNE.tempoBasis/tempoJeTreffer sind geschaetzt, nicht gemessen.
+  Wo: level4.html (TUNE.rang, musik()) · Fertig wenn: docs/gameplay/messung/s2-level4.js plus
+  ein Bot-Lauf (b-level4.js) zeigen, dass Profi-Bot im Schnitt A/S und Anfaenger-Bot B/C erreicht.
+- [ ] **P2 · Level 4: Zeitlupe-Wirkung pruefen** — Phasenwechsel ruft SAFT.zeitlupe(0.3,0.8);
+  gemessen 0.79 s Spielzeit in 1.5 s echter Zeit. Wo: level4.html (phaseWechsel) ·
+  Fertig wenn: Messskript zeigt 0.85-0.95 s oder die Zahl wird im TUNE-Block angepasst und begruendet.
+- [ ] **P3 · Level 4: Ton, Pixel und Handy der neuen Elemente ungeprueft** — Combo-Popups,
+  PERFEKT-Popup, PHASE-Ansage (textGlowC Groesse 3), Musik-Abschnittswechsel phase2/phase3.
+  Wo: level4.html (zeichneAnsage, Konter-Block in kampf()) · Fertig wenn: im Browser gehoert und
+  auf Handy-Breite (375 px) gesehen, keine Ueberlappung der PHASE-Ansage mit dem Lebensbalken.
+- [ ] **P3 · Level 4: Polaroid-Moment vor dem Cutscene-Ende haelt die Cutscene an** — bestehendes
+  Verhalten (MOMENT.fund(4) in starteCutscene), im Messskript nur durch Tippen weitergekommen.
+  Wo: level4.html (starteCutscene) · Fertig wenn: Entscheidung, ob das gewollt ist; dann Messskript
+  entsprechend anpassen.
 
 - [x] ~~**P2 · Beziehung zu DENNIS wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
   Nacht zum 6.10., Commit `bb2369d`) — neue NACHHALL-Zeile in level8.html (gleiches Muster
@@ -64,6 +92,32 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt,
   dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei
   Start 40 der Wettlauf verloren gehen kann; Werte stehen hier. ERFUELLT, Werte oben.
+- [ ] **P2 · Level 8: Neustart, RUNDE-Ansage und Endbildschirm im Browser ansehen** — nur
+  headless gemessen (docs/gameplay/messung/s2-level8.js). Wo: level8.html (zeichneAnsage8,
+  neustartAbschnitt, Endbildschirm-Texte) · Fertig wenn: Screenshot zeigt "RUNDE 2" mit Satz
+  ohne Ueberlappung mit Lebensbalken, und der Fail-Text "E: NOCHMAL HIER - LEERTASTE: GANZ VON
+  VORN" passt bei W=320 in eine Zeile (textW < 312).
+- [ ] **P2 · Level 8: Rang-Grenzen kalibrieren** — TUNE.rang (Licht 100/20, Zeit 180/80 s)
+  ist geschaetzt. Wo: level8.html (TUNE.rang, rangAbschluss8) · Fertig wenn: der Wettlauf-Bot
+  aus dem Eintrag "Level 8: Wettlauf-Balance" ergibt bei Start-Licht 0 mit allen Abschieden
+  mindestens A und bei Start-Licht 40 ohne Abschiede hoechstens B.
+- [ ] **P2 · Level 7: Rang-Zeitgrenzen kalibrieren** — TUNE.rang.zeit (420/180 s) ist
+  geschaetzt. Wo: level7.html (TUNE.rang, rangRechnen) · Fertig wenn: ein Bot, der Liste und
+  5 Wuerfe erledigt, braucht gemessen weniger als TUNE.rang.zeit.schlecht und bekommt A oder S.
+- [ ] **P2 · Level 7: Pfandwurf am Handy pruefen** — Hauptknopf ZIELEN halten, loslassen
+  wirft; nur am Rechner gemessen. Wo: level7.html (mobilKontext, wurfTakt) · Fertig wenn: in
+  der Emulation 812x375 mit ?touch=1 trifft ein gehaltener und losgelassener Hauptknopf die
+  Kiste (S.treffer steigt).
+- [ ] **P2 · Level 2: Einschenken am Handy pruefen** — Halten fuellt, Loslassen gibt Pegel;
+  nur am Rechner gemessen. Wo: level2.html (startSchenk, schenkTakt) · Fertig wenn: in der
+  Emulation 812x375 mit ?touch=1 ergibt Halten+Loslassen in der Zone "PERFEKT".
+- [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
+  Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
+  Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
+- [ ] **P2 · Stufe 3 aus docs/gameplay/PLAN.md: Pausemenue am Rechner (Esc)** — WEITER, NEU
+  STARTEN, EINSTELLUNGEN, ZUM MENUE; heute pausiert nur P ohne Menue. Wo: nacht/eingabe.js,
+  nacht/menue.js · Fertig wenn: Esc oeffnet in allen acht Leveln ein Menue mit den vier
+  Punkten, test/menue.test.js um diese vier Punkte erweitert und gruen.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
 
@@ -227,6 +281,9 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   ausschliesslich die hartcodierte Fallunterscheidung in `echoName()` (level6.html:668),
   die `.name` dupliziert. Wo: level6.html · Fertig wenn: Feld entfernt oder `echoName()`
   liest `e.name`.
+- [ ] **P3 · Rang-Grenzen Level 1, 2, 3 und 6 per Vollspiel pruefen** — nur per
+  Szenario gemessen (s2-index.js, s2-level2.js, s2-level3.js, s2-level6.js). Wo: TUNE.rang der
+  vier Level · Fertig wenn: je Level ergibt ein nachttest-Zufallslauf bis zum Levelende nicht S.
 - [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
   oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
   Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
@@ -241,11 +298,23 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · `TODO.md` ist veraltet** (Stand 17.9., „Level 3–8 Grundversionen") —
   Wo: TODO.md · Fertig wenn: stimmt mit dem Stand überein oder verweist hierher.
 
+- [ ] **P2 · Level 5: Rang-Schwellen per Vollspiel kalibrieren** — Zeit (400/150 s) und Ruf (20/80) in TUNE.rang sind nur per Szenario gemessen. Wo: level5.html (TUNE.rang, rangAbschluss) · Fertig wenn: 5 Vollspiel-Laeufe (Bot oder Zufall bis zum Levelende) ergeben nicht nur C und nicht nur S; docs/gameplay/messung/s2-level5.js erweitert.
+- [ ] **P2 · Level 5: Optik im Browser pruefen** — Taktpunkt unten mittig, Nebelkreis (nebelRadius 62), Tanzpose (Hub 3 px, Seitenversatz) und Status-Zeilen rechts unter der Uhr sind nicht gemessen. Wo: level5.html (zeichneTaktpunkt, zeichneNebel, hudEreignisse, Spieler-Sprite in zeichneClub) · Fertig wenn: Screenshot mit Tanzfläche, Nebel und LICHT AUS zeigt alles lesbar, ohne Ueberlagerung mit HUD-Text.
+- [ ] **P2 · Level 5: Kloppe-Treffer-Pfad testen** — saftDo treffer/schaden in kloppe() und der Auftakt sind vom Headless-Lauf nicht erreicht. Wo: level5.html (kloppe, starteKloppe) · Fertig wenn: ein Messskript fuehrt die Kloppe bis zum Ende ohne Ausnahme und zaehlt mindestens einen SAFT-Treffer und einen Schaden.
+
 ---
 
 ## Entscheidung nötig (die Routinen lassen das liegen)
 
-- [ ] **Launch-Stand ansehen und mit „übernimm“ nach main holen** — der komplette Ausbau liegt auf dem Branch `claude/launch` (Story in allen acht Leveln, Startmenü, Handy-Abnahme, Offline-Modus, Flackerschutz, Doku). Auf `main` ist davon nichts. Danach muss `claude/nacht` (Branch der Routine) auf den neuen Stand gesetzt werden, sonst arbeitet sie auf der alten Fassung weiter.
+- **P2 · Level 5: "Theke gratis" (Ereignis SHOT) — Entscheidung nötig** — umgesetzt als: 10 s kein Auf-Ex-Spiel, jeder Druck an der Theke ist ein Schluck (+18 Pegel, 0,6 s Pause). Soll es so bleiben, oder ein echtes kostenloses Glas mit einmaligem Effekt? Wo: level5.html (gratisShot, TUNE.shotDauer/shotSchluck). Bis zur Antwort: so lassen.
+
+- [ ] **Level 8: Soll eine Kampfniederlage ein Scheitern sein?** — Heute (TUNE.kampfNiederlageEndet:
+  false) geht der Heimweg nach einer Niederlage weiter, der Story-Zweig "MIT BLAUEM AUGE" bleibt.
+  Mit true startet NOCHMAL direkt am Kampf neu, dann ist dieser Zweig nicht mehr erreichbar.
+- [ ] **Store: Konten, Gebuehren, Altersfreigabe** — App Store braucht ein Apple-Entwicklerkonto
+  (jaehrlich) und einen Mac oder Cloud-Mac; Google Play ein Konto (einmalig) und 12 Tester ueber
+  14 Tage. Alkohol-Thema heisst wahrscheinlich Apple 18+ und USK/PEGI 16. Details:
+  docs/gameplay/recherche-store.md. Nur Nick kann Konten anlegen und bezahlen.
 - [ ] **Am echten Telefon prüfen (Android Chrome UND iPhone Safari)** — Service Worker/Offline/Installieren, Ton nach iOS-Unterbrechung, Multitouch (Stick + Knöpfe), Vollbild/Orientierung, Daumenreichweite, Stroboskop-Wirkung. Im Emulator nicht prüfbar. Start: `python tools/server.py --lan`. Liste: `LAUNCH.md`, `docs/launch/endabnahme.md`.
 - [ ] **Impressum, Lizenz, Inhaltshinweis-Wortlaut** — `ueber.html` hat Platzhalter [NAME]/[ANSCHRIFT]/[E-MAIL]; keine Lizenz gewählt. Kein Rechtsrat; Details in `LAUNCH.md` unter OFFENE ENTSCHEIDUNGEN.
 - [ ] **Marvin als Spiegel des Spielers** — passt das zur echten Mannschaftsgeschichte? Ebenso Moritz' Umzug, Jonas' Angst, Dennis' Kampf, Semihs Wunsch gefragt zu werden: gegen die echten Menschen lesen (`docs/launch/story-ist.md` Abschnitt Personen; Austauschtabelle `AUSBLICK` in `nacht/epilog.js`; Umbenennen mit `python tools/umbenennen.py`).
@@ -269,6 +338,19 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-21 · P1 · Gameplay Stufe 2: alle acht Level mit Musik (nacht/musik.js, songs.js),
+  Saft (nacht/saft.js), Rang S/A/B/C (nacht/wertung.js) und je einem neuen Element (L1 Flucht nach
+  dem Schluessel, L2 Aufgabenliste + Einschenken, L3 Neustart im Bus + Kurven, L4 Combo + Phasen-
+  Ansage, L5 Tanzen im Takt + Ereignisse wirken, L6 Schwebesprung + Lichter, L7 Pfandwurf +
+  Einkaufsliste, L8 Neustart am Abschnitt + RUNDE-Ansage) · Sitzung · alle 16 Pruefungen gruen,
+  acht Messskripte docs/gameplay/messung/s2-*.js gruen, im Browser: Musik laeuft (club 126 bpm),
+  Rang-Tafel und Abzeichen gesehen, alle neun Seiten ohne Konsolenfehler. Stempel aktuell.
+- [x] 2026-10-21 · P2 · Rang-Tafel verdeckt den Endtext nicht mehr unruhig · Sitzung · Tafel ist
+  nur 3,4 s mittig und schrumpft dann zum Abzeichen oben rechts (im Browser gesehen); Grund jetzt
+  rgba(...,0.95) statt 0.86, damit der Endtext darunter nicht durchscheint.
+- [x] 2026-10-20 · Launch-Stand nach main geholt und claude/nacht nachgezogen · Sitzung.
+- [x] 2026-10-20 · P1 · Level 5 Club: Tanzen im Takt, Club-Ereignisse wirken, Rang · Sitzung · Messung docs/gameplay/messung/s2-level5.js gruen (Tanz: Combo 8, ON FIRE +3 Ruf, daneben Combo 0; LICHT/NEBEL/DJ/SHOT wirken und enden; Rang genau einmal, Scheitern ohne Rang). node tools/nachttest.js, pruefe.js, kampf.test, flagcheck gruen. Wackeln laeuft ueber SAFT, S.ruettel entfernt.
+- [x] 2026-10-20 · P1 · Level 6: Schwebesprung, Traum-Musik, Saft, Rang · Sitzung · Messung docs/gameplay/messung/s2-level6.js gruen (Hoehe 39 px, Sinken 18 px/s, Licht +14 Wachheit, Rang S/C).
 - [x] 2026-10-11 · P3 · Level 7: Introzeile nennt die echte Ruhezeit · `1189657` ·
   „FUENF MINUTEN RUHE" passte zu keinem TUNE-Wert (30 Spielminuten laut
   startMinute/endMinute, 75 echte Sekunden laut levelSekunden) - jetzt

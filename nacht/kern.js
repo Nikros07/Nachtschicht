@@ -93,18 +93,33 @@ let bildDt=1/60;
 function bild(jetzt){
   const dt=Math.min(.05,(jetzt-letzte)/1000); letzte=jetzt;
   bildDt=dt;
+  /* Musik-Planer (nacht/musik.js) - laeuft auch unter Menue und Lektion weiter.
+     Zusaetzlich tickt er per setInterval, damit die Musik bei Bildrucklern nicht stockt. */
+  if(typeof MUSIK!=='undefined') MUSIK.takt();
   /* Das Startmenue (nacht/menue.js): erscheint nur auf dem Titel von Level 1, gibt sich bei
      jedem Fehler selbst auf - dann laeuft alles wie vorher. */
-  if(typeof MENUE!=='undefined'&&MENUE.laufe&&MENUE.laufe(dt)){ requestAnimationFrame(bild); return; }
+  if(typeof MENUE!=='undefined'&&MENUE.laufe&&MENUE.laufe(dt)){
+    if(typeof MUSIK!=='undefined') MUSIK.spiele('menue');
+    requestAnimationFrame(bild); return;
+  }
   /* Das Zwischenbild vor dem Level (nacht/lehre.js): solange es laeuft,
      ruht das Level, und die Tasten gehoeren ihm. */
   if(window.LEHRE&&window.LEHRE.pruefe()){
     window.LEHRE.takt(dt); window.LEHRE.zeichne();
     requestAnimationFrame(bild); return;
   }
+  /* Hitstop und Zeitlupe (nacht/saft.js): das Level bekommt die Spielzeit, die Effekte
+     laufen in echter Zeit weiter. */
+  const spielDt=(typeof SAFT!=='undefined')?SAFT.takt(dt):dt;
   /* Solange das Handy offen ist, steht die Welt (nacht/handy.js). */
-  if(!(window.HANDY&&window.HANDY.offen)) update(dt);
-  draw(dt);
+  if(!(window.HANDY&&window.HANDY.offen)) update(spielDt);
+  /* Wackeln verschiebt das ganze Bild; Teilchen, Popups, Blitz und Rang-Tafel liegen
+     darueber in Bildschirmkoordinaten. */
+  const v=(typeof SAFT!=='undefined')?SAFT.versatz():null;
+  if(v&&(v.x||v.y)){ ctx.save(); ctx.translate(v.x,v.y); draw(dt); ctx.restore(); }
+  else draw(dt);
+  if(typeof SAFT!=='undefined') SAFT.zeichne();
+  if(typeof WERTUNG!=='undefined') WERTUNG.zeichne();
   requestAnimationFrame(bild);
 }
 function starteSchleife(){ letzte=performance.now(); requestAnimationFrame(bild); }
