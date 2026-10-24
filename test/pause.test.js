@@ -13,7 +13,7 @@ const wirftNicht=f=>{ try{ f(); return true; }catch(e){ return false; } };
 function welt(o){
   o=o||{};
   let zeit=0, neu=0, audio=0;
-  const hand={}, blur=[], musik=[], piepe=[], gez=[];
+  const hand={}, blur=[], musik=[], piepe=[], gez=[], sichtbar=[];
   const kx={ Math,console,Object,JSON,Date,Array,String,Number,Set,Map,
     Event:function(t){ this.type=t; },
     performance:{now:()=>zeit}, setTimeout(){} };
@@ -21,6 +21,7 @@ function welt(o){
     hole(k){ return this.werte[k]; },
     umschalten(k){ this.werte[k]=!this.werte[k]; return this.werte[k]; } };
   kx.MUSIK={ daempfen(an){ musik.push(an); } };
+  kx.GERAET={ beiSichtbar(f){ sichtbar.push(f); } };
   kx.S={modus:'spiel'};
   kx.MENUE={ an:false, aktiv(){ return this.an; }, galerieOffen(){ return false; } };
   kx.kapitel=false;
@@ -43,7 +44,7 @@ function welt(o){
   vm.runInContext('let muted=false;',kx);     // wie ton.js: globale Variable (let)
   vm.runInContext(quelle,kx);
   return {
-    kx, hand, blur, musik, piepe, gez,
+    kx, hand, blur, musik, piepe, gez, sichtbar,
     E:c=>vm.runInContext(c,kx),
     neu:()=>neu, audio:()=>audio,
     muted:()=>vm.runInContext('muted',kx),
@@ -211,6 +212,21 @@ w=welt(); w.E('PAUSE.auf()'); w.setzeZeit(500); w.E('PAUSE.zeichne()');
 zeiger(w,'pointermove',160,80);            // Zeile 3: EINSTELLUNGEN
 taste(w,'Enter');
 pruefe('Ueberfahren waehlt EINSTELLUNGEN, Enter oeffnet sie', w.E('PAUSE.modus()')==='einst');
+
+console.log('\n--- APP ZURUECKGEHOLT (GERAET.beiSichtbar) ---');
+w=welt();
+pruefe('pause.js meldet sich bei GERAET.beiSichtbar an', w.sichtbar.length===1);
+w.sichtbar[0]();
+pruefe('Tab zurueck mitten im Level: Pause geht auf', w.E('PAUSE.aktiv()')===true);
+
+w=welt(); w.E('window.MOBIL.an=true');
+w.sichtbar[0]();
+pruefe('Tab zurueck am Handy (MOBIL.an): Pause bleibt zu', w.E('PAUSE.aktiv()')===false);
+
+{
+  const w4=welt({fenster:false});
+  pruefe('ohne window: beiSichtbar meldet sich trotzdem an, ruft ohne Wurf', w4.sichtbar.length===1&&wirftNicht(()=>w4.sichtbar[0]()));
+}
 
 console.log('\n'+ok+' ok, '+fail+' fehl');
 if(fail) process.exit(1);

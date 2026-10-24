@@ -252,6 +252,11 @@ const PAUSE=(function(){
     addEventListener('pointermove',ueberfahren,true);
   }
 
+  /* App in den Vordergrund geholt (Tab-Wechsel, Handy-Sperre): mitten im Level nicht
+     einfach weiterlaufen. darfAuf() filtert selbst aus, wo das nicht passt (Handy-Menue,
+     Titelbild, Kapitelkarte, Lektion). */
+  try{ if(typeof GERAET!=='undefined'&&GERAET&&typeof GERAET.beiSichtbar==='function') GERAET.beiSichtbar(auf); }catch(e){}
+
   return {
     eintraege:eintraege,
     darfAuf:darfAuf,

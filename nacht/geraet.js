@@ -42,7 +42,7 @@ const GERAET={};
   const UPDATE_PRUEFEN_MS=30*60*1000;  // wie oft nach einer neuen Version geschaut wird
 
   GERAET.version="1.0.0";
-  GERAET.build="202610241327";       // tools/version.py stempelt hier die Build-Nummer
+  GERAET.build="202610241330";       // tools/version.py stempelt hier die Build-Nummer
   GERAET.speicherOk=true;     // false: localStorage geht nicht (privates Fenster, voll)
   GERAET.fehler=[];           // die letzten Fehler, fuer Support: GERAET.fehler in der Konsole
   GERAET.bilder=0;            // wie viele Spielbilder ohne Ausnahme gelaufen sind
@@ -240,6 +240,7 @@ const GERAET={};
   GERAET.tonHalten=tonHalten; GERAET.tonWiederholen=tonWiederholen;
 
   const beiSichtbar=[];     // Nachrichten an andere Bausteine: "Tab ist wieder da"
+  GERAET.beiSichtbar=function(f){ beiSichtbar.push(f); };   // spaetere Dateien melden sich hier an, geraet.js ruft nie in sie hinein
   let letzterBlick=Date.now();
   function sichtbarkeit(){
     sicher(()=>{
