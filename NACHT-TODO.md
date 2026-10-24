@@ -214,12 +214,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   (`7abf9e1`): `zwei:null` statt `zwei:'SPRUNG'` in `mobilKontext()`.
   Wo: level7.html (`mobilKontext`) · Fertig wenn: `zwei` ist `null` (oder Sprung hat
   eine echte Funktion). ERFUELLT.
-- [ ] **P3 · Level 7: Kassenpreise dreifach hartcodiert statt TUNE** — "2 EURO"/
-  "3 EURO" stehen woertlich in `kassenWahl()` (level7.html:312/314) und der Regal-
-  Meldung (:660), statt TUNE.preisWasser/TUNE.preisSnack (:114-115) zu lesen -
-  Logik und Anzeige koennen auseinanderlaufen.
-  Wo: level7.html · Fertig wenn: alle drei Texte lesen TUNE.preisWasser/preisSnack
-  per Template-String, `grep -n "EURO" level7.html` zeigt keine wortgleiche Zahl mehr.
 - [x] ~~**P3 · Level 7: Introzeile verspricht "FUENF MINUTEN", TUNE sagt anderes**~~
   (erledigt in der Nacht zum 11.10., Commit `1189657`) — Introzeile nennt jetzt
   „DREISSIG MINUTEN RUHE" (passt zu TUNE.startMinute/endMinute, 30 Spielminuten).
@@ -343,6 +337,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · Level 7: Kassenpreise lesen TUNE statt dreifach
+  hartcodierter EURO-Zahlen · `37bec71` · kassenWahl() und die Regal-Meldung
+  lesen jetzt TUNE.preisWasser/TUNE.preisSnack. `grep -n EURO level7.html`
+  zeigt keine wortgleiche Zahl mehr. Alle vier Pruefungen gruen.
 - [x] 2026-10-24 · P3 · erzaehl.js: Kopfkommentar nennt starte() statt
   neuesSpiel() fuer kapitelZeigen · `3b89bba` · Kommentar behauptete das
   Gegenteil des tatsaechlichen Aufrufs. `grep kapitelZeigen nacht/erzaehl.js`
