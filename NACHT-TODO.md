@@ -239,10 +239,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
   Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
   TUNE zusammengefuehrt oder direkt danebengestellt.
-- [ ] **P3 · Level 8: toter Code nach `return`, falscher Kommentar** — `starteLevel()`
-  (level8.html:453) kehrt sofort zurueck; der Kommentar „alter Direkteinstieg, bleibt
-  fuer Tests erreichbar" behauptet faelschlich Erreichbarkeit.
-  Wo: level8.html (`starteLevel`) · Fertig wenn: toter Code und Kommentar entfernt.
 - [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
   Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
 - [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
@@ -332,6 +328,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · Level 8: toter Code und falscher Kommentar in
+  starteLevel() entfernt · `c424375` · drei Zeilen nach dem `return;` waren
+  nie erreichbar, der Kommentar "bleibt fuer Tests erreichbar" stimmte nicht.
+  starteKonfrontation() setzt Modus/Hinweis/Meldung bereits selbst. Alle vier
+  Pruefungen gruen, nachttest.js level8 identisch zum Stand davor.
 - [x] 2026-10-24 · P3 · Level 8: Lektion zeigt im SPRUNG-Schritt SPRUNG statt
   ROLLE · `a4ed134` · Z.mobilKontext() ueberschrieb k.zwei stur mit dem
   letzten Space-Schritt (ROLLE), von Anfang an. Jetzt gewinnt der fruehste
