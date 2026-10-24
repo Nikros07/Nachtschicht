@@ -29,18 +29,19 @@ reparieren" entfällt.
 | level8.html | 6 | 59 s | stimmt überein |
 | karte.html | 1 | 0 s | stimmt überein |
 
-Alle neun Werte decken sich exakt mit dem letzten Bericht (11.10.) — keine Regression,
-trotz des zwischenzeitlich nach `claude/nacht` gezogenen Gameplay-Umbaus (Stufe 2: Musik/
-Saft/Rang in allen acht Leveln; Stufe 3: Pausemenü und Store-Gerüst, Commits `17f606b` und
-`09a7bb9`).
+Alle neun Werte decken sich exakt mit dem Bericht vom 11.10. — keine Regression,
+trotz der drei Commits dazwischen (Gameplay Stufe 2, Stufe 3, Gameplay-Plan): die
+neuen Elemente (Musik, Saft, Rang, Pausemenü, Store-Gerüst) ändern das Nichtstun-
+Verhalten der Zufallsläufe nicht.
 
 ## Funde
 
-Keine neuen, belegten Funde. `flagcheck.js` zeigt weiterhin 3 nie gelesene Beziehungen
-(HAUSMEISTER, DER LAUTE, DIE FRAU) — unverändert zum letzten Bericht (JONAS/TOBI sind seit
-dem 11.10. draußen geblieben, wie erwartet). „Verloren" weiterhin 0; die Gesamtzahl der
-Flags ist durch den Gameplay-Umbau von 82 auf 84 gestiegen (80 davon wirksam), ohne dass
-neue tote Flags entstanden sind.
+Keine neuen, belegten Funde. `flagcheck.js` zeigt weiterhin 3 nie gelesene
+Beziehungen (HAUSMEISTER, DER LAUTE, DIE FRAU) — das sind laut `NACHT-TODO.md`
+keine Crew-Figuren, sondern Nebenfiguren ohne Abspann-Zeile; unverändert zum
+Stand vom 11.10. „Verloren" weiterhin 0; Flags gesamt und wirksam sind gegenüber
+dem 11.10. (82/78) leicht gestiegen (84/80) — passt zu den zwei zusätzlichen
+Gameplay-Commits seither, kein Fund.
 
 ## Nicht geprüft
 
