@@ -246,10 +246,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: level8.html (NACHHALL-Liste, Muster aus den vier bestehenden Zeilen) ·
   Fertig wenn: `tools/flagcheck.js` zaehlt JONAS und TOBI nicht mehr unter „nie
   gelesen". ERFUELLT.
-- [ ] **P2 · Level 8: Kopfkommentar widerspricht dem Kampf gegen den Anfuehrer** —
-  „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" (level8.html:63-64), obwohl
-  ein vollstaendiger Nahkampf (`KAMPF8`, `starteGrossenKampf()`) existiert.
-  Wo: level8.html (Kopfkommentar) · Fertig wenn: Kommentar nennt den Kampf.
+- [x] ~~**P2 · Level 8: Kopfkommentar widerspricht dem Kampf gegen den Anfuehrer**~~ (erledigt
+  in der Nacht zum 24.10., Commit `0dc239e`) — Kommentar sagte „Kein Kampf, kein Tuersteher,
+  kein Gegner mit Faeusten", obwohl ein vollstaendiger Nahkampf (`KAMPF8`,
+  `starteGrossenKampf()`) existiert. Jetzt nennt der Kommentar den Kampf gegen den
+  Anfuehrer ausdruecklich.
+  Wo: level8.html (Kopfkommentar) · Fertig wenn: Kommentar nennt den Kampf. ERFUELLT.
 - [ ] **P3 · Level 8: Kampfwerte (KAMPF8) stehen ausserhalb des TUNE-Blocks** —
   anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
   Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
@@ -351,6 +353,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] 2026-10-24 · P2 · Level 8: Kopfkommentar nennt jetzt den Kampf gegen den Anfuehrer ·
+  `0dc239e` · „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" widersprach dem
+  vollstaendigen Nahkampf (KAMPF8, starteGrossenKampf()).
 
 - [x] 2026-10-21 · P2 · Gameplay Stufe 3: Pausemenue am Rechner (Esc: WEITER, NEU STARTEN,
   EINSTELLUNGEN, ZUM MENUE; nacht/pause.js in allen acht Leveln) und Store-Geruest (package.json mit
