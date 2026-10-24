@@ -171,8 +171,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - [ ] **P3 · Handy: LEICHTER/SCHWERER blitzen im ersten Bild** — vor dem ersten Takt sind beide kurz über dem Hinweistext zu sehen, danach ausgeblendet.
   Wo: nacht/mobil.js (Titelbild-Knöpfe) · Fertig wenn: im ersten Bild nach dem Laden (667x375) sind sie nicht sichtbar.
-- [ ] **P3 · `erzaehl.js`: Kopfkommentar nennt `kapitelZeigen` in `neuesSpiel()`** — alle Level rufen es in `starte()`.
-  Wo: nacht/erzaehl.js (Kopf) · Fertig wenn: Kommentar stimmt, `grep kapitelZeigen nacht/erzaehl.js` widerspricht keiner Zeile.
 - [ ] **P3 · Optionale Story-Punkte der Aufträge nicht gebaut** — Karte: Pizza-Umweg, Brunnen, Musiker (`docs/launch/auftrag-karte.md`); Level 2: Trikot-Meldung und Karte GRUPPE (`auftrag-level2.md`); Level 5: Mia-Noten (`auftrag-level5.md`).
   Wo: karte.html, level2.html, level5.html · Fertig wenn: je Punkt umgesetzt oder im Auftrag als verworfen vermerkt; `node tools/nachttest.js` grün.
 - [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
@@ -345,6 +343,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · erzaehl.js: Kopfkommentar nennt starte() statt
+  neuesSpiel() fuer kapitelZeigen · `3b89bba` · Kommentar behauptete das
+  Gegenteil des tatsaechlichen Aufrufs. `grep kapitelZeigen nacht/erzaehl.js`
+  widerspricht jetzt keiner Zeile. Alle vier Pruefungen und erzaehl.test.js
+  gruen.
 - [x] 2026-10-24 · P3 · Stehengebliebenes Duplikat aufgeraeumt (kein Code
   geaendert, nur gegengeprueft) — „Level 4: jede Phase soll die vorige Antwort
   entwerten" stand sowohl unter „Offen" als auch, mit identischem Wortlaut und
