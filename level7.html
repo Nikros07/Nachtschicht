@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241335">
+<link rel="stylesheet" href="nacht/stil.css?v=202610241336">
 </head>
 <body>
 <div id="cab">
@@ -37,29 +37,29 @@
   <div id="base"><span>LEVEL 7 - RUHEPAUSE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241335"></script>
-<script src="nacht/geraet.js?v=202610241335"></script>
-<script src="nacht/bild.js?v=202610241335"></script>
-<script src="nacht/hud.js?v=202610241335"></script>
-<script src="nacht/ton.js?v=202610241335"></script>
-<script src="nacht/komfort.js?v=202610241335"></script>
-<script src="nacht/musik.js?v=202610241335"></script>
-<script src="nacht/songs.js?v=202610241335"></script>
-<script src="nacht/saft.js?v=202610241335"></script>
-<script src="nacht/stand.js?v=202610241335"></script>
-<script src="nacht/welt.js?v=202610241335"></script>
-<script src="nacht/nacht.js?v=202610241335"></script>
-<script src="nacht/dialog.js?v=202610241335"></script>
-<script src="nacht/eingabe.js?v=202610241335"></script>
-<script src="nacht/lehre.js?v=202610241335"></script>
-<script src="nacht/mobil.js?v=202610241335"></script>
-<script src="nacht/handy.js?v=202610241335"></script>
-<script src="nacht/texte.js?v=202610241335"></script>
-<script src="nacht/erzaehl.js?v=202610241335"></script>
-<script src="nacht/epilog.js?v=202610241335"></script>
-<script src="nacht/wertung.js?v=202610241335"></script>
-<script src="nacht/menue.js?v=202610241335"></script>
-<script src="nacht/pause.js?v=202610241335"></script>
+<script src="nacht/kern.js?v=202610241336"></script>
+<script src="nacht/geraet.js?v=202610241336"></script>
+<script src="nacht/bild.js?v=202610241336"></script>
+<script src="nacht/hud.js?v=202610241336"></script>
+<script src="nacht/ton.js?v=202610241336"></script>
+<script src="nacht/komfort.js?v=202610241336"></script>
+<script src="nacht/musik.js?v=202610241336"></script>
+<script src="nacht/songs.js?v=202610241336"></script>
+<script src="nacht/saft.js?v=202610241336"></script>
+<script src="nacht/stand.js?v=202610241336"></script>
+<script src="nacht/welt.js?v=202610241336"></script>
+<script src="nacht/nacht.js?v=202610241336"></script>
+<script src="nacht/dialog.js?v=202610241336"></script>
+<script src="nacht/eingabe.js?v=202610241336"></script>
+<script src="nacht/lehre.js?v=202610241336"></script>
+<script src="nacht/mobil.js?v=202610241336"></script>
+<script src="nacht/handy.js?v=202610241336"></script>
+<script src="nacht/texte.js?v=202610241336"></script>
+<script src="nacht/erzaehl.js?v=202610241336"></script>
+<script src="nacht/epilog.js?v=202610241336"></script>
+<script src="nacht/wertung.js?v=202610241336"></script>
+<script src="nacht/menue.js?v=202610241336"></script>
+<script src="nacht/pause.js?v=202610241336"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -333,9 +333,9 @@ function baueCrew(){
    ========================================================================== */
 function kassenWahl(){
   return [
-    { txt:'Ein Wasser, bitte.  2 EURO', wenn:{geld:TUNE.preisWasser, nichtFlag:'spaetiWasser'},
+    { txt:'Ein Wasser, bitte.  '+TUNE.preisWasser+' EURO', wenn:{geld:TUNE.preisWasser, nichtFlag:'spaetiWasser'},
       tu:{geld:-TUNE.preisWasser, nimm:'WASSER', flag:'spaetiWasser'}, geh:'mehr' },
-    { txt:'Und was zu essen.  3 EURO',  wenn:{geld:TUNE.preisSnack, nichtFlag:'spaetiSnack'},
+    { txt:'Und was zu essen.  '+TUNE.preisSnack+' EURO',  wenn:{geld:TUNE.preisSnack, nichtFlag:'spaetiSnack'},
       tu:{geld:-TUNE.preisSnack, nimm:'SNACK', flag:'spaetiSnack'}, geh:'@snack' },
     { txt:'Pfand abgeben.',              wenn:{hat:'PFAND'}, geh:'@pfand' },
     { txt:'Wie lange haben Sie schon offen?', wenn:{nichtFlag:'oezdemirGeschichte'}, geh:'geschichte' },
@@ -785,7 +785,7 @@ function update(dt){
     if(z.art==='wurf'){ wurfStart(); return; }
     if(z.art==='kasse'){ redeMit(OEZDEMIR_BAUM,'oezdemir'); return; }
     if(z.art==='regal'){
-      meldung(z.obj.art==='wasser'?'WASSER - 2 EURO. BEZAHLEN AN DER KASSE':'SNACKS - 3 EURO. BEZAHLEN AN DER KASSE',2);
+      meldung(z.obj.art==='wasser'?'WASSER - '+TUNE.preisWasser+' EURO. BEZAHLEN AN DER KASSE':'SNACKS - '+TUNE.preisSnack+' EURO. BEZAHLEN AN DER KASSE',2);
       continue;
     }
     if(z.art==='mensch'){ redeMit(z.obj.id==='marvin'?marvinBaum():{taxi:TAXI_BAUM,nele:NELE_BAUM,tobi:TOBI_BAUM}[z.obj.id],z.obj.id); return; }
