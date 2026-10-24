@@ -118,11 +118,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   getestet (test/pause.test.js). Wo: nacht/pause.js (aktiviere) · Fertig wenn: in level2.html
   fuehrt Esc > NEU STARTEN > JA zu S.modus 'titel', und Esc > ZUM MENUE laedt index.html mit
   sichtbarem Startmenue (MENUE.aktiv() true).
-- [ ] **P2 · App: beim Zurueckholen automatisch Pause** — Store-Erwartung laut
-  docs/gameplay/recherche-store.md (Lebenszyklus): heute laeuft das Spiel nach visibilitychange
-  sofort weiter, mitten im Kampf. Wo: nacht/geraet.js (visibilitychange) + PAUSE.auf() ·
-  Fertig wenn: am Rechner oeffnet ein Tab-Wechsel waehrend S.modus 'spiel' das Pausemenue
-  (PAUSE.aktiv() true nach dem Zurueckkommen), test/pause.test.js um diesen Fall erweitert.
 - [ ] **P3 · Store-Doku: (prüfen)-Stellen klaeren** — docs/store/ANLEITUNG.md und texte.md
   haben zusammen 25 Stellen "(prüfen)" (Gebuehren, Menuenamen, Befehle). Wo: docs/store/ ·
   Fertig wenn: jede Stelle mit Quelle belegt oder begruendet offen; `grep -c "(prüfen)" docs/store/*.md`
@@ -352,6 +347,19 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P2 · Level 8: Kopfkommentar nennt den Kampf gegen den
+  Anfuehrer · `0dc239e` · "Kein Kampf, kein Tuersteher, kein Gegner mit
+  Faeusten" stimmte nicht mehr (KAMPF8, starteGrossenKampf existieren seit
+  Gameplay Stufe 2). Kommentar korrigiert. Alle vier Pruefungen gruen.
+- [x] 2026-10-24 · P2 · App: beim Zurueckholen automatisch Pause · `d7816ad` ·
+  Tab-Wechsel/Handy-Sperre liess das Spiel bisher sofort weiterlaufen. Neue
+  generische Anmeldestelle `GERAET.beiSichtbar(f)` in geraet.js (ruft nie in
+  spaetere Dateien hinein), pause.js meldet dort `PAUSE.auf()` an - das
+  entscheidet selbst per `darfAuf()`, wo das nicht passt (Handy-Menue,
+  Titelbild, Kapitelkarte, Lektion). Gemessen: `test/pause.test.js` von 52
+  auf 56 bestanden (0 fehlgeschlagen) - neuer Abschnitt prueft Oeffnen am
+  Rechner und das Ausbleiben am Handy (MOBIL.an). Alle vier Pruefungen
+  gruen, Stempel erneuert.
 - [x] 2026-10-21 · P2 · Gameplay Stufe 3: Pausemenue am Rechner (Esc: WEITER, NEU STARTEN,
   EINSTELLUNGEN, ZUM MENUE; nacht/pause.js in allen acht Leveln) und Store-Geruest (package.json mit
   Capacitor 8, capacitor.config.json, tools/www.py, docs/store/ANLEITUNG.md und texte.md, Schluessel in
