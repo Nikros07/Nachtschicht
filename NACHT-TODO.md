@@ -148,10 +148,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Duplikat) — `puppe:'block'` (Level 3) und `puppe:'rolle'` (Level 8) stehen in nacht/lehre.js
   neben `puppe:'konter'` oben. Nachgemessen in der Nacht zum 6.10., kein Code geaendert.
 
-- [ ] **P2 · Level 4: jede Phase soll die vorige Antwort entwerten** — bisher ändern
-  die Phasen nur Zahlen; nach dem zweiten Konter ist alles gesehen.
-  Wo: level4.html (`bossPhase`, `naechsteArt`) · Fertig wenn: Phase 2 und 3 verlangen
-  je eine andere Antwort als Phase 1.
 - [x] ~~**P2 · Level 4: Jab und Schwung unterscheidbar machen**~~ (bereits erfuellt - Commit
   `926e612` am 5.10., stehengebliebenes Duplikat) — `SPR.bossWindJab` existiert neben
   `SPR.bossWind`, `rows=(b.art==='jab')?SPR.bossWindJab:SPR.bossWind` in level4.html:743.
@@ -349,6 +345,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · Stehengebliebenes Duplikat aufgeraeumt (kein Code
+  geaendert, nur gegengeprueft) — „Level 4: jede Phase soll die vorige Antwort
+  entwerten" stand sowohl unter „Offen" als auch, mit identischem Wortlaut und
+  Grund, seit 2026-10-05 unter „Blockiert" (Zweifel am Spielgefuehl, siehe
+  dort). Der Offen-Eintrag war ein Karteileiche aus einem frueheren Merge.
+  Gegen den aktuellen Code nachgelesen (level4.html `bossPhase`/`naechsteArt`/
+  `kampf.js` `opt.unblockbar`): die Begruendung unter „Blockiert" stimmt nach
+  wie vor, nur dieser Eintrag wurde entfernt.
 - [x] 2026-10-24 · P2 · Level 8: Kopfkommentar nennt den Kampf gegen den
   Anfuehrer · `0dc239e` · "Kein Kampf, kein Tuersteher, kein Gegner mit
   Faeusten" stimmte nicht mehr (KAMPF8, starteGrossenKampf existieren seit
