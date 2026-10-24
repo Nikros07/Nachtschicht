@@ -5,7 +5,8 @@
    (Uhrzeit/Ort zu Levelbeginn), PLAUSCH (Untertitel beim Gehen), MOMENTE
    (Polaroids) und die drei Haken, die jedes Level ruft:
 
-     neuesSpiel():        PLAUSCH.lade(PLAUSCH_ZEILEN); kapitelZeigen(N);
+     neuesSpiel():        PLAUSCH.lade(PLAUSCH_ZEILEN);
+     starte():             kapitelZeigen(N);                // nicht in neuesSpiel(), das laeuft auch bei jedem Wiederholungsversuch
      update(dt):          if(erzaehlTakt(dt)) return;      // erste Zeile
      draw():              erzaehlZeichne();                // letzte Zeile
      Aktionstaste/Tippen: if(erzaehlTaste()) return;       // erste Zeile
