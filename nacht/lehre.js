@@ -200,13 +200,21 @@ window.LEHRE=(function(){
      die in ihr vorkommen, damit jeder Schritt dort auch ausfuehrbar ist. */
   Z.mobilKontext=function(){
     const k={ aktion:null, zwei:null, block:false, extras:[] };
-    L.schritte.forEach(s=>{
+    /* Mehrere Schritte teilen sich Space (z.B. SPRUNG und, spaeter in der
+       Lektion, ROLLE): solange der frueheste davon noch offen ist, gehoert
+       ihm der Knopf - sonst wuerde der letzte Schritt immer gewinnen. */
+    const leer=[];
+    L.schritte.forEach((s,i)=>{
       const c=s.gr[0][0];
       if(c==='KeyE') k.aktion=s.btn||'AKTION';
-      else if(c==='Space') k.zwei=s.btn||'SPRUNG';
+      else if(c==='Space') leer.push(i);
       else if(c==='ShiftLeft'||s.block) k.block=true;
       else if((c==='KeyQ'||c==='KeyR')&&k.extras.length<2) k.extras.push({txt:s.btn||'?',code:c});
     });
+    if(leer.length){
+      const offen=leer.find(i=>!Z.erledigt[i]);
+      k.zwei=L.schritte[offen!==undefined?offen:leer[leer.length-1]].btn||'SPRUNG';
+    }
     if(Z.alleErledigt()||!k.aktion) k.aktion='WEITER';
     return k;
   };
