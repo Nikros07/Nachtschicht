@@ -584,11 +584,39 @@ dem gleichwertigen Bericht des anderen Laufs zusammengeführt), drei Merge-Commi
 Synchronisation, zwei Buchhaltungs-Commits in `NACHT-TODO.md` (Hash-Referenzen ergänzt,
 wo der andere Lauf sie noch nicht nachgetragen hatte).
 
+### Fortsetzung durch den anderen Lauf (Session `01291pod8586mf3VwhmWNvF1`)
+
+Der andere Lauf (der die beiden Punkte oben tatsächlich gebaut hatte) stand nach der
+Kollision nicht ab, sondern hat die Liste weiter in Dateireihenfolge abgearbeitet — sechs
+weitere Punkte, macht acht insgesamt für diese Nacht (Obergrenze aus `routinen/nacht.md`
+erreicht). Jeder Push wurde vor dem nächsten per `git pull --rebase` mit dem jeweils
+anderen Lauf synchronisiert; alle Merges liefen ohne Konflikt im Spielcode (nur
+`NACHT-TODO.md` einmal, dort beide Seiten behalten).
+
+3. **Stehengebliebenes Duplikat aufgeräumt** (P3, kein Code geändert) — „Level 4: jede
+   Phase soll die vorige Antwort entwerten" stand doppelt (Offen **und**, mit gleichem
+   Grund, seit 5.10. unter „Blockiert"). Nur den Offen-Eintrag entfernt.
+4. **erzaehl.js: Kopfkommentar nennt jetzt `starte()` statt `neuesSpiel()` für
+   `kapitelZeigen`** (P3) · `3b89bba`.
+5. **Level 7: Kassenpreise lesen TUNE statt dreifach hartcodierter EURO-Zahlen** (P3) ·
+   `37bec71` — `grep -n EURO level7.html` zeigt keine wortgleiche Zahl mehr.
+6. **Level 8: Lektion zeigt im SPRUNG-Schritt SPRUNG statt ROLLE** (P3) · `a4ed134` —
+   gemessen per VM-Probe: vorher `zwei='ROLLE'` schon vor dem ersten Tastendruck,
+   nachher `zwei='SPRUNG'` bis der Schritt erledigt ist.
+7. **Level 8: toter Code und falscher Kommentar in `starteLevel()` entfernt** (P3) ·
+   `c424375`.
+8. **Level 6: hartcodierter Pegel-Abzug beim Aufwachen jetzt eigener TUNE-Wert** (P3) ·
+   `e313ec0` — neuer Wert `TUNE.aufwachenPegelAb`.
+
+Nach jedem der sechs Punkte alle vier Pflichtprüfungen grün, Stempel erneuert wo `*.html`
+oder `nacht/` geändert wurde. Übersprungen (Browser/Pixel nötig, nicht Teil der acht
+Punkte): die beiden Level-6-Handy-Punkte, die Gesprächsleiste-quer-Messung (CSS-Grid-Layout
+ist mit `nachttest.js` nicht verlässlich nachzurechnen).
+
 ### Was als Nächstes oben steht
 
 In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Level 6: Sprung-Hinweis und
 Schweben im Browser pruefen** und **Level 6: Handy-Sprungknopf testen** (beide ohne
-Browser/Emulation nicht prüfbar, wurden heute übersprungen), dann **Level 4: Tempo-Basis
-und Rang-Grenzen kalibrieren** (braucht einen Bot-Lauf wie beim Level-8-Wettlauf) und
-**Level 4: Zeitlupe-Wirkung pruefen** (reine Messung, kleinster Kandidat für die nächste
-Nacht).
+Browser/Emulation nicht prüfbar), dann **Level 4: Tempo-Basis und Rang-Grenzen
+kalibrieren** (braucht einen Bot-Lauf wie beim Level-8-Wettlauf) und **Level 4:
+Zeitlupe-Wirkung pruefen** (reine Messung, kleinster Kandidat für die nächste Nacht).
