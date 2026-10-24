@@ -543,3 +543,52 @@ hartcodiert statt TUNE** (P3) und die vier neuen Level-8-Punkte aus der heutigen
 (Kopfkommentar/KAMPF8/Lektion-SPRUNG-ROLLE/toter Code), dann **Analyse nachholen: Karte**
 — die letzten vier der ursprünglich acht Teile (Karte, Runner, Engine, Dramaturgie)
 stehen noch aus.
+
+---
+
+## 2026-10-24 — Nacht — Test und Bau
+
+Start-Commit: `09a7bb9`
+
+**Testergebnis:** Baseline grün — pruefe.js 10/10, kampf.test.js 22/0, flagcheck.js
+84/80/**0 verloren**, nachttest.js ohne harten Fehler. Alle neun Nichtstun-Zahlen (300 s)
+decken sich exakt mit dem Bericht vom 11.10. — keine Regression, trotz der drei
+Gameplay-Commits dazwischen (Musik/Saft/Rang, Pausemenü, Store-Gerüst). Details:
+`NACHT-BERICHT.md`.
+
+### Besonderheit dieser Nacht: zwei parallele Läufe der Routine
+
+Kurz nach dem Start (`git fetch`/`checkout claude/nacht`) zeigte sich beim ersten Push,
+dass ein zweiter, unabhängiger Lauf dieser selben Routine praktisch gleichzeitig auf
+demselben Branch arbeitete (eigene Claude-Session, eigener Start-Commit `09a7bb9`,
+Testergebnis identisch). Beide Läufe wählten — wie von „Auswahl... in der Reihenfolge
+der Datei" vorgeschrieben — deterministisch dieselben ersten Punkte aus der Liste.
+Um keine doppelte Bauarbeit und keine sich wiederholenden Push-Konflikte zu erzeugen,
+hat dieser Lauf ab dem ersten Kollisionspunkt nicht mehr selbst gebaut, sondern nur noch
+synchronisiert (fetch/merge, nie `--force`), die Ergebnisse gegengeprüft und die
+Buchhaltung in `NACHT-TODO.md` nachgezogen, wo sie beim anderen Lauf fehlte.
+
+### Erledigt (2 Punkte, vom parallelen Lauf gebaut, hier nur gegengeprüft)
+
+1. **Level 8: Kopfkommentar nennt jetzt den Kampf gegen den Anfuehrer** · `0dc239e` —
+   „Kein Kampf, kein Tuersteher, kein Gegner mit Faeusten" stimmte nicht mehr, seit
+   Gameplay Stufe 2 `KAMPF8`/`starteGrossenKampf()` existieren. Nachgeprüft: alle vier
+   Pflichtprüfungen weiterhin grün auf dem gemergten Stand.
+2. **App: beim Zurueckholen aus dem Hintergrund automatisch Pause** · `d7816ad` — neue
+   Anmeldestelle `GERAET.beiSichtbar(f)`, `PAUSE.auf()` meldet sich dort an;
+   `test/pause.test.js` von 52 auf 56 bestanden. Nachgeprüft: `node test/pause.test.js`
+   56/0 auf dem gemergten Stand, alle vier Pflichtprüfungen weiterhin grün.
+
+Dazu von diesem Lauf: `NACHT-BERICHT.md` neu geschrieben (Commit `f30f123`, später mit
+dem gleichwertigen Bericht des anderen Laufs zusammengeführt), drei Merge-Commits zur
+Synchronisation, zwei Buchhaltungs-Commits in `NACHT-TODO.md` (Hash-Referenzen ergänzt,
+wo der andere Lauf sie noch nicht nachgetragen hatte).
+
+### Was als Nächstes oben steht
+
+In `NACHT-TODO.md` unter „Offen" → P2 in Dateireihenfolge: **Level 6: Sprung-Hinweis und
+Schweben im Browser pruefen** und **Level 6: Handy-Sprungknopf testen** (beide ohne
+Browser/Emulation nicht prüfbar, wurden heute übersprungen), dann **Level 4: Tempo-Basis
+und Rang-Grenzen kalibrieren** (braucht einen Bot-Lauf wie beim Level-8-Wettlauf) und
+**Level 4: Zeitlupe-Wirkung pruefen** (reine Messung, kleinster Kandidat für die nächste
+Nacht).
