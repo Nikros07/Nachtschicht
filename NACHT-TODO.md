@@ -252,11 +252,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
-- [ ] **P3 · Level 6: hartcodierte Pegelzahl neben echtem TUNE-Wert** — `aufwachen()`
-  (level6.html:678) zieht den Pegel um den hartcodierten Wert `10` ab, direkt neben
-  `TUNE.aufwachenMit`, das fuer dieselbe Funktion schon im TUNE-Block steht - verstoesst
-  gegen „jede Stellschraube steht im TUNE-Block". Wo: level6.html (`aufwachen`) ·
-  Fertig wenn: `10` ist ein eigener TUNE-Wert.
 - [ ] **P3 · Level 6: ein Hinweistext, zwei unabhaengige Trigger** — „DIESEN RAUM GAB
   ES SCHON EINMAL" wird sowohl beim Betreten des wiederholten Raums (level6.html:560)
   als auch beim Anstossen an die Schleifenwand (:588) ausgeloest - koennen ueberlappend
@@ -328,6 +323,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · Level 6: hartcodierter Pegel-Abzug beim Aufwachen
+  jetzt eigener TUNE-Wert · `e313ec0` · `10` stand hartcodiert direkt neben
+  TUNE.aufwachenMit. Neuer Wert TUNE.aufwachenPegelAb=10 (gleiche Zahl).
+  Alle vier Pruefungen gruen.
 - [x] 2026-10-24 · P3 · Level 8: toter Code und falscher Kommentar in
   starteLevel() entfernt · `c424375` · drei Zeilen nach dem `return;` waren
   nie erreichbar, der Kommentar "bleibt fuer Tests erreichbar" stimmte nicht.
