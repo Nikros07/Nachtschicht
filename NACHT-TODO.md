@@ -239,11 +239,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
   Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
   TUNE zusammengefuehrt oder direkt danebengestellt.
-- [ ] **P3 · Level 8: Lektion ueberschreibt SPRUNG-Knopfbeschriftung mit ROLLE** —
-  zwei Lektionsschritte teilen sich Space (SPRUNG :90, ROLLE :92); `Z.mobilKontext()`
-  (nacht/lehre.js:201-212) ueberschreibt `k.zwei` stur, der letzte Schritt gewinnt.
-  Wo: nacht/lehre.js (`Z.mobilKontext`) · Fertig wenn: der Knopf zeigt im SPRUNG-
-  Schritt SPRUNG, nicht ROLLE.
 - [ ] **P3 · Level 8: toter Code nach `return`, falscher Kommentar** — `starteLevel()`
   (level8.html:453) kehrt sofort zurueck; der Kommentar „alter Direkteinstieg, bleibt
   fuer Tests erreichbar" behauptet faelschlich Erreichbarkeit.
@@ -337,6 +332,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-24 · P3 · Level 8: Lektion zeigt im SPRUNG-Schritt SPRUNG statt
+  ROLLE · `a4ed134` · Z.mobilKontext() ueberschrieb k.zwei stur mit dem
+  letzten Space-Schritt (ROLLE), von Anfang an. Jetzt gewinnt der fruehste
+  noch offene Space-Schritt. Gemessen per VM-Probe: vorher zwei='ROLLE' schon
+  vor dem ersten Tastendruck, nachher zwei='SPRUNG' bis der Schritt erledigt
+  ist, danach zwei='ROLLE'. Alle vier Pruefungen gruen.
 - [x] 2026-10-24 · P3 · Level 7: Kassenpreise lesen TUNE statt dreifach
   hartcodierter EURO-Zahlen · `37bec71` · kassenWahl() und die Regal-Meldung
   lesen jetzt TUNE.preisWasser/TUNE.preisSnack. `grep -n EURO level7.html`
