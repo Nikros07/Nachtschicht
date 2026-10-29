@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 5 - CLUB</span><span>E ANSPRECHEN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/kampf.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/kampf.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -98,9 +99,10 @@ const TUNE = {
   wackelnAb:       55,
   langsamAb:       70,
   blackoutBei:    100,
+  neustartPegelMax: 60,  // Neustart nie mit mehr Pegel - sonst endet jeder Neustart sofort im Blackout
 
   /* (4) DIE UHR */
-  startMinute:   22*60+30,
+  startMinute:   22*60+50,
   endMinute:     25*60,     // um eins geht das Licht an
   levelSekunden: 600,       // Gespraeche halten die Uhr an - das ist reine Laufzeit
 
@@ -115,18 +117,19 @@ const TUNE = {
   strobeMaxDunkel:   0.80,  // Deckkraft der Verdunklung, nie ganz 1
   strobeFlackerDauer:0.18,  // kurzes helles Nachglimmen danach
   strobeFlackerMax:  0.16,  // gedaempft, kein harter weisser Blitz
-  strobeGefahrAb:    0.45,  // ab dieser Dunkelheit droht Anrempeln
+  strobeGefahrAb:    0.65,  // ab dieser Dunkelheit droht Anrempeln
 
   /* (7) ANREMPELN - Kollision mit Tanzenden, wenn man nichts sieht */
-  stolpernDauer:     1.0,
+  stolpernDauer:     0.5,
+  rempelRadius:      5,  // so nah muss man an Tanzenden sein, um anzurempeln (vorher fest 8)
 
   /* (8) ANSPRECHEN-MINISPIEL - Marker faehrt ueber eine Leiste hin und her */
   ansprechRunden:    3,    // so viele Treffer braucht ein Erfolg
-  ansprechFenster:   22,   // Breite des guten Fensters
+  ansprechFenster:   30,   // Breite des guten Fensters
   ansprechBonus:      9,   // groesseres Fenster mit MORITZ in der Crew
   ansprechMutBonus:   5,   // etwas Pegel macht mutiger
-  ansprechTempo:    170,   // Tempo des Markers
-  ansprechFehlerMax:  2,   // so viele Fehlversuche sind erlaubt
+  ansprechTempo:    140,   // Tempo des Markers
+  ansprechFehlerMax:  3,   // so viele Fehlversuche sind erlaubt
   minigameBreite:    90,   // Breite der Leiste
 
   /* (9) AUF-EX-MINISPIEL - gleiche Mechanik, an der Theke, nur ein Versuch */
@@ -153,9 +156,9 @@ const TUNE = {
 
   /* (12) MARVIN - der Rivale. Er geht dieselben Leute an. Steht er lang
      genug bei jemandem, mit dem du noch nicht geredet hast, ist sie weg. */
-  marvinKommtNach:  25,   // Sekunden bis er auftaucht
-  marvinTempo:      21,
-  marvinNimmt:     9.0,   // so lange muss er ungestoert bei ihr stehen
+  marvinKommtNach:  45,   // Sekunden bis er auftaucht
+  marvinTempo:      16,
+  marvinNimmt:     15,   // so lange muss er ungestoert bei ihr stehen
   marvinPause:     5.0,
   marvinStellt:     22,   // so nah, dann stellt er dich
 
@@ -164,9 +167,10 @@ const TUNE = {
   wasserPause:      25,
 
   /* (14) DIE KLEINE SCHLAEGEREI */
-  kloppeLeben:       5,
+  kloppeLeben:       7,
   kloppeReich:      17,
-  marvinHp:          5,
+  marvinHp:          4,
+  flitzerVerzug:    2,  // Sekunden, bis der Flitzer von hinten dazukommt
 
   /* (15) ABFUHR - spricht sich rum */
   abfuhrRuf:        -6,
@@ -425,13 +429,13 @@ const MIA_BAUM = {
       { txt:'Kommst du oefter hierher?',                    geh:'spruch',   tu:{mag:['MIA',-8]} },
       { txt:'Deine Freundin schaut, als waer ihr langweilig.', wenn:{mut:45}, geh:'lena', tu:{mag:['MIA',4]} },
       { txt:'Du bist echt die schoenste hier.',              wenn:{pegel:55}, geh:'besoffen' },
-    ], zeit:9, standard:1 },
+    ], zeit:9, standard:0 },
 
   spruch:{ wer:'MIA', text:'Ernsthaft? Das ist dein erster Satz?',
     wahl:[
       { txt:'Ja. War schlecht. Neuer Versuch?',  wenn:{mut:30}, geh:'ehrlich', tu:{mag:['MIA',10]} },
       { txt:'Ich hab noch bessere.',             geh:'@nein' },
-    ], zeit:7, standard:1 },
+    ], zeit:7, standard:0 },
 
   besoffen:{ wer:'MIA', text:'Und du riechst nach Wodka. Jule, komm.', geh:'@nein' },
 
@@ -520,7 +524,7 @@ const SOPHIE_BAUM = {
       { txt:'Ich stand hier zuerst.',           geh:'konter', tu:{mag:['SOPHIE',6]} },
       { txt:'Oh. Sorry.',                       geh:'langweilig', tu:{mag:['SOPHIE',-6]} },
       { txt:'Shot? Gib mir gleich drei.',       wenn:{pegel:55}, geh:'besoffen' },
-    ], zeit:8, standard:2 },
+    ], zeit:8, standard:1 },
 
   /* Wie bei Mia (wenn:{pegel:55}): zu betrunken wirkt hier nicht mutig,
      sondern abschreckend - dieselbe Schwelle, dasselbe Ergebnis. */
@@ -530,7 +534,7 @@ const SOPHIE_BAUM = {
     wahl:[
       { txt:'Dann trink ich halt zwei.', wenn:{geld:6}, geh:'shot', tu:{geld:-6, pegel:14, mag:['SOPHIE',10]} },
       { txt:'Lass mal.',                 geh:'@nein' },
-    ], zeit:7, standard:1 },
+    ], zeit:7, standard:0 },
 
   konter:{ wer:'SOPHIE', text:'Frech. Mag ich. Was trinkst du?',
     wahl:[
@@ -821,6 +825,7 @@ function neuesSpiel(){
     garderobeFertig:false,
     kiraTschuessT:0, kiraTschuessGesagt:false, trikotGesehen:false, auftakt:false,
   };
+  if(S.pegel>TUNE.neustartPegelMax){ S.pegel=TUNE.neustartPegelMax; speicherePegel(S.pegel); }
   PLAUSCH.lade(PLAUSCH_ZEILEN);
   PLAUSCH.y=IS_TOUCH?56:H-11;   // frei von Meldung und Hinweis
   for(const z of ZIELE){ z.stand='offen'; z.weg=false; }
@@ -891,13 +896,14 @@ const INTRO=[
   { d:2.4, txt:'22:50. DER CLUB.' },
   { d:2.4, txt:'DRINNEN IST ES LAUT UND DUNKEL.' },
   { d:2.6, txt:'AUF DER TANZFLAECHE SIEHT MAN NICHTS.' },
-  { d:2.6, txt:'AN DER BAR UND DRAUSSEN KANN MAN REDEN.' },
+  { d:2.6, txt:'DREI LEUTE KANNST DU ANSPRECHEN.' },
   { d:2.8, txt:'UM EINS GEHT DAS LICHT AN.' },
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){ S.modus='spiel'; clubZuruecksetzen(); kapitelZeigen(5);
   zeigeHinweis(IS_TOUCH?'STICK ZUM LAUFEN - KNOPF ZUM REDEN'
                        :'A UND D ZUM LAUFEN - E ZUM REDEN',3.5);
+  HILFE.ziel('SPRICH MIA, SOPHIE ODER KIRA AN');
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
@@ -922,7 +928,7 @@ const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 function pruefeBlackout(){
   if(S.pegel<TUNE.blackoutBei||S.modus==='ende') return false;
   S.modus='ende'; S.gewonnen=false;
-  S.faenger='BLACKOUT AUF DER TANZFLAECHE.'; SFX.aua();
+  S.faenger='BLACKOUT IM CLUB.'; SFX.aua();
   musikDo(m=>m.stinger('fail'));
   return true;
 }
@@ -964,7 +970,7 @@ function starteMinigame(art,ziel){
   S.mini={ art, ziel, runden:0, fehler:0, t0:S.t, mitte:0 };
   S.mini.mitte=naechsteMitte();
   S.vx=0;
-  zeigeHinweis(art==='ex'?'E BEIM AUF-EX TREFFEN':'IM TAKT: E IM FENSTER TREFFEN',3);
+  if(!hilfeTipp('leiste','E, WENN DER STRICH IM GRUENEN IST','JETZT, WENN DER STRICH IM GRUENEN IST')) zeigeHinweis(tasteText('E IM GRUENEN TREFFEN','IM GRUENEN TREFFEN'),2.5);
 }
 function pruefeMinigame(){
   const m=S.mini; if(!m) return;
@@ -1156,7 +1162,7 @@ function marvinTakt(dt){
   if(!m.da){
     /* Wer ihn vor der Tuer angepampt hat (Umweg auf der Karte), den sucht
        er frueher. */
-    if(S.zeit<TUNE.marvinKommtNach*(flag('marvinGereizt')?0.4:1)) return;
+    if(S.zeit<TUNE.marvinKommtNach*schwer().frist*(flag('marvinGereizt')?0.4:1)) return;
     m.da=true; m.x=30; m.t=0.5; setzeFlag('marvinKennt');
     meldung('MARVIN IST DA',1.8);
     /* Die Trikot-Szene laeuft ohne Stroboskop: Dauerlicht, kein Blitz. */
@@ -1182,6 +1188,7 @@ function marvinTakt(dt){
     const frei=ZIELE.filter(z=>z.stand==='offen'&&Math.abs(z.x-S.x)>40);
     frei.sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x));
     m.ziel=frei[0]||null; m.beiT=0;
+    if(m.ziel) hilfeTipp('marvin','MARVIN WILL ZU IHR - STELL DICH DAZU','MARVIN WILL ZU IHR - STELL DICH DAZU');
   }
   if(!m.ziel) return;
   const zx=m.ziel.x+11, dx=zx-m.x;
@@ -1193,7 +1200,7 @@ function marvinTakt(dt){
   m.blick=-1;
   if(Math.abs(S.x-m.ziel.x)<34){ m.beiT=Math.max(0,m.beiT-dt); return; }
   m.beiT+=dt;
-  if(m.beiT>=TUNE.marvinNimmt){
+  if(m.beiT>=(TUNE.marvinNimmt*schwer().frist)){
     m.ziel.stand='weg'; m.hat.push(m.ziel.id);
     meldung(m.ziel.name+' IST JETZT MIT MARVIN UNTERWEGS',2.4); SFX.aua();
     m.ziel=null; m.pause=TUNE.marvinPause;
@@ -1281,9 +1288,9 @@ function starteKloppe(){
   S.ich=kaempfer({ x:S.x, t:S.tiefe, blick:1, hp:TUNE.kloppeLeben, maxHp:TUNE.kloppeLeben });
   const mv=gegner('schlaeger', S.x+26, S.tiefe);
   mv.hp=mv.maxHp=TUNE.marvinHp; mv.marvin=true;
-  S.gegner=[ mv, gegner('flitzer', S.x-30, Math.min(1,S.tiefe+0.25)) ];
+  S.gegner=[ mv ]; S.flitzerT=TUNE.flitzerVerzug; S.flitzerTiefe=Math.min(1,S.tiefe+0.25);
   S.marvin.fertig=true;
-  zeigeHinweis('E SCHLAEGT - UMSCHALT BLOCKT - LEERTASTE WEICHT AUS',4);
+  if(!hilfeTipp('kampf-tasten','GOLD: E KONTERT. SHIFT BLOCKT. LEER ROLLT','GOLD: SCHLAG KONTERT. BLOCK UND AUSWEICHEN',6)) zeigeHinweis(tasteText('E SCHLAEGT - SHIFT BLOCKT - LEER ROLLT','SCHLAG - BLOCK - ROLLE: KNOEPFE RECHTS'),4);
   SFX.aua();
 }
 function kloppeVorbei(gewonnen){
@@ -1296,6 +1303,7 @@ function kloppeVorbei(gewonnen){
 function kloppe(dt){
   kampfStopTakt(dt);
   const z=kampfZeitFaktor(); if(z===0) return;
+  if(S.flitzerT>0){ S.flitzerT-=dt; if(S.flitzerT<=0) S.gegner.push(gegner('flitzer', S.ich.x-30, S.flitzerTiefe)); }
   const d=dt*z, ich=S.ich;
   kaempferTakt(ich,d);
   const richtung=(rechtsAn?1:0)-(linksAn?1:0);
@@ -1484,6 +1492,13 @@ function update(dt){
   wirkungTakt(dt);
   const spanne=TUNE.endMinute-TUNE.startMinute;
   S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
+  if(S.modus==='spiel'){
+    if(S.warAktiv&&!S.zielRaus){ S.zielRaus=true; HILFE.ziel('HINTEN RECHTS RAUS ZUR AFTERHOUR'); }
+    if(S.pegel>=50) hilfeTipp('zu-voll','ZU BETRUNKEN? WASSER AN DEN KLOS','ZU BETRUNKEN? WASSER AN DEN KLOS');
+    if(wert('ruf')<40) hilfeTipp('ruf-40','RUF UNTER 40: BESTE ANTWORTEN WEG','RUF UNTER 40: BESTE ANTWORTEN WEG');
+    if(S.confidenceT>0) hilfeTipp('confidence','CONFIDENCE: SCHNELLER, KEIN ANREMPELN','CONFIDENCE: SCHNELLER, KEIN ANREMPELN');
+    { const nz=naechstesZiel(); if(nz&&nz.art==='bar') hilfeTipp('bar-pegel','ETWAS PEGEL MACHT MUTIG. ZU VIEL NICHT','ETWAS PEGEL MACHT MUTIG. ZU VIEL NICHT'); }
+  }
   /* Um eins geht das Licht an. Keine Niederlage mehr - die Nacht geht
      weiter, nur mit dem, was man bis dahin geschafft hat. */
   if(S.minute>=TUNE.endMinute&&S.modus==='spiel'){ starteCutscene('licht'); return; }
@@ -1496,7 +1511,7 @@ function update(dt){
 
   if(!S.tanzHinweis&&ortBei(S.x).strobe){
     S.tanzHinweis=true;
-    zeigeHinweis(IS_TOUCH?'AUF DEN BEAT TIPPEN: TANZEN':'AUF DEN BEAT E DRUECKEN: TANZEN',3.5);
+    hilfeTipp('tanzen','AUF DEN BEAT E: TANZEN BRINGT RUF','AUF DEN BEAT TIPPEN: TANZEN BRINGT RUF');
   }
 
   if(pruefeBlackout()) return;
@@ -1520,9 +1535,10 @@ function update(dt){
      Menge vorbei. */
   if(S.dunkel>TUNE.strobeGefahrAb&&S.stolpernT<=0&&S.confidenceT<=0){
     for(const tz of TANZER){
-      if(Math.abs(tz.x-S.x)<8&&tiefeNah(tz.t,S.tiefe,0.14)){
+      if(Math.abs(tz.x-S.x)<TUNE.rempelRadius&&tiefeNah(tz.t,S.tiefe,0.14)){
         S.stolpernT=TUNE.stolpernDauer; S.vx=0; S.vt=0; wackel(4);
         SFX.stolper(); meldung('ANGERANNT',1.2);
+        hilfeTipp('rempeln','IM DUNKELN STEHEN BLEIBEN','IM DUNKELN STEHEN BLEIBEN');
         saftDo(s=>s.schaden(0.4));
         break; } }
   }
@@ -1570,7 +1586,7 @@ function update(dt){
   while(aktionPuffer.length){
     aktionPuffer.shift();
     const z=naechstesZiel();
-    if(!z){ meldung('HIER IST NICHTS',0.8); SFX.nichts(); continue; }
+    if(!z){ meldung(Math.abs(S.x-AUSGANG.x)<30&&!S.warAktiv?'ERST NOCH WAS ERLEBEN':'HIER IST NICHTS',1); SFX.nichts(); continue; }
     if(z.art==='tanzen'){ tanzSchritt(); continue; }
     S.warAktiv=true;
     if(z.art==='reden'){ redeMit(z.obj); return; }
@@ -1809,29 +1825,29 @@ function zeichneClub(){
     const y=bodenY(BARTHEKE.t)-4;
     outline(SPR.theke,BARTHEKE.x-6,y,1,.5); sprite(SPR.theke,BARTHEKE.x-6,y);
     text('BAR',BARTHEKE.x-textW('BAR')/2+0,y-10,P.dim);
-    if(naechst&&naechst.obj===BARTHEKE&&blink) text('E',BARTHEKE.x-2,y-18,P.gold);
+    if(naechst&&naechst.obj===BARTHEKE&&blink) text(aktionsMarke(),BARTHEKE.x-2,y-18,P.gold);
   }});
   liste.push({t:WASCHBECKEN.t, mal:()=>{
     const y=bodenY(WASCHBECKEN.t)-SPR.waschbecken.length;
     sprite(SPR.waschbecken,WASCHBECKEN.x-3,y);
-    if(naechst&&naechst.obj===WASCHBECKEN&&blink) text('E',WASCHBECKEN.x-1,y-8,P.gold);
+    if(naechst&&naechst.obj===WASCHBECKEN&&blink) text(aktionsMarke(),WASCHBECKEN.x-1,y-8,P.gold);
   }});
   liste.push({t:AUSGANG.t, mal:()=>{
     const y=bodenY(AUSGANG.t)-SPR.tuer.length;
     sprite(SPR.tuer,AUSGANG.x-4,y);
     text('AFTERHOUR',AUSGANG.x-textW('AFTERHOUR')/2,y-8,P.gold);
-    if(naechst&&naechst.obj===AUSGANG&&blink) text('E',AUSGANG.x-1,y-16,P.gold);
+    if(naechst&&naechst.obj===AUSGANG&&blink) text(aktionsMarke(),AUSGANG.x-1,y-16,P.gold);
   }});
   /* Garderobe am Eingang - gleicher Tresen wie die Bar, wiederverwendet. */
   liste.push({t:GARDEROBE.t, mal:()=>{
     const y=bodenY(GARDEROBE.t)-4;
     outline(SPR.theke,GARDEROBE.x-6,y,1,.5); sprite(SPR.theke,GARDEROBE.x-6,y);
     text('GARDEROBE',GARDEROBE.x-textW('GARDEROBE')/2,y-10,P.dim);
-    if(naechst&&naechst.obj===GARDEROBE&&blink) text('E',GARDEROBE.x-2,y-18,P.gold);
+    if(naechst&&naechst.obj===GARDEROBE&&blink) text(aktionsMarke(),GARDEROBE.x-2,y-18,P.gold);
   }});
   MOMENT.zeichneFund && liste.push({t:FOTO5.t, mal:()=>{
     MOMENT.zeichneFund(FOTO5.x-4,bodenY(FOTO5.t)-9,5);
-    if(!MOMENT.hat(5)&&naechst&&naechst.obj===FOTO5&&blink) text('E',FOTO5.x-2,bodenY(FOTO5.t)-17,P.gold);
+    if(!MOMENT.hat(5)&&naechst&&naechst.obj===FOTO5&&blink) text(aktionsMarke(),FOTO5.x-2,bodenY(FOTO5.t)-17,P.gold);
   }});
   /* Raucherecke - vorhandener Tanzer-Umriss, nur eingefaerbt. */
   for(const r of [RAUCHER1,RAUCHER2]){
@@ -1839,7 +1855,7 @@ function zeichneClub(){
       const y=bodenY(r.t)-SPR.tanzer.length;
       schatten(r.x,r.t);
       sprite(SPR.tanzer,r.x-3,y,1,r===RAUCHER1?'#8a6a3a':'#5a4632');
-      if(naechst&&naechst.obj===r&&blink) text('E',r.x-2,y-9,P.gold);
+      if(naechst&&naechst.obj===r&&blink) text(aktionsMarke(),r.x-2,y-9,P.gold);
     }});
   }
   /* Hinterausgang: Kisten als reine Deko, der Lieferant nutzt den
@@ -1862,7 +1878,7 @@ function zeichneClub(){
     const y=bodenY(LIEFERANT.t)-SPR.handlanger.length;
     schatten(LIEFERANT.x,LIEFERANT.t);
     sprite(SPR.handlanger,LIEFERANT.x-3,y);
-    if(naechst&&naechst.obj===LIEFERANT&&blink) text('E',LIEFERANT.x-2,y-9,P.gold);
+    if(naechst&&naechst.obj===LIEFERANT&&blink) text(aktionsMarke(),LIEFERANT.x-2,y-9,P.gold);
   }});
 
   for(const z of ZIELE){
@@ -1877,7 +1893,7 @@ function zeichneClub(){
         text(z.name,z.x+3-textW(z.name)/2,y-9,farbe);
         if(z.stand==='weg') text('MIT MARVIN',z.x+3-textW('MIT MARVIN')/2,y-16,P.dunkel);
       }
-      if(naechst&&naechst.obj===z&&blink) text('E',z.x+2,y-16,P.gold);
+      if(naechst&&naechst.obj===z&&blink) text(aktionsMarke(),z.x+2,y-16,P.gold);
     }});
   }
   liste.push({t:JULE.t, mal:()=>{
@@ -1900,7 +1916,7 @@ function zeichneClub(){
       if(Math.abs(m.x-S.x)<80) text('MARVIN',m.x+3-textW('MARVIN')/2,y-17,m.wut?P.rot:P.dim);
       /* Wie lange er schon bei ihr steht - man soll sehen, dass es eng wird */
       if(m.beiT>0&&m.ziel){
-        const f=Math.min(1,m.beiT/TUNE.marvinNimmt);
+        const f=Math.min(1,m.beiT/(TUNE.marvinNimmt*schwer().frist));
         ctx.fillStyle='#2a2440'; ctx.fillRect(Math.round(m.x-5),y-8,11,2);
         ctx.fillStyle=P.rot; ctx.fillRect(Math.round(m.x-5),y-8,Math.round(11*f),2);
       }
@@ -1921,7 +1937,7 @@ function zeichneClub(){
     schatten(S.x,S.tiefe);
     outline(rows,S.x-3+seite,y,1,.6);
     if(S.blick<0) spriteFlip(rows,S.x-3+seite,y,1,tint); else sprite(rows,S.x-3+seite,y,1,tint);
-    if(naechst&&naechst.art==='tanzen'&&blink) text('E',Math.round(S.x)-1,y-8,P.gold);
+    if(naechst&&naechst.art==='tanzen'&&blink) text(aktionsMarke(),Math.round(S.x)-1,y-8,P.gold);
   }});
 
   zeichneNachTiefe(liste);
@@ -1996,8 +2012,9 @@ function hud(){
 
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
-  if(S.hinweisT>0&&S.modus!=='mini'){ ctx.globalAlpha=Math.min(1,S.hinweisT);
-    textGlowC(S.hinweis,H-20,P.gold,1); ctx.globalAlpha=1; }
+  if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
+    const hy=S.modus==='mini'?40:H-20;
+    textGlowC(S.hinweis,hy,P.gold,1); ctx.globalAlpha=1; }
 
   /* Minispiel-Leiste */
   if(S.modus==='mini'){
@@ -2012,7 +2029,7 @@ function hud(){
     ctx.fillStyle='#2a2440'; ctx.fillRect(bx2,by2,breite,6);
     ctx.fillStyle=P.gruen; ctx.fillRect(Math.round(bx2+m.mitte-fenster/2),by2,Math.round(fenster),6);
     ctx.fillStyle=P.weiss; ctx.fillRect(Math.round(bx2+pos)-1,by2-2,2,10);
-    if(Math.floor(S.t*2)%2===0) text('E TREFFEN',W-textW('E TREFFEN')-6,H-12,P.gold);
+    if(Math.floor(S.t*2)%2===0){ const et=tasteText('E TREFFEN','JETZT TREFFEN'); text(et,W-textW(et)-6,H-12,P.gold); }
   }
 }
 
@@ -2066,14 +2083,14 @@ function zeichneIntro(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
     const s=S.szenen[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+    if(Math.floor(S.t*2)%2===0){ const ut=tasteText('E HALTEN ZUM UEBERSPRINGEN','HALTEN ZUM UEBERSPRINGEN'); text(ut,W-textW(ut)-6,H-10,P.dunkel); }
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
@@ -2092,7 +2109,7 @@ function bildschirme(){
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
     }
-    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
   }
 }
 

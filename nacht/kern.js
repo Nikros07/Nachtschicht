@@ -85,7 +85,9 @@ bind('texit',['touchstart','mousedown'],()=>{ if(imVollbild()) vollbild(); });
 if(IS_TOUCH) addEventListener('touchstart',function einmal(){ vollbild();
   removeEventListener('touchstart',einmal); },{once:true});
 
-/* ---- Schleife. update(dt) und draw(dt) kommen aus dem Level. ---- */
+/* ---- Schleife. update(dt) und draw(dt) kommen aus dem Level. ----
+   Reihenfolge in bild(): Musik, Startmenue, Lektion, Pause, WAS JETZT? (HILFE),
+   Level-Update mit HILFE.takt, Zeichnen, Effekte, zuletzt HILFE.zeichne. */
 let letzte=performance.now();
 /* Zeit des aktuellen Bildes - fuer Animationen, die im Zeichnen gemessen
    werden (laufBild in welt.js), wo draw() kein dt weiterreicht. */
@@ -114,11 +116,19 @@ function bild(jetzt){
     draw(0); PAUSE.zeichne();
     requestAnimationFrame(bild); return;
   }
+  /* WAS JETZT? (nacht/hilfe.js): die Welt steht, die Karte liegt darueber. */
+  if(typeof HILFE!=='undefined'&&HILFE&&HILFE.laeuft&&HILFE.laeuft()){
+    draw(0); HILFE.zeichne();
+    requestAnimationFrame(bild); return;
+  }
   /* Hitstop und Zeitlupe (nacht/saft.js): das Level bekommt die Spielzeit, die Effekte
      laufen in echter Zeit weiter. */
   const spielDt=(typeof SAFT!=='undefined')?SAFT.takt(dt):dt;
   /* Solange das Handy offen ist, steht die Welt (nacht/handy.js). */
-  if(!(window.HANDY&&window.HANDY.offen)) update(spielDt);
+  if(!(window.HANDY&&window.HANDY.offen)){
+    update(spielDt);
+    if(typeof HILFE!=='undefined'&&HILFE&&HILFE.takt) HILFE.takt(spielDt);
+  }
   /* Wackeln verschiebt das ganze Bild; Teilchen, Popups, Blitz und Rang-Tafel liegen
      darueber in Bildschirmkoordinaten. */
   const v=(typeof SAFT!=='undefined')?SAFT.versatz():null;
@@ -126,6 +136,7 @@ function bild(jetzt){
   else draw(dt);
   if(typeof SAFT!=='undefined') SAFT.zeichne();
   if(typeof WERTUNG!=='undefined') WERTUNG.zeichne();
+  if(typeof HILFE!=='undefined'&&HILFE&&HILFE.zeichne) HILFE.zeichne();
   requestAnimationFrame(bild);
 }
 function starteSchleife(){ letzte=performance.now(); requestAnimationFrame(bild); }

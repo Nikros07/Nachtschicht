@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/kampf.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/kampf.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -102,19 +103,20 @@ const TUNE = {
      Tempo), keine eigene Niederlage. */
   pegelAbbau:      1.0,
   wackelnAb:       55,
-  langsamAb:       70,
+  langsamAb:       85,
 
   /* (4) DIE SONNE - der Endgegner. Steigt immer, im Schatten langsamer. */
-  lichtDauerBasis: 55,     // Sekunden bis 100% Sonne bei voller Belichtung
+  lichtDauerBasis: 65,     // Sekunden bis 100% Sonne bei voller Belichtung (vorher 55)
   schattenFaktor:   0.35,  // Baeume/Haeuser: die Sonne waechst nur so schnell
   tunnelFaktor:     0.12,  // Unterfuehrung schuetzt noch deutlich mehr
-  hindernisStrafe:  9,     // Lichtsprung bei einem Treffer
+  hindernisStrafe:  5,     // Lichtsprung bei einem Treffer (vorher 9)
   hindernisRuettel: 5,
   hindernisKnockback: 55,
 
   /* (5) HINDERNISSE */
   hindernisRadius:  9,     // wie nah du dran sein musst, um zu treffen
-  hindernisHoehe:  13,     // so hoch muss dein Sprung sein, um drueberzukommen
+  hindernisHoehe:  9,      // so hoch muss dein Sprung sein, um drueberzukommen (vorher 13)
+  warnAbstand:    90,      // ab so viel Abstand blinkt das ! vor einem Hindernis (vorher fest 40)
   joggerAmplitude: 10,
   joggerTempo:      1.6,
 
@@ -431,7 +433,8 @@ function druckAktion(){
 }
 /* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
 function pauseTaste(){
-  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
+  if(S.modus==='pause'){ S.modus=S.vorPause||'spiel'; S.vorPause=null; return; }
+  if(['spiel','kampf','reden','finale'].includes(S.modus)){ S.vorPause=S.modus; S.modus='pause'; }
 }
 
 addEventListener('keydown',e=>{
@@ -534,18 +537,22 @@ function pruefeZiel(){
    Strafe fuer Durchlaufen. Nur Figuren der Crew; sonst gibt es im Wettlauf
    keine Crew-Sprites und keine Crew-Bewegung.
    ========================================================================== */
-const sonneVorsprungOk=()=>S.licht<100-TUNE.abbiegeVorsprung*100/TUNE.lichtDauerBasis;
+/* Wie lange die Sonne bis 100 % braucht - der Schwierigkeitsfaktor frist macht es laenger oder kuerzer. */
+function lichtDauer(){ return TUNE.lichtDauerBasis*schwer().frist; }
+const sonneVorsprungOk=()=>S.licht<100-TUNE.abbiegeVorsprung*100/lichtDauer();
 /* Wie hell ist es bei der Haustuer, wenn man ab hier ohne Pause und ohne
    Treffer weiterlaeuft? (Schatten eingerechnet, Anlauf 5 % Aufschlag.) */
 function lichtBeiAnkunft(x,l){
   const v=TUNE.gehTempo*tempoBonus()*.95;
-  for(let px=x;px<ZIEL_X;px+=20) l+=(100/TUNE.lichtDauerBasis)*lichtFaktorBei(px)*(20/v);
+  for(let px=x;px<ZIEL_X;px+=20) l+=(100/lichtDauer())*lichtFaktorBei(px)*(20/v);
   return l;
 }
+/* Start-Sonne so begrenzen, dass ein sauberer Lauf ab x noch mit zwei Treffern Puffer ankommt. */
+function sonneDeckeln(x){ let l=S.licht; while(l>0&&lichtBeiAnkunft(x,l)>100-2*TUNE.hindernisStrafe) l-=1; S.licht=Math.max(0,l); }
 /* Ein Abschied darf den Heimweg nicht unschaffbar machen: nach den Kosten muss
    noch eine Reserve an Sonne bleiben, sonst biegt der Abbieger grusslos ab. */
-const abschiedLeistbar=x=>lichtBeiAnkunft(x,S.licht+TUNE.abbiegeKosten*100/TUNE.lichtDauerBasis)
-  <=100-TUNE.abbiegeReserve*100/TUNE.lichtDauerBasis;
+const abschiedLeistbar=x=>lichtBeiAnkunft(x,S.licht+TUNE.abbiegeKosten*100/lichtDauer())
+  <=100-TUNE.abbiegeReserve*100/lichtDauer();
 
 function abbiegeTakt(dt){
   const A=S.abb; if(!A) return;
@@ -566,7 +573,7 @@ function abbiegeTakt(dt){
   A.fenster={ name:p.name, rest:dauer, gesamt:dauer };
   A.figur={ name:p.name, rest:dauer };
   PLAUSCH.sag(p.name,'HIER LANG. BIS GLEICH.');
-  zeigeHinweis(IS_TOUCH?'TSCHUESS RUFEN':'E: TSCHUESS',dauer);
+  zeigeHinweis(tasteText('E: TSCHUESS SAGEN (KOSTET ETWAS ZEIT)','TSCHUESS-KNOPF: ABSCHIED (KOSTET ZEIT)'),dauer);
 }
 
 /* Das Wort zum Abschied. Je Figur ein Zweig mit literalem Flag-Namen, damit
@@ -592,6 +599,7 @@ function update(dt){
   musik();                       /* vor der Kapitelkarte, damit die Musik dort gedaempft wird */
   if(erzaehlTakt(dt)) return;
   S.t+=dt;
+  if(S.modus==='pause') return;   // Pause am Handy: auch Kampf und Gespraech stehen still
   if(typeof gespraechAktiv==='function'&&gespraechAktiv()){ gespraechTakt(dt); aktionPuffer.length=0; return; }
   S.ruettel=Math.max(0,S.ruettel-dt*16);
   if(S.hinweisT>0) S.hinweisT-=dt;
@@ -648,7 +656,7 @@ function update(dt){
 
   /* --- Die Sonne steigt, im Schatten langsamer --- */
   const faktor=lichtFaktorBei(S.x);
-  S.licht=Math.min(100,S.licht+(100/TUNE.lichtDauerBasis)*faktor*dt);
+  S.licht=Math.min(100,S.licht+(100/lichtDauer())*faktor*dt);
 
   /* --- Hindernisse: einmaliger Treffer, wenn nicht hoch genug gesprungen --- */
   for(let i=0;i<HINDERNISSE.length;i++){
@@ -656,6 +664,7 @@ function update(dt){
     const o=HINDERNISSE[i];
     const effX=o.art==='jogger'?o.x+Math.sin(S.t*TUNE.joggerTempo+i)*TUNE.joggerAmplitude:o.x;
     const breite=HIND_BREITE[o.art]||6;
+    if(Math.abs(S.x-effX)<TUNE.warnAbstand&&S.modus==='spiel') hilfeTipp('sprung-halten','LEER HALTEN: HOEHER SPRINGEN','SPRUNG HALTEN: HOEHER SPRINGEN');
     if(Math.abs(S.x-effX)<TUNE.hindernisRadius+breite*.3&&S.y>BODEN-TUNE.hindernisHoehe){
       S.hinTreffer[i]=true;
       S.licht=Math.min(100,S.licht+TUNE.hindernisStrafe);
@@ -864,7 +873,7 @@ function zeichneBild(dt){
   ctx.fillStyle=P.ink; ctx.fillRect(0,0,W,H);
   if(S.modus==='titel'){ titelbild(); return; }
   if(S.modus==='intro'){ zeichneIntro(); return; }
-  if(S.modus==='kampf'){ zeichneKampf8(); hudKampf8(); bildschirme(); return; }
+  if(S.modus==='kampf'||(S.modus==='pause'&&S.vorPause==='kampf')){ zeichneKampf8(); hudKampf8(); bildschirme(); return; }
   if(S.modus==='finale'){ zeichneFinale(); zeichneGespraech(); return; }
   if(S.modus==='cutscene'){ zeichneAbspann(); return; }
 
@@ -984,7 +993,7 @@ function zeichneStrasse(){
       const geht=Math.sin(S.t*TUNE.joggerTempo*3+i)>0;
       sprite(rows,effX-Math.round(rows[0].length/2),y);
     } else sprite(rows,effX-Math.round(rows[0].length/2),y);
-    if(!S.hinTreffer[i]&&Math.abs(effX-S.x)<40&&Math.floor(S.t*5)%2===0){
+    if(!S.hinTreffer[i]&&Math.abs(effX-S.x)<TUNE.warnAbstand&&Math.floor(S.t*5)%2===0){
       text('!',effX-1,y-9,P.rot);
     }
   }
@@ -1089,7 +1098,7 @@ function titelbild(){
     ctx.fillRect((i*83)%W,(i*47)%H,1,1); }
   textGlowC('HEIMWEG',22,P.neon,3);
   textC('LEVEL 8 - DER LETZTE WEG',44,P.dim);
-  const zeilen=['DIE SONNE GEHT AUF.','KOMM NACH HAUSE, BEVOR ES HELL WIRD.','MEIDE SCHATTEN, SPRING UEBER ALLES.'];
+  const zeilen=['DIE SONNE GEHT AUF.','KOMM NACH HAUSE, BEVOR ES HELL WIRD.','IM SCHATTEN STEIGT DIE SONNE LANGSAMER.'];
   zeilen.forEach((z,i)=>textC(z,64+i*10,i===1?P.gold:P.weiss));
   const st=IS_TOUCH?[['STICK','LAUFEN'],['SPRUNG','SPRINGEN']]
                    :[['WASD','LAUFEN'],['LEER','SPRINGEN']];
@@ -1260,7 +1269,7 @@ function zeichneAbspann(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
@@ -1284,6 +1293,7 @@ function bildschirme(){
       /* Kein Ende, nur ein Satz: man startet an diesem Abschnitt neu. */
       zeichneKarte(S.retry==='kampf'?'DIE GRUPPE WAR ZU STARK.|DU STARTEST HIER NEU.'
         :'DIE SONNE WAR SCHNELLER.|DU STARTEST HIER NEU.',98,P.dim);
+      if(S.retry!=='kampf'&&Object.keys(S.hinTreffer||{}).length>=3) textC('TIPP: SPRUNG LAENGER HALTEN',122,P.gold);
     }
     /* Nach dem Sieg stehen E und Leertaste schon oben - eine dritte Aufforderung widerspricht ihnen. */
     if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'NOCHMAL HIER - ODER GANZ VON VORN':'E: NOCHMAL HIER - LEERTASTE: GANZ VON VORN',H-18,P.gold);
@@ -1351,6 +1361,7 @@ function starteKonfrontation(){
   starteGespraech(vorDemKampf(),'start',e=>{
     if(e==='@frieden'){
       setzeFlag('fightFrieden');
+      sonneDeckeln(S.x);
       merkeWettlauf();
       S.modus='spiel'; meldung(anfuehrerName()+' GEHT EINFACH',2.4);
       zeigeHinweis('JETZT NACH HAUSE',3);
@@ -1540,15 +1551,16 @@ function baueEnde(){
    ========================================================================== */
 const KAMPF8 = {
   /* (1) DER ANFUEHRER */
-  anfuehrerHp:      9,
+  anfuehrerHp:      7,
   anfuehrerReich:  19,
   schwungWindup: 0.95, schwungSchlag: 0.22,
-  jabWindup:     0.48, jabSchlag:     0.14,
+  jabWindup:     0.62, jabSchlag:     0.14,
   rammeWindup:   0.72, rammeSchlag:   0.28,
   wurfWindup:    0.85, wurfSchlag:    0.16,
-  pause:         0.80,
+  pause:         1.0,
   pauseKuerzerProPhase: 0.20,
-  windupKuerzerProPhase:0.10,
+  windupKuerzerProPhase:0.05,
+  konterAnteil8: 0.45,   // Konterfenster im Finale (vorher KAMPF.konterAnteil 0.34)
 
   /* (2) HANDLANGER - ab Phase 2, sie kreisen dich ein */
   handlangerAb:     2,
@@ -1560,7 +1572,7 @@ const KAMPF8 = {
   flascheSchaden:   1,
 
   /* (4) DEINE CREW - wer dich mag, geht dazwischen */
-  hilfeIntervall: 5.5,   // Sekunden zwischen zwei Einmischungen
+  hilfeIntervall: 4.0,   // Sekunden zwischen zwei Einmischungen (vorher 5.5)
   hilfeBetaeubung: 1.0,
 
   /* (5) ARENA */
@@ -1571,7 +1583,7 @@ const KAMPF8 = {
   gehTempo:     78,
 
   /* (6) NIEDERLAGE - kein Spielende, nur ein schwererer Heimweg */
-  lichtStrafeBeiNiederlage: 22,
+  lichtStrafeBeiNiederlage: 10,
 };
 
 const ARENEN = [
@@ -1600,8 +1612,10 @@ function starteGrossenKampf(){
   S.handlanger=[]; S.flaschen=[]; S.arena=0; S.arenaWechselT=0;
   S.hilfeT=KAMPF8.hilfeIntervall; S.hilfeText='';
   S.blockAn=false;
-  zeigeHinweis(flag('taxiTipp')?'DER TAXIFAHRER HATTE RECHT: STEHENBLEIBEN, BLOCKEN, KONTERN'
-                              :'E SCHLAGEN - SHIFT BLOCKEN - LEER AUSWEICHEN',4);
+  if(flag('taxiTipp')) zeigeHinweis('DER TAXIFAHRER HATTE RECHT: STEHENBLEIBEN, BLOCKEN, KONTERN',4);
+  else if(!hilfeTipp('konter-gold','WARTE BIS DER BALKEN GOLD IST - DANN E','WARTE BIS DER BALKEN GOLD IST - DANN KONTER',4)) zeigeHinweis(tasteText('E IM GOLD: KONTER - SHIFT BLOCKT - LEER ROLLT','IM GOLD KONTERN - BLOCK - ROLLE'),4);
+  hilfeTipp('kampf-tasten','GOLD: E KONTERT. SHIFT BLOCKT. LEER ROLLT','GOLD: SCHLAG KONTERT. BLOCK UND AUSWEICHEN',6);
+  HILFE.ziel('UEBERSTEH DEN KAMPF');
   meldung(anfuehrerName()==='MARVIN'?'MARVIN UND SEINE LEUTE':'DIE HABEN AUF EUCH GEWARTET',2);
 }
 
@@ -1648,10 +1662,12 @@ function starteAngriff8(g,art){
   g.schlagDauer=(art==='schwung'?KAMPF8.schwungSchlag
                 :art==='jab'?KAMPF8.jabSchlag
                 :art==='ramme'?KAMPF8.rammeSchlag:KAMPF8.wurfSchlag);
-  g.unblockbarJetzt=(art==='ramme');
-  g.fensterAnteil=KAMPF.konterAnteil;
+  g.unblockbarJetzt=(art==='ramme'||art==='wurf');
+  g.fensterAnteil=KAMPF8.konterAnteil8;
   g.zustand='ausholen'; g.zT=0; g.trefferGesetzt=false;
   SFX.aua();
+  if(art==='ramme') hilfeTipp('ramme','RAMME: NICHT KONTERN - LEER ROLLT','RAMME: NICHT KONTERN - ROLLE!');
+  if(art==='wurf') hilfeTipp('wurf8','FLASCHE: NICHT KONTERN - ROLLEN!','FLASCHE: NICHT KONTERN - ROLLEN!');
 }
 function anfuehrerTakt(dt,ziel){
   const g=S.gegner;
@@ -1741,7 +1757,7 @@ function kampf8(dt){
     if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); continue; }
     rasteAufGegner(s,[g].concat(S.handlanger),KAMPF8.anfuehrerReich);
     /* Konter zuerst - gegen den Anfuehrer und gegen jeden Handlanger. */
-    let gekontert=konterVersuch(s,g,{schaden:2,unblockbar:g.unblockbarJetzt});
+    let gekontert=konterVersuch(s,g,{schaden:2,unblockbar:g.unblockbarJetzt,konterAnteil:g.fensterAnteil});
     let kontertWer=g;
     if(!gekontert){
       for(const h of S.handlanger){
@@ -1825,9 +1841,12 @@ function beendeGrossenKampf(gewonnen){
     aendereWert('ruf',-8);
     S.licht=Math.min(95,S.licht+KAMPF8.lichtStrafeBeiNiederlage);
   }
+  sonneDeckeln(S.x);
   merkeWettlauf();
   S.modus='spiel';
-  zeigeHinweis(gewonnen?'UND JETZT NACH HAUSE':'LOS - BEVOR DIE SONNE DA IST',3);
+  zeigeHinweis(gewonnen?'UND JETZT NACH HAUSE':'SONNE +'+KAMPF8.lichtStrafeBeiNiederlage+' - LOS, BEVOR SIE OBEN IST',3);
+  hilfeTipp('sonne','OBEN DIE SONNE: DEINE UHR. SCHATTEN BREMST','OBEN DIE SONNE: DEINE UHR. SCHATTEN BREMST',5);
+  HILFE.ziel('HEIM, BEVOR DIE SONNE OBEN IST');
 }
 
 /* ---- Zeichnen ---- */
@@ -1908,6 +1927,8 @@ function hudKampf8(){
      hier muss man es anwenden koennen, und hier ist es am engsten. */
   zeichneAusholbalken(g, g.art==='schwung'?'SCHWUNG':g.art==='jab'?'JAB'
                        :g.art==='ramme'?'RAMME - AUSWEICHEN':'WURF', 30);
+  /* Steht gerade kein Angriff des Anfuehrers an, zeigt der Balken den Handlanger, der ausholt. */
+  if(g.zustand!=='ausholen'){ const h=naechsterAngreifer(S.handlanger,S.spielerK); if(h) zeichneAusholbalken(h,'VON DER SEITE',30); }
 
   zeichneAnsage8();
   if(S.arenaWechselT>0) textGlowC(ARENEN[S.arena].name,H/2-4,P.gold,2);

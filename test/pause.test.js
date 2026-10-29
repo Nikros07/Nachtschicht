@@ -73,7 +73,7 @@ pruefe('ohne document und window: laedt ohne Wurf', wirftNicht(()=>welt({dok:fal
 {
   const w=welt({dok:false,fenster:false});
   pruefe('ohne Browser: PAUSE da, keine Listener', w.E('typeof PAUSE')==='object'&&Object.keys(w.hand).length===0);
-  pruefe('ohne Browser: eintraege liefert Liste', w.E("PAUSE.eintraege('haupt').length")===4);
+  pruefe('ohne Browser: eintraege liefert Liste', w.E("PAUSE.eintraege('haupt').length")===5);
 }
 {
   const w=welt();
@@ -85,8 +85,11 @@ console.log('\n--- EINTRAEGE ---');
 let w=welt();
 const ids=m=>w.E("PAUSE.eintraege('"+m+"').map(e=>e.id).join()");
 const wert=id=>w.E("PAUSE.eintraege('einst').find(e=>e.id==='"+id+"').wert");
-pruefe('haupt: weiter, neu, einst, menue', ids('haupt')==='weiter,neu,einst,menue', ids('haupt'));
-pruefe('einst: Eintraege in der richtigen Reihe', ids('einst')==='flacker,wackeln,roehre,ton,zurueck', ids('einst'));
+pruefe('haupt: weiter, WAS JETZT?, neu, einst, menue', ids('haupt')==='weiter,hilfe,neu,einst,menue', ids('haupt'));
+pruefe('einst: Eintraege in der richtigen Reihe', ids('einst')==='flacker,wackeln,roehre,ton,schwer,tipps,tippsNeu,zurueck', ids('einst'));
+pruefe('einst enthaelt SCHWIERIGKEIT, TIPPS, TIPPS NEU ZEIGEN', ids('einst').includes('schwer')&&ids('einst').includes('tipps')&&ids('einst').includes('tippsNeu'));
+pruefe('einst: SCHWIERIGKEIT zeigt NORMAL ohne stand.js', wert('schwer')==='NORMAL', wert('schwer'));
+pruefe('einst: TIPPS zeigt AN ohne hilfe.js', wert('tipps')==='AN');
 pruefe('neuSicher: abbrechen, neuJa', ids('neuSicher')==='abbrechen,neuJa', ids('neuSicher'));
 pruefe('einst: FLACKERSCHUTZ AUS, WACKELN und ROEHREN AN (KOMFORT)', wert('flacker')==='AUS'&&wert('wackeln')==='AN'&&wert('roehre')==='AN');
 pruefe('einst: TON AN bei ungedaempftem Ton', wert('ton')==='AN');
@@ -156,6 +159,11 @@ w=welt(); w.E('PAUSE.auf()');
 w.E("PAUSE.aktiviere('menue')");
 pruefe("menue setzt location.href auf 'index.html'", w.kx.location.href==='index.html');
 
+w=welt(); w.E('PAUSE.auf()');
+let hilfeOk=true;
+try{ w.E("PAUSE.aktiviere('hilfe')"); }catch(err){ hilfeOk=false; }
+pruefe('WAS JETZT? schliesst die Pause und wirft ohne hilfe.js nicht', hilfeOk&&w.E('PAUSE.aktiv()')===false&&w.E('PAUSE.kaputt()')===false);
+
 console.log('\n--- TASTEN ---');
 w=welt();
 let e=taste(w,'Escape');
@@ -176,8 +184,9 @@ const e1=taste(w,'Enter');
 pruefe('Enter in der Sperre (0.15 s): tut nichts', w.E('PAUSE.modus()')==='haupt'&&w.E('PAUSE.aktiv()')===true&&e1.verhindert);
 w.setzeZeit(500);
 taste(w,'ArrowDown');
+taste(w,'ArrowDown');
 taste(w,'Enter');
-pruefe('Pfeil runter + Enter: NEU STARTEN -> neuSicher', w.E('PAUSE.modus()')==='neuSicher');
+pruefe('Pfeil runter x2 + Enter: NEU STARTEN -> neuSicher', w.E('PAUSE.modus()')==='neuSicher');
 taste(w,'Escape');
 pruefe('Esc in der Rueckfrage: zurueck nach haupt, offen', w.E('PAUSE.modus()')==='haupt'&&w.E('PAUSE.aktiv()')===true);
 taste(w,'KeyP');
@@ -205,11 +214,11 @@ w.E('PAUSE.zeichne()');
 pruefe('Titel PAUSE, ZUM MENUE und Tastenzeile da', w.gez.includes('PAUSE')&&w.gez.includes('ZUM MENUE')&&w.gez.some(s=>s.indexOf('PFEILE')===0), w.gez.join('|'));
 
 w=welt(); w.E('PAUSE.auf()'); w.E('PAUSE.zeichne()');
-zeiger(w,'pointerdown',160,68);            // Zeile 2: NEU STARTEN
+zeiger(w,'pointerdown',160,82);            // Zeile 3: NEU STARTEN (nach WAS JETZT?)
 pruefe('Klick auf NEU STARTEN: Rueckfrage', w.E('PAUSE.modus()')==='neuSicher');
 
 w=welt(); w.E('PAUSE.auf()'); w.setzeZeit(500); w.E('PAUSE.zeichne()');
-zeiger(w,'pointermove',160,80);            // Zeile 3: EINSTELLUNGEN
+zeiger(w,'pointermove',160,96);            // Zeile 4: EINSTELLUNGEN
 taste(w,'Enter');
 pruefe('Ueberfahren waehlt EINSTELLUNGEN, Enter oeffnet sie', w.E('PAUSE.modus()')==='einst');
 

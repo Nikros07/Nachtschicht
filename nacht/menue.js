@@ -203,6 +203,8 @@ MENUE.eintraege=function(modus){
     return l;
   }
   if(modus==='neuSicher') return [{ id:'abbrechen', txt:'ABBRECHEN' },{ id:'neuJa', txt:'JA, NEUE NACHT' }];
+  /* Erscheint beim ersten NEUE NACHT, solange keine Schwierigkeit gespeichert ist; vorgewaehlt LOCKER. */
+  if(modus==='schwerWahl') return [{ id:'wahlLocker', txt:'LOCKER - EMPFOHLEN' },{ id:'wahlNormal', txt:'NORMAL' },{ id:'wahlHart', txt:'HART' }];
   if(modus==='level'){
     const l=[];
     for(let n=1;n<=fort.erreicht;n++){
@@ -219,6 +221,8 @@ MENUE.eintraege=function(modus){
       { id:'wackeln',    txt:'WACKELN',       wert:an(kh('wackeln')) },
       { id:'roehre',     txt:'ROEHREN-LOOK',  wert:an(kh('roehre')) },
       { id:'schwer',     txt:'SCHWIERIGKEIT', wert:(function(){ try{ return schwer().name; }catch(e){ return 'NORMAL'; } })() },
+      { id:'tipps',      txt:'TIPPS',         wert:(function(){ try{ return (typeof HILFE!=='undefined'&&HILFE&&HILFE.eingeschaltet())?'AN':(typeof HILFE!=='undefined'&&HILFE?'AUS':'AN'); }catch(e){ return 'AN'; } })() },
+      { id:'tippsNeu',   txt:'TIPPS NEU ZEIGEN' },
     ];
     if(touch) l.push({ id:'handyInfo', txt:'HANDY: KNOPF MENUE', typ:'info' });
     l.push({ id:'zurueck', txt:'ZURUECK' });
@@ -280,6 +284,11 @@ MENUE.naechste=function(liste,i,r){
 
   /* ---- Handlungen ---- */
   function gehe(url){ try{ location.href=url; }catch(e){} }
+  /* Ist schon eine Schwierigkeit gespeichert? Sonst fragt NEUE NACHT einmal nach (LOCKER vorgewaehlt). */
+  function schwerGewaehlt(){
+    try{ return !!localStorage.getItem(typeof SCHWER_KEY!=='undefined'?SCHWER_KEY:'nachtschicht.schwierigkeit'); }
+    catch(e){ return true; }
+  }
   function startNeu(){
     Z.aktiv=false; Z.zu=true;
     try{ if(typeof ensureAudio==='function') ensureAudio(); }catch(e){}
@@ -290,7 +299,8 @@ MENUE.naechste=function(liste,i,r){
       if(id==='flacker') KOMFORT.umschalten('flackerschutz');
       else if(id==='wackeln') KOMFORT.umschalten('wackeln');
       else if(id==='roehre') KOMFORT.umschalten('roehre');
-      else if(id==='schwer') wechsleSchwierigkeit(r||1);
+      else if(id==='schwer'){ if(typeof wechsleSchwierigkeit==='function') wechsleSchwierigkeit(r||1); else return false; }
+      else if(id==='tipps'){ if(typeof HILFE!=='undefined'&&HILFE&&HILFE.setze) HILFE.setze(!HILFE.eingeschaltet()); else return false; }
       else return false;
     }catch(e){ return false; }
     ton(r<0?440:660); neuAufbauen(); return true;
@@ -301,6 +311,7 @@ MENUE.naechste=function(liste,i,r){
     Z.sel=i;
     switch(e.id){
       case 'neu':
+        if(!schwerGewaehlt()){ ton(520); modusSetze('schwerWahl'); break; }
         if(MENUE.fortschritt().kapitel>=2){ ton(330); modusSetze('neuSicher'); }
         else startNeu();
         break;
@@ -310,6 +321,15 @@ MENUE.naechste=function(liste,i,r){
       case 'einst': ton(520); modusSetze('einst'); break;
       case 'enden': ton(520); MENUE.galerie(); break;
       case 'ueber': gehe('ueber.html'); break;
+      case 'wahlLocker': case 'wahlNormal': case 'wahlHart': {
+        const k=e.id==='wahlLocker'?'locker':e.id==='wahlNormal'?'normal':'hart';
+        try{ if(typeof setzeSchwierigkeit==='function') setzeSchwierigkeit(k); }catch(er){}
+        ton(660);
+        if(MENUE.fortschritt().kapitel>=2) modusSetze('neuSicher'); else startNeu();
+        break; }
+      case 'tippsNeu':
+        try{ if(typeof HILFE!=='undefined'&&HILFE&&HILFE.vergiss) HILFE.vergiss(); }catch(er){}
+        ton(660); neuAufbauen(); break;
       case 'abbrechen': case 'zurueck': ton(400); modusSetze('haupt'); break;
       case 'hinweisWeiter': try{ KOMFORT.setze('hinweis',true); }catch(er){} ton(660); modusSetze('haupt'); break;
       case 'hinweisRuhig':
@@ -321,7 +341,7 @@ MENUE.naechste=function(liste,i,r){
     }
   }
   function zurueckTaste(){
-    if(Z.modus==='level'||Z.modus==='einst'||Z.modus==='neuSicher'){ ton(400); modusSetze('haupt'); }
+    if(Z.modus==='level'||Z.modus==='einst'||Z.modus==='neuSicher'||Z.modus==='schwerWahl'){ ton(400); modusSetze('haupt'); }
   }
 
   /* ---- Schnittstelle fuer kern.js und mobil.js ---- */
@@ -421,7 +441,7 @@ MENUE.naechste=function(liste,i,r){
       if(a>0){ ctx.globalAlpha=a; ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1; }
     }
   }
-  const TITEL={ level:'LEVEL WAEHLEN', einst:'EINSTELLUNGEN', neuSicher:'NEUE NACHT?' };
+  const TITEL={ level:'LEVEL WAEHLEN', einst:'EINSTELLUNGEN', neuSicher:'NEUE NACHT?', schwerWahl:'WIE SOLL DIE NACHT WERDEN?' };
 
   MENUE.zeichne=function(){
     hintergrund();
@@ -450,6 +470,15 @@ MENUE.naechste=function(liste,i,r){
       } else if(Z.modus==='neuSicher'){
         textC('STAND VON LEVEL '+MENUE.fortschritt().kapitel+' GEHT VERLOREN',27,P.weiss);
         zeichneListe(36);
+      } else if(Z.modus==='schwerWahl'){
+        if(!kompakt){
+          textC('LOCKER: LANGSAMERE GEGNER, MEHR ZEIT.',40,P.weiss);
+          textC('AENDERN GEHT JEDERZEIT IN DEN EINSTELLUNGEN.',49,P.dim);
+          zeichneListe(62);
+        } else {
+          textC('LOCKER: LANGSAMERE GEGNER, MEHR ZEIT.',27,P.weiss);
+          zeichneListe(36);
+        }
       } else zeichneListe(kompakt?30:46);
     }
     if(!touch){

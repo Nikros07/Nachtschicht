@@ -13,6 +13,7 @@
      P   Pause - das Level sagt selbst, was das heisst (pauseTaste)
      1-8 auf dem Titelbild: direkt zu diesem Level. Die Liste kommt aus
          der Levelleiste unter dem Bild, steht also nur einmal pro Seite.
+     TAB WAS JETZT? - Ziel, letzte Tipps, Steuerung (nacht/hilfe.js)
 
    Solange ein Gespraech laeuft, werden die Richtungstasten hier verbraucht
    (stopImmediatePropagation) - das Level bekommt sie gar nicht erst und
@@ -40,6 +41,8 @@ addEventListener('keydown',e=>{
     if(GESPR_RECHTS.includes(e.code)){ e.preventDefault(); e.stopImmediatePropagation(); gespraechWaehle(1); return; }
   }
 
+  /* Tab: WAS JETZT? (nacht/hilfe.js) - Ziel, letzte Tipps, Steuerung. preventDefault, sonst springt der Fokus. */
+  if(e.code==='Tab'){ if(typeof HILFE!=='undefined'&&HILFE&&HILFE.wasJetzt){ e.preventDefault(); HILFE.wasJetzt(); } return; }
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); return; }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); return; }
   if(e.code==='KeyP'){ if(typeof pauseTaste==='function') pauseTaste(); return; }

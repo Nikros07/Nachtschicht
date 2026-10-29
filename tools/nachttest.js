@@ -443,18 +443,17 @@ for(const seite of SEITEN){
           /* Uebungspuppe: nur die richtige Antwort (art) zur richtigen Zeit
              zaehlt. Steht die Puppe noch ausserhalb des Fensters, erst
              pruefen, dass ein Druck jetzt NICHT erledigt, dann takten bis
-             PUPPE_ARTEN[art].wann() zutrifft. */
+             PUPPE_ARTEN[art].wann() zutrifft. Konter braucht konterNoetig()
+             Treffer in Folge, jeder davon wartet auf das naechste Fenster. */
           const code=EQ('PUPPE_ARTEN["'+art+'"].codes[0]');
-          const vorFenster=EQ('!PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe||{})');
-          if(vorFenster){
+          const noetig=art==='konter'?EQ('konterNoetig()'):1;
+          const imF=()=>EQ('!!(LEHRE.L.schritte['+si+']._puppe&&PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe))');
+          if(!imF()){ Q.taste(code,true); Q.taste(code,false);
+            if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') zur falschen Zeit schon erledigt'); }
+          for(let n=0;n<noetig;n++){
+            let guard=0; while(!imF()&&guard<900){ EQ('LEHRE.takt(1/60)'); guard++; }
             Q.taste(code,true); Q.taste(code,false);
-            if(EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') zur falschen Zeit schon erledigt');
-            let guard=0;
-            while(!EQ('LEHRE.L.schritte['+si+']._puppe&&PUPPE_ARTEN["'+art+'"].wann(LEHRE.L.schritte['+si+']._puppe)')&&guard<600){
-              EQ('LEHRE.takt(1/60)'); guard++;
-            }
           }
-          Q.taste(code,true); Q.taste(code,false);
           if(!EQ('LEHRE.erledigt['+si+']')) meld(seite,'Lektion: Puppe-Schritt ('+art+') im Fenster nicht erledigt');
         } else {
           for(const code of gr[si]){ Q.taste(code,true); Q.taste(code,false); }

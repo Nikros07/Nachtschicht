@@ -19,12 +19,12 @@ const entferneCrew=n=>{ const c=ladeCrew().filter(x=>x!==n);
 /* Der Pegel ist levelübergreifend: jedes Level liest ihn als Startwert und
    schreibt seinen Endwert zurueck - auch unveraendert, damit die Kette haelt. */
 const PEGEL_KEY='nachtschicht.pegel';
-const ladePegel=()=>parseFloat(localStorage.getItem(PEGEL_KEY))||0;
+const ladePegel=()=>{ try{ return parseFloat(localStorage.getItem(PEGEL_KEY))||0; }catch(e){ return 0; } };
 const speicherePegel=p=>{ try{ localStorage.setItem(PEGEL_KEY,String(p)); }catch(e){} };
 
 /* Bestzeit je Level, Nummer 1-8. */
 const bestKey=n=>'nachtschicht.bestzeit'+n;
-const ladeBestN=n=>{ const v=parseFloat(localStorage.getItem(bestKey(n))); return isFinite(v)?v:null; };
+const ladeBestN=n=>{ try{ const v=parseFloat(localStorage.getItem(bestKey(n))); return isFinite(v)?v:null; }catch(e){ return null; } };
 const speichereBestN=(n,t)=>{ try{ localStorage.setItem(bestKey(n),String(t)); }catch(e){} };
 
 /* ---- Schwierigkeit ----
@@ -37,12 +37,14 @@ const speichereBestN=(n,t)=>{ try{ localStorage.setItem(bestKey(n),String(t)); }
      verdacht - wie schnell Lehrer und Kontrolleure dich bemerken
      muede    - wie schnell die Erschoepfung in Level 6 zieht
      zeit     - Bedenkzeit in Gespraechen (dialog.js)
-     leben    - zusaetzliche Treffer, die du im Kampf einstecken kannst */
+     leben    - zusaetzliche Treffer, die du im Kampf einstecken kannst
+     frist    - Faktor auf Level-Uhren und Fristen (Schule, Marvin, Heinz, Sonne). Ueber 1 = mehr Zeit.
+     fensterMin - Mindestlaenge des Konterfensters in echten Sekunden (kampf.js konterAnteilFuer). */
 const SCHWER_KEY='nachtschicht.schwierigkeit';
 const SCHWIERIGKEITEN={
-  locker:{ name:'LOCKER', gegner:0.80, verdacht:0.70, muede:0.70, zeit:1.50, leben:1 },
-  normal:{ name:'NORMAL', gegner:1.00, verdacht:1.00, muede:1.00, zeit:1.00, leben:0 },
-  hart:  { name:'HART',   gegner:1.15, verdacht:1.30, muede:1.30, zeit:0.75, leben:0 },
+  locker:{ name:'LOCKER', gegner:0.70, verdacht:0.70, muede:0.50, zeit:1.50, leben:1, frist:1.30, fensterMin:0.25 },
+  normal:{ name:'NORMAL', gegner:1.00, verdacht:1.00, muede:1.00, zeit:1.00, leben:0, frist:1.00, fensterMin:0.18 },
+  hart:  { name:'HART',   gegner:1.15, verdacht:1.30, muede:1.30, zeit:0.75, leben:0, frist:0.85, fensterMin:0 },
 };
 const SCHWER_REIHE=['locker','normal','hart'];
 const schwierigkeit=()=>{ let k='normal';

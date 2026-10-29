@@ -498,12 +498,29 @@ function auswahl(eltern,name,optionen,schluessel,wirkung){
   });
   eltern.appendChild(z);
 }
+/* Wie auswahl(), speichert aber nichts in einst - der Aufrufer setzt den Wert selbst. */
+function wahlZeile(name,optionen,aktivWert,setzen){
+  const z=document.createElement('div'); z.className='zeile';
+  const t=document.createElement('span'); t.textContent=name; z.appendChild(t);
+  const w=document.createElement('div'); w.className='wahl'; z.appendChild(w);
+  const knoepfe=[];
+  optionen.forEach(function(o){
+    const b=knopfIn(w,o[0],function(){
+      setzen(o[1]); knoepfe.forEach(function(x){ x.b.classList.toggle('an',x.w===o[1]); });
+    });
+    b.classList.toggle('an',aktivWert===o[1]); knoepfe.push({b:b,w:o[1]});
+  });
+  blatt.appendChild(z);
+}
+/* Blaetter des Menues: WAS JETZT?, Level, Handy, Vollbild und Enden im Menue;
+   Schwierigkeit, Tipps und Einstellungen im Blatt EINSTELLUNGEN. */
 function zeigeBlatt(was){
   blatt.innerHTML=''; blatt.classList.add('an');
   const h=document.createElement('h2'); blatt.appendChild(h);
   if(was==='menue'){
     h.textContent='MENUE';
     knopfIn(blatt,'WEITER',menueZu,'zu');
+    if(typeof HILFE!=='undefined'&&HILFE&&HILFE.wasJetzt) knopfIn(blatt,'WAS JETZT?',function(){ menueZu(); HILFE.wasJetzt(); });
     knopfIn(blatt,typeof muted!=='undefined'&&muted?'TON AN':'TON AUS',function(b){
       ensureAudio(); tipp('KeyM'); setTimeout(function(){ b.textContent=muted?'TON AN':'TON AUS'; },80); });
     /* iPhone-Safari kennt keine Vollbild-Schnittstelle: dort hilft nur der Home-Bildschirm
@@ -536,6 +553,9 @@ function zeigeBlatt(was){
     auswahl(blatt,'STICK',[['FREI','frei'],['FEST','fest']],'stick',function(){ if(stickId===null) stickHeim(); });
     auswahl(blatt,'TIPPEN RECHTS = AKTION',[['AN',true],['AUS',false]],'tippen');
     auswahl(blatt,'VIBRATION',[['AN',true],['AUS',false]],'vibration',function(){ mobilVibriere(30); });
+    if(typeof setzeSchwierigkeit==='function'&&typeof schwierigkeit==='function') wahlZeile('SCHWIERIGKEIT',[['LOCKER','locker'],['NORMAL','normal'],['HART','hart']],schwierigkeit(),function(v){ setzeSchwierigkeit(v); });
+    if(typeof HILFE!=='undefined'&&HILFE&&HILFE.setze) wahlZeile('TIPPS',[['AN',true],['AUS',false]],!!(HILFE.eingeschaltet&&HILFE.eingeschaltet()),function(v){ HILFE.setze(v); });
+    if(typeof HILFE!=='undefined'&&HILFE&&HILFE.vergiss) knopfIn(blatt,'TIPPS NEU ZEIGEN',function(b){ HILFE.vergiss(); b.textContent='TIPPS KOMMEN WIEDER'; });
     knopfIn(blatt,'ZURUECK',function(){ zeigeBlatt('menue'); },'zu');
   }
 }
@@ -593,11 +613,12 @@ function infoPflege(){
   if(typeof S!=='undefined'&&S){
     if(S.hinweisT>0&&S.hinweis) hinweis=S.hinweis;
     else if(S.meldungT>0&&S.meldung) hinweis=S.meldung;
+    else if(typeof HILFE!=='undefined'&&HILFE&&HILFE.zielText&&HILFE.zielText()) hinweis='ZIEL: '+HILFE.zielText();
   }
   let werte='';
   if(typeof wert==='function'){
     const w=[['MUT','mut'],['RUF','ruf'],['GELD','geld'],['WACH','kondition']];
-    werte=w.map(function(e){ return '<span>'+e[0]+' <b>'+Math.round(wert(e[1]))+'</b></span>'; }).join('');
+    werte=w.map(function(e){ return '<span>'+e[0]+' <b>'+(function(v){ return (e[1]==='geld'&&v%1!==0)?v.toFixed(2).replace('.',','):Math.round(v); })(wert(e[1]))+'</b></span>'; }).join('');
     if(typeof ladePegel==='function') werte+='<span>PEGEL <b>'+Math.round(ladePegel())+'</b></span>';
   }
   let crew='';
@@ -635,6 +656,10 @@ function kontextPflege(){
   /* Das Startmenue (nacht/menue.js): der Hauptknopf bestaetigt den markierten Eintrag. */
   if(typeof MENUE!=='undefined'&&MENUE.aktiv&&MENUE.aktiv()){
     try{ k=Object.assign({aktion:null,zwei:null,block:false,extras:null},MENUE.mobilKontext()); }catch(e){}
+  }
+  /* Hilfe-Karte und LOCKER-Angebot (nacht/hilfe.js) haben eigene Knoepfe. */
+  if(typeof HILFE!=='undefined'&&HILFE&&HILFE.kontext){
+    try{ const hk=HILFE.kontext(); if(hk) k=Object.assign({aktion:null,zwei:null,block:false,extras:null},hk); }catch(e){}
   }
   window.MOBIL.kontext=k;
   beschrifte(bAktion,k.aktion,'KeyE');

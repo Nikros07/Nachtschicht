@@ -118,6 +118,29 @@ console.log('\n--- Gegner-KI ---');
   pruefe('Gegner greift an', geschlagen);
 }
 
+console.log('\n--- Mindestfenster je Schwierigkeit ---');
+{
+  c.schwer=()=>({gegner:0.70,fensterMin:0.25});
+  const g=c.gegner('flitzer',20,0.5);
+  const lang=c.konterAnteilFuer(g)*g.ausholenDauer/0.70;
+  pruefe('LOCKER: Konterfenster mindestens 0.25 s (echte Zeit)', lang>=0.249, lang.toFixed(3));
+  c.schwer=()=>({gegner:1,fensterMin:0.18});
+  const g2=c.gegner('flitzer',20,0.5);
+  const lang2=c.konterAnteilFuer(g2)*g2.ausholenDauer/1;
+  pruefe('NORMAL: Konterfenster mindestens 0.18 s', lang2>=0.179, lang2.toFixed(3));
+  const gb=c.gegner('brocken',20,0.5);
+  pruefe('langes Ausholen bleibt beim Anteil 0.34', c.konterAnteilFuer(gb)===c.KAMPF.konterAnteil, String(c.konterAnteilFuer(gb)));
+  const sp={art:'spieler',ausholenDauer:0.2}, pu={art:'puppe',ausholenDauer:0.2};
+  pruefe('Spieler behaelt Standardanteil', c.konterAnteilFuer(sp)===c.KAMPF.konterAnteil);
+  pruefe('Puppe behaelt uebergebenen Anteil', c.konterAnteilFuer(pu,0.34)===0.34);
+  pruefe('Objekt ohne art unveraendert', c.konterAnteilFuer({ausholenDauer:0.2})===c.KAMPF.konterAnteil);
+  c.schwer=()=>({gegner:1,fensterMin:0.18});
+  const s=c.kaempfer({x:10,t:0.5,blick:1}), gg=c.gegner('flitzer',20,0.5);
+  c.schlage(gg); gg.zT=gg.ausholenDauer-0.17;
+  pruefe('imKonterfenster nutzt Mindestfenster', c.imKonterfenster(gg)===true, 'zT='+gg.zT.toFixed(3));
+  delete c.schwer;
+}
+
 console.log('\n============================');
 console.log(ok+' bestanden, '+fail+' fehlgeschlagen');
 process.exit(fail?1:0);

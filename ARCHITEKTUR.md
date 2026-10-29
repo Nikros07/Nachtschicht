@@ -39,7 +39,7 @@ Reihenfolge der Script-Tags ist die Ladereihenfolge — `kern.js` zuerst, danach
 (damit auch spätere Ladefehler gefangen werden). Die Tabelle steht in dieser Reihenfolge
 (`kampf.js` nur in den Seiten mit Kampf):
 
-`kern → geraet → bild → hud → ton → komfort → musik → songs → saft → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → epilog → wertung → menue → pause`
+`kern → geraet → bild → hud → ton → komfort → musik → songs → saft → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → hilfe → epilog → wertung → menue → pause`
 
 (`pause` nur in den acht Leveln, nicht in `karte.html` und `runner.html`.)
 
@@ -68,6 +68,7 @@ Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach `python tool
 | `handy.js` | Das Handy im Spiel: Nachrichten und Antworten |
 | `texte.js` | Reine Daten: Kapitelkarten (`TEXTE_KAPITEL`), Rückblick-Zeilen (`TEXTE_BISHER`), Polaroid-Texte (`TEXTE_MOMENTE`), Menütexte (`TEXTE_MENUE`) |
 | `erzaehl.js` | Was die Nacht erzählt, ohne anzuhalten: `STIMMEN` (Farbe und Ton je Sprecher), `zeichneKarte`, Kapitelkarte (`kapitelZeigen`), `PLAUSCH` (Untertitel beim Gehen), `MOMENT` (Polaroids) |
+| `hilfe.js` | Hilfen `HILFE`: Erst-Tipps beim ersten Auftreten einer Mechanik (`hilfeTipp(id,pc,handy)`, je Gerät gemerkt, im Hinweisplatz `S.hinweis`), Karte WAS JETZT? (Tab, Pausemenü, Handy-Menü), LOCKER-Angebot nach 2 Niederlagen je Level. Stumm bei `?lektion=0` (außer `?hilfe=1`). |
 | `epilog.js` | Was nach dem Finale kommt: Epilog-Folien je Crew-Figur, Gruppenchat, Album, „Was wir nie wieder erwähnen“, Kater, die Wolle mit den drei Knoten, `ENDEN_ALLE` und `endeRegistrieren` |
 | `wertung.js` | Rang am Levelende `WERTUNG`: `abschluss(level,punkte,zeilen)` gibt S/A/B/C, merkt den Bestrang je Level (`nachtschicht.rangN`), zeichnet Tafel und Abzeichen im Modus `ende` |
 | `menue.js` | Startmenü (Titel von Level 1), Einstellungen, Enden-Galerie und Momente-Sammlung (`MENUE.galerie()`), Credits |

@@ -49,6 +49,8 @@ node test/saft.test.js      # Hitstop, Wackeln, Teilchen, Flackerschutz
 node test/wertung.test.js   # Rang S/A/B/C und Bestrang
 node test/pause.test.js     # Pausemenue am Rechner (Esc)
 node test/www.test.js       # tools/www.py (Kopie fuer die App-Huellen)
+node test/hilfe.test.js     # Tipps, WAS JETZT?, LOCKER-Angebot, Tipp-Texte aller Seiten
+node test/dialog.test.js    # Gespraeche: vorgewaehlte Standardantwort
 python tools/version.py --pruefen   # alles gestempelt? (sonst: python tools/version.py)
 node tools/launchcheck.js   # Startprüfung, muss BEREIT sagen
 ```

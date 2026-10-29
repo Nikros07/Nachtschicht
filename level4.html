@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 4 - DIE SCHLANGE</span><span>E KONTERN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/kampf.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/kampf.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 4: DIE SCHLANGE
@@ -83,20 +84,22 @@ const TUNE = {
   bossPause:          0.9,   // Erholung zwischen zwei Angriffen
   schwungWindup:      1.25,  // Ausholzeit SCHWUNG
   schwungSchlag:      0.24,  // wie lange der Treffer selbst dauert
-  jabWindup:          0.55,  // Ausholzeit JAB - viel kuerzer
+  jabWindup:          0.70,  // Ausholzeit JAB - kuerzer als SCHWUNG
   jabSchlag:          0.16,
   fensterAnteil:      0.34,  // Konterfenster = letztes Drittel des Ausholens
   serieMax:           2,     // max. gleiche Angriffe hintereinander
 
   /* (2) SPIELER */
   leben:              3,
-  fehlschlagErholung: 0.6,   // Strafe fuers verfrueht/falsch gedrueckte E
+  fehlschlagErholung: 0.35,  // Strafe fuers verfrueht/falsch gedrueckte E
   unverwundbarNachTreffer: 0.5,
+  lernAngriffe:       2,     // die ersten Angriffe sind immer SCHWUNG, solange man noch nie gekontert hat
+  autoDrehen:         true,  // beim Druecken dreht man sich zum Tuersteher (sonst gehen Konter ins Leere, wenn er hinter einem steht)
 
   /* (3) DER PEGEL WIRKT SICH AUFS KONTERN AUS - er wird hier nicht getrunken,
      kommt aber aus Level 2/3 mit und macht das Timing wackliger. */
-  pegelFensterStrafeMax: 0.4,  // bei Pegel 100: Konterfenster bis zu 40% enger
-  fensterMinSek:      0.28,    // das Fenster darf nie kuerzer sein als das, egal wie kurz das Ausholen ist
+  pegelFensterStrafeMax: 0.25, // bei Pegel 100: Konterfenster bis zu 25% enger
+  fensterMinSek:      0.36,    // echte Sekunden: das Fenster darf nie kuerzer sein, egal wie kurz das Ausholen ist (gilt NACH dem Schwierigkeitsfaktor)
   pegelWackelAb:      35,      // ab hier zittert das Bild sichtbar
   pegelWackelMax:     2.2,
 
@@ -121,8 +124,8 @@ const TUNE = {
   /* (7) PHASEN - er wird ungemuetlicher, je naeher er am Boden ist */
   phase2Ab:         0.66,  // Anteil Rest-Leben
   phase3Ab:         0.33,
-  phasePauseKuerzer: 0.22, // pro Phase weniger Verschnaufen
-  phaseWindupKuerzer:0.12, // pro Phase kuerzere Vorwarnung
+  phasePauseKuerzer: 0.15, // pro Phase weniger Verschnaufen
+  phaseWindupKuerzer:0.08, // pro Phase kuerzere Vorwarnung
 
   /* (8) COMBO, PERFEKT, PHASEN-ANSAGE (Scott Pilgrim) */
   perfektAnteil:      0.3333, // Konter im letzten Drittel des Konterfensters = PERFEKT
@@ -365,7 +368,7 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=4'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=4'; return; } neuesSpiel(); starteKampf(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   if(S.modus==='schlange') return;
   if(S.modus==='pause') return;
@@ -375,12 +378,12 @@ function druckAktion(){
    nicht der Sprung, und ohne block:true fehlte am Handy der Blockknopf. */
 function mobilKontext(){
   const ek=erzaehlKontext(); if(ek) return ek;
-  if(S.modus==='schlange') return {aktion:'WEITER', zwei:null};
+  if(S.modus==='schlange') return {aktion:gespraechAktiv()?'WEITER':null, zwei:null};
   if(S.modus==='titel')    return {aktion:'START',  zwei:null};
   if(S.modus==='intro'||S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
-  if(S.modus==='ende')     return {aktion:'WEITER', zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
   if(S.modus==='pause')    return {aktion:null, zwei:null};
-  return {aktion:'SCHLAG', zwei:'ROLLE', block:true};
+  return {aktion:'KONTER', zwei:'ROLLE', block:true};
 }
 let linksAn=false, rechtsAn=false, hochAn=false, runterAn=false, rolleGedrueckt=false;
 
@@ -434,6 +437,7 @@ function starteLevel(){
 function schlange(dt){
   if(gespraechAktiv()){ gespraechTakt(dt); return; }
   if(S.kappeT>0){ S.kappeT-=dt; return; }
+  if(!S.warteHinweis){ S.warteHinweis=true; zeigeHinweis('IHR WARTET IN DER SCHLANGE...',4); HILFE.ziel('WARTEN - GLEICH SEID IHR DRAN'); }
   S.warteT+=dt;
   PLAUSCH.ausloeser('warten');
   const still=!PLAUSCH.jetzt&&PLAUSCH.warte.length===0;
@@ -447,7 +451,8 @@ function starteKampf(){
   S.boss=kaempfer({ x:W+30, t:0.5, blick:-1, art:'tuersteher',
     hp:trefferZiel(), maxHp:trefferZiel(), reichweite:19,
     pauseT:0.9, anlauf:true, vorZustand:'frei' });
-  zeigeHinweis((IS_TOUCH?'KONTER':'E')+' IM AUSHOLEN - GANZ AM ENDE DES BALKENS',3.5);
+  HILFE.ziel('BESIEG DEN TUERSTEHER');
+  if(S.pegelStart>=40) hilfeTipp('pegel-fenster','PEGEL: DAS GOLD-FENSTER IST ENGER','PEGEL: DAS GOLD-FENSTER IST ENGER');
   SFX.warn(); meldung('NA WARTE',1.4);
 }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
@@ -470,6 +475,8 @@ function bossPhase(b){
   return anteil<=TUNE.phase3Ab?3:anteil<=TUNE.phase2Ab?2:1;
 }
 function naechsteArt(b){
+  /* Lern-Angriffe: die ersten sind immer der lange SCHWUNG, solange man noch nie gekontert hat. */
+  if((S.lernAngriffe||0)<TUNE.lernAngriffe&&HILFE.lernt('konter')){ S.lernAngriffe=(S.lernAngriffe||0)+1; b.letzteArt='schwung'; return 'schwung'; }
   /* Ab Phase 2 kommt der Rammstoss dazu. Der ist unblockbar - ab da reicht
      Decken allein nicht mehr, man muss ausweichen. */
   const moeglich = bossPhase(b)>=TUNE.rammeAb ? ['schwung','jab','ramme']
@@ -499,24 +506,29 @@ function starteAngriff(b,art){
   /* Das Fenster darf durch Pegel/Phase nie kuerzer werden als die
      Mindest-Reaktionszeit - sonst ist es nicht unfair schwer, sondern
      gar nicht zu treffen. */
-  anteil=Math.max(anteil,Math.min(1,TUNE.fensterMinSek/b.ausholenDauer));
+  anteil=Math.max(anteil,Math.min(1,TUNE.fensterMinSek*schwer().gegner/b.ausholenDauer));
   b.fensterAnteil=anteil;
   b.zustand='ausholen'; b.zT=0; b.trefferGesetzt=false;
   SFX.warn();
+  if(art==='ramme') hilfeTipp('ramme','RAMME: NICHT KONTERN - LEER ROLLT','RAMME: NICHT KONTERN - ROLLE!');
+  else if(!S.ersterAngriff){ S.ersterAngriff=true; if(!hilfeTipp('konter-gold','WARTE BIS DER BALKEN GOLD IST - DANN E','WARTE BIS DER BALKEN GOLD IST - DANN KONTER',4)) zeigeHinweis(tasteText('E IM GOLD: KONTER','KONTER IM GOLD'),2.5); }
 }
 function fehlschlag(){
   if(S.erholungT>0) return;
   S.erholungT=TUNE.fehlschlagErholung; wackel(2); SFX.fehl();
   meldung('DANEBEN',0.9);
+  hilfeTipp('konter-frueh','ZU FRUEH: WARTE, BIS DER BALKEN GOLD IST','ZU FRUEH: WARTE, BIS DER BALKEN GOLD IST');
 }
 function bossTakt(b,dt,ziel){
   kaempferTakt(b,dt);
   if(b.hp<=0) return;
-  b.blick=Math.sign(ziel.x-b.x)||b.blick;
+  /* Der Rammstoss zielt nicht mehr um - sonst pendelt er ueber den Spieler und trifft nie. */
+  const rammt=b.art==='ramme'&&(b.zustand==='ausholen'||b.zustand==='schlag');
+  if(!rammt) b.blick=Math.sign(ziel.x-b.x)||b.blick;
 
   /* Beim Rammen setzt er nach - deshalb reicht Stehenbleiben nicht. */
   if(b.art==='ramme'){
-    if(b.zustand==='ausholen') b.x+=b.blick*TUNE.rammeTempo*0.18*dt;
+    if(b.zustand==='ausholen'&&Math.abs(ziel.x-b.x)>b.reichweite*0.8) b.x+=b.blick*TUNE.rammeTempo*0.18*dt;
     if(b.zustand==='schlag')   b.x+=b.blick*TUNE.rammeTempo*dt;
   }
 
@@ -596,10 +608,11 @@ function kampf(dt){
   while(aktionPuffer.length){
     aktionPuffer.shift();
     if(S.erholungT>0) continue;
+    if(TUNE.autoDrehen) s.blick=Math.sign(b.x-s.x)||s.blick;
     rasteAufGegner(s,[b],KAMPF.reichweite);
     /* Druecke fuer die Konterquote zaehlen - ausser gegen den Rammstoss, der nicht kontert. */
     if(!b.unblockbarJetzt) S.versuche++;
-    if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); continue; }
+    if(s.ausdauer<KAMPF.ausdauerSchlag){ meldung('AUSSER PUSTE',0.9); hilfeTipp('puste','NICHT HAEMMERN - WARTE AUFS GOLD','NICHT HAEMMERN - WARTE AUFS GOLD'); continue; }
     /* PERFEKT: der Druck liegt im letzten Drittel des Konterfensters. Vor dem Konter messen,
        der Konter setzt den Zustand des Tuerstehers um. */
     const perfekt=b.zustand==='ausholen'
@@ -607,6 +620,7 @@ function kampf(dt){
     if(konterVersuch(s,b,{konterAnteil:b.fensterAnteil,schaden:1,
                           unblockbar:b.unblockbarJetzt})){
       S.treffer++; S.konter++; S.combo++; S.maxCombo=Math.max(S.maxCombo,S.combo);
+      if(S.konter===1) hilfeTipp('nachsetzen','NOCHMAL E - ER WACKELT!','NOCHMAL KONTER - ER WACKELT!');
       if(perfekt) S.perfekt++;
       wackel(5); S.blitz=.5; SFX.klatsch();
       meldung(pick(['SITZT','KONTER','GEHT AUFS AUGE']),1.1);
@@ -639,14 +653,17 @@ function kampf(dt){
      betaeubt ist - sonst deckt er. Das haelt den Konter als Hauptweg. */
   if(s.zustand==='schlag'&&!s.trefferGesetzt){
     const offen=b.zustand==='erholung'||b.zustand==='getroffen';
-    const r=loeseTreffer(s,b,{schaden:offen?1:0.001});
-    if(r==='treffer'&&offen){
-      S.treffer++; wackel(3); SFX.klatsch(); meldung('NACHGESETZT',0.9);
-      if(typeof SAFT!=='undefined'){ const p=bildPunkt(b,12); SAFT.treffer(p.x,p.y,s.blick,0.5); }
-    } else if(r==='block'||r==='gardebruch'){
-      meldung(r==='gardebruch'?'DECKUNG WEG':'ER BLOCKT',0.9);
-    } else if(r==='treffer'){
-      meldung('ER STECKT DAS WEG',0.8);
+    if(!offen){
+      /* Kein loeseTreffer: ein Schlag darf sein Ausholen nicht abbrechen (sonst gewinnt Haemmern). */
+      if(trifftRaeumlich(s,b,KAMPF.reichweite)){ s.trefferGesetzt=true; meldung('ER STECKT DAS WEG',0.8); }
+    } else {
+      const r=loeseTreffer(s,b,{schaden:1});
+      if(r==='treffer'){
+        S.treffer++; wackel(3); SFX.klatsch(); meldung('NACHGESETZT',0.9);
+        if(typeof SAFT!=='undefined'){ const p=bildPunkt(b,12); SAFT.treffer(p.x,p.y,s.blick,0.5); }
+      } else if(r==='block'||r==='gardebruch'){
+        meldung(r==='gardebruch'?'DECKUNG WEG':'ER BLOCKT',0.9);
+      }
     }
   }
   if(b.zustand==='schlag'&&!b.trefferGesetzt){
@@ -939,6 +956,7 @@ function hud(){
     ctx.fillRect(bx,by,Math.round(bw*f),3);
     ctx.fillStyle='#0008';
     ctx.fillRect(bx+Math.round(bw*KAMPF.ausdauerSchlag/KAMPF.ausdauerMax),by,1,3);
+    text('PUSTE',bx+bw+4,by-1,P.dunkel);
   }
 
   const tr='TREFFER '+S.treffer+'/'+(S.boss?S.boss.maxHp:TUNE.bossTreffer);
@@ -971,7 +989,7 @@ function titelbild(){
     ctx.fillRect((i*83)%W,(i*47)%H,1,1); }
   textGlowC('DIE SCHLANGE',22,P.neon,3);
   textC('LEVEL 4 - VOR DEM CLUB',44,P.dim);
-  const zeilen=['ER LAESST EUCH NICHT REIN','EIN GEGNER. EIN ARENA.','IM AUSHOLEN KONTERN.'];
+  const zeilen=['ER LAESST EUCH NICHT REIN','EIN GEGNER. EINE ARENA.','IM AUSHOLEN KONTERN.'];
   zeilen.forEach((z,i)=>textC(z,66+i*10,i===2?P.gold:P.weiss));
   const st=IS_TOUCH?[['TIPPEN','KONTERN IM RICHTIGEN MOMENT']]
                    :[['E','KONTERN IM RICHTIGEN MOMENT']];
@@ -1005,6 +1023,7 @@ function zeichneIntro(){
   ctx.fillStyle=P.neon; ctx.fillRect(0,H-38,W,1);
   if(S.szene<INTRO.length) textC(INTRO[S.szene].txt,H-24,P.weiss);
   if(!IS_TOUCH&&Math.floor(S.t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
+  if(IS_TOUCH&&Math.floor(S.t*2)%2===0) text('TIPPEN  WEITER',W-textW('TIPPEN  WEITER')-6,H-10,P.dunkel);
   zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
 function zeichneSchlange(){
@@ -1025,7 +1044,7 @@ function zeichneSchlange(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='cutscene'){
     const s=SZENEN[S.szene], zl=s&&s.txt?s.txt.split('|').length:1, bh=zl>1?50:40;
@@ -1050,9 +1069,9 @@ function bildschirme(){
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
-      textC('TREFFER GESCHAFFT: '+S.treffer+'/'+TUNE.bossTreffer,90,P.dim);
+      textC('TREFFER GESCHAFFT: '+S.treffer+'/'+(S.boss?S.boss.maxHp:TUNE.bossTreffer),90,P.dim);
     }
-    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'E FUER NEUSTART',H-18,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(tasteText('E: NOCHMAL KAEMPFEN','TIPPEN: NOCHMAL KAEMPFEN'),H-18,P.gold);
   }
 }
 

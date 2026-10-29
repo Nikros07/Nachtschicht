@@ -187,10 +187,27 @@ function kaempferTakt(k,dt){
   }
 }
 
+/* Ein Konterfenster darf in echter Zeit nie kuerzer sein als schwer().fensterMin.
+   Gegner laufen auf ihrer eigenen Uhr (kaempferTakt: dt*schwer().gegner) - deshalb wird
+   die Mindestzeit in Spielzeit der Gegner-Uhr umgerechnet. Gilt nur fuer echte Kaempfer
+   aus kampf.js (art gesetzt, nicht 'spieler', nicht 'puppe'); Level-eigene Gegner ohne
+   art und die Uebungspuppe der Lektion behalten ihren Anteil. Anzeige (hud.js) und Logik
+   (imKonterfenster) benutzen beide diese Funktion - so zeigt der Balken nie ein anderes
+   Fenster, als zaehlt. */
+function konterAnteilFuer(g, anteil){
+  const a = anteil || KAMPF.konterAnteil;
+  if(!g || typeof g.art!=='string' || g.art==='spieler' || g.art==='puppe') return a;
+  const d = g.ausholenDauer || (g.regler || KAMPF).ausholen;
+  if(!d || typeof schwer!=='function') return a;
+  const sw = schwer();
+  const minSek = sw.fensterMin || 0;
+  return Math.min(1, Math.max(a, minSek * (sw.gegner || 1) / d));
+}
+
 /* Steckt der Angreifer im konterbaren Teil seines Ausholens? */
 function imKonterfenster(g, anteil){
   if(g.zustand !== 'ausholen') return false;
-  const a = anteil || KAMPF.konterAnteil;
+  const a = konterAnteilFuer(g, anteil);
   const d = g.ausholenDauer || (g.regler || KAMPF).ausholen;
   return g.zT >= d * (1 - a);
 }
@@ -277,6 +294,7 @@ function konterVersuch(s, g, opt){
   /* Der Schlag wird trotzdem gezeigt, trifft aber nicht noch einmal. */
   s.zustand = 'schlag'; s.zT = 0; s.trefferGesetzt = true;
   kampfStop = KAMPF.hitStop * 1.6;
+  if(typeof HILFE!=='undefined'&&HILFE&&HILFE.zaehle){ HILFE.zaehle('konter'); HILFE.zaehle('konter-jetzt'); }
   return true;
 }
 
@@ -293,6 +311,7 @@ function spielerTrifft(spieler, gegner, opt){
       gegner.betaeubt = KAMPF.konterBetaeubung;
       gegner.unverwundbar = 0.1;
       kampfStop = KAMPF.hitStop * 1.6;
+      if(typeof HILFE!=='undefined'&&HILFE&&HILFE.zaehle){ HILFE.zaehle('konter'); HILFE.zaehle('konter-jetzt'); }
       return 'konter';
     }
   }

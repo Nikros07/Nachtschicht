@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,29 +37,30 @@
   <div id="base"><span>LEVEL 6 - AFTERHOUR</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 6: AFTERHOUR
@@ -110,7 +111,8 @@ const TUNE = {
   trailFadePegel:  0.18,   // je hoeher der Pegel, desto laenger haengen Nachbilder in der Luft
 
   /* (5) SUCHEN UND REDEN */
-  reichweite:      15,
+  reichweite:      20,
+  tuerLuegtZiel:  900,     // wohin die luegende Tuer RAUS wirft (vorher 100 = zurueck an den Start)
   suchDauer:        0.6,
   redeTiefe:       0.32,
 
@@ -126,12 +128,12 @@ const TUNE = {
      Werten reicht eine volle Kondition knapp fuer eine Strecke - wer
      troedelt oder voll ist, braucht die Sofas. */
   konditionAbbau:   1.0,   // pro Sekunde, immer
-  konditionPegel:   1.4,   // pro Sekunde zusaetzlich bei Pegel 100
+  konditionPegel:   0.9,   // pro Sekunde zusaetzlich bei Pegel 100
   konditionRennen:  0.5,   // zusaetzlich bei vollem Tempo
   sofaErholung:    24,     // pro Sekunde auf dem Sofa
   aufwachenMit:    45,     // Kondition nach dem Wegknicken
   aufwachenPegelAb: 10,    // Pegel-Abzug beim Aufwachen auf dem Sofa
-  schwereAb:       30,     // darunter wird man langsamer und das Bild zieht zu
+  schwereAb:       20,     // darunter wird man langsamer und das Bild zieht zu
 
   /* (8) SCHWEBESPRUNG - im Traum faellt man langsam (Night in the Woods).
      Sprung wie gehabt (Leertaste, am Handy der zweite Knopf SPRUNG).
@@ -298,7 +300,7 @@ const SCHLEIFE={ x:698, zurueck:540, braucht:'labortisch' };
 
 /* Tueren an der Rueckwand. Eine davon luegt. */
 const TUEREN=[
-  { x:1056, t:0.05, name:'RAUS', ziel:100,  luegt:true },
+  { x:1056, t:0.05, name:'RAUS?', ziel:TUNE.tuerLuegtZiel, luegt:true },
   { x:1420, t:0.05, name:'FLUR', ziel:1470, luegt:false },
 ];
 
@@ -543,7 +545,7 @@ function druckSprung(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=6'; return; } neuesSpiel(); return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
   if(S.modus==='cutscene') return;
   sprungPuffer.push(S.t); sprungAn=true;
@@ -600,6 +602,7 @@ function starte(){ neuesSpiel();
   ['schluesselVersprochen','moritzGeheimnis'].forEach(f=>setzeFlag(f,false));
   kapitelZeigen(6); S.modus='intro'; S.szene=0; S.szeneT=0; sicherTrail(true); piep(300,.12,'sine',.035); }
 function starteLevel(){ S.modus='spiel'; zeigeHinweis('FIND DEINE ERINNERUNGEN. BLEIB WACH. SOFAS HELFEN.',4);
+  if(typeof HILFE!=='undefined'&&HILFE) HILFE.ziel('ERINNERUNGEN: RAUM 101, CHEMIE, BIBLIOTHEK');
   piep(600,.09,'sine'); setTimeout(()=>piep(900,.13,'sine'),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
@@ -639,12 +642,15 @@ function update(dt){
     if(linksAn||rechtsAn||hochAn||runterAn||S.kondition>=100){
       S.ruht=null; meldung(S.kondition>=100?'AUSGERUHT':'AUFGESTANDEN',1);
     }
-    aktionPuffer.length=0; kamera(dt); return;
+    if(aktionPuffer.length){ aktionPuffer.length=0; S.ruht=null; meldung('AUFGESTANDEN',1); }
+    kamera(dt); return;
   }
   const renntAnteil=Math.min(1,Math.abs(S.vx)/TUNE.gehTempo);
-  S.kondition-=(TUNE.konditionAbbau+TUNE.konditionPegel*S.pegel/100
+  if(!(S.suchT>0)){ S.kondition-=(TUNE.konditionAbbau+TUNE.konditionPegel*S.pegel/100
                +TUNE.konditionRennen*renntAnteil)*schwer().muede*dt;
   if(S.kondition<=0){ S.kondition=0; wegknicken(); return; }
+  if(S.kondition<50) hilfeTipp('muede','MUEDE? E AM SOFA: HINLEGEN','MUEDE? AM SOFA HINLEGEN');
+  }
 
   const ort=ortBei(S.x);
   if(ort&&ort.wiederholt&&!S.wiederholungGezeigt){
@@ -677,7 +683,7 @@ function update(dt){
     S.x=SCHLEIFE.zurueck; S.kamX=Math.max(0,S.x-W/2); S.schleifen++; S.blitz=.4;
     SFX.nichts();
     saft(s=>s.treffer(S.x-S.kamX,BODEN-8,-1,0.5));
-    meldung(S.schleifen===1?'DIESEN RAUM GAB ES SCHON EINMAL':
+    meldung(S.schleifen===1?'ERST DIE ERINNERUNG IM CHEMIERAUM':
             S.schleifen===2?'SCHON WIEDER RAUM 101':'WAS IST IM CHEMIERAUM PASSIERT?',2.4);
   }
 
@@ -707,6 +713,7 @@ function update(dt){
   const fuesse=bodenY(S.tiefe)+(S.y-BODEN);
   for(const L of LICHTER){
     if(S.lichtGef[L.id]) continue;
+    if(Math.abs(S.x-L.x)<60) hilfeTipp('licht','LEER HALTEN: SCHWEBEN, LICHT FANGEN','SPRUNG HALTEN: SCHWEBEN, LICHT FANGEN');
     const dx=S.x-L.x, dy=(fuesse-TUNE.lichtKoerper)-(bodenY(L.t)-L.hoehe);
     if(dx*dx+dy*dy<TUNE.lichtRadius*TUNE.lichtRadius) lichtBeruehrt(L);
   }
@@ -724,7 +731,7 @@ function update(dt){
     if(z.art==='ding'){ benutze(z.obj); break; }
     if(z.art==='sofa'){
       S.ruht=z.obj; S.sofa=z.obj; S.vx=0; S.vt=0;
-      meldung('DU LEGST DICH KURZ HIN',1.4); break;
+      meldung('DU LEGST DICH KURZ HIN',1.4); hilfeTipp('aufstehen','LAUFEN ODER E: AUFSTEHEN','STICK ODER AUFSTEHEN: WEITER'); break;
     }
     if(z.art==='tuer'){
       S.x=z.obj.ziel; S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2)); S.blitz=.6; SFX.nichts();
@@ -759,6 +766,7 @@ function naechstesZiel(){
 
 function redeImTraum(z){
   S.vx=0; S.vt=0; S.ruht=null; SFX.reden();
+  hilfeTipp('reden-wach','REDEN KANN WACH MACHEN','REDEN KANN WACH MACHEN');
   if(z.art==='echo'){
     if(z.obj.id==='hausmeister'&&!S.geredetMit.hausmeister){
       S.geredetMit.hausmeister=true; starteGespraech(HAUSMEISTER_ECHO,'start',traumEnde); return; }
@@ -798,7 +806,8 @@ function wegknicken(){
   saft(s=>s.schaden(0.8));
 }
 function aufwachen(){
-  S.modus='spiel'; S.x=S.sofa.x+8; S.tiefe=S.sofa.t+0.1;
+  S.modus='spiel'; const links=SOFAS.filter(so=>so.x<=S.x); const sofa=links.length?links[links.length-1]:SOFAS[0];
+  S.sofa=sofa; S.x=sofa.x+8; S.tiefe=sofa.t+0.1;
   S.kondition=TUNE.aufwachenMit; S.pegel=Math.max(0,S.pegel-TUNE.aufwachenPegelAb);
   S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2));
   meldung(S.weggeknickt>1?'SCHON WIEDER WEGGEKNICKT':'DU BIST WEGGEKNICKT',2.2);
@@ -832,7 +841,8 @@ function suchErgebnis(){
     S.pegel=Math.max(0,S.pegel-TUNE.proKlarheit);
     meldung(info,2.4); SFX.erledigt();
     const fehlt=AUFGABEN.length-AUFGABEN.filter(a=>S.erledigt[a.id]).length;
-    zeigeHinweis(fehlt>0?('NOCH '+fehlt+' ERINNERUNGEN'):'GEH ZURUECK ZU LEA',3);
+    zeigeHinweis(fehlt>0?('NOCH '+fehlt+' ERINNERUNGEN'):'GEH NACH RECHTS ZU LEA',3);
+    if(fehlt===0&&typeof HILFE!=='undefined'&&HILFE) HILFE.ziel('GANZ NACH RECHTS ZU LEA');
     saft(s=>s.fund(Math.round(S.x-S.kamX),Math.round(bodenY(S.tiefe)-40),'ERINNERUNG'));
     if(fehlt===0) saft(s=>s.erfolg(W/2,40,'ALLE DREI'));
     return;
@@ -958,7 +968,7 @@ function zeichneFlur(){
     ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
     ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
     ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
-    text(raumName(o),o.von+6,26,'#ffffff18');
+    text(raumName(o),o.von+6,26,'#ffffff60');
   }
   /* Wanddeko: Plakate/Spinde ueber die ganze Flurbreite, eine Sorte,
      wiederholt - passend zum Traum (PLAYTEST.md: obere Bildhaelfte leer).
@@ -1053,7 +1063,7 @@ function zeichnePrompts(){
   if(Math.floor(S.t*2*FX.hz(2))%2!==0) return;
   const z=naechstesZiel(); if(!z) return;
   const sx=Math.round(z.obj.x-S.kamX), sy=Math.round(bodenY(z.obj.t))-26;
-  const t=z.art==='ding'&&S.durchsucht[z.obj.art]?'OK':'E';
+  const t=z.art==='ding'&&S.durchsucht[z.obj.art]?'OK':aktionsMarke();
   text(t,sx-textW(t)/2,sy,t==='OK'?P.dunkel:P.gold);
 }
 
@@ -1085,7 +1095,7 @@ function hud(){
     text(a.text,14,y,ok?P.dunkel:P.weiss);
     y+=8;
   }
-  if(alleErinnerungen()&&Math.floor(S.t*2)%2===0) textC('GEH ZU LEA',H-42,P.gold);
+  if(alleErinnerungen()&&Math.floor(S.t*2)%2===0) textC('GEH ZU LEA >>>',H-42,P.gold);
   zeichneGespraech();
   if(S.modus==='schwarz'){ ctx.fillStyle=`rgba(0,0,0,${Math.min(1,S.schwarzT*1.5).toFixed(3)})`;
     ctx.fillRect(0,0,W,H); if(S.schwarzT>0.8) textC('...',H/2,P.dunkel); }
@@ -1132,7 +1142,7 @@ function zeichneIntro(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
@@ -1140,7 +1150,8 @@ function bildschirme(){
     const s=SZENEN[S.szene];
     if(s&&s.txt){ if(typeof zeichneKarte==='function') zeichneKarte(s.txt,H-33,P.weiss);
       else textC(s.txt.split('|')[0],H-26,P.weiss); }
-    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+    const ueb=tasteText('E HALTEN ZUM UEBERSPRINGEN','HALTEN ZUM UEBERSPRINGEN');
+    if(Math.floor(S.t*2)%2===0) text(ueb,W-textW(ueb)-6,H-10,P.dunkel);
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
@@ -1161,7 +1172,7 @@ function bildschirme(){
       textGlowC('VERLOREN',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
     }
-    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
   }
 }
 

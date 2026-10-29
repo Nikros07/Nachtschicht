@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,29 +37,30 @@
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -88,8 +89,9 @@ const TUNE = {
   /* (3) DER PEGEL - neu in diesem Level, und er bleibt dir erhalten */
   pegelMax:       100,
   proSchluck:      16,
-  pegelAbbau:       0.6,   // pro Sekunde, sehr langsam
+  pegelAbbau:       0.4,   // pro Sekunde, sehr langsam
   mutAb:           35,     // ab hier traust du dich Sachen
+  davidMut:         9,     // oder so viel Mut (3x PERFEKT) reicht fuer David
   wackelnAb:       55,     // ab hier faengt das Bild an zu schwanken
   langsamAb:       70,     // ab hier wirst du spuerbar langsamer
   blackoutBei:    100,
@@ -112,11 +114,10 @@ const TUNE = {
   /* (6) DER KRACHER AM ENDE */
   gegnerTreffer:    3,     // so oft musst du kontern
   gegnerWindup:     0.75,  // Vorwarnzeit - grosszuegig, ist der erste Kampf
-  /* Anteil des Ausholens, in dem ein Konter zaehlt - derselbe Wert wie
-     KAMPF.konterAnteil in nacht/kampf.js, damit der erste Kampf dasselbe
-     Timing lehrt, das Level 4 und das Finale spaeter verlangen.
-     0.34 von 0.75 s sind 255 ms: lesbar, aber nicht geschenkt. */
-  konterFenster:    0.34,
+  /* Anteil des Ausholens, in dem ein Konter zaehlt.
+     0.45 von 0.75 s = 338 ms; Neulinge drueckten frueh und gewannen 1 %. */
+  konterFenster:    0.45,
+  lernWindupFaktor: 1.5,  // das allererste Ausholen ist langsamer (bis zum ersten gelungenen Konter)
   gegnerSchlag:     0.2,
   gegnerPause:      1.1,
   leben:            3,
@@ -124,7 +125,7 @@ const TUNE = {
   /* (7) NEU IN DIESEM LEVEL: Durchstreichen, Einschenken, Rang */
   durchstrichSek:   0.4,   // so lang waechst die Linie durch eine erledigte Aufgabe
   schenkTempo:      0.75,  // Fuellstand des Glases je Sekunde (voll = 1)
-  schenkZone:       [0.72,0.86], // loslassen hier = PERFEKT; drueber = VERSCHUETTET
+  schenkZone:       [0.68,0.88], // loslassen hier = PERFEKT; drueber = VERSCHUETTET
   schenkPerfektAnteil: 0.5, // PERFEKT gibt diesen Anteil von proSchluck als Pegel
   schenkMut:        3,     // PERFEKT gibt +3 Mut (Zaehler S.mut, nur im Endbild)
   /* Rang: je Kriterium linear. gut = volle Punkte, schlecht = keine. */
@@ -384,7 +385,7 @@ function neuesSpiel(){
     modus:'titel', t:0, zeit:0,
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
     tiefe:0.5, vt:0, mitnehmen:null,
-    kamX:0, hp:TUNE.leben,
+    kamX:0, hp:lebenMax(),
     pegel:0, minute:TUNE.startMinute,
     inventar:{}, erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
@@ -462,7 +463,7 @@ function druckAktion(){
   ensureAudio();
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
-  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=2'; return; } neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=2'; return; } if(S.kampfVerloren){ nochmalTuer(); return; } neuesSpiel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
   aktionPuffer.push(S.t);
@@ -522,6 +523,7 @@ function mitnehmenStarten(){
   S.mitnehmenOffen=false;
   starteGespraech(MITNEHMEN,'start',()=>{
     zeigeHinweis('KRIEG DIE JUNGS AUS DER WOHNUNG',3);
+    hilfeTipp('liste','DEINE AUFGABEN STEHEN OBEN LINKS','DEINE AUFGABEN STEHEN OBEN LINKS'); HILFE.ziel('JACKE, AUSWEIS, JUNGS - DANN RAUS');
     /* Im Flur klimpert der Schluessel aus Level 1. */
     if(hatDing('SCHLUESSEL')) meldung('DER SCHULSCHLUESSEL KLIMPERT IN DER TASCHE.',2.4);
     piep(660,.08); setTimeout(()=>piep(990,.12),90);
@@ -573,6 +575,9 @@ function update(dt){
   /* Pegel baut sich sehr langsam ab */
   if(pruefeBlackout()) return;
   if(S.pegel>0) S.pegel=Math.max(0,S.pegel-TUNE.pegelAbbau*dt);
+  if(S.modus==='spiel'){ const az=aktionsZiel(); if(az&&az.ding&&az.ding.art==='getraenk') hilfeTipp('schenken','E HALTEN, IM GRUENEN LOSLASSEN','SCHENKEN HALTEN, IM GRUENEN LOSLASSEN'); }
+  if(S.pegel>70) hilfeTipp('pegel-langsam','ZU VIEL: DU WIRST LANGSAM','ZU VIEL: DU WIRST LANGSAM');
+  if(S.modus==='spiel'&&alleFertig()) HILFE.ziel('ALLE BEREIT: TUER GANZ LINKS');
 
   if(S.modus==='kampf'){ kampf(dt); kamera(dt); return; }
 
@@ -686,7 +691,7 @@ function mobilKontext(){
   if(S.modus==='titel')    return {aktion:'START',  zwei:null};
   if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
   if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
-  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL', zwei:null};
+  if(S.modus==='ende')     return S.gewonnen?{aktion:'WEITER',zwei:null}:(S.kampfVerloren?{aktion:'AN DER TUER',zwei:'VON VORN'}:{aktion:'NOCHMAL',zwei:null});
   if(S.modus==='pause')    return {aktion:'WEITER', zwei:null};
   if(S.modus==='kampf')    return {aktion:'KONTER', zwei:null};
   if(S.reden)              return {aktion:'WEITER', zwei:null};
@@ -731,7 +736,7 @@ function benutze(d){
     return;
   }
   if(d.art==='spiegel'){
-    meldung(S.pegel>TUNE.mutAb?'DU SIEHST GUT AUS':'GEHT SO',1.4); SFX.reden(); return;
+    meldung((S.pegel>=TUNE.mutAb||S.mut>=TUNE.davidMut)?'DU SIEHST GUT AUS':'GEHT SO',1.4); SFX.reden(); return;
   }
   if(d.art==='kartons'){
     if(S.kartons){ meldung('NUR ZEUG.',1); SFX.nichts(); return; }
@@ -747,7 +752,7 @@ function benutze(d){
     else { meldung('NUR NOCH EIN LOCH IM KORK.',1.4); SFX.nichts(); }
     return;
   }
-  if(S.durchsucht[d.art]){ S.fehl++; meldung('SCHON DURCHSUCHT',1); SFX.nichts(); return; }
+  if(S.durchsucht[d.art]){ S.fehl++; if(S.fehl>=2) hilfeTipp('fehlgriff','JEDER FEHLGRIFF KOSTET RANG','JEDER FEHLGRIFF KOSTET RANG'); meldung('SCHON DURCHSUCHT',1); SFX.nichts(); return; }
   S.suchT=TUNE.suchDauer; S.suchZiel=d; rauschen(.12,.03);
 }
 function suchErgebnis(){
@@ -765,6 +770,7 @@ function suchErgebnis(){
     zeigeHinweis('BRING IHN MORITZ',3); return;
   }
   S.fehl++;
+  if(S.fehl>=2) hilfeTipp('fehlgriff','JEDER FEHLGRIFF KOSTET RANG','JEDER FEHLGRIFF KOSTET RANG');
   SFX.nichts(); meldung(pick(['NICHTS','NUR KRAM','LEER']),1);
 }
 
@@ -776,7 +782,7 @@ function suchErgebnis(){
 function startSchenk(d){
   S.vx=0;
   S.schenk={f:0, ding:d};
-  if(!S.schenkHinweis){ S.schenkHinweis=true; zeigeHinweis('HALTEN FUELLT - IN DER GRUENEN ZONE LOS',3.5); }
+  hilfeTipp('schenken','E HALTEN, IM GRUENEN LOSLASSEN','SCHENKEN HALTEN, IM GRUENEN LOSLASSEN');
 }
 function schenkTakt(dt){
   const s=S.schenk;
@@ -829,17 +835,19 @@ function rede(p){
     SFX.erledigt();
     erledige('zudecken');
   } else if(p.id==='telefon'&&!S.erledigt.telefon){
-    if(S.pegel>=TUNE.mutAb){
+    if(S.pegel>=TUNE.mutAb||S.mut>=TUNE.davidMut){
       p._zeilen=['*DU NIMMST IHM EINFACH DAS HANDY AB*',...p.danach];
       SFX.erledigt();
       erledige('telefon');
       PLAUSCH.ausloeser('davidAb');
     } else {
       p._zeilen=[...p.zeilen,'(DU TRAUST DICH NICHT, IHN ZU UNTERBRECHEN)'];
+      hilfeTipp('david-mut','ERST MUT ANTRINKEN - BIS ZUR GRUENEN MARKE','ERST MUT ANTRINKEN - BIS ZUR GRUENEN MARKE');
     }
   } else if(p.id==='moritz'&&S.erledigt.ausweis){
     p._zeilen=['ALLES KLAR BEI DIR','WIR KOENNEN'];
   }
+  if(p.id==='schlaefer'&&!S.inventar.dose&&!S.erledigt.schlaefer) hilfeTipp('finn-dose','FINN BRAUCHT WAS AUS DEM KUEHLSCHRANK','FINN BRAUCHT WAS AUS DEM KUEHLSCHRANK');
 }
 function naechsteZeile(){
   const p=S.reden;
@@ -857,14 +865,21 @@ function kamera(dt){
 /* ==========================================================================
    DER KRACHER - erster Kampf im Spiel
    ========================================================================== */
+/* Mehr Leben je nach Schwierigkeit. Funktion statt const: neuesSpiel() laeuft schon beim Laden. */
+function lebenMax(){ return TUNE.leben+schwer().leben; }
+/* Ausholzeit: Schwierigkeit (Gegner-Uhr) und das langsamere Lern-Ausholen. */
+function windupJetzt(){ const g=S.gegner; let w=TUNE.gegnerWindup/schwer().gegner; if(g&&g.lern) w*=TUNE.lernWindupFaktor; return w; }
 function starteKampf(){
   PLAUSCH.jetzt=null; PLAUSCH.warte=[];   // sonst bleibt eine Zeile im Kampf stehen
   S.modus='kampf';
   S.gegner={ x:S.x-70, hp:TUNE.gegnerTreffer, zustand:'komm', t:0, getroffen:0 };
   S.x=Math.max(80,S.x); S.vx=0;
-  zeigeHinweis(IS_TOUCH?'KONTER-KNOPF IM RICHTIGEN MOMENT':'E IM RICHTIGEN MOMENT - KONTERN',4);
+  if(!hilfeTipp('konter-gold','WARTE BIS DER BALKEN GOLD IST - DANN E','WARTE BIS DER BALKEN GOLD IST - DANN KONTER',4)) zeigeHinweis(tasteText('E IM GOLD: KONTER','KONTER IM GOLD'),2.5);
+  HILFE.ziel('KONTER IHN '+TUNE.gegnerTreffer+'-MAL');
   SFX.warn(); meldung('WER IST DAS DENN',2);
 }
+/* Checkpoint an der Tuer: nach einer Niederlage im Kampf geht es hier weiter. */
+function nochmalTuer(){ S.kampfVerloren=false; S.hp=lebenMax(); S.faenger=''; S.gewonnen=false; aktionPuffer.length=0; starteKampf(); }
 function kampf(dt){
   const g=S.gegner; g.t+=dt;
   const dist=S.x-g.x;
@@ -874,25 +889,29 @@ function kampf(dt){
        Druck aus dem Heranlaufen liegen und kontert im naechsten Bild von
        selbst - damit war Dauerdruecken die beste Taktik. */
     while(aktionPuffer.length) aktionPuffer.shift();
-    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; g.verpasst=false; SFX.warn(); }
+    if(Math.abs(dist)<22){ g.zustand='wind'; g.t=0; g.verpasst=false; g.lern=!S.lernGehabt&&HILFE.lernt('konter'); S.lernGehabt=true; SFX.warn(); }
   } else if(g.zustand==='wind'){
-    const imFenster = g.t >= TUNE.gegnerWindup*(1-TUNE.konterFenster);
+    const imFenster = g.t >= windupJetzt()*(1-TUNE.konterFenster);
     while(aktionPuffer.length){ aktionPuffer.shift();
       /* Ein Versuch pro Ausholen. Ohne diese Sperre haette Dauerdruecken
          irgendwann von selbst ins Fenster getroffen. */
       if(g.verpasst) break;
-      if(!imFenster){ g.verpasst=true; meldung('ZU FRUEH',1.1); break; }
+      if(!imFenster){
+        hilfeTipp('konter-frueh','ZU FRUEH: WARTE, BIS DER BALKEN GOLD IST','ZU FRUEH: WARTE, BIS DER BALKEN GOLD IST');
+        if(schwierigkeit()==='locker'){ meldung('NOCH WARTEN - BIS GOLD',1.1); break; }   // LOCKER: nachdruecken erlaubt
+        g.verpasst=true; meldung('ZU FRUEH',1.1); break; }
       g.hp--; g.zustand='getroffen'; g.t=0; g.getroffen++;
+      HILFE.zaehle('konter'); HILFE.zaehle('konter-jetzt');
       if(SAFT_OK()){ SAFT.treffer(schirmX(g.x+8),BODEN-22,-1,0.7); SAFT.trauma(5/12); }
       S.blitz=.5; SFX.klatsch();
       meldung(pick(['SITZT','KONTER','GENAU DA']),1.2);
       break; }
-    if(g.zustand==='wind'&&g.t>=TUNE.gegnerWindup){ g.zustand='schlag'; g.t=0;
+    if(g.zustand==='wind'&&g.t>=windupJetzt()){ g.zustand='schlag'; g.t=0;
       /* Treffer, wenn du nicht gekontert hast */
       S.hp--; S.blitz=.5; SFX.aua();
       if(SAFT_OK()){ SAFT.schaden(0.6); SAFT.trauma(6/12); }
       meldung('AUTSCH',1.4);
-      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN';
+      if(S.hp<=0){ S.modus='ende'; S.gewonnen=false; S.faenger='ER HAT DICH RAUSGEWORFEN'; S.kampfVerloren=true;
         if(SAFT_OK()) SAFT.schaden(1); }
     }
   } else if(g.zustand==='schlag'){
@@ -941,7 +960,7 @@ const MITNEHMEN = {
       { txt:'Alle. Wir sind eine gruppe.',        geh:'alle' },
       { txt:'Nur wir zwei. Der rest ist zu drauf.', geh:'klein' },
       { txt:'Moritz und Finn. David bleibt am Telefon.', geh:'mittel' },
-    ], zeit:10, standard:0 },
+    ], zeit:10, standard:2 },
 
   alle:{ wer:'MAX FERDI', text:'Vier mann. Der tuersteher wird uns lieben.',
     tu:{flag:'gruppeGross', crew:'MORITZ', mut:6, mag:['MORITZ',6]},
@@ -1010,7 +1029,7 @@ function rangDaten(){
   };
   const minuten=Math.floor(S.zeit/60), sek=Math.floor(S.zeit%60);
   const versteckt=VERSTECKT.filter(v=>S.erledigt[v.id]).length;
-  const kassiert=TUNE.leben-S.hp;
+  const kassiert=lebenMax()-S.hp;
   const zeilen=[
     {name:'ZEIT',      wert:minuten+':'+String(sek).padStart(2,'0'), pkt:teil(S.zeit,R.zeitGut,R.zeitSchlecht,30)},
     {name:'FEHLGRIFF', wert:String(S.fehl),                          pkt:teil(S.fehl,R.fehlGut,R.fehlSchlecht,30)},
@@ -1114,7 +1133,7 @@ function zeichneWohnung(){
   ctx.fillRect(890,BODEN-26,90,2);
 
   /* Dinge */
-  const taste=IS_TOUCH?'!':'E';
+  const taste=aktionsMarke();
   for(const d of DINGE){
     let y;
     if(d.eigen){ zeichneFund(d); y=d.markY+9; }
@@ -1126,7 +1145,7 @@ function zeichneWohnung(){
     const nah=Math.abs(d.x+6-S.x)<TUNE.reichweite&&S.modus==='spiel'&&!S.reden;
     if(nah&&Math.floor(S.t*4)%2===0){
       const fertig=d.art==='kartons'?S.kartons:d.art==='pinnwand'?MOMENT.hat(2)
-                  :d.art==='anlage'?!!S.erledigt.musik:S.durchsucht[d.art];
+                  :d.art==='anlage'?!!S.erledigt.musik:d.art==='kuehl'?(!!S.inventar.dose||!!S.erledigt.schlaefer):S.durchsucht[d.art];
       const t=fertig?'OK':taste;
       text(t,d.x+6-textW(t)/2,y-9,fertig?P.dunkel:P.gold);
     }
@@ -1165,7 +1184,7 @@ function zeichneWohnung(){
     sprite(rows,g.x,BODEN-rows.length,1,blinkt?'#ffffff':null);
     if(g.zustand==='wind'){
       if(Math.floor(S.t*FX.hz(3)*2)%2===0) text('!',g.x+3,BODEN-rows.length-9,P.rot);
-      const f=1-g.t/TUNE.gegnerWindup, bw=18;
+      const f=1-g.t/windupJetzt(), bw=18;
       ctx.fillStyle='#000a'; ctx.fillRect(g.x-3,BODEN-rows.length-6,bw+2,4);
       ctx.fillStyle=P.rot; ctx.fillRect(g.x-2,BODEN-rows.length-5,Math.round(bw*f),2);
     }
@@ -1232,11 +1251,11 @@ function hud(){
      Uebersetzer auf die Felder, die der Balken liest. */
   if(S.modus==='kampf'&&S.gegner&&S.gegner.zustand==='wind'){
     zeichneAusholbalken({ zustand:'ausholen', zT:S.gegner.t,
-      ausholenDauer:TUNE.gegnerWindup, fensterAnteil:TUNE.konterFenster },
+      ausholenDauer:windupJetzt(), fensterAnteil:TUNE.konterFenster },
       S.gegner.verpasst?'ZU FRUEH':'ER HOLT AUS', 30);
   }
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<lebenMax();i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*FX.hz(3)*2)%2===0)?P.weiss:P.rot;
@@ -1256,6 +1275,7 @@ function hud(){
   ctx.fillRect(bx,by,Math.round(bw*p),4);
   /* Mut-Marke */
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
+  text('MUT',bx+Math.round(bw*TUNE.mutAb/100)-5,by+12,P.gruen);
   text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
 
   /* Aufgabenliste. Erledigte werden durchgestrichen: die Linie waechst in
@@ -1389,8 +1409,9 @@ function bildschirme(){
     } else {
       textGlowC('VERPASST',48,P.rot,3);
       textC(S.faenger||'',74,P.weiss);
+      if(S.kampfVerloren) textC(tasteText('E: NOCHMAL AN DER TUER','TIPPEN: NOCHMAL AN DER TUER'),96,P.gold);
     }
-    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-18,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(tasteText('LEERTASTE: GANZ VON VORN','ODER: VON VORN'),H-18,P.gold);
   }
 }
 

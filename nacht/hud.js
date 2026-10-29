@@ -15,6 +15,11 @@
    hierher, nicht in neun Level.
    ========================================================================== */
 
+/* Handy-Weiche fuer Bildtexte: am Handy gibt es keine Tasten, nur Knoepfe. */
+function tasteText(pc,handy){ return (typeof IS_TOUCH!=='undefined'&&IS_TOUCH)?(handy||''):pc; }
+/* Die blinkende Marke ueber Dingen, die man benutzen kann. */
+function aktionsMarke(){ return tasteText('E','!'); }
+
 /* Halten zum Ueberspringen: Hinweis plus Balken, wie lange noch. */
 function zeichneUeberspringen(t,dauer){
   if(!(t>0)) return;
@@ -28,14 +33,16 @@ function zeichneUeberspringen(t,dauer){
 /* Ausholbalken: was der Gegner gerade macht und wo das Konterfenster liegt.
    Erwartet einen Kaempfer aus nacht/kampf.js (zustand, zT, ausholenDauer).
    fensterAnteil und unblockbarJetzt sind freiwillig - fehlen sie, gilt der
-   Grundwert aus KAMPF. */
+   Grundwert aus KAMPF. Unblockbare Angriffe sind rot; JETZT! steht im Fenster,
+   solange HILFE.jetztMarke() gilt (erste Konter, LOCKER immer). */
 function zeichneAusholbalken(k,name,y){
   if(!k||k.zustand!=='ausholen') return;
   const dauer=k.ausholenDauer||(k.regler&&k.regler.ausholen)||
               (typeof KAMPF!=='undefined'?KAMPF.ausholen:0);
   if(!dauer) return;
-  const anteil=(k.fensterAnteil!==undefined)?k.fensterAnteil
+  let anteil=(k.fensterAnteil!==undefined)?k.fensterAnteil
              : (typeof KAMPF!=='undefined'?KAMPF.konterAnteil:0.34);
+  if(typeof konterAnteilFuer==='function') anteil=konterAnteilFuer(k,anteil);
   const bw=76, bx=Math.round((W-bw)/2), by=(y===undefined)?29:y;
   const f=Math.min(1,k.zT/dauer);
   ctx.fillStyle='#000000aa'; ctx.fillRect(bx-2,by-2,bw+4,9);
@@ -43,11 +50,12 @@ function zeichneAusholbalken(k,name,y){
   /* Das goldene Stueck ist das Konterfenster - unblockbare Angriffe haben
      keins, und dann darf dort auch nichts leuchten. */
   if(!k.unblockbarJetzt){
-    ctx.fillStyle='#ffd44766';
+    ctx.fillStyle='#ffd447aa';
     ctx.fillRect(bx+Math.round(bw*(1-anteil)),by,Math.round(bw*anteil),5);
   }
-  ctx.fillStyle=k.unblockbarJetzt?'#ffd447':'#ff3d8b';
+  ctx.fillStyle=k.unblockbarJetzt?'#ff4d4d':'#ff3d8b';
   ctx.fillRect(bx,by,Math.round(bw*f),5);
+  if(!k.unblockbarJetzt&&f>=1-anteil&&typeof HILFE!=='undefined'&&HILFE&&HILFE.jetztMarke&&HILFE.jetztMarke()) text('JETZT!',bx+bw+5,by,'#ffd447');
   if(name) text(name,Math.round((W-textW(name))/2),by-8,'#ffd447');
 }
 

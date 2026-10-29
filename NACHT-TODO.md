@@ -114,6 +114,19 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
   Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
   Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
+- [ ] **P2 · Tutorial: Tipps und WAS JETZT? im Browser sichten** — Tipps (hilfeTipp), Karte
+  WAS JETZT? (Tab, Pausemenue, Handy-Menue) und Lektionspuppe sind nur headless getestet
+  (test/hilfe.test.js, docs/gameplay/messung-tutorial.md). Wo: nacht/hilfe.js, alle Level ·
+  Fertig wenn: je Level ein Screenshot mit erstem Tipp ohne Ueberlappung mit dem HUD, und Tab oeffnet
+  nach geschlossener Kapitelkarte im Modus 'spiel' die Karte (HILFE.laeuft() true).
+- [ ] **P2 · Auto-Pause geht bei jedem Fokuswechsel neu auf** — im versteckten Vorschaufenster
+  oeffnete sich das Pausemenue nach jedem Schliessen sofort wieder (Fokus/visibilitychange, Commit
+  d7816ad). Pruefen, ob das bei echtem Alt-Tab nur einmal passiert. Wo: nacht/geraet.js,
+  nacht/pause.js · Fertig wenn: Messung zeigt, dass PAUSE.auf() je Wechsel in den Hintergrund
+  hoechstens einmal laeuft (test/pause.test.js um diesen Fall erweitert).
+- [ ] **P2 · Level 3: Gratis-Wiederholung ungetestet** — Ticket, Notbremse und Szene werden im
+  Testlauf nicht ausgeloest. Wo: level3.html (neustartImBus, Gratis-Logik aus T08) · Fertig wenn:
+  Messskript loest jede der drei Wege einmal aus und prueft den Zustand danach.
 - [ ] **P2 · Pause: NEU STARTEN und ZUM MENUE im Browser durchspielen** — nur mit Attrappen
   getestet (test/pause.test.js). Wo: nacht/pause.js (aktiviere) · Fertig wenn: in level2.html
   fuehrt Esc > NEU STARTEN > JA zu S.modus 'titel', und Esc > ZUM MENUE laedt index.html mit
@@ -168,6 +181,14 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
 ### P3
+- [ ] **P3 · Tutorial: feste Taste E statt aktionsMarke()** — Level 6 Tipps `muede`/`aufstehen`
+  und die E-Zeile im Titelbild von Level 7 zeigen am Handy kein Knopfsymbol. Wo: level6.html,
+  level7.html · Fertig wenn: `grep -n "'E " level6.html level7.html` findet in Tipp- und
+  Titeltexten nichts mehr, test/hilfe.test.js gruen.
+- [ ] **P3 · Level 1: Hausmeister-Meldungen nicht auf Tipps umgestellt** — in update() und
+  hausmeisterHilft stehen noch SCHLUESSEL VOM GUERTEL GEZOGEN / RAUS HIER - ERDGESCHOSS als
+  meldung(), anders als im Schluessel-Zweig von imRaum. Wo: index.html · Fertig wenn: entschieden
+  und einheitlich (Meldung oder hilfeTipp), nachttest index gruen.
 
 - [ ] **P3 · Handy: LEICHTER/SCHWERER blitzen im ersten Bild** — vor dem ersten Takt sind beide kurz über dem Hinweistext zu sehen, danach ausgeblendet.
   Wo: nacht/mobil.js (Titelbild-Knöpfe) · Fertig wenn: im ersten Bild nach dem Laden (667x375) sind sie nicht sichtbar.
@@ -323,6 +344,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-29 · P1 · Tutorials und Entschaerfung: neue Engine nacht/hilfe.js (Erst-Tipps je
+  Mechanik, WAS JETZT? mit Tab/Pausemenue/Handy, LOCKER-Angebot nach 2 Niederlagen), Schwierigkeit
+  mit frist/fensterMin, gemeinsames Mindest-Konterfenster, vorgewaehlte Standardantwort im
+  Gespraech, Lektion mit sichtbarer Uebungspuppe, je Level Tipps/Entschaerfungen/Checkpoints
+  (Plan docs/gameplay/TUTORIAL-PLAN.md, Aufgaben T01-T14) · Sitzung · alle 22 Pruefungen gruen,
+  Nachmessung docs/gameplay/messung-tutorial.md: 12 von 12 im Ziel (Konterfenster NORMAL 180 ms,
+  L2 338 ms, L4 360 ms, L1 Moebelfalle 0/1000).
 - [x] 2026-10-24 · P3 · Level 6: hartcodierter Pegel-Abzug beim Aufwachen
   jetzt eigener TUNE-Wert · `e313ec0` · `10` stand hartcodiert direkt neben
   TUNE.aufwachenMit. Neuer Wert TUNE.aufwachenPegelAb=10 (gleiche Zahl).

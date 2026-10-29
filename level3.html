@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 3 - DER NACHTBUS</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/kampf.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/kampf.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -171,7 +172,10 @@ const TUNE = {
                           // NICHT vollmacht - sonst waere jedes Gesehen-
                           // werden automatisch eine Kontrolle, und Weglaufen
                           // haette keinen Sinn.
-  jagdVerdachtNah:  72,   // Fuellrate, wenn er direkt neben dir steht
+  jagdVerdachtNah:  50,   // Fuellrate, wenn er direkt neben dir steht. Geradeauslaeufer
+                          // ueberlebt NORMAL mit 2 Kontrollen, HART bleibt toedlich.
+  vorsichtAb:       40,   // ab diesem Verdacht kommt VORSICHT (vorher fest 70 - danach
+                          // blieben 283-733 ms)
 
   /* (4c) DREI WAGGONS. Die Grenzen sind die Durchgaenge. */
   waggonGrenzen: [540, 1080],
@@ -447,7 +451,7 @@ const FRAU = {
       { txt:'Schoener hund.',                 geh:'hund' },
     ], zeit:8, standard:0 },
 
-  ehrlich:{ wer:'DIE FRAU', text:'Dachte ich mir. Zwei sind im mittleren wagen, einer ganz hinten.',
+  ehrlich:{ wer:'DIE FRAU', text:'Dachte ich mir. Zwei vorne, zwei in der Mitte, einer ganz hinten.',
     tu:{flag:'busTipp', ruf:3}, geh:'ende' },
 
   gelogen:{ wer:'DIE FRAU', text:'Natuerlich. Dann zeigen Sie ihn doch gleich vor.',
@@ -519,7 +523,7 @@ const NOTBREMSE = {
       { txt:'Lieber nicht.', geh:'ende' },
     ], zeit:0 },
 
-  gezogen:{ wer:'', text:'Der bus steht. Alle drei rennen nach vorn.',
+  gezogen:{ wer:'', text:'Der bus steht. Alle fuenf rennen nach vorn.',
     tu:{ruf:TUNE.notbremsRuf, flag:'notbremse'}, geh:'ende' },
 
   ende:null,
@@ -544,11 +548,12 @@ function naherFahrgast(){
 
 /* Was nach einem Gespraech passiert. Die Baeume selbst setzen nur Flags -
    die Folgen im Level stehen hier, an einer Stelle. */
-function gespraechFolgen(f){
+function gespraechFolgen(f,vorher){
+  vorher=vorher||{geld:Infinity,bremse:false,szene:false};
   S.geredet[f.id]=true;
   /* Wo der Fahrgast sitzt, in Bildschirmkoordinaten - dort erscheint der Saft. */
   const sx=f.x-S.kamX, sy=bodenY(f.t)-16;
-  if(f.id==='betrunkener'&&flag('busSzene')){
+  if(f.id==='betrunkener'&&flag('busSzene')&&!vorher.szene){
     /* Alle lassen alles stehen. Das Ziel ist bewusst NICHT f.x: man muss
        nah an ihn heran, um ueberhaupt mit ihm zu reden - ein Ziel an seiner
        Stelle liefe also auf den gerade stehenden Spieler zu und holte ihn
@@ -560,22 +565,22 @@ function gespraechFolgen(f){
     meldung('ER MACHT EINE SZENE - JETZT',2.2);
     mitSaft(s=>s.erfolg(sx,sy,'ABGELENKT'));
   }
-  if(f.id==='notbremse'&&flag('notbremse')){
+  if(f.id==='notbremse'&&flag('notbremse')&&!vorher.bremse){
     S.ablenkT=TUNE.notbremsAblenk;
     S.kontrolleure.forEach(k=>{ k.zielX=TUNE.einstiegX+20; });
     erschuettern(10); SFX.ruckel(); PLAUSCH.ausloeser('notbremse');
     meldung('DER BUS STEHT',2.2);
   }
-  if(f.id==='automat'&&flag('busTicket')){
+  if(f.id==='automat'&&flag('busTicket')&&wert('geld')<vorher.geld){
     S.ticket=true;
-    meldung('FAHRSCHEIN - JETZT KANN DIR KEINER',2.4);
+    meldung('FAHRSCHEIN - RETTET DICH EINMAL',2.4);
     mitSaft(s=>s.erfolg(sx,sy,'TICKET'));
   }
   if(f.id==='jonas'&&flag('jonasDabei')){
     meldung('JONAS KOMMT MIT',2);
     mitSaft(s=>s.erfolg(sx,sy,'DABEI!'));
   }
-  if(f.id==='frau'&&flag('busTipp')) zeigeHinweis('ZWEI IM MITTLEREN WAGEN, EINER GANZ HINTEN',3.5);
+  if(f.id==='frau'&&flag('busTipp')) zeigeHinweis('ZWEI VORNE, ZWEI IN DER MITTE, EINER HINTEN',3.5);
 }
 
 
@@ -662,7 +667,7 @@ function starteKloppe(){
   S.gegner=[ gegner('flitzer',   TUNE.kloppeX+20, 0.70),
              kappe,
              gegner('schlaeger', TUNE.kloppeX+58, 0.38) ];
-  zeigeHinweis('E SCHLAEGT - UMSCHALT BLOCKT - LEERTASTE WEICHT AUS',4);
+  if(!hilfeTipp('kampf-tasten','GOLD: E KONTERT. SHIFT BLOCKT. LEER ROLLT','GOLD: SCHLAG KONTERT. BLOCK UND AUSWEICHEN',6)) zeigeHinweis(tasteText('E SCHLAEGT - SHIFT BLOCKT - LEER WEICHT AUS','SCHLAG - BLOCK - AUSWEICHEN: KNOEPFE RECHTS'),4); HILFE.ziel('UEBERSTEH DIE KLOPPE');
   SFX.warn();
 }
 
@@ -857,7 +862,7 @@ function neuesSpiel(){
        Dauerabo: sonst wirkt ein frueher gekaufter Fahrschein auch nach
        einem Neustart des Levels noch, ohne dass man ihn neu kauft. */
     ablenkT:0, ticket:false, geredet:{}, verrat:0,
-    busZeit:0, verdacht:0, versteckt:null, hp:TUNE.leben, unverwundbarT:0, warnGespielt:false,
+    busZeit:0, verdacht:0, versteckt:null, hp:TUNE.leben+schwer().leben, unverwundbarT:0, warnGespielt:false,
     kontrolleure:erzeugeKontrolleure(),
     ruckelT:0, naechstesRuckel:TUNE.ruckelMin+Math.random()*(TUNE.ruckelMax-TUNE.ruckelMin),
 
@@ -955,7 +960,7 @@ const INTRO=[
 ];
 function starte(){ neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); kapitelZeigen(3); }
 function starteSprint(){ S.modus='sprint'; S.letzteSzene='sprint';
-  zeigeHinweis('RENN ZUR HALTESTELLE - E SPRINGT UEBER HINDERNISSE',3.5);
+  zeigeHinweis(tasteText('RENN NACH RECHTS - LEER SPRINGT','RENN NACH RECHTS - SPRUNG-KNOPF SPRINGT'),3.5); HILFE.ziel('ZUR HALTESTELLE - NACH RECHTS');
   piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
@@ -1077,7 +1082,7 @@ function starteBus(){
   S.imBus=true; S.busZeit=0; S.kontrolleT=false; S.jonasSitzGesehen=false;
   S.maxVerdacht=0; S.erwischtZahl=0;
   S.kurve=null; S.kurveNaechste=TUNE.kurveAlle;
-  zeigeHinweis('KEIN TICKET. NICHT AUFFALLEN.',3);
+  if(!hilfeTipp('bus-ziel','ZUM AUSSTIEG GANZ RECHTS. NICHT AUFFALLEN','ZUM AUSSTIEG GANZ RECHTS. NICHT AUFFALLEN')) zeigeHinweis('KEIN TICKET. NICHT AUFFALLEN.',3); HILFE.ziel('ZUM AUSSTIEG GANZ RECHTS');
   SFX.einstieg();
 }
 
@@ -1238,7 +1243,8 @@ function bus(dt){
     const f=naherFahrgast();
     if(f){
       if(f.id==='frau') PLAUSCH.ausloeser('rocky');
-      starteGespraech(BAUM_FUER[f.id],'start',()=>gespraechFolgen(f));
+      const vorher={geld:wert('geld'),bremse:flag('notbremse'),szene:flag('busSzene')};
+      starteGespraech(BAUM_FUER[f.id],'start',()=>gespraechFolgen(f,vorher));
       continue;
     }
     if(naheFoto()){
@@ -1250,7 +1256,7 @@ function bus(dt){
       continue;
     }
     const spot=naheVersteck();
-    if(spot){ S.versteckt=spot.id; SFX.verstecken(); meldung('VERSTECKT',1); }
+    if(spot){ S.versteckt=spot.id; SFX.verstecken(); meldung('VERSTECKT',1); hilfeTipp('versteck-warten','BLEIB DRIN, BIS ER VORBEI IST','BLEIB DRIN, BIS ER VORBEI IST'); }
     else { meldung('HIER NICHT',0.8); SFX.nichts(); }
   }
 
@@ -1316,6 +1322,7 @@ function bus(dt){
         k.alarm=TUNE.jagdDauer;          // er hat dich, und er bleibt dran
       }
     }
+    if(gesehen) hilfeTipp('bus-alarm','ER HAT DICH GESEHEN - VERSTECKEN!','ER HAT DICH GESEHEN - VERSTECKEN!');
     /* Wer verfolgt wird, wird auch dann verdaechtiger, wenn er gerade
        aus dem Kegel raus ist - sonst reicht ein Schritt zur Seite.
        Direkt neben dir geht es schnell: dann bleibt etwa eine Sekunde, um
@@ -1339,8 +1346,13 @@ function bus(dt){
   }
 
   if(S.verdacht>S.maxVerdacht) S.maxVerdacht=S.verdacht;
-  if(S.verdacht>=70&&!S.warnGespielt){ S.warnGespielt=true; SFX.warn(); meldung('VORSICHT - ER SIEHT DICH',1.4); }
-  if(S.verdacht<40) S.warnGespielt=false;
+  if(S.modus==='spiel'){
+    if(S.kontrolleure.some(k=>Math.abs(k.x-S.x)<120)) hilfeTipp('kegel','ROTER KEGEL: DA SIEHT ER HIN','ROTER KEGEL: DA SIEHT ER HIN');
+    if(!S.versteckt&&naheVersteck()) hilfeTipp('versteck','E: HINTER DEN SITZ DUCKEN','VERSTECKEN: HINTER DEN SITZ DUCKEN');
+    if(FAHRGAESTE.some(f=>Math.abs(f.x-S.x)<40)) hilfeTipp('fahrgaeste','LEUTE IM BUS KOENNEN DIR HELFEN','LEUTE IM BUS KOENNEN DIR HELFEN');
+  }
+  if(S.verdacht>=TUNE.vorsichtAb&&!S.warnGespielt){ S.warnGespielt=true; SFX.warn(); meldung('VORSICHT - ER SIEHT DICH',1.4); }
+  if(S.verdacht<TUNE.vorsichtAb*0.5) S.warnGespielt=false;
   if(S.verdacht>=100&&S.unverwundbarT<=0){
     /* Der Fahrschein rettet genau diese eine Kontrolle - kein Leben weg,
        aber er ist danach verbraucht. Die zweite Kontrolle trifft normal. */
@@ -1601,7 +1613,7 @@ function zeichneBus(){
          (t 0.10-0.20) lag "zu weit weg", das E blinkte nie. */
       const nah=Math.abs(v.x-S.x)<TUNE.versteckReichweite
                &&tiefeNah(v.t,S.tiefe)&&S.modus==='spiel'&&!S.versteckt;
-      if(nah&&Math.floor(S.t*4)%2===0) text('E',v.x+2,y-9,P.gold);
+      if(nah&&Math.floor(S.t*4)%2===0) text(aktionsMarke(),v.x+2,y-9,P.gold);
       if(S.versteckt===v.id) text('OK',v.x+2,y-9,P.gruen);
     }});
   }
@@ -1626,7 +1638,7 @@ function zeichneBus(){
         const farbe=S.geredet[f.id]?P.dim:P.gold;
         text(f.name,f.x+3-textW(f.name)/2,y-16,farbe);
       }
-      if(nah&&Math.floor(S.t*4)%2===0) text('E',f.x+2,y-9,P.gold);
+      if(nah&&Math.floor(S.t*4)%2===0) text(aktionsMarke(),f.x+2,y-9,P.gold);
     }});
   }
 
@@ -1694,7 +1706,7 @@ function hud(){
   if(S.modus==='kloppe'){ return; }
 
   if(szene==='bus'){
-    for(let i=0;i<TUNE.leben;i++){
+    for(let i=0;i<TUNE.leben+schwer().leben;i++){
       const x=6+i*7,y=6, voll=i<S.hp;
       if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
       ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -1764,14 +1776,14 @@ function zeichneIntro(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
     const s=SZENEN[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+    if(Math.floor(S.t*2)%2===0) text(tasteText('E HALTEN ZUM UEBERSPRINGEN','HALTEN ZUM UEBERSPRINGEN'),W-textW(tasteText('E HALTEN ZUM UEBERSPRINGEN','HALTEN ZUM UEBERSPRINGEN'))-6,H-10,P.dunkel);
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);

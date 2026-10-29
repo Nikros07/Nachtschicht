@@ -48,10 +48,12 @@ E('NACHT.kapitel=3');
 pruefe('Levelauswahl: nur freigeschaltete + ZURUECK', ids('level')==='level1,level2,level3,zurueck');
 pruefe('Levelauswahl-Texte', E("MENUE.eintraege('level')[1].txt")==='LEVEL 2 - BEI MORITZ');
 pruefe('Rueckfrage: ABBRECHEN zuerst (vorgewaehlt)', ids('neuSicher')==='abbrechen,neuJa'&&E("MENUE.standardWahl(MENUE.eintraege('neuSicher'),'neuSicher')")===0);
-pruefe('Einstellungen am Rechner: vier Werte + ZURUECK', ids('einst')==='flacker,wackeln,roehre,schwer,zurueck');
+pruefe('Einstellungen am Rechner: Werte, SCHWIERIGKEIT, TIPPS + ZURUECK', ids('einst')==='flacker,wackeln,roehre,schwer,tipps,tippsNeu,zurueck', ids('einst'));
 E('IS_TOUCH=true');
-pruefe('Einstellungen am Handy: Hinweis auf das Handy-Menue (nicht waehlbar)', ids('einst')==='flacker,wackeln,roehre,schwer,handyInfo,zurueck'
+pruefe('Einstellungen am Handy: Hinweis auf das Handy-Menue (nicht waehlbar)', ids('einst')==='flacker,wackeln,roehre,schwer,tipps,tippsNeu,handyInfo,zurueck'
   &&E("MENUE.eintraege('einst').find(e=>e.id==='handyInfo').typ")==='info');
+pruefe('Schwierigkeits-Wahl: LOCKER, NORMAL, HART', ids('schwerWahl')==='wahlLocker,wahlNormal,wahlHart', ids('schwerWahl'));
+pruefe('Schwierigkeits-Wahl: vorgewaehlt LOCKER', E("MENUE.standardWahl(MENUE.eintraege('schwerWahl'),'schwerWahl')")===0);
 E('IS_TOUCH=false');
 pruefe('Einstellungs-Werte spiegeln KOMFORT', (()=>{
   E("KOMFORT.setze('flackerschutz',true); KOMFORT.setze('wackeln',false); KOMFORT.setze('roehre',true); setzeSchwierigkeit('hart');");
@@ -81,7 +83,7 @@ pruefe('ohne DOM: keine Menue-Schleife (laufe fehlt), Galerie-Daten gehen weiter
 pruefe('Texte nur mit erlaubten Zeichen', (()=>{
   const erlaubt=/^[A-Z0-9 .:\-!?\/+,<>*%()'"]*$/;
   const alle=[];
-  for(const m of ['haupt','level','einst','hinweis','neuSicher']) for(const e of E("MENUE.eintraege('"+m+"')")) alle.push(e.txt,e.wert||'');
+  for(const m of ['haupt','level','einst','hinweis','neuSicher','schwerWahl']) for(const e of E("MENUE.eintraege('"+m+"')")) alle.push(e.txt,e.wert||'');
   return alle.every(t=>erlaubt.test(t)); })());
 
 console.log('\n'+ok+' OK, '+fail+' Fehler');

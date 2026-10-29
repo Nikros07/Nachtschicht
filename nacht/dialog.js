@@ -18,7 +18,7 @@
      };
 
    Knoten-Felder: wer, text, wahl[], zeit (Sekunden bis automatisch gewaehlt
-   wird), standard (Index der Auswahl bei Zeitablauf), tu (Wirkung beim
+   wird), standard (Index in der VOLLEN wahl-Liste; diese Antwort ist vorgewaehlt und wird bei Zeitablauf genommen; ist sie gerade unsichtbar, gilt die erste sichtbare), tu (Wirkung beim
    Betreten), geh (naechster Knoten ohne Auswahl).
    Auswahl-Felder: txt, wenn (Bedingung, sonst unsichtbar), tu, geh.
    Bedingungen und Wirkungen gehen an nacht.js, siehe dort.
@@ -55,8 +55,12 @@ function betrete(name){
   if(!k){ const f=GESPR.fertig; GESPR=null; if(f) f(name); return; }
   wirke(k.tu);
   if(k.wer&&typeof stimmePiep==='function') stimmePiep(k.wer);
-  GESPR.knoten=k; GESPR.name=name; GESPR.gewaehlt=0; GESPR.tippT=0;
+  GESPR.knoten=k; GESPR.name=name; GESPR.tippT=0;
   GESPR.wahlen=(k.wahl||[]).filter(w=>bedingungErfuellt(w.wenn));
+  const std=(k.wahl&&k.standard!==undefined)?k.wahl[k.standard]:null;
+  const si=std?GESPR.wahlen.indexOf(std):-1;
+  GESPR.standardIdx=si>=0?si:0;     // unsichtbare Standardantwort: die erste sichtbare
+  GESPR.gewaehlt=GESPR.standardIdx; // vorgewaehlt: Abwarten und E bedeuten dasselbe
   /* Bedenkzeit nach Schwierigkeit - auf LOCKER anderthalbmal so lang. */
   const zf=(typeof schwer==='function')?schwer().zeit:1;
   GESPR.zeitGesamt=k.zeit?k.zeit*zf:0;
@@ -95,7 +99,7 @@ function gespraechTakt(dt){
     if(GESPR.zeitRest<=0){
       /* Zeit rum - der Charakter antwortet fuer dich. */
       const k=GESPR.knoten;
-      GESPR.gewaehlt=Math.min(GESPR.wahlen.length-1,k.standard||0);
+      GESPR.gewaehlt=Math.min(GESPR.wahlen.length-1,GESPR.standardIdx||0);
       gespraechBestaetigen();
     }
   }

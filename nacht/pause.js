@@ -4,7 +4,8 @@
    WEITER / NEU STARTEN / EINSTELLUNGEN / ZUM MENUE.
 
    Oeffentliche API (im Browser window.PAUSE, in Node die Konstante PAUSE):
-     PAUSE.eintraege(modus)  reine Liste {id,txt,wert?}; modus 'haupt' | 'einst' | 'neuSicher'
+     PAUSE.eintraege(modus)  reine Liste {id,txt,wert?}; modus 'haupt' (mit WAS JETZT?) | 'einst'
+                             (mit SCHWIERIGKEIT, TIPPS, TIPPS NEU ZEIGEN) | 'neuSicher'
      PAUSE.darfAuf()         true, wenn die Pause jetzt aufgehen darf
      PAUSE.aktiv()           true, solange die Pause offen ist
      PAUSE.kaputt()          true, wenn sich das Menue nach einem Fehler aufgegeben hat
@@ -34,8 +35,8 @@ const PAUSE=(function(){
   /* Farben wie im Startmenue (nacht/menue.js) */
   const P={ neon:'#ff3d8b', gold:'#ffd447', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
             gruen:'#5fe08a', feld:'#161230', wahl:'#2a2440' };
-  /* Die Schalter, die Links/Rechts im Modus EINSTELLUNGEN umschalten */
-  const WECHSEL=['flacker','wackeln','roehre','ton'];
+  /* Die Schalter, die Links/Rechts im Modus EINSTELLUNGEN umschalten (schwer: LOCKER/NORMAL/HART) */
+  const WECHSEL=['flacker','wackeln','roehre','ton','schwer','tipps'];
 
   const Z={ aktiv:false, kaputt:false, modus:'haupt', liste:[], sel:0, hits:[], seit:0, zeiger:null };
 
@@ -58,20 +59,34 @@ const PAUSE=(function(){
   };
 
   /* ---- Reine Daten ---- */
+  /* Schwierigkeit und Tipps: nur mit typeof-Schutz, damit die Tests ohne stand.js/hilfe.js laufen. */
+  const schwerName=function(){
+    try{ if(typeof schwer==='function') return schwer().name||'NORMAL'; }catch(e){}
+    return 'NORMAL';
+  };
+  const tippsWert=function(){
+    try{ if(typeof HILFE!=='undefined'&&HILFE&&typeof HILFE.eingeschaltet==='function') return HILFE.eingeschaltet()?'AN':'AUS'; }catch(e){}
+    return 'AN';
+  };
+
   function eintraege(modus){
     if(modus==='neuSicher') return [{ id:'abbrechen', txt:'ABBRECHEN' },{ id:'neuJa', txt:'JA, NEU STARTEN' }];
     if(modus==='einst') return [
-      { id:'flacker', txt:'FLACKERSCHUTZ', wert:an('flackerschutz') },
-      { id:'wackeln', txt:'WACKELN',       wert:an('wackeln') },
-      { id:'roehre',  txt:'ROEHREN-LOOK',  wert:an('roehre') },
-      { id:'ton',     txt:'TON',           wert:stumm()?'AUS':'AN' },
-      { id:'zurueck', txt:'ZURUECK' },
+      { id:'flacker',  txt:'FLACKERSCHUTZ', wert:an('flackerschutz') },
+      { id:'wackeln',  txt:'WACKELN',       wert:an('wackeln') },
+      { id:'roehre',   txt:'ROEHREN-LOOK',  wert:an('roehre') },
+      { id:'ton',      txt:'TON',           wert:stumm()?'AUS':'AN' },
+      { id:'schwer',   txt:'SCHWIERIGKEIT', wert:schwerName() },
+      { id:'tipps',    txt:'TIPPS',         wert:tippsWert() },
+      { id:'tippsNeu', txt:'TIPPS NEU ZEIGEN' },
+      { id:'zurueck',  txt:'ZURUECK' },
     ];
     return [
-      { id:'weiter',  txt:'WEITER' },
-      { id:'neu',     txt:'NEU STARTEN' },
-      { id:'einst',   txt:'EINSTELLUNGEN' },
-      { id:'menue',   txt:'ZUM MENUE' },
+      { id:'weiter', txt:'WEITER' },
+      { id:'hilfe',  txt:'WAS JETZT?' },
+      { id:'neu',    txt:'NEU STARTEN' },
+      { id:'einst',  txt:'EINSTELLUNGEN' },
+      { id:'menue',  txt:'ZUM MENUE' },
     ];
   }
 
@@ -118,12 +133,26 @@ const PAUSE=(function(){
     catch(e){ aufgeben(); }
   }
 
-  function aktiviere(id){
+  /* r = Richtung bei Links/Rechts (+1 oder -1); ohne r gilt +1 */
+  function aktiviere(id,r){
     try{
       ton(520);
       switch(id){
         case 'weiter': zu(); break;
+        case 'hilfe':
+          zu();
+          try{ if(typeof HILFE!=='undefined'&&HILFE&&typeof HILFE.wasJetzt==='function') HILFE.wasJetzt(); }catch(e){}
+          break;
         case 'neu': setze('neuSicher'); break;
+        case 'schwer':
+          try{ if(typeof wechsleSchwierigkeit==='function') wechsleSchwierigkeit(r||1); }catch(e){}
+          ton(600); Z.liste=eintraege(Z.modus); break;
+        case 'tipps':
+          try{ if(typeof HILFE!=='undefined'&&HILFE&&typeof HILFE.setze==='function') HILFE.setze(!HILFE.eingeschaltet()); }catch(e){}
+          ton(600); Z.liste=eintraege(Z.modus); break;
+        case 'tippsNeu':
+          try{ if(typeof HILFE!=='undefined'&&HILFE&&typeof HILFE.vergiss==='function') HILFE.vergiss(); }catch(e){}
+          ton(660); break;
         case 'neuJa': zu(); if(typeof neuesSpiel==='function') neuesSpiel(); break;
         case 'einst': setze('einst'); break;
         case 'flacker': case 'wackeln': case 'roehre': {
@@ -200,7 +229,7 @@ const PAUSE=(function(){
       else if(c==='ArrowDown'||c==='KeyS') verschiebe(1);
       else if(c==='ArrowLeft'||c==='KeyA'||c==='ArrowRight'||c==='KeyD'){
         const e0=Z.liste[Z.sel];
-        if(Z.modus==='einst'&&e0&&WECHSEL.indexOf(e0.id)>=0) aktiviere(e0.id);
+        if(Z.modus==='einst'&&e0&&WECHSEL.indexOf(e0.id)>=0) aktiviere(e0.id, (c==='ArrowLeft'||c==='KeyA')?-1:1);
       }
       else if(c==='Enter'||c==='KeyE'||c==='Space'||c==='NumpadEnter'){
         const e0=Z.liste[Z.sel];

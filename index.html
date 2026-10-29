@@ -36,7 +36,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 <style>:root{ --raum:#140f26; --glanz:rgba(80,200,255,.08); }</style>
 </head>
 <body>
@@ -60,29 +60,30 @@
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -136,21 +137,23 @@ const TUNE = {
   startMinute:  16*60+40,
   endMinute:    17*60+30,
   levelSekunden:  165,     // Echtzeit bis dahin (war 240 - viel zu grosszuegig)
-  zeitstrafe:      14,     // so viele Sekunden kostet dich ein Erwischtwerden
+  zeitstrafe:      10,     // so viele Sekunden kostet dich ein Erwischtwerden
 
   /* (2d) DER DIREKTOR - langsam, sieht weit, gibt nicht auf */
   chefTempo:       19,
   chefJagdTempo:   54,
-  chefSicht:      116,
-  chefJagdDauer:    6.5,
+  chefSicht:       90,
+  chefJagdDauer:    4,
   chefEtagenWechsel:16,    // Sekunden, bis er die Etage wechselt
+  chefStartEtage: 2,  // Etage (0 = Erdgeschoss), auf der der Direktor startet - vorher stand er neben dem Ausgang
+  chefStartX: 600,
 
   /* (3) LEHRER */
   lehrerTempo:     26,
   jagdTempo:       62,
   sichtWeite:      82,
   sichtHoehe:      22,
-  verdachtProSek:   1.9, // wie schnell der Verdachtsbalken fuellt
+  verdachtProSek:   1.5, // wie schnell der Verdachtsbalken fuellt (NORMAL 667 ms bis zur Jagd)
   verdachtAbbau:    0.9,
   jagdDauer:        3.2, // wie lange er nach Sichtverlust weitersucht
   fangDistanz:       8,
@@ -341,9 +344,10 @@ function musik(){
 function fluchtPruefen(){
   if(S.fluchtAn||!S.hatSchluessel) return;
   if(S.modus!=='spiel'&&S.modus!=='raum') return;
-  S.fluchtAn=true; S.fluchtT=TUNE.fluchtSek;
-  meldung('HAUSMEISTER SCHLIESST AB!',2.4);
-  if(!S.fluchtHinweis){ S.fluchtHinweis=true; zeigeHinweis('ZUM AUSGANG - DIE ZEIT LAEUFT',4); }
+  S.fluchtAn=true; S.fluchtT=TUNE.fluchtSek*schwer().frist;
+  meldung('SCHLUESSEL MIT ROTER WOLLE - LOS!',2.6);
+  if(!S.fluchtHinweis){ S.fluchtHinweis=true; zeigeHinweis('RAUS: ERDGESCHOSS GANZ RECHTS',4); }
+  HILFE.ziel('RAUS: ERDGESCHOSS GANZ RECHTS');
   SFX.alarm(); S.blitz=.8;
   saftRuf('treffer',W/2,40,0,0.6);
   saftRuf('blitz','#ff3040',0.3,0.3);
@@ -473,6 +477,10 @@ const LEHRER_START = [
    ZUSTAND
    ========================================================================== */
 let S={};
+/* Handy-Moebel und Sicherung haben beim Durchsuchen eigene Zweige - dort darf weder
+   Schluessel noch Zettel noch Fund liegen, sonst ist er nie zu finden. */
+function sonderMoebel(ri,mi){ const raum=RAEUME[ri];
+  return raum.moebel[mi]==='sicherung'||(raum.name===TUNE.handyRaum&&mi===TUNE.handyMoebel); }
 function neuesSpiel(){
   PLAUSCH.lade([]);
   S={
@@ -480,7 +488,7 @@ function neuesSpiel(){
     t:0, zeit:0,
     x:60, y:BODEN[0], vx:0, vy:0, etage:0, amBoden:true, letzterBoden:0,
     blick:1, gehPhase:0,
-    hp:TUNE.leben, unverwundbar:0,
+    hp:TUNE.leben+schwer().leben, unverwundbar:0,
     kamX:0, kamY:0,
     hatSchluessel:false, schluesselRaum:0, schluesselMoebel:0,
     raum:null, raumX:0, suchT:0, suchZiel:-1, meldung:'', meldungT:0,
@@ -516,13 +524,14 @@ function neuesSpiel(){
   const inEtage=erlaubt.filter(i=>RAEUME[i].e===etage);
   const r=inEtage[Math.floor(Math.random()*inEtage.length)];
   S.schluesselRaum=r;
-  S.schluesselMoebel=Math.floor(Math.random()*RAEUME[r].moebel.length);
+  const wahl=RAEUME[r].moebel.map((m,mi)=>mi).filter(mi=>!sonderMoebel(r,mi));
+  S.schluesselMoebel=wahl[Math.floor(Math.random()*wahl.length)];
 
   /* Zettel verstecken. Sie liegen bewusst NICHT im Schluesselraum -
      sonst findet man beides auf einmal und der Hinweis ist wertlos. */
   const frei=[];
   RAEUME.forEach((raum,ri)=>{ if(ri===r) return;
-    raum.moebel.forEach((m,mi)=>frei.push({raum:ri,moebel:mi})); });
+    raum.moebel.forEach((m,mi)=>{ if(!sonderMoebel(ri,mi)) frei.push({raum:ri,moebel:mi}); }); });
   for(let i=frei.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));
     [frei[i],frei[j]]=[frei[j],frei[i]]; }
   /* Keine feste Stufe mehr. Entscheidend ist, in welcher Reihenfolge du
@@ -537,7 +546,7 @@ function neuesSpiel(){
 
   /* Der Direktor wandert ueber alle Etagen. Er ist langsam, sieht aber
      weit und gibt nicht so schnell auf wie die Lehrer. */
-  S.lehrer.push({ chef:true, e:0, von:40, bis:LEVEL_B-40, x:LEVEL_B-120, v:-1,
+  S.lehrer.push({ chef:true, e:TUNE.chefStartEtage, von:40, bis:LEVEL_B-40, x:TUNE.chefStartX, v:-1,
                   verdacht:0, jagd:0, gesehenPiep:false, wechselT:TUNE.chefEtagenWechsel });
 
   /* Zwei Spielarten, damit sich Runden unterscheiden:
@@ -583,7 +592,7 @@ function druckSprung(){
   if(S.modus==='titel'){ starte(); return; }
   if(S.modus==='intro'){ S.szeneT+=99; return; }
   if(S.modus==='gefangen'){ weiterNachFang(); return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='ende'){ if(S.gewonnen){ location.href='karte.html?nach=1'; return; } neuesSpiel(); starteLevel(); return; }
   if(S.modus==='pause'){ S.modus='spiel'; return; }
   if(S.modus==='cutscene'){ return; }
   sprungPuffer.push(S.t); sprungAn=true;
@@ -599,7 +608,7 @@ function druckAktion(){
      stand frueher HINTER dem Neustart-Zweig darunter und wurde nie erreicht:
      wer Level 1 geschafft hatte und E drueckte, fing Level 1 von vorn an. */
   if(S.modus==='ende'&&S.gewonnen){ location.href='karte.html?nach=1'; return; }
-  if(S.modus==='ende'){ neuesSpiel(); return; }
+  if(S.modus==='ende'){ neuesSpiel(); starteLevel(); return; }
   if(S.modus==='cutscene'){ S.szeneT+=99; return; }   // weiterklicken
   if(S.modus==='intro'){ S.szeneT+=99; return; }      // Intro ueberspringen
   aktionPuffer.push(S.t);
@@ -621,7 +630,7 @@ function mobilKontext(){
   if(S.modus==='intro')    return {aktion:'WEITER', zwei:null};
   if(S.modus==='cutscene') return {aktion:'WEITER', zwei:null};
   if(S.modus==='gefangen') return {aktion:'WEITER', zwei:null};
-  if(S.modus==='ende')     return {aktion:'NOCHMAL',zwei:null};
+  if(S.modus==='ende')     return {aktion:S.gewonnen?'WEITER':'NOCHMAL',zwei:null};
   if(S.modus==='pause')    return {aktion:null,     zwei:null};
 
   if(S.modus==='raum'){
@@ -665,7 +674,7 @@ function introText(i){
   if(INTRO[i].txt!==null) return INTRO[i].txt;
   if(S.variante==='hausmeister')
     return i===INTRO.length-2 ? 'DER HAUSMEISTER HAT DEN SCHLUESSEL AM GUERTEL.'
-                              : 'LENK IHN AB - WIRF WAS MIT R.';
+                              : tasteText('LENK IHN AB - WIRF WAS MIT R.','LENK IHN AB - WIRF WAS (WERFEN).');
   return i===INTRO.length-2 ? 'IRGENDWO HAENGT EIN ZWEITSCHLUESSEL.'
                             : 'DURCHSUCH DIE RAEUME. ZETTEL HELFEN.';
 }
@@ -676,8 +685,9 @@ function introText(i){
 function starte(){ nachtZuruecksetzen(); neuesSpiel(); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04);
   kapitelZeigen(1); }
 function starteLevel(){ S.modus='spiel';
-  setTimeout(()=>{ if(S.modus==='spiel') zeigeHinweis('LEISE GEHEN HALBIERT IHRE SICHTWEITE',4); },4200);
-  zeigeHinweis('FIND DEN SCHLUESSEL',2.6); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
+  zeigeHinweis(S.variante==='hausmeister'?'DER HAUSMEISTER HAT DEN SCHLUESSEL':'FIND DEN SCHLUESSEL',2.6);
+  hilfeTipp('frist','UM 17:30 SCHLIESST DER HAUSMEISTER AB','UM 17:30 SCHLIESST DER HAUSMEISTER AB');
+  HILFE.ziel(S.variante==='hausmeister'?'DER HAUSMEISTER HAT DEN SCHLUESSEL':'FIND DEN SCHLUESSEL - ZETTEL HELFEN'); piep(660,.08); setTimeout(()=>piep(990,.12),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
 function intro(dt){ S.szeneT+=dt;
   /* Halten ueberspringt das ganze Intro, Tippen eine Szene. */
@@ -798,6 +808,7 @@ function nachricht(art){
   if(S.stumm){ piep(200,.02,'sine',.01); return; }
   /* Vibration ist laut - genau das ist der Preis fuers Mithoeren. */
   S.vibriert=.9; rauschen(.16,.05);
+  if(S.modus==='spiel') hilfeTipp('vibration','HANDY VIBRIERT - DAS HOEREN SIE. H: STUMM','DEIN HANDY VIBRIERT - DAS HOEREN SIE');
   if(S.modus==='spiel'&&S.imSpind<0) laerm(S.x,S.etage,TUNE.vibrationWeite);
 }
 
@@ -807,6 +818,7 @@ function lampeSchalten(){
   if(!S.lampe && S.akku<=0){ meldung('AKKU LEER',1.2); SFX.nichts(); return; }
   S.lampe=!S.lampe; piep(S.lampe?880:440,.05,'sine',.04);
   meldung(S.lampe?'TASCHENLAMPE AN':'TASCHENLAMPE AUS',1);
+  if(S.lampe) hilfeTipp('lampe','LAMPE AN: SIE SEHEN DICH WEITER','LAMPE AN: SIE SEHEN DICH WEITER');
 }
 /* ---- Laerm: Lehrer gehen dem Geraeusch nach ----
    brichtJagd=true nur beim Wurf: ein Geraeusch weit weg von dir kann
@@ -846,6 +858,7 @@ function rein(i){
   meldung('VERSTECKT',1.2);
   /* Wer schon jagt, verliert die Spur - aber er sucht weiter in der Naehe. */
   S.lehrer.forEach(L=>{ if(L.e===S.etage) L.verdacht=0; });
+  hilfeTipp('spind-sicher','IM SPIND BIST DU SICHER','IM SPIND BIST DU SICHER');
 }
 function raus(){
   S.imSpind=-1; S.spindAbkuehlung=TUNE.spindAbkuehlung; SFX.tuer();
@@ -869,6 +882,7 @@ function zielText(stufe){
                   : 'DER SCHLUESSEL IST IN ETAGE '+(kr.e+1);
 }
 const zielKurz=()=>{
+  if(S.hinweisStufe===0) return S.variante==='hausmeister'?'ZIEL: HAUSMEISTER':'ZIEL: SCHLUESSEL FINDEN';
   if(S.variante==='hausmeister') return S.hinweisStufe>=2?'ZIEL: HAUSMEISTER':'ZIEL: ETAGE 1';
   const kr=RAEUME[S.schluesselRaum]; if(!kr) return '';
   return S.hinweisStufe>=2 ? 'ZIEL: '+kr.name : 'ZIEL: ETAGE '+(kr.e+1);
@@ -900,6 +914,9 @@ function update(dt){
   if(S.unverwundbar>0) S.unverwundbar-=dt;
   if(fluchtTakt(dt)) return;
 
+  if(S.modus==='spiel'&&S.zeit>4) hilfeTipp('schleichen','SHIFT: LEISE - SIE SEHEN DICH SPAETER','STICK HALB: LEISE - SIE SEHEN DICH SPAETER');
+    if(S.modus==='spiel'&&S.variante!=='hausmeister'&&S.zeit>40&&S.hinweisStufe===0) hilfeTipp('zettel-tipp','TIPP: IN DEN RAEUMEN LIEGEN ZETTEL','TIPP: IN DEN RAEUMEN LIEGEN ZETTEL');
+    if(S.modus==='spiel'&&S.lehrer.some(L=>L.hausmeister&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<80)) hilfeTipp('hausmeister','R WIRFT: ER GEHT NACHSEHEN. DANN E: KLAUEN','WERFEN: ER GEHT NACHSEHEN. DANN KLAUEN');
   if(S.modus==='raum'){ imRaum(dt); kamera(dt,true); return; }
 
   if(S.spindAbkuehlung>0) S.spindAbkuehlung=Math.max(0,S.spindAbkuehlung-dt);
@@ -909,7 +926,7 @@ function update(dt){
 
   /* Die Uhr laeuft. Um 17:30 schliesst der Hausmeister endgueltig ab. */
   const spanne=TUNE.endMinute-TUNE.startMinute;
-  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/TUNE.levelSekunden*spanne);
+  S.minute=TUNE.startMinute+Math.min(spanne,S.zeit/(TUNE.levelSekunden*schwer().frist)*spanne);
   if(!S.zeitWarnung && S.minute>=TUNE.endMinute-15){
     S.zeitWarnung=true; zeigeHinweis('17:15 - GLEICH SCHLIESST ER AB',3.4); SFX.alarm();
   }
@@ -1139,13 +1156,14 @@ function imRaum(dt){
         SFX.fund(); S.blitz=.5; saftRuf('fund',W/2,50,'ZETTEL');
         meldung(S.hinweisStufe===1?'ZETTEL GEFUNDEN':'NOTIZ GEFUNDEN',1.6);
         zeigeHinweis(zielText(S.hinweisStufe),4);
+        hilfeTipp('zettel','ZETTEL VERRATEN, WO DER SCHLUESSEL IST','ZETTEL VERRATEN, WO DER SCHLUESSEL IST'); HILFE.ziel(zielText(S.hinweisStufe));
         nachricht('zettel');
       } else if(fund){
         fund.gefunden=true; SFX.fund(); S.blitz=.35; saftRuf('fund',W/2,50,'FUND');
         if(fund.art==='akku'){ S.akku=Math.min(100,S.akku+40); meldung('AKKU +40',1.6); }
         else if(fund.art==='energie'){ S.boost=8; meldung('ENERGYDRINK - SCHNELLER',1.8); }
         else if(fund.art==='code'){ S.codeBekannt=true;
-          meldung('ZETTEL: FERDIS SPIND, 2. STOCK - '+S.code.join(' '),3.4); }
+          meldung('ZETTEL: FERDIS SPIND, ETAGE 3 - '+S.code.join(' '),5); }
         else { meldung(pick(NOTIZEN),2.6); }
       } else { SFX.nichts(); meldung('NICHTS DRIN',1); }
     }
@@ -1346,11 +1364,14 @@ function lehrerLogik(dt){
       && imSichtkegel(wache,{x:S.x,t:S.tiefe},reichweite,TUNE.kegelOeffnung||0.5);
     if(sichtbar){
       L.verdacht=Math.min(1,L.verdacht+TUNE.verdachtProSek*schwer().verdacht*dt);
+    if(L.verdacht>.05&&HILFE.lernt('verdacht')){ HILFE.zaehle('verdacht'); saftRuf('zeitlupe',0.5,0.8); hilfeTipp('verdacht','BALKEN VOLL: ER JAGT DICH. GEH WEG!','BALKEN VOLL: ER JAGT DICH. GEH WEG!'); }
+    if(L.chef) hilfeTipp('direktor','DER DIREKTOR SIEHT WEITER UND FOLGT DIR','DER DIREKTOR SIEHT WEITER UND FOLGT DIR');
       if(!L.gesehenPiep&&L.verdacht>.25){ L.gesehenPiep=true; SFX.gesehen(); }
       if(L.verdacht>=1&&L.jagd<=0){ L.jagd=dauer; SFX.alarm(); S.ruettel=L.chef?6:4; S.alarme++;
         saftRuf('trauma',(L.chef?6:4)/12);
         if(L.e===S.etage) saftRuf('popup','!',L.x-S.kamX,BODEN[L.e]-S.kamY-44,'#ff4d6d');
-        meldung(L.chef?'DER DIREKTOR HAT DICH':'ER HAT DICH',1.6); }
+        meldung(L.chef?'DER DIREKTOR HAT DICH':'ER HAT DICH',1.6);
+        hilfeTipp('jagd','LAUF - ODER E AM SPIND: VERSTECK','LAUF - ODER AB IN DEN SPIND: VERSTECK'); }
     } else {
       L.verdacht=Math.max(0,L.verdacht-TUNE.verdachtAbbau*dt);
       if(L.verdacht<=0) L.gesehenPiep=false;
@@ -1462,7 +1483,7 @@ function codeProbieren(){
 }
 function zeichneCode(){
   if(!S.codeOffen) return;
-  ctx.fillStyle='#000000d8'; ctx.fillRect(W/2-60,H/2-30,120,56);
+  ctx.fillStyle='#000000d8'; ctx.fillRect(W/2-60,H/2-30,120,66);
   ctx.fillStyle=P.neon||'#ff3d8b'; ctx.fillRect(W/2-60,H/2-30,120,1);
   textC('FERDIS SPIND',H/2-24,P.dim);
   for(let i=0;i<3;i++){
@@ -1472,6 +1493,7 @@ function zeichneCode(){
     if(an&&Math.floor(S.t*3)%2===0){ text('+',x+2,H/2-18,P.dim); text('-',x+2,H/2+6,P.dim); }
   }
   textC(IS_TOUCH?'STICK: ZIFFER - KNOPF: PROBIEREN':'PFEILE: ZIFFER - E: PROBIEREN - Q: WEG',H/2+16,P.dunkel);
+  if(S.codeBekannt) textC('CODE: '+S.code.join(' '),H/2+26,P.gold);
 }
 
 /* ==========================================================================
@@ -1586,13 +1608,13 @@ function rangSchluss(){
   const anteil = zaehl>0 ? gefunden/zaehl : 0;
   const pZeit  = Math.round(40*lin(S.zeit, R.zeitSchlecht, R.zeitGut));
   const pAlarm = Math.round(30*lin(S.alarme, R.alarmSchlecht, 0));
-  const pHerz  = Math.round(15*lin(S.hp, 0, TUNE.leben));
+  const pHerz  = Math.round(15*lin(S.hp, 0, TUNE.leben+schwer().leben));
   const pFunde = Math.round(15*lin(anteil, 0, R.fundeGut));
   const m=Math.floor(S.zeit/60), s=Math.floor(S.zeit%60);
   const zeilen=[
     {name:'ZEIT',   wert:m+':'+String(s).padStart(2,'0'), pkt:pZeit},
     {name:'ALARM',  wert:String(S.alarme),                pkt:pAlarm},
-    {name:'HERZEN', wert:S.hp+'/'+TUNE.leben,             pkt:pHerz},
+    {name:'HERZEN', wert:S.hp+'/'+(TUNE.leben+schwer().leben),             pkt:pHerz},
     {name:'FUNDE',  wert:gefunden+'/'+zaehl,              pkt:pFunde},
   ];
   try{ WERTUNG.abschluss(1, pZeit+pAlarm+pHerz+pFunde, zeilen); }catch(e){}
@@ -1778,13 +1800,13 @@ function zeichneKorridor(){
           /* Sehschlitz - du steckst drin und lugst raus */
           ctx.fillStyle='#000'; ctx.fillRect(sp.x+1,sy+3,4,1);
           ctx.fillStyle=P.neon2; ctx.fillRect(sp.x+2,sy+3,2,1);
-          if(Math.floor(S.t*3)%2===0) text('E RAUS',sp.x+3-textW('E RAUS')/2,sy-9,P.gold);
+          if(Math.floor(S.t*3)%2===0) text(tasteText('E RAUS','RAUS'),sp.x+3-textW(tasteText('E RAUS','RAUS'))/2,sy-9,P.gold);
         } else if(nah){
           const frei=S.spindAbkuehlung<=0;
           ctx.globalAlpha=.55; ctx.fillStyle=frei?P.gold:P.dunkel;
           ctx.fillRect(sp.x-1,sy-2,8,1); ctx.globalAlpha=1;
           if(Math.floor(S.t*4)%2===0){
-            const t=frei?'E':Math.ceil(S.spindAbkuehlung)+'';
+            const t=frei?aktionsMarke():Math.ceil(S.spindAbkuehlung)+'';
             text(t,sp.x+3-textW(t)/2,sy-9,frei?P.gold:P.rot);
           }
         }
@@ -1805,7 +1827,7 @@ function zeichneKorridor(){
       if(!fern){
         text('FERDI',CODESPIND.x+3-textW('FERDI')/2,sy-8,offen?P.dunkel:P.dim);
         if(amCodespind()&&S.modus==='spiel'&&Math.floor(S.t*4)%2===0)
-          text('E',CODESPIND.x+2,sy-15,P.gold);
+          text(aktionsMarke(),CODESPIND.x+2,sy-15,P.gold);
       }
       ctx.globalAlpha=1;
     }
@@ -1871,12 +1893,13 @@ function zeichneKorridor(){
         /* Ab Hinweisstufe 1 steht hier, in welche Etage du musst */
         if(S.hinweisStufe>=1&&!S.hatSchluessel){
           const zE=zielEtage();
-          if(zE!==e){ const pfeil=zE>e?'W':'S';
+          if(zE!==e){ const pfeil=IS_TOUCH?(zE>e?'HOCH':'RUNTER'):(zE>e?'W':'S');
             if(Math.floor(S.t*2)%2===0) text(pfeil+' ETAGE '+(zE+1),tx-textW('W ETAGE 1')/2,by-62,P.gold); }
           else text('HIER',tx-textW('HIER')/2,by-62,P.gruen);
         }
-        if(oben&&(!nah||blink)) text('W',tx-14,by-46,nah?P.gold:P.dim);
-        if(unten&&(!nah||blink)) text('S',tx+11,by-46,nah?P.gold:P.dim);
+        if(S.hatSchluessel){ if(e>0){ if(Math.floor(S.t*2)%2===0){ const at=tasteText('S AUSGANG','RUNTER: AUSGANG'); text(at,tx-textW(at)/2,by-62,P.gold); } } else text('AUSGANG >>>',tx-textW('AUSGANG >>>')/2,by-62,P.gruen); }
+        if(!IS_TOUCH&&oben&&(!nah||blink)) text('W',tx-14,by-46,nah?P.gold:P.dim);
+        if(!IS_TOUCH&&unten&&(!nah||blink)) text('S',tx+11,by-46,nah?P.gold:P.dim);
         if(nah){ ctx.globalAlpha=.5; ctx.fillStyle=P.gold;
           ctx.fillRect(tx-20,by-1,40,1); ctx.globalAlpha=1; }
       }
@@ -1939,6 +1962,7 @@ function zeichneKorridor(){
         const abgelenkt=L.abgelenkt>0||L.suchtX!=null;
         if(abgelenkt&&L.hatSchluessel&&Math.floor(S.t*5)%2===0)
           text('JETZT',L.x+3-textW('JETZT')/2,yb-31,P.gruen);
+        else if(!abgelenkt&&L.hatSchluessel&&L.e===S.etage&&Math.abs(L.x-S.x)<14&&Math.floor(S.t*4)%2===0){ const rt=tasteText('E REDEN','REDEN'); text(rt,L.x+3-textW(rt)/2,yb-31,P.gold); }
       }
       if(!fern&&L.verdacht>.02){
         const bw=14;
@@ -2076,7 +2100,7 @@ function zeichneKorridor(){
     /* Luefterschlitze links und rechts als Rahmen */
     ctx.fillStyle='#2a3145';
     for(let x=4;x<W;x+=6){ ctx.fillRect(x,py-6,3,1); ctx.fillRect(x,py+hoehe+4,3,1); }
-    if(Math.floor(S.t*2)%2===0) text('E  RAUS',W/2-textW('E  RAUS')/2,py+hoehe+10,P.dunkel);
+    if(Math.floor(S.t*2)%2===0) text(tasteText('E  RAUS','RAUS'),W/2-textW(tasteText('E  RAUS','RAUS'))/2,py+hoehe+10,P.dunkel);
   }
 }
 
@@ -2143,7 +2167,7 @@ function zeichneRaum(){
     const durchsucht=S.durchsucht.has(S.raum+':'+i);
     if(durchsucht){ text('OK',p.x+8-textW('OK')/2,y-8,P.dunkel); }
     else if(S.nahesMoebel===i){
-      if(Math.floor(S.t*4)%2===0) text('E',p.x+8-1,y-9,P.gold);
+      if(Math.floor(S.t*4)%2===0) text(aktionsMarke(),p.x+8-1,y-9,P.gold);
       ctx.globalAlpha=.5; ctx.fillStyle=P.gold; ctx.fillRect(p.x,bodenY-1,16,1); ctx.globalAlpha=1;
     }
   });
@@ -2175,7 +2199,7 @@ function zeichneRaum(){
 function hud(){
   if(S.modus==='titel') return;
   /* Herzen */
-  for(let i=0;i<TUNE.leben;i++){
+  for(let i=0;i<TUNE.leben+schwer().leben;i++){
     const x=6+i*7,y=6, voll=i<S.hp;
     if(!voll){ ctx.fillStyle='#2a2440'; ctx.fillRect(x,y,5,4); ctx.fillRect(x+1,y+4,3,1); continue; }
     ctx.fillStyle=(S.hp===1&&Math.floor(S.t*6)%2===0)?P.weiss:P.rot;
@@ -2197,7 +2221,7 @@ function hud(){
     textC(zeit,22,farbe,2);
   }
   /* Was du bisher weisst */
-  if(!S.hatSchluessel&&S.hinweisStufe>0){
+  if(!S.hatSchluessel){
     const t=zielKurz();
     if(t) text(t,(W-textW(t))/2,14,P.gold);
   }
@@ -2205,14 +2229,14 @@ function hud(){
   const std=Math.floor(S.minute/60), min=Math.floor(S.minute%60);
   const uhr=std+':'+String(min).padStart(2,'0');
   const knapp=S.minute>=TUNE.endMinute-15;
-  text(uhr,W-textW(uhr)-6,14,knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:P.dim));
+  text(uhr,W-textW(uhr)-6,14,knapp&&Math.floor(S.t*4)%2===0?P.rot:(knapp?P.gold:(S.minute>=TUNE.endMinute-30?P.gold:P.dim)));
 
   /* Handy: Akku und Zustand */
   const ax=6, ay=H-20;
   ctx.fillStyle='#000a'; ctx.fillRect(ax-1,ay-1,16,7);
   ctx.fillStyle=S.lampe?P.gold:'#2a2440'; ctx.fillRect(ax,ay,14,5);
   ctx.fillStyle=S.akku>30?P.gruen:P.rot; ctx.fillRect(ax+1,ay+1,Math.round(12*S.akku/100),3);
-  if(S.lampe&&Math.floor(S.t*3)%2===0) text('Q',ax+18,ay,P.gold);
+  if(!IS_TOUCH&&S.lampe&&Math.floor(S.t*3)%2===0) text('Q',ax+18,ay,P.gold);
   if(S.stumm) text('STUMM',ax+18,ay,P.dunkel);
   if(S.vibriert>0&&Math.floor(S.t*20)%2===0) text('BZZZ',ax+18,ay-8,P.neon);
 
@@ -2245,8 +2269,8 @@ function hud(){
   if(S.modus==='spiel'){
     const ri=raumBei(S.etage,S.x);
     let t=null;
-    if(amAusgang(S.x)) t = S.hatSchluessel?'E  RAUS HIER':'E  ABGESCHLOSSEN';
-    else if(ri>=0) t='E  REIN';
+    if(amAusgang(S.x)) t = S.hatSchluessel?tasteText('E  RAUS HIER','RAUS HIER'):tasteText('E  ABGESCHLOSSEN','ABGESCHLOSSEN');
+    else if(ri>=0) t=tasteText('E  REIN','REIN');
     else if(anTreppe(S.x)) t = S.etage<BODEN.length-1 ? (IS_TOUCH?'HOCH':'W  HOCH') : (IS_TOUCH?'RUNTER':'S  RUNTER');
     if(t&&Math.floor(S.t*3)%2===0) textC(t,H-42,P.gold);
   }
@@ -2303,13 +2327,14 @@ function titelbild(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='gefangen'){
     ctx.fillStyle=`rgba(0,0,0,${Math.min(.8,S.szeneT*2).toFixed(2)})`; ctx.fillRect(0,0,W,H);
     textGlowC('ERWISCHT',48,P.rot,3);
     textC(S.faenger||'ERWISCHT',72,P.dim);
     textC(S.hp>0?'ZURUECK ZUR TREPPE':'KEINE VERSUCHE MEHR',86,P.weiss);
+    textC('UHR -'+TUNE.zeitstrafe+' SEK',95,P.rot);
     if(S.szeneT>.6&&Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN':'LEERTASTE',104,P.gold);
   }
   if(S.modus==='cutscene'){
@@ -2336,12 +2361,12 @@ function bildschirme(){
       textC('RAEUME DURCHSUCHT  '+S.durchsucht.size,106,P.dim);
       const crew=ladeCrew();
       if(crew.length) textC('DABEI: '+crew.join(', '),120,P.neon2);
-      if(Math.floor(S.t*2)%2===0) textGlowC('E  WEITER ZU LEVEL 2',134,P.gruen,1);
+      if(Math.floor(S.t*2)%2===0) textGlowC(tasteText('E  WEITER ZU LEVEL 2','TIPPEN: WEITER ZU LEVEL 2'),134,P.gruen,1);
     } else {
       textGlowC('GESCHNAPPT',48,P.rot,3);
       textC('DIE SCHULE HAT GEWONNEN',76,P.weiss);
     }
-    if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN FUER NEUSTART':'LEERTASTE FUER NEUSTART',H-20,P.gold);
+    if(!S.gewonnen&&Math.floor(S.t*2)%2===0) textC(tasteText('E ODER LEERTASTE: NOCHMAL','TIPPEN: NOCHMAL'),H-20,P.gold);
   }
 }
 

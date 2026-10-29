@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610241341">
+<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
 </head>
 <body>
 <div id="cab">
@@ -37,29 +37,30 @@
   <div id="base"><span>LEVEL 7 - RUHEPAUSE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610241341"></script>
-<script src="nacht/geraet.js?v=202610241341"></script>
-<script src="nacht/bild.js?v=202610241341"></script>
-<script src="nacht/hud.js?v=202610241341"></script>
-<script src="nacht/ton.js?v=202610241341"></script>
-<script src="nacht/komfort.js?v=202610241341"></script>
-<script src="nacht/musik.js?v=202610241341"></script>
-<script src="nacht/songs.js?v=202610241341"></script>
-<script src="nacht/saft.js?v=202610241341"></script>
-<script src="nacht/stand.js?v=202610241341"></script>
-<script src="nacht/welt.js?v=202610241341"></script>
-<script src="nacht/nacht.js?v=202610241341"></script>
-<script src="nacht/dialog.js?v=202610241341"></script>
-<script src="nacht/eingabe.js?v=202610241341"></script>
-<script src="nacht/lehre.js?v=202610241341"></script>
-<script src="nacht/mobil.js?v=202610241341"></script>
-<script src="nacht/handy.js?v=202610241341"></script>
-<script src="nacht/texte.js?v=202610241341"></script>
-<script src="nacht/erzaehl.js?v=202610241341"></script>
-<script src="nacht/epilog.js?v=202610241341"></script>
-<script src="nacht/wertung.js?v=202610241341"></script>
-<script src="nacht/menue.js?v=202610241341"></script>
-<script src="nacht/pause.js?v=202610241341"></script>
+<script src="nacht/kern.js?v=202610290850"></script>
+<script src="nacht/geraet.js?v=202610290850"></script>
+<script src="nacht/bild.js?v=202610290850"></script>
+<script src="nacht/hud.js?v=202610290850"></script>
+<script src="nacht/ton.js?v=202610290850"></script>
+<script src="nacht/komfort.js?v=202610290850"></script>
+<script src="nacht/musik.js?v=202610290850"></script>
+<script src="nacht/songs.js?v=202610290850"></script>
+<script src="nacht/saft.js?v=202610290850"></script>
+<script src="nacht/stand.js?v=202610290850"></script>
+<script src="nacht/welt.js?v=202610290850"></script>
+<script src="nacht/nacht.js?v=202610290850"></script>
+<script src="nacht/dialog.js?v=202610290850"></script>
+<script src="nacht/eingabe.js?v=202610290850"></script>
+<script src="nacht/lehre.js?v=202610290850"></script>
+<script src="nacht/mobil.js?v=202610290850"></script>
+<script src="nacht/handy.js?v=202610290850"></script>
+<script src="nacht/texte.js?v=202610290850"></script>
+<script src="nacht/erzaehl.js?v=202610290850"></script>
+<script src="nacht/hilfe.js?v=202610290850"></script>
+<script src="nacht/epilog.js?v=202610290850"></script>
+<script src="nacht/wertung.js?v=202610290850"></script>
+<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/pause.js?v=202610290850"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -119,27 +120,29 @@ const TUNE = {
   preisWasser:     2,
   preisSnack:      3,
   pfandWert:     0.5,   // pro Flasche
-  heinzTempo:     20,   // der alte Pfandsammler - etwas langsamer als du
+  heinzTempo:     12,   // der alte Pfandsammler - etwas langsamer als du
+  heinzStartVerzug: 12, // Sekunden, bevor Heinz loslegt (vorher sofort neben dir)
   heinzGreift:   0.8,   // so lange braucht er zum Aufheben
   snackKondition: 15,   // Essen macht wach
 
   /* (9) PFANDWURF - Kirmes-Mini an der Kiste. E halten: die Kraft pendelt.
      Loslassen: die Flasche fliegt im Bogen. Trifft die Kraft die Zone, landet sie in der Kiste. */
-  wurfPendel:     1.4,          // Hz, so schnell pendelt die Kraftanzeige
+  wurfPendel:     1.0,          // Hz, so schnell pendelt die Kraftanzeige
   wurfZiel:        60,          // px vom Stand bis zur Mitte der Kiste
   wurfKraftMitte: 0.6,          // bei dieser Kraft landet die Flasche genau in der Mitte
-  wurfZone:    [0.5, 0.7],      // Kraft-Bereich, der trifft (gruen auf der Anzeige)
+  wurfZone:    [0.42, 0.78],      // Kraft-Bereich, der trifft (gruen auf der Anzeige)
   wurfDauer:      0.8,          // Sekunden Flug
   wurfHoehe:       30,          // Scheitel des Bogens in px
   wurfMax:          5,          // Flaschen je Runde
   wurfPause:        6,          // Abklingzeit nach einer Runde, Sekunden
-  wurfGeld:      0.25,          // EUR je Treffer
+  wurfGeld:      0.5,           // EUR je Treffer
+  wurfMinHalt:   0.15,          // kuerzer losgelassen = kein Wurf verbraucht
 
   /* (10) MUSIK, LISTE, RANG */
   spannung:      0.2,           // Musik-Spannung im Laden
   spannungWurf:  0.6,           // Musik-Spannung beim Pfandwurf
   durchstrichSek: 0.5,          // Listenlinie waechst in so vielen Sekunden
-  rang: { liste:{schlecht:1, gut:4}, wurf:{schlecht:0.2, gut:0.8},
+  rang: { liste:{schlecht:1, gut:4}, wurf:{schlecht:0.2, gut:0.6},
           gespr:{schlecht:1, gut:5}, zeit:{schlecht:420, gut:180} },
 };
 
@@ -404,7 +407,7 @@ const TOBI_BAUM = {
   /* Der Tipp laeuft fuer jeden Weg: tobiBruecke ist gesetzt, auch wenn Tobi nicht mitkommt. */
   tipp:{ wer:'TOBI', text:'Ich weiss, wo man die Sonne zuerst sieht. Wenn ihr wollt.',
     tu:{flag:'tobiBruecke', mag:['TOBI',6]},
-    wahl:[ { txt:'Wo?', geh:'wo' }, { txt:'Spaeter.', geh:'start' } ], zeit:0 },
+    wahl:[ { txt:'Wo?', geh:'wo' }, { txt:'Spaeter.', geh:'@ende' } ], zeit:0 },
   wo:{ wer:'TOBI', text:'Bruecke am Kanal. Sonnenaufgang 05:19. Von dort 05:17.', geh:'start' },
   anrufen:{ wer:'TOBI', text:'Hab ich. Geht keiner ran.',
     wahl:[
@@ -499,8 +502,8 @@ const bildX7=wx=>Math.round(wx-S.kamX);                    // Welt -> Bildschirm
 const LISTE=[
   { id:'wasser', text:'WASSER',     fertig:()=>flag('spaetiWasser') },
   { id:'snack',  text:'SNACK',      fertig:()=>flag('spaetiSnack') },
-  { id:'pfand',  text:'PFAND',      fertig:()=>!!S.pfandAb },
-  { id:'bank',   text:'BANK-RUNDE', fertig:()=>Object.keys(S.bankFrag||{}).length>0 },
+  { id:'pfand',  text:'PFAND ABGEBEN',      fertig:()=>!!S.pfandAb },
+  { id:'bank',   text:'BANK-RUNDE', fertig:()=>!S.crew.length||Object.keys(S.bankFrag||{}).length>0 },
 ];
 function listeTakt(dt){
   LISTE.forEach((a,i)=>{
@@ -511,11 +514,11 @@ function listeTakt(dt){
   for(const k in S.striche) S.striche[k]+=dt;
 }
 
+/* Trefferzone um ihre Mitte gestreckt: LOCKER breiter, HART schmaler. */
+function wurfZone(){ const [lo,hi]=TUNE.wurfZone, m=(lo+hi)/2, b=(hi-lo)/2*schwer().frist; return [m-b,m+b]; }
 /* Start: E an der Wurfstelle. Ist die Kiste leer, kommt eine Meldung statt eines Wurfs. */
 function wurfStart(){
   if(S.wurfPauseT>0){ meldung('KISTE LEER - GLEICH WIEDER',1.6); SFX.nichts(); return; }
-  if(!S.wurfHinweis){ S.wurfHinweis=true;
-    zeigeHinweis(IS_TOUCH?'HAUPTKNOPF HALTEN ZIELT, LOSLASSEN WIRFT':'E HALTEN ZIELT, LOSLASSEN WIRFT',4); }
   S.vx=0; S.vt=0;
   S.wurf={ phase:'laden', t:0, kraft:0, kraftWurf:0, flugT:0, dist:0, tiefe:PFANDWURF.t };
 }
@@ -524,6 +527,7 @@ function wurfTakt(dt){
   const w=S.wurf; w.t+=dt;
   if(w.phase==='laden'){
     w.kraft=0.5-0.5*Math.cos(2*Math.PI*TUNE.wurfPendel*w.t);
+    if(!aktionGehalten&&w.t<TUNE.wurfMinHalt){ S.wurf=null; hilfeSag('HALTEN, NICHT TIPPEN','HALTEN, NICHT TIPPEN',2); return; }
     if(!aktionGehalten){ w.kraftWurf=w.kraft; w.phase='flug'; w.flugT=0;
       w.dist=TUNE.wurfZiel*w.kraft/TUNE.wurfKraftMitte; SFX.sprung(); }
     return;
@@ -534,7 +538,7 @@ function wurfTakt(dt){
 /* Die Flasche landet: Treffer oder daneben. Nach der letzten Flasche der Runde kommt die Abklingzeit. */
 function wurfLanden(){
   const w=S.wurf; S.wurf=null;
-  const [lo,hi]=TUNE.wurfZone;
+  const [lo,hi]=wurfZone();
   const trifft=w.kraftWurf>=lo&&w.kraftWurf<=hi;
   const sx=bildX7(PFANDWURF.x+w.dist), sy=Math.round(bodenY(w.tiefe))-4;
   S.wuerfe++; S.wurfRunde++;
@@ -689,7 +693,9 @@ const INTRO=[
 ];
 function starte(){ neuesSpiel(); kapitelZeigen(7); S.modus='intro'; S.szene=0; S.szeneT=0; piep(330,.1,'sine',.04); }
 function starteLevel(){ S.modus='spiel'; spaetiZuruecksetzen();
-  zeigeHinweis('WASSER UND WAS ZU ESSEN. GELD: '+wert('geld')+' EURO',3.5);
+  zeigeHinweis('WASSER UND WAS ZU ESSEN. GELD: '+wert('geld')+' EURO',5);
+  HILFE.ziel('WASSER UND SNACK KAUFEN - AN DER KASSE');
+  if(wert('geld')<TUNE.preisWasser+TUNE.preisSnack){ hilfeTipp('pleite','ZU WENIG GELD: PFAND SAMMELN ODER WERFEN','ZU WENIG GELD: PFAND SAMMELN ODER WERFEN'); hilfeTipp('heinz','HEINZ SAMMELT AUCH PFAND - SEI SCHNELLER','HEINZ SAMMELT AUCH PFAND - SEI SCHNELLER'); }
   if(S.crewWeg.length) setTimeout(()=>meldung(S.crewWeg.join(', ')+' IST SCHON HEIM',2.6),3800);
   piep(620,.08); setTimeout(()=>piep(920,.12),90); }
 const INTRO_SKIP=0.5;   // so lange halten, dann ist das Intro vorbei
@@ -769,6 +775,8 @@ function update(dt){
     if(typeof SAFT!=='undefined') SAFT.landung(bildX7(S.x),Math.round(bodenY(S.tiefe))-2,0.4); }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
+  { const nz=naechstesZiel(); if(nz&&nz.obj===PFANDWURF) hilfeTipp('wurf','E HALTEN, IM GRUENEN LOS: 0,50 EURO','ZIELEN HALTEN, IM GRUENEN LOS: 0,50 EURO'); }
+  if(alleFertig()&&!S.zielEcke){ S.zielEcke=true; HILFE.ziel('ZUR ECKE GANZ RECHTS'); }
   heinzTakt(dt);
   radioTakt(dt);
 
@@ -780,7 +788,7 @@ function update(dt){
       z.obj.weg=true; nimmDing('PFAND'); SFX.fund();
       if(typeof SAFT!=='undefined') SAFT.erfolg(bildX7(z.obj.x),Math.round(bodenY(z.obj.t))-8,'+1');
       const n=NACHT.inventar.PFAND||0;
-      meldung('PFAND: '+n+' FLASCHEN',1); continue;
+      meldung('PFAND: '+n+' FLASCHEN',1); hilfeTipp('pfand-abgeben','PFAND AN DER KASSE ABGEBEN','PFAND AN DER KASSE ABGEBEN'); continue;
     }
     if(z.art==='wurf'){ wurfStart(); return; }
     if(z.art==='kasse'){ redeMit(OEZDEMIR_BAUM,'oezdemir'); return; }
@@ -868,6 +876,7 @@ function karteTakt(dt){
 /* Was nach einem Gespraech passiert. Die Baeume setzen Flags und Geld -
    was es im Laden bewirkt, steht hier. */
 function spaetiEnde(e,wer){
+  if(wer==='oezdemir'&&e==='@ende'&&!flag('spaetiWasser')&&wert('geld')<TUNE.preisWasser) hilfeSag('WASSER 2, SNACK 3 EURO - ZU WENIG GELD','WASSER 2, SNACK 3 EURO - ZU WENIG GELD',3);
   if(e==='@snack'){
     /* Direkt in den Speicherstand - der Endbaum fragt {kondition:50} ab. */
     aendereWert('kondition',TUNE.snackKondition);
@@ -899,6 +908,7 @@ function spaetiEnde(e,wer){
    kann es auch einfach lassen. */
 function heinzTakt(dt){
   const h=S.heinz;
+  if(S.zeit<TUNE.heinzStartVerzug) return;
   if(h.friedlich){ h.x+=(40-h.x)*Math.min(1,dt); return; }
   if(!h.ziel||h.ziel.weg){
     const frei=S.pfand.filter(f=>!f.weg);
@@ -908,13 +918,13 @@ function heinzTakt(dt){
   if(!h.ziel) return;
   const dx=h.ziel.x-h.x;
   if(Math.abs(dx)>2){
-    h.blick=Math.sign(dx); h.x+=h.blick*TUNE.heinzTempo*dt;
+    h.blick=Math.sign(dx); h.x+=h.blick*TUNE.heinzTempo/schwer().frist*dt;
     h.t+=(h.ziel.t-h.t)*Math.min(1,1.5*dt);
     return;
   }
   h.greifT+=dt;
   if(h.greifT>=TUNE.heinzGreift){ h.ziel.weg=true;
-    if(Math.abs(h.x-S.x)<30&&typeof SAFT!=='undefined'){ SAFT.schaden(0.3); SAFT.popup('WEG!',bildX7(h.x),Math.round(bodenY(h.t))-18,'#ff4d4d'); }
+    if(Math.abs(h.x-S.x)<W/2&&typeof SAFT!=='undefined'){ SAFT.schaden(0.3); SAFT.popup('WEG!',bildX7(h.x),Math.round(bodenY(h.t))-18,'#ff4d4d'); }
     h.ziel=null; }
 }
 
@@ -1063,27 +1073,27 @@ function zeichneSzene(){
     outline(rows,o.x-3,y,1,.55);
     if(o.blick<0) spriteFlip(rows,o.x-3,y,1,tint); else sprite(rows,o.x-3,y,1,tint);
     if(name&&Math.abs(o.x-S.x)<60) text(name,o.x+3-textW(name)/2,y-9,farbe||P.dim);
-    if(naechst&&naechst.obj===o&&blink) text('E',o.x+2,y-16,P.gold);
+    if(naechst&&naechst.obj===o&&blink) text(aktionsMarke(),o.x+2,y-16,P.gold);
   }});
 
   liste.push({t:0.02, mal:()=>{ sprite(SPR.taxi,70,bodenY(0.02)-SPR.taxi.length); }});
   liste.push({t:0.05, mal:()=>{ sprite(SPR.bank,556,bodenY(0.05)-SPR.bank.length);
-    if(naechst&&naechst.obj===BANKRUNDE&&blink) text('E',BANKRUNDE.x,bodenY(0.05)-12,P.gold); }});
+    if(naechst&&naechst.obj===BANKRUNDE&&blink) text(aktionsMarke(),BANKRUNDE.x,bodenY(0.05)-12,P.gold); }});
   liste.push({t:FOTO7.t, mal:()=>{
     const y=bodenY(FOTO7.t)-9;
     MOMENT.zeichneFund(FOTO7.x-4,y,7);
-    if(!MOMENT.hat(7)&&naechst&&naechst.obj===FOTO7&&blink) text('E',FOTO7.x-1,y-8,P.gold); }});
+    if(!MOMENT.hat(7)&&naechst&&naechst.obj===FOTO7&&blink) text(aktionsMarke(),FOTO7.x-1,y-8,P.gold); }});
   for(const d of DINGE){ const rows=SPR[d.moebel];
     liste.push({t:d.t, mal:()=>{ const y=bodenY(d.t)-rows.length;
       outline(rows,d.x-3,y,1,.5); sprite(rows,d.x-3,y);
       if(flag(d.art==='wasser'?'spaetiWasser':'spaetiSnack')) text('OK',d.x+1-textW('OK')/2,y-8,P.gruen);
-      if(naechst&&naechst.obj===d&&blink) text('E',d.x,y-16,P.gold); }}); }
+      if(naechst&&naechst.obj===d&&blink) text(aktionsMarke(),d.x,y-16,P.gold); }}); }
   /* Pfandwurf: der Stand, die Kiste und die fliegende Flasche */
   liste.push({t:PFANDWURF.t, mal:()=>{
     const y=bodenY(PFANDWURF.t)-SPR.pfand.length;
     sprite(SPR.pfand,PFANDWURF.x-1,y);
     if(Math.abs(PFANDWURF.x-S.x)<60) text('PFANDWURF',PFANDWURF.x-textW('PFANDWURF')/2,y-9,P.dim);
-    if(naechst&&naechst.obj===PFANDWURF&&blink) text('E',PFANDWURF.x-1,y-17,P.gold); }});
+    if(naechst&&naechst.obj===PFANDWURF&&blink) text(aktionsMarke(),PFANDWURF.x-1,y-17,P.gold); }});
   liste.push({t:PFANDKISTE.t, mal:()=>{
     const y=bodenY(PFANDKISTE.t)-SPR.kiste.length;
     outline(SPR.kiste,PFANDKISTE.x-10,y,1,.5); sprite(SPR.kiste,PFANDKISTE.x-10,y); }});
@@ -1096,7 +1106,7 @@ function zeichneSzene(){
 
   for(const f of S.pfand) if(!f.weg) liste.push({t:f.t, mal:()=>{
     const y=bodenY(f.t)-SPR.pfand.length; sprite(SPR.pfand,f.x-1,y);
-    if(naechst&&naechst.obj===f&&blink) text('E',f.x-1,y-8,P.gold); }});
+    if(naechst&&naechst.obj===f&&blink) text(aktionsMarke(),f.x-1,y-8,P.gold); }});
 
   for(const m of NACHTMENSCHEN){
     if(!nachtmenschDa(m)) continue;
@@ -1168,7 +1178,7 @@ function hud(){
 
   /* Pfandwurf: Kraftanzeige (gruen die Zone, gold der Zeiger), Combo, Abklingzeit */
   if(S.wurf&&S.wurf.phase==='laden'){
-    const bw=60, bx=Math.round((W-bw)/2), by=H-62, [lo,hi]=TUNE.wurfZone;
+    const bw=60, bx=Math.round((W-bw)/2), by=H-62, [lo,hi]=wurfZone();
     ctx.fillStyle='#000a'; ctx.fillRect(bx-2,by-2,bw+4,7);
     ctx.fillStyle=P.dunkel; ctx.fillRect(bx,by,bw,3);
     ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*lo),by,Math.round(bw*(hi-lo)),3);
@@ -1196,7 +1206,7 @@ function titelbild(){
   const zeilen=['WASSER UND SNACKS KOSTEN GELD','WER PLEITE IST, SAMMELT PFAND','UND DANN: WIE GEHT DIE NACHT ZU ENDE?'];
   zeilen.forEach((z,i)=>textC(z,64+i*10,i===2?P.gold:P.weiss));
   const st=IS_TOUCH?[['STICK','LAUFEN'],['KNOPF','REDEN, AUFHEBEN, KASSE']]
-                   :[['WASD','LAUFEN'],['E','REDEN, AUFHEBEN, KASSE']];
+                   :[['A D','LAUFEN'],['E','REDEN, AUFHEBEN, KASSE']];
   st.forEach((z,i)=>{ text(z[0],90,104+i*9,P.gold); text(z[1],122,104+i*9,P.dim); });
   const crew=ladeCrew();
   if(crew.length) textC('DABEI: '+crew.join(', '),128,P.neon2);
@@ -1222,14 +1232,14 @@ function zeichneIntro(){
 function bildschirme(){
   if(S.modus==='pause'){
     ctx.fillStyle='#000000bb'; ctx.fillRect(0,0,W,H);
-    textGlowC('PAUSE',76,P.weiss,3); textC('P ZUM WEITERSPIELEN',100,P.dim);
+    textGlowC('PAUSE',76,P.weiss,3); textC(tasteText('P ZUM WEITERSPIELEN','MENUE ZU: WEITER'),100,P.dim);
   }
   if(S.modus==='cutscene'){
     ctx.fillStyle='#000000aa'; ctx.fillRect(0,H-40,W,40);
     ctx.fillStyle=P.neon; ctx.fillRect(0,H-40,W,1);
     const s=S.szenen[S.szene];
     if(s&&s.txt) textC(s.txt,H-26,P.weiss);
-    if(Math.floor(S.t*2)%2===0) text('E HALTEN ZUM UEBERSPRINGEN',W-textW('E HALTEN ZUM UEBERSPRINGEN')-6,H-10,P.dunkel);
+    if(Math.floor(S.t*2)%2===0) { const sk=tasteText('E HALTEN ZUM UEBERSPRINGEN','HALTEN ZUM UEBERSPRINGEN'); text(sk,W-textW(sk)-6,H-10,P.dunkel); }
   }
   if(S.modus==='ende'){
     ctx.fillStyle='#000000dd'; ctx.fillRect(0,0,W,H);
