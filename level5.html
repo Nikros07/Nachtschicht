@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,31 +37,32 @@
   <div id="base"><span>LEVEL 5 - CLUB</span><span>E ANSPRECHEN &nbsp; M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/kampf.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/kampf.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 5: CLUB
@@ -429,12 +430,13 @@ const MIA_BAUM = {
       { txt:'Kommst du oefter hierher?',                    geh:'spruch',   tu:{mag:['MIA',-8]} },
       { txt:'Deine Freundin schaut, als waer ihr langweilig.', wenn:{mut:45}, geh:'lena', tu:{mag:['MIA',4]} },
       { txt:'Du bist echt die schoenste hier.',              wenn:{pegel:55}, geh:'besoffen' },
+      { txt:'Kennst du mich nicht?', probe:{ruf:65}, tu:{ruf:4, mag:['MIA',6]}, geh:'ehrlich' },
     ], zeit:9, standard:0 },
 
   spruch:{ wer:'MIA', text:'Ernsthaft? Das ist dein erster Satz?',
     wahl:[
       { txt:'Ja. War schlecht. Neuer Versuch?',  wenn:{mut:30}, geh:'ehrlich', tu:{mag:['MIA',10]} },
-      { txt:'Ich hab noch bessere.',             geh:'@nein' },
+      { txt:'Ich hab noch bessere.',             geh:'@nein', tu:{ruf:-4} },
     ], zeit:7, standard:0 },
 
   besoffen:{ wer:'MIA', text:'Und du riechst nach Wodka. Jule, komm.', geh:'@nein' },
@@ -524,6 +526,7 @@ const SOPHIE_BAUM = {
       { txt:'Ich stand hier zuerst.',           geh:'konter', tu:{mag:['SOPHIE',6]} },
       { txt:'Oh. Sorry.',                       geh:'langweilig', tu:{mag:['SOPHIE',-6]} },
       { txt:'Shot? Gib mir gleich drei.',       wenn:{pegel:55}, geh:'besoffen' },
+      { txt:'Du bist die Chefin hier, oder?',   probe:{ruf:45}, tu:{ruf:4, mag:['SOPHIE',6]}, geh:'konter' },
     ], zeit:8, standard:1 },
 
   /* Wie bei Mia (wenn:{pegel:55}): zu betrunken wirkt hier nicht mutig,
@@ -556,7 +559,7 @@ const SOPHIE_BAUM = {
       { txt:'Ich hab heute im Bus die Notbremse gezogen.', wenn:{flag:'notbremse'},        geh:'lacht', tu:{mag:['SOPHIE',14]} },
       { txt:'Ich hab mit dem Tuersteher geboxt. Und gewonnen.', wenn:{flag:'tuersteherBesiegt'}, geh:'lacht', tu:{mag:['SOPHIE',12], ruf:3} },
       { txt:'Ich wurde heute in der Schule eingesperrt.',  geh:'lacht', tu:{mag:['SOPHIE',8]} },
-      { txt:'Mir faellt nichts ein.',                       geh:'frage', tu:{mag:['SOPHIE',-5]} },
+      { txt:'Mir faellt nichts ein.',                       geh:'frage', tu:{mag:['SOPHIE',-5], ruf:-3} },
     ], zeit:10, standard:3 },
 
   lacht:{ wer:'SOPHIE', text:'NEIN! Ernsthaft? Du bist ja komplett irre.', geh:'frage' },
@@ -567,6 +570,7 @@ const SOPHIE_BAUM = {
       { txt:'Noch einen.',                      wenn:{geld:6}, geh:'nochEiner', tu:{geld:-6, pegel:14} },
       { txt:'Weder noch. Lass raus, reden.',    wenn:{mag:['SOPHIE',18], ruf:40}, geh:'ja' },
       { txt:'Gib mir deine Nummer.',            geh:'nummer' },
+      { txt:'Ich hab noch nie so gelacht wie hier.', probe:{ruf:65}, tu:{ruf:5, mag:['SOPHIE',6]}, geh:'ja' },
     ], zeit:8, standard:0 },
 
   nochEiner:{ wer:'SOPHIE', text:'Na also! Aber jetzt wird getanzt.', geh:'@tanz' },
@@ -612,6 +616,7 @@ const KIRA_BAUM = {
          beide endeten in der Abfuhr - ohne Ausweg. Jetzt kann man gehen,
          sich am Waschbecken nuechtern machen und wiederkommen. */
       { txt:'(Lieber nicht. So nicht.)',         wenn:{pegel:50}, geh:'@ende' },
+      { txt:'Du musst nicht allein stehen. Komm.',  probe:{mut:45}, tu:{mag:['KIRA',6]}, geh:'allein' },
     ], zeit:9, standard:1 },
 
   laut:{ wer:'KIRA', text:'Nein.', geh:'@nein' },
@@ -634,7 +639,7 @@ const KIRA_BAUM = {
   taxi:{ wer:'KIRA', text:'Dauert noch.',
     wahl:[
       { txt:'Ich warte mit dir.',                  geh:'warten', tu:{mag:['KIRA',10]} },
-      { txt:'Komm doch mit uns, wir ziehen weiter.', geh:'mitkommen', tu:{mag:['KIRA',-4]} },
+      { txt:'Komm doch mit uns, wir ziehen weiter.', geh:'mitkommen', tu:{mag:['KIRA',-4], ruf:-3} },
       { txt:'Schade. Komm gut heim.',              geh:'@nett' },
     ], zeit:9, standard:2 },
 
@@ -773,6 +778,7 @@ const MARVIN_BAUM = {
          aus Level 2, alle mitzunehmen. Wer allein losgezogen ist, muss
          sich selbst kuemmern. */
       { txt:'Die Jungs sind hinter mir. Denk nochmal nach.', wenn:{flag:'gruppeGross'}, geh:'rueckzug' },
+      { txt:'Respekt. Dein Cousin hat es verdient.',  probe:{ruf:45}, tu:{ruf:4}, geh:'kampf' },
     ], zeit:8, standard:1 },
 
   kneifen:{ wer:'MARVIN', text:'Kein Stress. Genau. Lauf.', tu:{ruf:-8, mut:-5, flag:'clubGekniffen'}, geh:'@ende' },
@@ -1369,6 +1375,7 @@ function tanzSchritt(){
       S.confidenceT=TUNE.confidenceDauer;
       meldung('ON FIRE! RUF +'+TUNE.tanzRuf,1.6);
       saftDo(f=>f.erfolg(p.x,p.y-22,'ON FIRE!'));
+      if(typeof ERFOLG!=='undefined') ERFOLG.gib('l5_tanz');
     }
   } else {
     S.tanzCombo=0;

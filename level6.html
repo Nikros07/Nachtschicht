@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 6 - AFTERHOUR</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 6: AFTERHOUR
@@ -369,9 +370,10 @@ const MORITZ_ECHO = {
       { txt:'Ich hab alle mitgenommen. Das war fuer dich.', wenn:{flag:'gruppeGross'}, geh:'gut', tu:{mag:['MORITZ',6]} },
       { txt:'Ich wollte nur mit dir los. Nicht mit allen.', wenn:{flag:'gruppeKlein'}, geh:'gut', tu:{mag:['MORITZ',6]} },
       { txt:'Ehrlich? Ich hab nicht drueber nachgedacht.',  geh:'ehrlich' },
-      { txt:'Du warst doch dabei. Was willst du.',          geh:'kalt', tu:{mag:['MORITZ',-6]} },
+      { txt:'Du warst doch dabei. Was willst du.',          geh:'kalt', tu:{mag:['MORITZ',-6], ruf:-5} },
       { txt:'Ich hab die Kartons gesehen.', wenn:{flag:'moritzKartonGesehen'}, geh:'karton',
         tu:{flag:'moritzGeheimnis', mag:['MORITZ',6]} },
+      { txt:'Ich hab nur an mich gedacht.', probe:{ruf:45}, geh:'ehrlich', tu:{ruf:+4, mag:['MORITZ',8]} },
     ], zeit:10, standard:2 },
   karton:{ wer:'MORITZ', text:"Dann weisst du's. Sag's den anderen nicht. Noch nicht.", geh:'@kraft20' },
   gut:{ wer:'MORITZ', text:'Okay. Dann ist ja gut. Ich pass auf dich auf, wenn du gleich umkippst.',
@@ -389,9 +391,10 @@ function sieEcho(){
     return { name, baum:{
       start:{ wer:name, text:'Schreibst du mir morgen? Oder war das nur heute Nacht?',
         wahl:[
-          { txt:'Ich schreib dir. Versprochen.',          geh:'ja',   tu:{flag:'versprochen_'+ja, mag:[name,6]} },
+          { txt:'Ich schreib dir. Versprochen.',          geh:'ja',   tu:{flag:'versprochen_'+ja, mag:[name,6], ruf:+4} },
           { txt:'Mal sehen.',                              geh:'mal' },
           { txt:'Ich weiss nicht mal, ob ich mich erinnere.', geh:'nein', tu:{mut:-3} },
+          { txt:'Ich denk die ganze Zeit an dich.', probe:{ruf:65}, geh:'ja', tu:{ruf:+5, mag:[name,8]} },
         ], zeit:10, standard:1 },
       ja:{ wer:name, text:'Dann halt dich dran.', geh:'@kraft' },
       mal:{ wer:name, text:'Mal sehen. Klar.', geh:'@ende' },
@@ -431,7 +434,8 @@ function marvinEcho(){
       wahl:[
         { txt:'Ja. Und?',                 geh:'zugegeben', tu:{mut:6, flag:'angstZugegeben'} },
         { txt:'Nein.',     wenn:{mut:50}, geh:'hart',      tu:{mut:3} },
-        { txt:'Lass mich in Ruhe.',       geh:'@ende',     tu:{mut:-4} },
+        { txt:'Lass mich in Ruhe.',       geh:'@ende',     tu:{mut:-4, ruf:-4} },
+        { txt:'Ich hab Angst. Aber ich bleib.', probe:{mut:45}, geh:'zugegeben', tu:{mut:4} },
       ], zeit:9, standard:2 },
     zugegeben:{ wer:'MARVIN', text:'...Dann bist du ehrlicher als ich.', geh:'@kraft' },
     hart:{ wer:'MARVIN', text:'Wir werden sehen.', geh:'@ende' },
@@ -444,7 +448,8 @@ const LEA_FRAGE={
   frage:{ wer:'LEA', text:'Warum rennst du die ganze Nacht?',
     wahl:[ { txt:'Weil danach alles anders ist.', tu:{flag:'traumEinsicht', mag:['LEA',8]}, geh:'a' },
            { txt:'Ich renn nicht.',               tu:{mag:['LEA',3]}, geh:'b' },
-           { txt:'Keine Ahnung.',                 tu:{mag:['LEA',3]}, geh:'c' } ], zeit:0 },
+           { txt:'Keine Ahnung.',                 tu:{mag:['LEA',3]}, geh:'c' },
+           { txt:'Ich will hier raus. Wirklich.', probe:{ruf:65}, tu:{ruf:+4, mag:['LEA',6]}, geh:'a' } ], zeit:0 },
   a:{ wer:'LEA', text:'Wenn du stehenbleibst, ist es vorbei. Stimmt nicht.', geh:'a2' },
   a2:{ wer:'LEA', text:"Aber ich versteh's.", geh:'uhr' },
   b:{ wer:'LEA', text:'Okay. Dann sitzt du ganz ruhig da.', geh:'uhr' },
@@ -795,6 +800,7 @@ function lichtBeruehrt(L){
   const n=Object.keys(S.lichtGef).length;
   saft(s=>s.fund(Math.round(L.x-S.kamX),Math.round(bodenY(L.t)-L.hoehe),'WACHER'));
   meldung('LICHT '+n+' VON '+LICHTER.length,1.8);
+  if(n>=LICHTER.length && typeof ERFOLG!=='undefined') ERFOLG.gib('l6_lichter');
   SFX.erledigt();
 }
 

@@ -228,10 +228,21 @@ MENUE.eintraege=function(modus){
     l.push({ id:'zurueck', txt:'ZURUECK' });
     return l;
   }
+  /* Erfolge: Zahl oben, dann je Erfolg der Titel (oder ???), zuletzt ZURUECK. Ohne ERFOLG gibt es diesen Modus nicht. */
+  if(modus==='erfolge'){
+    const l=[];
+    let z={hat:0,gesamt:0}, liste=[];
+    try{ if(typeof ERFOLG!=='undefined'&&ERFOLG){ z=ERFOLG.anzahl(); liste=ERFOLG.alle(); } }catch(e){}
+    l.push({ id:'erfolgeZahl', txt:z.hat+' VON '+z.gesamt, typ:'info' });
+    liste.forEach(function(e){ l.push({ id:'e_'+e.id, txt:(e.hat?e.titel:'???'), typ:'info' }); });
+    l.push({ id:'zurueck', txt:'ZURUECK' });
+    return l;
+  }
   const l=[{ id:'neu', txt:'NEUE NACHT' }];
   if(fort.weiter) l.push({ id:'weiter', txt:'WEITER: '+fort.weiter.text, ziel:fort.weiter.seite });
   if(fort.erreicht>=2) l.push({ id:'level', txt:'LEVEL WAEHLEN' });
   l.push({ id:'einst', txt:'EINSTELLUNGEN' });
+  if(typeof ERFOLG!=='undefined') l.push({ id:'erfolge', txt:'ERFOLGE' });
   l.push({ id:'enden', txt:'ENDEN' });
   l.push({ id:'ueber', txt:'UEBER' });
   return l;
@@ -319,6 +330,7 @@ MENUE.naechste=function(liste,i,r){
       case 'weiter': ton(660); gehe(e.ziel); break;
       case 'level': ton(520); modusSetze('level'); break;
       case 'einst': ton(520); modusSetze('einst'); break;
+      case 'erfolge': ton(520); modusSetze('erfolge'); break;
       case 'enden': ton(520); MENUE.galerie(); break;
       case 'ueber': gehe('ueber.html'); break;
       case 'wahlLocker': case 'wahlNormal': case 'wahlHart': {
@@ -341,7 +353,7 @@ MENUE.naechste=function(liste,i,r){
     }
   }
   function zurueckTaste(){
-    if(Z.modus==='level'||Z.modus==='einst'||Z.modus==='neuSicher'||Z.modus==='schwerWahl'){ ton(400); modusSetze('haupt'); }
+    if(Z.modus==='level'||Z.modus==='einst'||Z.modus==='erfolge'||Z.modus==='neuSicher'||Z.modus==='schwerWahl'){ ton(400); modusSetze('haupt'); }
   }
 
   /* ---- Schnittstelle fuer kern.js und mobil.js ---- */
@@ -441,7 +453,7 @@ MENUE.naechste=function(liste,i,r){
       if(a>0){ ctx.globalAlpha=a; ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1; }
     }
   }
-  const TITEL={ level:'LEVEL WAEHLEN', einst:'EINSTELLUNGEN', neuSicher:'NEUE NACHT?', schwerWahl:'WIE SOLL DIE NACHT WERDEN?' };
+  const TITEL={ level:'LEVEL WAEHLEN', einst:'EINSTELLUNGEN', erfolge:'ERFOLGE', neuSicher:'NEUE NACHT?', schwerWahl:'WIE SOLL DIE NACHT WERDEN?' };
 
   MENUE.zeichne=function(){
     hintergrund();

@@ -588,9 +588,14 @@ function talkPflege(){
   const liste=talk.querySelector('.liste'); liste.innerHTML='';
   if(w.length){
     w.forEach(function(o,i){
-      const b=document.createElement('button'); b.className='opt'; b.textContent=o.txt;
-      b.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
-        GESPR.gewaehlt=i; gespraechBestaetigen(); talkPflege(); });
+      const b=document.createElement('button'); b.className='opt';
+      b.textContent=(typeof gespraechWahlText==='function')?gespraechWahlText(i):o.txt;
+      if(typeof gespraechGesperrt==='function'&&gespraechGesperrt(i)){
+        b.classList.add('gesperrt');     // nicht gesperrte Proben bleiben antippbar, gesperrte nicht
+      } else {
+        b.addEventListener('pointerdown',function(e){ e.preventDefault(); ensureAudio();
+          GESPR.gewaehlt=i; gespraechBestaetigen(); talkPflege(); });
+      }
       liste.appendChild(b);
     });
   } else {

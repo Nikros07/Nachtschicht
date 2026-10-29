@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 7 - RUHEPAUSE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 7: SPAETI
@@ -352,6 +353,7 @@ const OEZDEMIR_BAUM = {
     wahl:[
       { txt:'Und wie viele sind gut angekommen?', geh:'witz' },
       { txt:'Warum machen Sie das?',               geh:'tochter' },
+      { txt:'Ich hab grossen Respekt vor Ihnen.', probe:{ruf:65}, tu:{ruf:4}, geh:'tochter' },
     ], zeit:0 },
   witz:{ wer:'HERR OEZDEMIR', text:'Alle, die bei mir Wasser gekauft haben.', tu:{flag:'oezdemirGeschichte', ruf:2}, geh:'mehr' },
   tochter:{ wer:'HERR OEZDEMIR', text:'Meine Tochter hat hier Hausaufgaben gemacht. Jetzt ist sie Aerztin. Der Laden bleibt offen.',
@@ -368,6 +370,7 @@ const TAXI_BAUM = {
     wahl:[
       { txt:'Was siehst du heute?',   geh:'tipp' },
       { txt:'Klingt anstrengend.',     geh:'@ende', tu:{ruf:1} },
+      { txt:'Du kennst die Stadt wie keiner.', probe:{ruf:45}, tu:{ruf:4}, geh:'tipp' },
     ], zeit:0 },
   /* Der Tipp traegt ins Finale: Level 8 liest taxiTipp. */
   tipp:{ wer:'TAXIFAHRER', text:'Heut Nacht laeuft eine Truppe rum. Einer mit Kette. Der schlaegt immer zuerst, wenn du zurueckweichst. Bleib stehen und block.',
@@ -385,7 +388,8 @@ const NELE_BAUM = {
       { txt:'Nimm meins. Ruf sie an.',     wenn:{flag:'handyZurueck'}, geh:'telefon' },
       { txt:'Hier, trink erstmal was.',    wenn:{hat:'WASSER'}, geh:'wasser', tu:{gib:'WASSER'} },
       { txt:'Soll ich mit dir warten?',    geh:'warten' },
-      { txt:'Das wird schon.',             geh:'@ende' },
+      { txt:'Das wird schon.',             geh:'@ende', tu:{ruf:-3} },
+      { txt:'Ich bring dich zu ihnen.',    probe:{ruf:65}, tu:{flag:'neleGeholfen', ruf:6}, geh:'@gut' },
     ], zeit:0 },
   telefon:{ wer:'NELE', text:'Die sind nur zwei Strassen weiter. Danke. Wirklich.',
     tu:{flag:'neleGeholfen', ruf:8}, geh:'@gut' },
@@ -401,7 +405,7 @@ const TOBI_BAUM = {
       { txt:'Und sonst?',     geh:'tipp' },
       { txt:'Komm mit uns.',  wenn:{mut:30}, geh:'mit' },
       { txt:'Ruf sie an.',    geh:'anrufen' },
-      { txt:'Pech.',          geh:'tipp', tu:{mut:-2} },
+      { txt:'Pech.',          geh:'tipp', tu:{mut:-2, ruf:-4} },
       { txt:'Bis spaeter.',   wenn:{flag:'tobiBruecke'}, geh:'@ende' },
     ], zeit:0 },
   /* Der Tipp laeuft fuer jeden Weg: tobiBruecke ist gesetzt, auch wenn Tobi nicht mitkommt. */
@@ -454,7 +458,7 @@ function baueBank(){
   b.j2={ wer:'JONAS', text:'Du hast Ich auch gesagt. Das hat geholfen.', geh:ende('JONAS') };
   b.a_DENNIS={ wer:'DENNIS', text:'Training. Dreimal die Woche. Passt.', geh:ende('DENNIS') };
   b.a_SEMIH={ wer:'SEMIH', text:'Ich kenn in jeder Stadt wen. Gefragt hat keiner.',
-    wahl:[ { txt:'Ich frag dich.', tu:{mag:['SEMIH',4]}, geh:ende('SEMIH') }, { txt:'Hm.', geh:ende('SEMIH') } ], zeit:0 };
+    wahl:[ { txt:'Ich frag dich.', tu:{mag:['SEMIH',4], ruf:5}, geh:ende('SEMIH') }, { txt:'Hm.', tu:{ruf:-3}, geh:ende('SEMIH') } ], zeit:0 };
   b.a_LEA={ wer:'LEA', text:'Ich fotografier weiter. Fragt mich mal.',
     wahl:[ { txt:'Was fotografierst du?', tu:{mag:['LEA',2]}, geh:ende('LEA') }, { txt:'Mach das.', geh:ende('LEA') } ], zeit:0 };
   b['a_MAX FERDI']={ wer:'MAX FERDI', text:'Muss kurz. Bis gleich.', geh:'max2' };
@@ -473,6 +477,7 @@ const HEINZ_BAUM = {
       { txt:'Nimm sie. Du brauchst sie mehr.', geh:'danke', tu:{ruf:6, flag:'heinzGeholfen'} },
       { txt:'Wer zuerst kommt.',               geh:'@ende' },
       { txt:'Hau ab, Alter.', wenn:{mut:45},   geh:'@ende', tu:{ruf:-8} },
+      { txt:'Dann teilen wir uns das.', probe:{mut:40}, tu:{ruf:5}, geh:'danke' },
     ], zeit:0 },
   danke:{ wer:'HEINZ', text:'Anstaendig. Gibt nicht mehr viele. Pass auf dich auf, da draussen.', geh:'@heinz' },
 };
@@ -544,6 +549,7 @@ function wurfLanden(){
   S.wuerfe++; S.wurfRunde++;
   if(trifft){
     S.treffer++; S.combo++; S.bestCombo=Math.max(S.bestCombo,S.combo);
+    if(S.combo>=5&&typeof ERFOLG!=='undefined') ERFOLG.gib('l7_pfand');
     aendereWert('geld',TUNE.wurfGeld);
     meldung('KLONK! +'+TUNE.wurfGeld.toFixed(2).replace('.',',')+' EURO',1.6);
     if(typeof SAFT!=='undefined'){

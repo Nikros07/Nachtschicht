@@ -36,7 +36,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 <style>:root{ --raum:#140f26; --glanz:rgba(80,200,255,.08); }</style>
 </head>
 <body>
@@ -60,30 +60,31 @@
   <div id="base"><span>LEVEL 1 - DIE SCHULE</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 1: DIE SCHULE
@@ -1395,7 +1396,8 @@ const HAUSMEISTER_GESPRAECH = {
       { txt:'Ich hab mein handy vergessen.',            geh:'handy' },
       { txt:'Ich bin beim nachsitzen eingepennt.',      geh:'ehrlich' },
       { txt:'Machen sie einfach die tuer auf.',         wenn:{mut:45}, geh:'frech' },
-      { txt:'Max ferdi laesst gruessen.',               wenn:{crew:'MAX FERDI'}, geh:'ferdi' },
+      { txt:'Max ferdi laesst gruessen.',               wenn:{crew:'MAX FERDI'}, geh:'ferdi', tu:{ruf:4} },
+      { txt:'Kennen sie mich wirklich nicht?', probe:{ruf:65}, tu:{ruf:4, mag:['HAUSMEISTER',6]}, geh:'mitleid' },
     ], zeit:9, standard:1 },
 
   handy:{ wer:'HAUSMEISTER', text:'Handys liegen im lehrerzimmer. Zweiter stock, und beeil dich.',
@@ -1405,6 +1407,7 @@ const HAUSMEISTER_GESPRAECH = {
     wahl:[
       { txt:'War ne lange woche.',        geh:'mitleid', tu:{ruf:3} },
       { txt:'Passiert den besten.',       geh:'genervt', tu:{mut:3} },
+      { txt:'Ja, und ich werd nicht wieder pennen.', probe:{mut:35}, tu:{mut:4}, geh:'mitleid' },
     ], zeit:7, standard:0 },
 
   mitleid:{ wer:'HAUSMEISTER', text:'Kenn ich. Komm, ich lass dich raus - aber du hast mich nie gesehen.',
@@ -1418,8 +1421,9 @@ const HAUSMEISTER_GESPRAECH = {
 
   ferdi:{ wer:'HAUSMEISTER', text:'Der ferdi. Der ist heute schon durchs fenster raus. Ihr seid mir welche.',
     wahl:[
-      { txt:'Dann lassen sie mich auch raus.', geh:'mitleid' },
+      { txt:'Dann lassen sie mich auch raus.', geh:'mitleid', tu:{ruf:-3} },
       { txt:'Ich sag ihm schoene gruesse.',    geh:'ende', tu:{ruf:2} },
+      { txt:'Ich bin nicht Ferdi, Herr Hausmeister.', probe:{ruf:45}, tu:{ruf:4, mag:['HAUSMEISTER',6]}, geh:'mitleid' },
     ], zeit:7, standard:1 },
 
   schluessel:{ wer:'HAUSMEISTER', text:'Der zweitschluessel haengt am haken. Nimm ihn.',
@@ -1503,9 +1507,10 @@ function zeichneCode(){
 const DIREKTOR_AUSGANG = {
   start:{ wer:'DIREKTOR', text:'Da ist ja unser Nachsitzer. Mit einem Schluessel, der nicht ihm gehoert.',
     wahl:[
-      { txt:'Sie haben mich eingeschlossen.',     wenn:{mut:40}, geh:'versehen' },
+      { txt:'Sie haben mich eingeschlossen.',     wenn:{mut:40}, geh:'versehen', tu:{ruf:-4} },
       { txt:'Ich wollte nur nach Hause.',         geh:'hause' },
       { txt:'(Rennen.)',                          geh:'rennen' },
+      { txt:'Ich hab keine Angst vor ihnen.', probe:{mut:50}, tu:{mut:4, ruf:3}, geh:'versehen' },
     ], zeit:8, standard:1 },
   versehen:{ wer:'DIREKTOR', text:'...Das war ein Versehen. Geh. Und kein Wort zu deinen Eltern.',
     tu:{mut:5, flag:'direktorVersehen'}, geh:'@raus' },
@@ -1591,6 +1596,7 @@ function starteCutscene(){
 /* Abschluss des Levels - egal ob durchgesehen oder uebersprungen. */
 function levelGeschafft(){
   speichereCrew('MAX FERDI');
+  if(typeof ERFOLG!=='undefined'&&S.alarme===0) ERFOLG.gib('l1_unsichtbar');
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }

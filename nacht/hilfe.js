@@ -241,6 +241,7 @@ var HILFE=(function(){
     }
     textC('ZIEL',y,P.dunkel); y+=8;
     zeilen(Z.ziel||'SCHAU DICH UM',P.gold); y+=3;
+    if(typeof rufStufe==='function'&&typeof wert==='function'){ textC('RUF: '+rufStufe().name+' ('+Math.round(wert('ruf'))+')',y,P.gold); y+=10; }
     if(Z.verlauf.length){
       textC('ZULETZT',y,P.dunkel); y+=8;
       Z.verlauf.forEach(t=>zeilen(t,P.weiss));

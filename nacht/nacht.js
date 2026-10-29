@@ -51,6 +51,16 @@ function ladeStand(){
 let NACHT=ladeStand();
 function speichereStand(){ try{ localStorage.setItem(STAND_KEY,JSON.stringify(NACHT)); }catch(e){} }
 
+/* ---- Ruf-Stufen und Popup-Farben (Stellschrauben) ---- */
+const RUF_STUFEN=[{min:0,name:'UNBEKANNT'},{min:25,name:'DABEI'},{min:45,name:'BEKANNT'},{min:65,name:'GEFEIERT'},{min:85,name:'LEGENDE'}];
+function rufStufe(r){
+  if(r===undefined) r=wert('ruf');
+  let s=RUF_STUFEN[0];
+  for(const x of RUF_STUFEN) if(r>=x.min) s=x;
+  return s;
+}
+const WERT_POPUP={ ruf:{plus:'#5fe08a',minus:'#ff4d4d'}, mut:{plus:'#42d9ff',minus:'#ff9e6b'}, y:34, yStufe:48 };
+
 /* ---- Werte ---- */
 const wert=n=>n==='pegel'?ladePegel():(NACHT.werte[n]||0);
 function setzeWert(n,v){
@@ -105,6 +115,22 @@ function bedingungErfuellt(b){
   return true;
 }
 
+/* Popup fuer Ruf und Mut: '+10 RUF' bzw. '-5 MUT', bei Ruf-Stufenwechsel zusaetzlich 'RUF: NAME!'. */
+function wertMeldung(k,d,altStufe){
+  try{
+    if(!(typeof SAFT!=='undefined'&&SAFT&&SAFT.popup)) return;
+    const x=(typeof W==='number'?Math.round(W/2):160);
+    SAFT.popup((d>0?'+':'')+d+' '+k.toUpperCase(),x,WERT_POPUP.y,d>0?WERT_POPUP[k].plus:WERT_POPUP[k].minus);
+    if(k==='ruf'){
+      const neu=rufStufe();
+      if(neu.name!==altStufe.name){
+        SAFT.popup('RUF: '+neu.name+(neu.min>altStufe.min?'!':''),x,WERT_POPUP.yStufe,neu.min>altStufe.min?'#ffd447':'#ff4d4d');
+        if(neu.name==='LEGENDE'&&typeof ERFOLG!=='undefined'&&ERFOLG&&ERFOLG.gib) ERFOLG.gib('legende');
+      }
+    }
+  }catch(e){}
+}
+
 /* ---- Wirkung einer Entscheidung ----
    {mut:+5, ruf:-10, flag:'geprahlt', mag:['MORITZ',+8], nimm:'PFAND'} */
 function wirke(w){
@@ -115,7 +141,14 @@ function wirke(w){
     if(k==='nimm'){ nimmDing(v); continue; }
     if(k==='gib'){ gibDing(v); continue; }
     if(k==='crew'){ speichereCrew(v); continue; }
-    if(typeof v==='number') aendereWert(k,v);
+    if(typeof v==='number'){
+      if(k==='ruf'||k==='mut'){
+        const alt=wert(k), altStufe=rufStufe();
+        aendereWert(k,v);
+        const d=Math.round(wert(k)-alt);
+        if(d!==0) wertMeldung(k,d,altStufe);
+      } else aendereWert(k,v);
+    }
   }
 }
 

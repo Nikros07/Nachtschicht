@@ -86,5 +86,20 @@ pruefe('Texte nur mit erlaubten Zeichen', (()=>{
   for(const m of ['haupt','level','einst','hinweis','neuSicher','schwerWahl']) for(const e of E("MENUE.eintraege('"+m+"')")) alle.push(e.txt,e.wert||'');
   return alle.every(t=>erlaubt.test(t)); })());
 
+console.log('\n--- Erfolge (ERFOLG aus nacht/erfolge.js, hier als Attrappe) ---');
+frisch();
+pruefe('ohne ERFOLG: kein ERFOLGE im Hauptmenue', ids('haupt').indexOf('erfolge')<0, ids('haupt'));
+pruefe('ohne ERFOLG: Hauptmenue wie bisher', ids('haupt')==='neu,einst,enden,ueber', ids('haupt'));
+E("ERFOLG={anzahl:()=>({hat:1,gesamt:2}), alle:()=>[{id:'legende',titel:'LEGENDE',text:'',hat:true},{id:'probe_ruf',titel:'MAN KENNT MICH',text:'',hat:false}]};");
+pruefe('mit ERFOLG: ERFOLGE im Hauptmenue, vor ENDEN', ids('haupt')==='neu,einst,erfolge,enden,ueber', ids('haupt'));
+pruefe('ERFOLGE-Eintrag hat den Text ERFOLGE', E("MENUE.eintraege('haupt').find(e=>e.id==='erfolge').txt")==='ERFOLGE');
+pruefe('Modus erfolge: Zahl, Titel oder ???, ZURUECK', ids('erfolge')==='erfolgeZahl,e_legende,e_probe_ruf,zurueck', ids('erfolge'));
+pruefe('Modus erfolge: Zahl-Zeile', E("MENUE.eintraege('erfolge')[0].txt")==='1 VON 2');
+pruefe('Modus erfolge: erreicht zeigt Titel, offen zeigt ???', E("MENUE.eintraege('erfolge')[1].txt")==='LEGENDE'&&E("MENUE.eintraege('erfolge')[2].txt")==='???');
+pruefe('Modus erfolge: ZURUECK ist vorgewaehlt', E("MENUE.standardWahl(MENUE.eintraege('erfolge'),'erfolge')")===3);
+pruefe('Modus erfolge: enthaelt ZURUECK', ids('erfolge').split(',').indexOf('zurueck')>=0);
+E("delete ERFOLG;");
+pruefe('ERFOLG wieder weg: Hauptmenue wie bisher', ids('haupt')==='neu,einst,enden,ueber', ids('haupt'));
+
 console.log('\n'+ok+' OK, '+fail+' Fehler');
 process.exit(fail?1:0);

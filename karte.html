@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,27 +37,28 @@
   <div id="base"><span>DIE STADT - ZWISCHEN DEN LEVELN</span><span>M TON &nbsp; T HANDY &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - DIE STADTKARTE
@@ -104,6 +105,7 @@ const UMWEGE={
         { txt:'Einmal alles. 4 EURO',  wenn:{geld:4}, tu:{geld:-4, kondition:20, flag:'aliNummer'}, geh:'satt' },
         { txt:'Nur ne Cola. 2 EURO',   wenn:{geld:2}, tu:{geld:-2, mut:1, flag:'aliNummer'}, geh:'cola' },
         { txt:'Nee, danke.',           geh:'@ende' },
+        { txt:'Kennst du mich nicht, Ali?', probe:{ruf:45}, tu:{ruf:5, kondition:10}, geh:'tuete' },
       ], zeit:0 },
     satt:{ wer:'ALI', text:'Grundlage. Deine Mutter waere stolz.', geh:'tuete' },
     cola:{ wer:'ALI', text:'Cola. Wie ein Kind. Na gut.', geh:'tuete' },
@@ -122,7 +124,7 @@ const UMWEGE={
       wahl:[
         { txt:'2 Euro in den Koffer.', wenn:{geld:2}, tu:{geld:-2, ruf:4}, geh:'nickt' },
         { txt:'Laut mitsingen.',       wenn:{mut:40}, tu:{ruf:6, mut:3, flag:'mitgesungen'}, geh:'singt' },
-        { txt:'Weitergehen.',          geh:'@ende' },
+        { txt:'Weitergehen.',          tu:{ruf:-3}, geh:'@ende' },
       ], zeit:0 },
     nickt:{ wer:'MUSIKER', text:'Er nickt dir zu und spielt weiter. Natuerlich Wonderwall.', geh:'@ende' },
     singt:{ wer:'MUSIKER', text:'Die halbe Schlange singt mit. Irgendwer filmt.', geh:'@ende' },
@@ -132,7 +134,8 @@ const UMWEGE={
       wahl:[
         { txt:'Wer bist du?',     geh:'name' },
         { txt:'Hab keins.',       geh:'@ende' },
-        { txt:'Frag wen anders.', wenn:{mut:40}, tu:{mut:2}, geh:'frech' },
+        { txt:'Frag wen anders.', wenn:{mut:40}, tu:{mut:2, ruf:-4}, geh:'frech' },
+        { txt:'Setz dich her. Ich hab Zeit.', probe:{mut:45}, tu:{mut:4}, geh:'name' },
       ], zeit:0 },
     name:{ wer:'MARVIN', text:'Marvin. Merk dir das. Wir sehen uns drinnen.',
       tu:{flag:'marvinKennt'}, geh:'@ende' },
@@ -142,8 +145,9 @@ const UMWEGE={
     start:{ wer:'PIZZAMANN', text:'Das Stueck kostet drei.',
       wahl:[
         { txt:'Eins fuer mich. 3 EURO',          wenn:{geld:3}, tu:{geld:-3, kondition:25, pegel:-10}, geh:'@ende' },
-        { txt:'Eine ganze fuer alle. 9 EURO',    wenn:{geld:9}, tu:{geld:-9, kondition:20, pegel:-8}, geh:'@teilen' },
+        { txt:'Eine ganze fuer alle. 9 EURO',    wenn:{geld:9}, tu:{geld:-9, kondition:20, pegel:-8, ruf:5}, geh:'@teilen' },
         { txt:'Nee.',                            geh:'@ende' },
+        { txt:'Ich bin doch der Stammgast hier.', probe:{ruf:65}, tu:{ruf:4, pegel:-6}, geh:'@ende' },
       ], zeit:0 },
   }},
   6:{ name:'DER BRUNNEN', baum:{

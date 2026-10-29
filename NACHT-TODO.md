@@ -114,6 +114,16 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
   Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
   Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
+- [ ] **P2 · Proben-Antworten im Browser und am Handy sehen** — (RUF 60)/(MUT 40) grau bzw. gold,
+  Ruf-Popups (+3 RUF, RUF: BEKANNT!) und Erfolg-Popups sind nur headless getestet
+  (test/dialog.test.js 33, test/ruf.test.js 25, test/erfolge.test.js 41). Wo: nacht/dialog.js,
+  nacht/nacht.js (wertMeldung), nacht/erfolge.js, nacht/mobil.js (talkPflege) · Fertig wenn:
+  Screenshot je einer gesperrten und einer bestandenen Probe am Rechner und in der Emulation
+  812x375, Popups ueberlappen nicht mit dem Gespraechskasten.
+- [ ] **P2 · Erfolge-Liste zeigt nur Titel** — im Startmenue ERFOLGE stehen Titel oder ???, der
+  Beschreibungstext (z. B. LEVEL 1 OHNE ALARM) wird nirgends gezeigt; gesperrte Erfolge verraten
+  also nicht, was zu tun ist. Wo: nacht/menue.js (Modus 'erfolge') · Fertig wenn: der gewaehlte
+  Eintrag zeigt seinen Text (auch bei ???), test/menue.test.js prueft das.
 - [ ] **P2 · Tutorial: Tipps und WAS JETZT? im Browser sichten** — Tipps (hilfeTipp), Karte
   WAS JETZT? (Tab, Pausemenue, Handy-Menue) und Lektionspuppe sind nur headless getestet
   (test/hilfe.test.js, docs/gameplay/messung-tutorial.md). Wo: nacht/hilfe.js, alle Level ·
@@ -309,6 +319,9 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 - **P2 · Level 5: "Theke gratis" (Ereignis SHOT) — Entscheidung nötig** — umgesetzt als: 10 s kein Auf-Ex-Spiel, jeder Druck an der Theke ist ein Schluck (+18 Pegel, 0,6 s Pause). Soll es so bleiben, oder ein echtes kostenloses Glas mit einmaligem Effekt? Wo: level5.html (gratisShot, TUNE.shotDauer/shotSchluck). Bis zur Antwort: so lassen.
 
+- [ ] **Neue Proben-Antworten gegenlesen** — 33 neue Antworten (Haiku geschrieben), Liste:
+  `grep -o "txt:'[^']*'[^}]*probe:{" index.html level*.html karte.html`. Mindestens eine wirkt
+  schief: "Ich hab nur an mich gedacht." als Ruf-Probe. Passen Ton und Personen zur echten Crew?
 - [ ] **Level 8: Soll eine Kampfniederlage ein Scheitern sein?** — Heute (TUNE.kampfNiederlageEndet:
   false) geht der Heimweg nach einer Niederlage weiter, der Story-Zweig "MIT BLAUEM AUGE" bleibt.
   Mit true startet NOCHMAL direkt am Kampf neu, dann ist dieser Zweig nicht mehr erreichbar.
@@ -344,6 +357,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
 
+- [x] 2026-10-29 · P1 · Ruf zaehlt in Gespraechen: Proben-Antworten (probe:{ruf:N}/{mut:N},
+  sichtbar, gesperrt grau mit (RUF 60), bestanden gold), Ruf-/Mut-Popups, fuenf Ruf-Stufen mit
+  Ansage, Ruf in WAS JETZT?, 14 Erfolge (nacht/erfolge.js, Startmenue ERFOLGE), 33 neue Proben
+  auf 9 Seiten, neue Ruf-Wirkungen in allen Leveln, Recherche docs/gameplay/recherche-dialoge.md
+  (16 Spiele, 27 Ideen) · Sitzung · alle 24 Pruefungen gruen, flagcheck verloren 0.
 - [x] 2026-10-29 · P1 · Tutorials und Entschaerfung: neue Engine nacht/hilfe.js (Erst-Tipps je
   Mechanik, WAS JETZT? mit Tab/Pausemenue/Handy, LOCKER-Angebot nach 2 Niederlagen), Schwierigkeit
   mit frist/fensterMin, gemeinsames Mindest-Konterfenster, vorgewaehlte Standardantwort im

@@ -90,6 +90,15 @@ const WERTUNG=(function(){
     // "neu" heisst: erster Bestrang oder besser als der bisherige. Gleich oder schlechter aendert nichts.
     const neuerBest=ok&&(alt===null||ORDNUNG[rang]>ORDNUNG[alt]);
     if(neuerBest){ _best[n]=rang; schreibe(n,rang); }
+    // Erfolge (nacht/erfolge.js): erster Rang S, und Rang S auf allen acht Levels. Fehler stoeren den Abschluss nicht.
+    try{
+      if(typeof ERFOLG!=='undefined'&&ERFOLG&&typeof ERFOLG.gib==='function'){
+        if(rang==='S') ERFOLG.gib('rang_s');
+        let alleS=true;
+        for(let k=1;k<=LEVEL_MAX;k++){ if(best(k)!=='S'){ alleS=false; break; } }
+        if(alleS) ERFOLG.gib('alles_s');
+      }
+    }catch(e){}
     const zl=[];
     if(Array.isArray(zeilen)){
       for(let i=0;i<zeilen.length&&zl.length<T.zeilenMax;i++){

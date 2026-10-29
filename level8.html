@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,31 +37,32 @@
   <div id="base"><span>LEVEL 8 - HEIMWEG</span><span>A D LAUFEN &nbsp; LEER SPRINGEN &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/kampf.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/kampf.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 8: HEIMWEG (FINALES LEVEL)
@@ -726,9 +727,10 @@ function finaleSteps(){
                :flag('fightGewonnen')?'IHR HABT DAS TRIKOT NOCH.':'KEIN STRESS.';
     st.push({ tu:()=>{ F.marvin=true; },
       wahl:{ start:{ wer:'MARVIN', text:zeile, zeit:0, wahl:[
-        { txt:'Kommst du mit?', tu:{ flag:'marvinMitkommen', mag:['MARVIN',6] }, geh:'@weiter' },
+        { txt:'Kommst du mit?', tu:{ flag:'marvinMitkommen', ruf:+4, mag:['MARVIN',6] }, geh:'@weiter' },
         { txt:"Mach's gut.", geh:'@weiter' },
-        { txt:'(nicken)',    geh:'@weiter' } ] } } });
+        { txt:'(nicken)',    geh:'@weiter' },
+        { txt:'Du hast mich gesehen, Marvin.', probe:{ruf:65}, tu:{ruf:+4, mag:['MARVIN',+6]}, geh:'@weiter' } ] } } });
     karte('*MARVIN SUMMT. WONDERWALL.*',{ d:3.0, col:P.dim,
       wenn:()=>flag('marvinMitkommen')||flag('fightFrieden') });
   }
@@ -741,8 +743,9 @@ function finaleSteps(){
   if(!flag('handyZurueck')) karte('MORITZ HAELT DIR SEIN HANDY HIN.',{ d:3.0 });
   if(flag('wirEuchAuch')) karte('UNBEKANNT: WIR SEHEN EUCH.',{ d:3.4 });
   else wahl({ start:{ wer:'UNBEKANNT', text:'WIR SEHEN EUCH.', zeit:0, wahl:[
-      { txt:'Wir euch auch.', tu:{ flag:'wirEuchAuch' }, geh:'@weiter' },
-      { txt:'Wer bist du?',   geh:'@weiter' } ] } });
+      { txt:'Wir euch auch.', tu:{ flag:'wirEuchAuch', ruf:+3 }, geh:'@weiter' },
+      { txt:'Wer bist du?',   tu:{ ruf:-3 }, geh:'@weiter' },
+      { txt:'Ich lass euch nicht vorbei.', probe:{mut:40}, tu:{ruf:+5}, geh:'@weiter' } ] } });
   karte('ALI: ICH MERK MIR GESICHTER.|MEIN VIERTEL PASST AUF SICH AUF.',{ tu:()=>{ F.ali=true; } });
   if(flag('aliNummer')) karte('ALI: DEINE NUMMER STAND AUF DER TUETE.',{ d:3.4 });
   else karte('ALI: KEINE TUETE. EGAL. GESICHT HAB ICH.',{ d:3.4 });
@@ -751,7 +754,8 @@ function finaleSteps(){
   wahl({ start:{ wer:'MORITZ', text:'TSCHUESS.', zeit:0, wahl:[
     { txt:'Tschuess.',      tu:{ flag:'tschuessGesagt', mag:['MORITZ',6] }, geh:'@weiter' },
     { txt:'Bis gleich.',    tu:{ flag:'bisGleichAmEnde' }, geh:'@weiter' },
-    { txt:'Bis September.', tu:{ flag:'bisGleichAmEnde' }, geh:'@weiter' } ] } });
+    { txt:'Bis September.', tu:{ flag:'bisGleichAmEnde' }, geh:'@weiter' },
+    { txt:'Ich wuensch dir alles Gute.', probe:{ruf:45}, tu:{ruf:+3, mag:['MORITZ',+8]}, geh:'@weiter' } ] } });
   karte('MAX FERDI SETZT SICH ALS ERSTER.|DAS IST NEU.',{ tu:()=>{ F.maxSitzt=true; } });
 
   /* Der Schluessel */
@@ -822,6 +826,10 @@ function starteCutscene(){
 }
 function levelGeschafft(){
   if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
+  if(typeof ERFOLG!=='undefined'){
+    ERFOLG.gib('nacht_durch');
+    if(S.licht<60) ERFOLG.gib('l8_sonne');
+  }
   rangAbschluss8();
   const best=ladeBest();
   if(best===null||S.zeit<best){ S.neueBestzeit=true;

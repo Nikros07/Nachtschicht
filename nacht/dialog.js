@@ -21,6 +21,11 @@
    wird), standard (Index in der VOLLEN wahl-Liste; diese Antwort ist vorgewaehlt und wird bei Zeitablauf genommen; ist sie gerade unsichtbar, gilt die erste sichtbare), tu (Wirkung beim
    Betreten), geh (naechster Knoten ohne Auswahl).
    Auswahl-Felder: txt, wenn (Bedingung, sonst unsichtbar), tu, geh.
+   probe (optional): Probe-Antwort, z. B. {ruf:60} oder {mut:40} - genau ein
+   Schluessel, die Zahl ist der Mindestwert. Anders als wenn bleibt die Antwort
+   IMMER sichtbar; ist die Probe nicht bestanden, ist sie gesperrt (gedimmt,
+   nicht waehlbar). Bestanden und bestaetigt meldet sie ERFOLG.gib('probe_ruf')
+   bzw. 'probe_mut'.
    Bedingungen und Wirkungen gehen an nacht.js, siehe dort.
 
    ACHTUNG Schrift: der 3x5-Font kann nur A-Z 0-9 und . : - ! ? / + , < > * %
@@ -35,7 +40,16 @@
    ========================================================================== */
 
 const D_FARBE={ kasten:'#000000e8', rand:'#ff3d8b', name:'#42d9ff',
-  text:'#f2f0ff', wahl:'#8d86a8', aktiv:'#ffd447', zeitBalken:'#ff3d8b' };
+  text:'#f2f0ff', wahl:'#8d86a8', aktiv:'#ffd447', zeitBalken:'#ff3d8b',
+  gesperrt:'#4a4363', probe:'#ffd447' };
+
+/* Probe-Antwort: Schluessel (ruf/mut) und Mindestwert, oder null wenn keine Probe. */
+function probeBestanden(w){
+  return !!(w&&w.probe&&typeof bedingungErfuellt==='function'&&bedingungErfuellt(w.probe));
+}
+function probeGesperrt(w){
+  return !!(w&&w.probe&&typeof bedingungErfuellt==='function'&&!bedingungErfuellt(w.probe));
+}
 
 let GESPR=null;   // {baum, knoten, wahlen[], gewaehlt, zeitRest, fertig, tippT}
 
@@ -57,9 +71,17 @@ function betrete(name){
   if(k.wer&&typeof stimmePiep==='function') stimmePiep(k.wer);
   GESPR.knoten=k; GESPR.name=name; GESPR.tippT=0;
   GESPR.wahlen=(k.wahl||[]).filter(w=>bedingungErfuellt(w.wenn));
+  GESPR.gesperrt=GESPR.wahlen.map(w=>probeGesperrt(w));
+  /* Sind alle sichtbaren Antworten gesperrt, sind alle frei - nie festhaengen. */
+  if(GESPR.gesperrt.length&&GESPR.gesperrt.every(x=>x)) GESPR.gesperrt=GESPR.gesperrt.map(()=>false);
   const std=(k.wahl&&k.standard!==undefined)?k.wahl[k.standard]:null;
   const si=std?GESPR.wahlen.indexOf(std):-1;
   GESPR.standardIdx=si>=0?si:0;     // unsichtbare Standardantwort: die erste sichtbare
+  /* Die Standardantwort darf nie gesperrt sein: dann die erste freie nehmen. */
+  if(GESPR.gesperrt[GESPR.standardIdx]){
+    const frei=GESPR.gesperrt.indexOf(false);
+    if(frei>=0) GESPR.standardIdx=frei;
+  }
   GESPR.gewaehlt=GESPR.standardIdx; // vorgewaehlt: Abwarten und E bedeuten dasselbe
   /* Bedenkzeit nach Schwierigkeit - auf LOCKER anderthalbmal so lang. */
   const zf=(typeof schwer==='function')?schwer().zeit:1;
@@ -73,10 +95,24 @@ function starteGespraech(baum,start='start',fertig=null){
 }
 const gespraechAktiv=()=>!!GESPR;
 
+function gespraechGesperrt(i){ return !!(GESPR&&GESPR.gesperrt&&GESPR.gesperrt[i]); }
+
+function gespraechWahlText(i){
+  const w=GESPR&&GESPR.wahlen[i];
+  if(!w) return '';
+  if(!w.probe) return w.txt;
+  const k=Object.keys(w.probe)[0], n=w.probe[k];
+  return (gespraechGesperrt(i)?'['+k.toUpperCase()+' '+n+'] ':'['+k.toUpperCase()+'] ')+w.txt;
+}
+
 function gespraechWaehle(richtung){
   if(!GESPR||!GESPR.wahlen.length) return;
   const n=GESPR.wahlen.length;
-  GESPR.gewaehlt=(GESPR.gewaehlt+richtung+n)%n;
+  let i=GESPR.gewaehlt;
+  for(let s=0;s<n;s++){          // gesperrte Proben ueberspringen (hoechstens n Schritte)
+    i=(i+richtung+n)%n;
+    if(!gespraechGesperrt(i)){ GESPR.gewaehlt=i; return; }
+  }
 }
 
 function gespraechBestaetigen(){
@@ -84,6 +120,12 @@ function gespraechBestaetigen(){
   const k=GESPR.knoten;
   if(GESPR.wahlen.length){
     const w=GESPR.wahlen[GESPR.gewaehlt];
+    if(gespraechGesperrt(GESPR.gewaehlt)){
+      if(typeof piep==='function') piep(140,.08,'square',.04);
+      return;                    // nicht bestandene Probe: nichts passiert
+    }
+    if(probeBestanden(w)&&typeof ERFOLG!=='undefined'&&ERFOLG&&ERFOLG.gib)
+      ERFOLG.gib(Object.keys(w.probe)[0]==='mut'?'probe_mut':'probe_ruf');
     wirke(w.tu);
     betrete(w.geh||'ende');
   } else {
@@ -132,9 +174,12 @@ function zeichneGespraech(){
   const yW=y0+16+zeilen.length*8+2;
   if(w.length){
     w.forEach((o,i)=>{
-      const an=i===GESPR.gewaehlt;
-      if(an) text('>',8,yW+i*9,D_FARBE.aktiv);
-      text(o.txt,16,yW+i*9,an?D_FARBE.aktiv:D_FARBE.wahl);
+      const an=i===GESPR.gewaehlt, gs=gespraechGesperrt(i);
+      if(an&&!gs) text('>',8,yW+i*9,D_FARBE.aktiv);
+      /* Der Bitmap-Font hat keine eckigen Klammern: auf dem Canvas stehen runde. */
+      const t=gespraechWahlText(i).replace(/\[/g,'(').replace(/\]/g,')');
+      const farbe=gs?D_FARBE.gesperrt:an?D_FARBE.aktiv:(probeBestanden(o)?D_FARBE.probe:D_FARBE.wahl);
+      text(t,16,yW+i*9,farbe);
     });
   } else if(Math.floor(GESPR.tippT*2)%2===0){
     const h=IS_TOUCH?'TIPPEN':'E WEITER';

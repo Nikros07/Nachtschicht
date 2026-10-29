@@ -70,6 +70,9 @@ canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; 
 #cab:fullscreen #marquee, #cab:fullscreen #base, #cab:fullscreen #levelbar { display:none; }
 #cab:fullscreen #screen { border-radius:0; }
 
+/* Gesperrte Probe-Antwort (Gespraech): gedimmt, nicht antippbar (nacht/dialog.js). */
+#mtalk .opt.gesperrt{opacity:.45}
+
 /* Am Handy uebernimmt nacht/mobil.js das Layout. Was es nicht selbst
    ausblendet, steht hier: Schriftzug, Fussleiste, Vollbild-Knopf. */
 html.touch #marquee, html.touch #base, html.touch #fs { display:none; }

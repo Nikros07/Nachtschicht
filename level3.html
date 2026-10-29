@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,31 +37,32 @@
   <div id="base"><span>LEVEL 3 - DER NACHTBUS</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/kampf.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/kampf.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 3: DER NACHTBUS
@@ -422,9 +423,10 @@ const BETRUNKENER = {
   start:{ wer:'DER LAUTE', text:'Eyyy. Setz dich. Ich erzaehl dir was.',
     wahl:[
       { txt:'Die kontrolleure suchen dich.',  geh:'aufgestachelt' },
-      { txt:'Lass mal, ich muss weiter.',     geh:'abgewimmelt' },
+      { txt:'Lass mal, ich muss weiter.',     tu:{ruf:-3}, geh:'abgewimmelt' },
       { txt:'Hast du einen fahrschein?',      geh:'schein' },
       { txt:'Erzaehl.',                       wenn:{mut:40}, geh:'geschichte' },
+      { txt:'Du kennst mich doch, Alter.',    probe:{ruf:45}, tu:{ruf:4, mag:['DER LAUTE',6]}, geh:'geschichte' },
     ], zeit:9, standard:1 },
 
   aufgestachelt:{ wer:'DER LAUTE', text:'MICH? MICH SUCHEN SIE? DIE SOLLEN MAL HERKOMMEN!',
@@ -449,6 +451,7 @@ const FRAU = {
       { txt:'Hab ich auch nicht.',            geh:'ehrlich' },
       { txt:'Doch, klar hab ich einen.',      geh:'gelogen' },
       { txt:'Schoener hund.',                 geh:'hund' },
+      { txt:'Ich seh Sie auch oft. Schicht?', probe:{ruf:65}, tu:{mag:['DIE FRAU',7], flag:'busTipp'}, geh:'schicht' },
     ], zeit:8, standard:0 },
 
   ehrlich:{ wer:'DIE FRAU', text:'Dachte ich mir. Zwei vorne, zwei in der Mitte, einer ganz hinten.',
@@ -472,8 +475,9 @@ const JONAS_GESPRAECH = {
   start:{ wer:'JONAS', text:'Alter. Was machst du denn hier?',
     wahl:[
       { txt:'Wir gehen feiern. Kommst du mit?', geh:'einladen' },
-      { txt:'Fahre nur heim.',                  geh:'abgesagt' },
+      { txt:'Fahre nur heim.',                  tu:{ruf:-4}, geh:'abgesagt' },
       { txt:'Weg da, kontrolle.',               geh:'gewarnt' },
+      { txt:'Komm, Jonas. Du bist dabei.',      probe:{mut:50}, tu:{mag:['JONAS',4]}, geh:'dabei' },
     ], zeit:8, standard:1 },
 
   einladen:{ wer:'JONAS', text:'Wo denn hin? Wenn du sagst zu dir nach hause, steig ich aus.',
@@ -594,7 +598,7 @@ const DIE_DREI = {
       { txt:'Wir sind zu viert. Geh zur seite.', wenn:{crew:'JONAS'},  geh:'zurueckgewichen' },
       { txt:'Verschwinde.',                      wenn:{mut:50},        geh:'angeblafft' },
       { txt:'Alles gut, ich warte.',                                   geh:'gewartet' },
-      { txt:'Dann macht doch was.',                                    geh:'kampf' },
+      { txt:'Dann macht doch was.',                       tu:{ruf:-4}, geh:'kampf' },
     ], zeit:8, standard:2 },
 
   zurueckgewichen:{ wer:'DER MIT DER KAPPE', text:'Schon gut. Wir wollten sowieso raus.',
@@ -1437,6 +1441,8 @@ function levelGeschafft(){
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
   if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
   mitSaft(s=>s.teilchen('konfetti',W/2,H/2-20,30));
+  /* Schwarzfahrer: nie von einer Kontrolle erwischt. */
+  if(S.erwischtZahl===0 && typeof ERFOLG!=='undefined') ERFOLG.gib('l3_schwarz');
   rangAbschluss();
   /* Der Pegel wird unveraendert an Level 4 weitergereicht. */
   try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}

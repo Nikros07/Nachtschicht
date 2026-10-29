@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202610290850">
+<link rel="stylesheet" href="nacht/stil.css?v=202610291118">
 </head>
 <body>
 <div id="cab">
@@ -37,30 +37,31 @@
   <div id="base"><span>LEVEL 2 - VORGLUEHEN</span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202610290850"></script>
-<script src="nacht/geraet.js?v=202610290850"></script>
-<script src="nacht/bild.js?v=202610290850"></script>
-<script src="nacht/hud.js?v=202610290850"></script>
-<script src="nacht/ton.js?v=202610290850"></script>
-<script src="nacht/komfort.js?v=202610290850"></script>
-<script src="nacht/musik.js?v=202610290850"></script>
-<script src="nacht/songs.js?v=202610290850"></script>
-<script src="nacht/saft.js?v=202610290850"></script>
-<script src="nacht/stand.js?v=202610290850"></script>
-<script src="nacht/welt.js?v=202610290850"></script>
-<script src="nacht/nacht.js?v=202610290850"></script>
-<script src="nacht/dialog.js?v=202610290850"></script>
-<script src="nacht/eingabe.js?v=202610290850"></script>
-<script src="nacht/lehre.js?v=202610290850"></script>
-<script src="nacht/mobil.js?v=202610290850"></script>
-<script src="nacht/handy.js?v=202610290850"></script>
-<script src="nacht/texte.js?v=202610290850"></script>
-<script src="nacht/erzaehl.js?v=202610290850"></script>
-<script src="nacht/hilfe.js?v=202610290850"></script>
-<script src="nacht/epilog.js?v=202610290850"></script>
-<script src="nacht/wertung.js?v=202610290850"></script>
-<script src="nacht/menue.js?v=202610290850"></script>
-<script src="nacht/pause.js?v=202610290850"></script>
+<script src="nacht/kern.js?v=202610291118"></script>
+<script src="nacht/geraet.js?v=202610291118"></script>
+<script src="nacht/bild.js?v=202610291118"></script>
+<script src="nacht/hud.js?v=202610291118"></script>
+<script src="nacht/ton.js?v=202610291118"></script>
+<script src="nacht/komfort.js?v=202610291118"></script>
+<script src="nacht/musik.js?v=202610291118"></script>
+<script src="nacht/songs.js?v=202610291118"></script>
+<script src="nacht/saft.js?v=202610291118"></script>
+<script src="nacht/stand.js?v=202610291118"></script>
+<script src="nacht/welt.js?v=202610291118"></script>
+<script src="nacht/nacht.js?v=202610291118"></script>
+<script src="nacht/dialog.js?v=202610291118"></script>
+<script src="nacht/eingabe.js?v=202610291118"></script>
+<script src="nacht/lehre.js?v=202610291118"></script>
+<script src="nacht/mobil.js?v=202610291118"></script>
+<script src="nacht/handy.js?v=202610291118"></script>
+<script src="nacht/texte.js?v=202610291118"></script>
+<script src="nacht/erzaehl.js?v=202610291118"></script>
+<script src="nacht/hilfe.js?v=202610291118"></script>
+<script src="nacht/erfolge.js?v=202610291118"></script>
+<script src="nacht/epilog.js?v=202610291118"></script>
+<script src="nacht/wertung.js?v=202610291118"></script>
+<script src="nacht/menue.js?v=202610291118"></script>
+<script src="nacht/pause.js?v=202610291118"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT - LEVEL 2: BEI MORITZ
@@ -332,7 +333,9 @@ const PLAUSCH_ZEILEN=[
 const KARTONS={
   start:{ wer:'', text:'Zwei Kartons. Nicht beschriftet.',
     wahl:[ { txt:'Was ist da drin?', tu:{flag:'moritzKartonGesehen', mag:['MORITZ',4]}, geh:'zeug' },
-           { txt:'Egal. Weiter.', geh:'ende' } ], zeit:0 },
+           { txt:'Egal. Weiter.', tu:{ruf:-3}, geh:'ende' },
+           { txt:'Ich reiss den Karton einfach auf.', probe:{mut:40}, tu:{flag:'moritzKartonGesehen', mag:['MORITZ',7]}, geh:'zeug' },
+           { txt:'Du kannst mir sagen, was los ist.', probe:{ruf:45}, tu:{ruf:+4, mag:['MORITZ',+6]}, geh:'zeug' } ], zeit:0 },
   zeug:{ wer:'MORITZ', text:'Zeug. Muss mal aussortiert werden.', geh:'ende' },
   ende:null,
 };
@@ -802,6 +805,7 @@ function schenkEnde(f,d){
     S.pegel=Math.min(TUNE.pegelMax,S.pegel+TUNE.proSchluck*TUNE.schenkPerfektAnteil);
     S.mut+=TUNE.schenkMut;
     SFX.fund(); meldung('PERFEKT. MUT +'+TUNE.schenkMut,1.6);
+    if(typeof ERFOLG!=='undefined') ERFOLG.gib('l2_perfekt');
     if(SAFT_OK()){ SAFT.popup('PERFEKT',x,y,P.gold); SAFT.teilchen('stern',x,y,8); }
   } else if(f<0.05){
     meldung('DAS GLAS BLEIBT LEER',1); SFX.nichts(); return;
@@ -957,9 +961,11 @@ const SZENEN=[
 const MITNEHMEN = {
   start:{ wer:'MAX FERDI', text:'Also. Wer kommt jetzt eigentlich mit?',
     wahl:[
-      { txt:'Alle. Wir sind eine gruppe.',        geh:'alle' },
+      { txt:'Alle. Wir sind eine gruppe.',        tu:{ruf:+4}, geh:'alle' },
       { txt:'Nur wir zwei. Der rest ist zu drauf.', geh:'klein' },
-      { txt:'Moritz und Finn. David bleibt am Telefon.', geh:'mittel' },
+      { txt:'Moritz und Finn. David bleibt am Telefon.', tu:{ruf:-4}, geh:'mittel' },
+      { txt:'Ich kenn den Tuersteher. Alle rein.', probe:{ruf:65}, tu:{ruf:+5, mag:['MORITZ',+3]}, geh:'alle' },
+      { txt:'Nur wir zwei. Ich steh dazu.', probe:{mut:50}, tu:{mag:['MORITZ',+5]}, geh:'klein' },
     ], zeit:10, standard:2 },
 
   alle:{ wer:'MAX FERDI', text:'Vier mann. Der tuersteher wird uns lieben.',
