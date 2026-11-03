@@ -57,6 +57,12 @@ window.MOBIL.an=true;
    -------------------------------------------------------------------------- */
 const EINST_KEY='nachtschicht.mobil';
 const GROESSEN={ klein:0.85, mittel:1, gross:1.2 };
+/* Hoechste Knopfgroesse quer in CSS-Pixeln: auf dem iPad waeren 27 % der Hoehe ueber 200 px -
+   der Knopf wuerde ins Bild ragen. Am iPhone (ca. 100 px) greift die Grenze nicht. */
+const KNOPF_MAX_QUER=128;
+/* Bleibt quer so viel Hoehe uebrig (CSS-Pixel), rutscht das Bild nach oben und unten entsteht eine
+   Leiste fuer Stick und Knoepfe (iPad: 190 px). Am iPhone bleiben nur ~30 px - dort aendert sich nichts. */
+const LEISTE_MIN=100;
 const einst=Object.assign({ hand:'rechts', groesse:'mittel', stick:'frei',
                             tippen:true, vibration:true },
   (function(){ try{ return JSON.parse(localStorage.getItem(EINST_KEY))||{}; }catch(e){ return {}; } })());
@@ -114,6 +120,10 @@ html.touch.mobil-quer #cab { display:block; position:relative; }
 html.touch.mobil-quer #screen { position:absolute; inset:0; display:flex;
   align-items:center; justify-content:center; margin:0; }
 html.touch.mobil-quer #mdeck { position:absolute; inset:0; pointer-events:none; }
+/* Tablet quer: Bild oben, darunter die Leiste fuer die Bedienung. */
+/* align-self:stretch noetig: das align-self:center von hochkant zentriert sonst in neuen Browsern
+   auch die absolut gesetzte Box - das Bild bliebe in der Mitte. */
+html.touch.mobil-quer.mobil-leiste #screen { align-self:stretch; align-items:flex-start; padding-top:env(safe-area-inset-top,0px); }
 #mdeck > * { pointer-events:auto; }
 
 /* ---- Die zwei Haelften ---- */
@@ -177,6 +187,14 @@ html.touch.mobil-quer .mtaste.wahl { opacity:.9; }
 #minfo .dreh { margin-top:12px; font:700 10px/1.4 monospace; letter-spacing:1px;
   color:#8d86a8; animation:mweg 14s forwards; }
 html.touch.mobil-quer #minfo { display:none; }
+/* Tablet hochkant (iPad): die Tafel hat viel Platz - groesser schreiben. */
+@media (min-width:600px){
+  #minfo { top:16px; padding:0 40px; }
+  #minfo .titel { font-size:15px; }
+  #minfo .hinweis { font-size:22px; min-height:64px; margin-top:16px; }
+  #minfo .werte { font-size:15px; gap:10px 18px; margin-top:18px; }
+  #minfo .crew, #minfo .dreh { font-size:14px; }
+}
 
 /* ---- Der Menue-Knopf ---- */
 #mmenubtn { position:absolute; z-index:4; background:rgba(20,16,34,.82);
@@ -299,7 +317,12 @@ function platziere(){
   const sU=parseFloat(sicher.paddingBottom)||0, sL=parseFloat(sicher.paddingLeft)||0,
         sR=parseFloat(sicher.paddingRight)||0;
   const quer=!window.MOBIL.hoch, sk=GROESSEN[einst.groesse]||1;
-  const k=Math.round((quer?Math.min(dh*0.27,dw*0.17):Math.min(dw*0.30,150))*sk);
+  const leiste=quer&&html.classList.contains('mobil-leiste');
+  /* Oberkante der Leiste = Unterkante des Bildes (relativ zum Bedienfeld). */
+  const leisteOben=leiste?(cv.getBoundingClientRect().bottom-r.top):0;
+  let k=Math.round((quer?Math.min(dh*0.27,dw*0.17,KNOPF_MAX_QUER):Math.min(dw*0.30,150))*sk);
+  /* In der Leiste: so klein, dass Aktion samt Rand hineinpasst (iPad mini: 114 px Leiste). */
+  if(leiste) k=Math.min(k,Math.round((dh-leisteOben-sU)/1.4));
   const s=Math.round(k*0.72), luecke=Math.round(k*0.12), rand=Math.round(k*0.2);
   const links=einst.hand==='links', vz=links?-1:1;
   const cx=links?(rand+sL+k/2):(dw-rand-sR-k/2), cy=dh-rand-sU-k/2;
@@ -308,16 +331,27 @@ function platziere(){
   const R=k/2+s/2+luecke, R2=R+s*0.95+luecke;
   const bogen=function(elm,grad,radius,d){ const a=grad*Math.PI/180;
     setze(elm,cx-vz*Math.cos(a)*radius,cy-Math.sin(a)*radius,d); };
+  if(leiste){
+    /* Tablet quer: flacher Bogen, damit Sprung und Blocken ganz in der Leiste unter dem Bild liegen.
+       Nur die Extra-Knoepfe (gibt es nicht in jedem Level) ragen noch etwas ins Bild. */
+    bogen(bZwei,8,R,s);
+    bogen(bBlock,6,R2,s);
+    bogen(bX[0],52,R,Math.round(s*0.9));
+    bogen(bX[1],30,R2,Math.round(s*0.9));
+  } else {
   bogen(bZwei,8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
   bogen(bBlock,62,R,s);               // darueber: Blocken
   bogen(bX[0],quer?30:45,R2,Math.round(s*0.9));   // hochkant steiler, sonst ragt er in den Stick   // zweiter Ring: nur was dieses Level kann
   bogen(bX[1],78,R2,Math.round(s*0.9));
+  }
   /* Stick: Groesse und Ruhestellung auf der anderen Seite */
   stickGr=Math.max(100,Math.round(k*1.15));
   stick.style.width=stick.style.height=stickGr+'px';
   const heimX=Math.max(dw*0.17,stickGr*0.6+sL);
   stickHeimPos={ x:links?(dw-heimX):heimX,
                  y:dh-Math.max(rand+sU,0)-stickGr*0.62 };
+  /* In der Leiste liegt der Stick ganz unter dem Bild, soweit die Hoehe reicht. */
+  if(leiste) stickHeimPos.y=Math.min(dh-sU-stickGr/2,Math.max(stickHeimPos.y,leisteOben+stickGr/2+4));
   if(stickId===null) stickHeim();
   if(wahlAn) wahlSetze();
 }
@@ -699,6 +733,7 @@ function lage(){
     const s=innerWidth/W;
     cv.style.width=Math.round(W*s)+'px'; cv.style.height=Math.round(H*s)+'px';
   }
+  html.classList.toggle('mobil-leiste',quer&&innerHeight-(parseFloat(cv.style.height)||innerHeight)>=LEISTE_MIN);
   platziere();
 }
 

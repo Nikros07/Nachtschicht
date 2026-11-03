@@ -50,7 +50,10 @@ function anpassen(){
   W=Math.max(320,Math.min(432,Math.round(H*(vw/vh)/2)*2));
   cv.width=W; ctx.imageSmoothingEnabled=false;
   const roh=Math.min(vw/W,vh/H);
-  const s=roh<3?Math.max(.5,Math.floor(roh*4)/4):Math.floor(roh);
+  /* Ab Faktor 3 nur ganze Stufen (scharfe Pixel am Rechner). Auf Touch-Geraeten auch dann
+     Viertelschritte: auf dem iPad quer blieben sonst breite schwarze Raender (960x540 statt
+     1120x630 bei 1180x820). */
+  const s=(roh<3||IS_TOUCH)?Math.max(.5,Math.floor(roh*4)/4):Math.floor(roh);
   cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
 }
 addEventListener('resize',anpassen);

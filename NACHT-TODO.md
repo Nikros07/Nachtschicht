@@ -191,6 +191,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
 
 ### P3
+- [ ] **P3 · iPad quer: Extra-Knoepfe ragen noch ins Bild** — seit 29./30.10. rutscht das Bild auf
+  Tablets quer nach oben (Klasse `mobil-leiste`, ab 100 px Resthoehe); Aktion, Sprung, Blocken und
+  Stick liegen bei 1180x820 und 1133x744 (iPad mini, Knoepfe dort kleiner: 81 px) ganz in der Leiste.
+  Nur die Level-Extras (mb-x1/mb-x2) ragen 30-55 px ins Bild. Wo: nacht/mobil.js (platziere, Zweig
+  leiste) · Fertig wenn: im Browser bei beiden Groessen (?touch=1) auch mb-x1/mb-x2 nicht ueber dem
+  Canvas und keine Knoepfe ueberlappen sich - ohne dass sie weiter als ~300 px vom rechten Rand liegen
+  (Daumen). Braucht Browser.
 - [ ] **P3 · Tutorial: feste Taste E statt aktionsMarke()** — Level 6 Tipps `muede`/`aufstehen`
   und die E-Zeile im Titelbild von Level 7 zeigen am Handy kein Knopfsymbol. Wo: level6.html,
   level7.html · Fertig wenn: `grep -n "'E " level6.html level7.html` findet in Tipp- und
@@ -334,7 +341,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   14 Tage. Alkohol-Thema heisst wahrscheinlich Apple 18+ und USK/PEGI 16. Details:
   docs/gameplay/recherche-store.md. Nur Nick kann Konten anlegen und bezahlen. Fragebogen-Vorschlag mit
   8 Stellen ENTSCHEIDUNG NOETIG: docs/store/texte.md (Abschnitt 8).
-- [ ] **Am echten Telefon prüfen (Android Chrome UND iPhone Safari)** — Service Worker/Offline/Installieren, Ton nach iOS-Unterbrechung, Multitouch (Stick + Knöpfe), Vollbild/Orientierung, Daumenreichweite, Stroboskop-Wirkung. Im Emulator nicht prüfbar. Start: `python tools/server.py --lan`. Liste: `LAUNCH.md`, `docs/launch/endabnahme.md`.
+- [ ] **Am echten Telefon prüfen (Android Chrome UND iPhone Safari, dazu ein iPad quer und hoch)** — Service Worker/Offline/Installieren, Ton nach iOS-Unterbrechung, Multitouch (Stick + Knöpfe), Vollbild/Orientierung, Daumenreichweite, Stroboskop-Wirkung, iPad: Viertel-Skalierung des Bildes (Schärfe), Knopfgrenze 128 px, Bild oben + Bedienleiste unten (quer), große Tafel hochkant (seit 29.10.). Im Emulator nicht prüfbar. Start: `python tools/server.py --lan`. Liste: `LAUNCH.md`, `docs/launch/endabnahme.md`.
 - [ ] **Impressum, Lizenz, Inhaltshinweis-Wortlaut** — `ueber.html` hat Platzhalter [NAME]/[ANSCHRIFT]/[E-MAIL]; keine Lizenz gewählt. Kein Rechtsrat; Details in `LAUNCH.md` unter OFFENE ENTSCHEIDUNGEN.
 - [ ] **Marvin als Spiegel des Spielers** — passt das zur echten Mannschaftsgeschichte? Ebenso Moritz' Umzug, Jonas' Angst, Dennis' Kampf, Semihs Wunsch gefragt zu werden: gegen die echten Menschen lesen (`docs/launch/story-ist.md` Abschnitt Personen; Austauschtabelle `AUSBLICK` in `nacht/epilog.js`; Umbenennen mit `python tools/umbenennen.py`).
 - [ ] **Handy-Steuerung am echten Gerät beurteilen** — Größen, Bogen und Menü sind nur in der
