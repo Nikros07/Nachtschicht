@@ -144,9 +144,12 @@ const TUNE = {
 
   /* (10) RANG - Summe 100. Je Kriterium linear zwischen "schlecht" und "gut". */
   rang:{
-    konter:  {schlecht:0.2, gut:0.85, punkte:35},  // Konterquote (Konter / Druecke)
+    /* Gemessen mit docs/gameplay/messung/n3-level4-rang.js (10 Laeufe je Bot, Seed 1-10): Nachsetzen zaehlt als
+       Druck, aber nicht als Konter. Profi mit Nachsetzen kam nur auf Quote 0.58 / Combo 2.9 = 72 Punkte (B/A);
+       mit gut 0.7 / 4 sind es 81-83 (A). Anfaenger "lahm" (3 von 10 siegen) 71-74 = B, "mittel" 73-76. */
+    konter:  {schlecht:0.2, gut:0.7,  punkte:35},  // Konterquote (Konter / Druecke)
     kassiert:{schlecht:3,             punkte:30},  // Treffer kassiert: 0 = voll, schlecht = 0
-    combo:   {schlecht:1,   gut:5,    punkte:20},  // beste Combo
+    combo:   {schlecht:1,   gut:4,    punkte:20},  // beste Combo
     zeit:    {schlecht:150, gut:60,   punkte:15},  // Sekunden: weniger ist besser
   },
 };
