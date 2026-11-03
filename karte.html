@@ -73,7 +73,12 @@
    Aufruf: karte.html?nach=N  (N = das Level, das gerade geschafft wurde)
    ========================================================================== */
 
-const NACH=Math.max(1,Math.min(7,+(new URLSearchParams(location.search).get('nach')||1)));
+/* Stellschrauben der Karte */
+const TUNE={
+  eingabeSperre:0.4,   /* s nach Ankunft/Umweg, in denen WEITER nicht greift (gegen Doppeltipp) */
+};
+/* gerundet, sonst stuerzt ?nach=3.5 ab (STATIONEN[3.5] gibt es nicht) */
+const NACH=Math.max(1,Math.min(7,Math.round(+(new URLSearchParams(location.search).get('nach')||1))||1));
 /* Das Startmenue (nacht/menue.js) liest den Fortschritt aus NACHT.kapitel: wer hier ankommt, hat Level NACH geschafft. */
 try{ setzeKapitel(NACH+1); }catch(e){}
 
@@ -179,7 +184,7 @@ const UMWEGE={
 /* ==========================================================================
    ZUSTAND
    ========================================================================== */
-const S={ t:0, weg:0, wahl:0, modus:'fahrt', meldung:'', meldungT:0 };
+const S={ t:0, weg:0, wahl:0, modus:'fahrt', meldung:'', meldungT:0, sperre:0 };
 const umweg=()=>UMWEGE[NACH];
 const umwegOffen=()=>umweg()&&!flag('umweg_'+NACH);
 const optionen=()=>{
@@ -200,10 +205,11 @@ function machUmweg(){
     /* Jeder Umweg kostet Zeit - Level 8 zaehlt die Flags umweg_* und
        laesst die Sonne entsprechend frueher kommen. */
     if(e==='@teilen'){
-      for(const n of ladeCrew()) aendereBeziehung(n,5);
-      meldung('DIE JUNGS FEIERN DICH',2.2);
+      const crew=ladeCrew();
+      for(const n of crew) aendereBeziehung(n,5);
+      meldung(crew.length>0?'DIE JUNGS FEIERN DICH':'DAS TUT GUT',2.2);
     } else meldung('ZEIT VERGEHT',1.6);
-    S.modus='wahl'; S.wahl=0;
+    S.modus='wahl'; S.wahl=0; S.sperre=TUNE.eingabeSperre;
   });
 }
 
@@ -215,7 +221,7 @@ function druckAktion(){
   ensureAudio();
   if(gespraechAktiv()){ gespraechBestaetigen(); return; }
   if(S.modus==='fahrt'){ S.weg=1; return; }
-  if(S.modus!=='wahl') return;
+  if(S.modus!=='wahl'||S.sperre>0) return;
   const o=optionen()[S.wahl];
   if(o.art==='weiter') weiter(); else machUmweg();
 }
@@ -244,10 +250,11 @@ function update(dt){
   /* Spieluhr zwischen den Leveln (nacht/songs.js), gedaempft im Gespraech */
   if(typeof MUSIK!=='undefined'){ MUSIK.spiele('karte'); MUSIK.daempfen(gespraechAktiv()||!!(window.HANDY&&HANDY.offen)); }
   if(S.meldungT>0) S.meldungT-=dt;
+  if(S.sperre>0) S.sperre-=dt;
   if(gespraechAktiv()){ gespraechTakt(dt); return; }
   if(S.modus==='fahrt'){
     S.weg=Math.min(1,S.weg+dt/2.6);
-    if(S.weg>=1){ S.modus='wahl'; piep(660,.06); }
+    if(S.weg>=1){ S.modus='wahl'; S.sperre=TUNE.eingabeSperre; piep(660,.06); }
   }
 }
 
