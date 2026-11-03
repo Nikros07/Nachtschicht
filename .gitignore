@@ -38,3 +38,4 @@ keystore.properties
 android/app/build/
 android/.gradle/
 ios/App/build/
+__pycache__/
