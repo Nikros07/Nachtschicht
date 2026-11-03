@@ -250,15 +250,53 @@ Gemessen und gut: alle Schlüssel in `wenn` (120 Vorkommen), `tu` (346) und `pro
 | Problem | Warum es nervt | Grad | Lösung |
 |:--|:--|:--|:--|
 | `ladeBest` steht achtmal in den Leveln, siebenmal Zeichen für Zeichen gleich (101 Zeichen: `index.html:449`, `level2:438`, `level3:833`, `level4:288`, `level5:795`, `level6:494`, `level8:341`) und **ohne** `try`; nur `level7.html:276` fängt den Fehler. Die Engine hat das sichere Gegenstück längst (`ladeBestN`, `nacht/stand.js:27`), nur `menue.js:176` benutzt es. Gemessen mit geworfenem `getItem`: Level 4 und Level 8 werfen in **120 von 120** Bildern (Aufrufe :750/:1004 und :834/:1116), alle anderen Seiten bleiben ruhig | Blockierter Speicher (Safari mit gesperrten Daten) gilt als Fall, den `geraet.js` abfängt - aber ein Wurf im Bild führt nach dem Dauerfehler zur Fehlerseite statt zum Spiel ohne Bestzeit | P2 | Alle acht Kopien durch `ladeBestN(N)`/`speichereBestN` ersetzen; `n3-speicherfehler.js` dient als Prüfung |
-| Der Pegel wird in Level 3-6 mit `parseFloat(localStorage.getItem(PEGEL_KEY))` direkt gelesen (`level3:854`, `level4:343`, `level5:813`, `level6:510`), ohne `try`, und mit `setItem(…String(S.pegel))` ungeklemmt zurückgeschrieben (`level2:1019` bis `level7:987`); die Engine hat `ladePegel`/`speicherePegel` (`stand.js:21-22`) mit Fangnetz und Klemme 0-100 | Zwei Wege zum selben Wert; wer die Klemme nachzieht oder den Schlüssel ändert, muss sieben Stellen kennen | P3 | Überall `ladePegel()`/`speicherePegel()`; Test: `grep PEGEL_KEY level*.html index.html` ohne Treffer |
+| Der Pegel wird in Level 3-6 mit `parseFloat(localStorage.getItem(PEGEL_KEY))` direkt gelesen (`level3:854`, `level4:343`, `level5:813`, `level6:510`), ohne `try`, und mit `setItem(…String(S.pegel))` ungeklemmt zurückgeschrieben (`level2:1019` bis `level7:987`); die Engine hat `ladePegel`/`speicherePegel` (`stand.js:22-23`) mit Fangnetz und Klemme 0-100 | Zwei Wege zum selben Wert; wer die Klemme nachzieht oder den Schlüssel ändert, muss sieben Stellen kennen | P3 | Überall `ladePegel()`/`speicherePegel()`; Test: `grep PEGEL_KEY level*.html index.html` ohne Treffer |
 | Weitere wortgleiche Kopien: `meldung` und `zeigeHinweis` in allen 8 Leveln (je ~55 Zeichen), `pauseTaste` in 5 von 8 gleich (108 Zeichen; `level3`, `level4` und `level8` weichen ab), `druckSprung` in 6 Varianten | Eine Änderung (z.B. Hinweisdauer) muss achtfach gemacht werden und fällt in einem Level auseinander; `level3`/`level4`/`level8` zeigen, dass das schon passiert | P3 | `meldung`/`zeigeHinweis` in die Engine; Abweichungen von `pauseTaste` in Level 3, 4 und 8 als Absicht kommentieren oder angleichen |
 | Der Vertrag zwischen Level und Engine steht nirgends vollständig: die Engine liest `S.modus` (`'titel'`, `'ende'`, `'pause'`, 11 Stellen), `S.gewonnen` (`hilfe.js:148`), `S.hinweis`/`S.hinweisT`, `S.meldung`, `S.minute` (`handy.js:194`), `TUNE` (`hilfe.js`) und die globalen Funktionen `pauseTaste`, `mobilKontext`, `neuesSpiel`, `starte`. `ARCHITEKTUR.md:193-195` nennt nur zwei. 108 `typeof … 'undefined'`-Wächter in 19 Dateien fangen Fehlendes still ab | Ein neues Level (oder die Karte) läuft, aber ohne Pause, ohne Hinweise, ohne Tipps - und kein Test merkt es | P3 | Liste der Pflichtnamen in `ARCHITEKTUR.md`; `nachttest.js` meldet je Level fehlende Pflichtnamen |
-| `bedingungErfuellt` (`nacht.js:101-117`) übergeht unbekannte Schlüssel mit Nicht-Zahl-Wert (`nichFlag:'x'` ist immer wahr), `wirke` (:139-153) legt bei Zahlenwert **neue Werte** an (`kondtion:-5` schreibt `NACHT.werte.kondtion`). Heute fehlerfrei, aber ungeschützt | Ein Tippfehler im Gesprächsbaum bleibt unbemerkt bis jemand das Ergebnis misst | P3 | `n3-schluessel.js`-Prüfung in `tools/flagcheck.js` übernehmen (harter Fehler bei unbekanntem Schlüssel) |
+| `bedingungErfuellt` (`nacht.js:101-117`) übergeht unbekannte Schlüssel mit Nicht-Zahl-Wert (`nichFlag:'x'` ist immer wahr), `wirke` (:136-153) legt bei Zahlenwert **neue Werte** an (`kondtion:-5` schreibt `NACHT.werte.kondtion`). Heute fehlerfrei, aber ungeschützt | Ein Tippfehler im Gesprächsbaum bleibt unbemerkt bis jemand das Ergebnis misst | P3 | `n3-schluessel.js`-Prüfung in `tools/flagcheck.js` übernehmen (harter Fehler bei unbekanntem Schlüssel) |
 | Zustand liegt in drei Speichern: `nachtschicht.stand` (`NACHT`, einmal beim Laden gelesen, bei jeder Änderung ganz zurückgeschrieben), `.crew`, `.pegel`. Zwei offene Tabs auf verschiedenen Seiten überschreiben sich (letzter schreibt gewinnt). Aus dem Code gelesen, nicht im Browser gemessen | Selten, aber still: Flags einer Seite verschwinden, wenn die andere Seite danach speichert | P3 | Beim Speichern vorher neu laden und mischen, oder `storage`-Ereignis auswerten; Entscheidung, ob der Aufwand lohnt |
 | `TIEFE_PRO_SEITE` (`welt.js:62-63`) führt `karte.html` und `runner.html`; beide laden `welt.js` gar nicht | Zwei tote Zeilen, die behaupten, die Tabelle sei vollständig | P3 | Streichen oder Kommentar „nur der Vollständigkeit" |
 | ~~Die Komfort-Schalter FLACKERSCHUTZ/WACKELN wirken nirgends~~ | Der Befund unter „Durchs ganze Spiel" ist veraltet: sieben Level und `index.html` führen Blitz und Wackeln durch `FX.blitz`/`FX.wackel` (z.B. `level4.html:802/813`, `level6:944/961`). Es bleibt nur `runner.html` (siehe dort) | — | ~~Nur noch Runner~~ |
 
 **Fertig wenn:** `node docs/gameplay/messung/n3-speicherfehler.js` meldet 0 Ausnahmen für alle neun Seiten; `grep -n "const ladeBest\|PEGEL_KEY" level*.html index.html` findet nichts mehr; `ARCHITEKTUR.md` enthält die Pflichtnamen-Liste.
+
+## Dramaturgie — der Bogen über alle acht Level
+
+Analyse vom 3.11. Grundlage: `docs/launch/STORY-BIBEL.md` (Leitidee, Zeitleiste, Level-Übersicht), `nacht/texte.js`,
+Kopfkommentare und `TUNE`-Blöcke der Level, `LEKTIONEN` in `nacht/lehre.js` sowie die Spielzeiten aus
+`docs/gameplay/messung-a/b/c.md` (Oktober, **vor** den späteren Korrekturen - als Größenordnung zu lesen, nicht neu gemessen).
+Neu gemessen: `docs/gameplay/messung/n3-dramaturgie.js` (Dauer der Intro- und Abspann-Tafeln). Dies sind Beobachtungen und Fragen, keine Story-Entscheidungen.
+
+| Level | Uhr (Karte) | Kernhandlung | Konter-Kampf | Scheitern | Spielzeit Erstspieler | Intro / Abspann |
+|:--|:--|:--|:--|:--|--:|--:|
+| 1 Schule | 16:40 | Schleichen, Schlüssel suchen | nein | Fang, Uhr | 19-53 s | 18,0 / 44,8 s |
+| 2 Moritz | 21:10 | Besorgen, Reden, Tür | ja (Tür) | K.o. | 29-97 s | 12,6 / 28,4 s |
+| 3 Nachtbus | 22:00 | Sprint, Schleichen, Gespräch | ja (Kloppe, 1,9-2,8 s) | Bus, Sprint-Limit | 73-150 s | 9,0 / 12,4 s |
+| 4 Schlange | 22:40 | reiner Zweikampf | ja (Boss, 2 Muster) | 3 Herzen | ~70 s | 11,8 / 34,0 s |
+| 5 Club | 22:50 | Ansprechen, Wählen | ja (Schlägerei) | Blackout | ~180 s | 12,8 / - |
+| 6 Afterhour | 02:00 | Traum-Flur, 3 Erinnerungen | nein | Wegknicken (**kein** Levelende, `level6.html:810`) | ~73 s | 15,4 / 15,0 s |
+| 7 Spaeti | 03:15 | Einkaufen, Reden | nein | keins (`gewonnen=false` kommt nicht vor) | ~192 s | 10,0 / - |
+| 8 Heimweg | 04:10 | Wettlauf gegen die Sonne, Großkampf | ja (Finale) | Sonne | ~225 s | 14,8 / - |
+
+Intros summieren sich auf 104,4 s, die fünf messbaren Abspänne auf 134,6 s (L5, L7, L8 bauen ihren Schluss anders auf, nicht gemessen).
+Die Uhrzeiten der Karte und der Levelkopf (`startMinute`/`endMinute` in L1, L2, L5, L7) widersprechen sich nirgends.
+
+**Beobachtungen**
+
+| Beobachtung | Beleg | Grad | Frage |
+|:--|:--|:--|:--|
+| **Zwei Level hintereinander ohne Gefahr**: L6 und L7 kennen kein beendendes Scheitern, zusammen ~4:25 min Spielzeit plus 25 s Intro. Davor vier kampfführende Level (L2-L5), danach der Gipfel | Tabelle oben; `level6.html:913,918` und `level7.html:991,996` setzen nur `gewonnen=true`; `messung-b.md`: Erschöpfung in L6 „wirkungslos" (Oktober) | P2 | Ist ein Plateau von viereinhalb Minuten gewollt („die Ruhe", Bibel §4), oder soll in L6/L7 ein weicher Druck bleiben? |
+| **Konter-Kampf viermal in Folge (L2-L5), dann zwei kampffreie Level, dann das Finale**. Der Kampf ist kurz verteilt (L3 2-3 s, L4 12-15 s); gelehrt wird er in L2 und L4, im Finale per Text und Tipp neu (`level8.html:1623`) | `lehre.js` (`LEKTIONEN`), `level8.html:1623-1624` | P3 | Reicht die Auffrischung in L8 nach zwei Leveln Pause, oder übt L7/L6 den Konter nirgends? |
+| **Die Länge steigt bis L5 und bricht in L6 ein**: ~53, 90, 110, 70, 180, 73, 192, 225 s (Mittelwerte der Oktober-Messung). L1 und L4 sind jeweils die kürzesten Atemzüge vor einem längeren Stück | `messung-a/b/c.md` | P3 | Soll L6 (Traum, Wendepunkt der Leitidee) kürzer sein als L5 und L7? |
+| **Verben kommen ungleich verteilt**: L1 lehrt sieben Schritte (vier optional), L4 drei neue (Blocken, Rolle, Ausweichen), L2/L6/L7 je eines, L3/L5/L8 keines. Taschenlampe (`Q`) und Werfen (`R`) gibt es **nur** in L1 (Grep: `KeyQ`/`KeyR` nur `index.html`) | `lehre.js`, Grep über die Level | P3 | Sollen Lampe und Werfen später wiederkehren oder bleiben sie ein L1-Werkzeug? |
+| **`SHIFT` bedeutet zwei Dinge**: Schleichen (L1, L3), Blocken (L4, L5, L8) | `lehre.js`, `LEKTIONEN` | P3 | Ist die Doppelbelegung bei L3 (Bus schleichen, dann Kloppe blocken) geübt genug? |
+| **Die Frage der Nacht kommt genau einmal** (`level6.html:448`, Lea, Wendepunkt in der Mitte), ihre Antwort „Man darf" im Abbiegen von L8 (Tschuess rufen, `level8.html:128-134`); dazwischen trägt L7 die Leitidee nur durch Text | `STORY-BIBEL.md` §1, `level6.html:448`, `level8.html:128` | P3 | Reicht das Echo in L7, oder fehlt dort ein Satz zur Frage? |
+| **Das Passive ist ein Viertel der Nacht**: Intro, Abspann, Kapitelkarte (3,5 s) und Karte (7-21 s) zusammen etwa 5 von 21 Minuten (104 + 135 + 28 + 50 s gegenüber ~16,5 min Spiel); in den Leveln selbst liegt der Zuschau-Anteil bei 54-84 % (Oktober) | `n3-dramaturgie.js`, `messung-b.md` | P3 | Ist die Karte (7 s) als Atempause gedacht - dann fehlt ihr Musik/Bewegung - oder als Weg? |
+| **Der Umweg-Takt ist unausgeglichen**: sieben Umwege, einer je Wegstück, jeder kostet 4 % Sonne in L8 (siehe Karte); in L1-L4 liegt nach dem Umweg das nächste Level mit Kampf, nach L7 der Gipfel | `karte.html:199`, `level8.html:358` | P3 | Soll das Gewicht der Umwege zum Ende zunehmen? |
+
+**Offene Punkte als Fragen an Eve** (nichts davon wurde entschieden): Plateau L6/L7 (oben, erste Zeile); Rückkehr der Verben Lampe und Werfen; ob die Karte Musik und Bewegung bekommt (`MUSIK.spiele('karte')` läuft bereits, `karte.html:244`); Länge von L6 gegenüber L5 und L7.
+
+**Fertig wenn:** die vier Fragen unter „Entscheidung nötig" in `NACHT-TODO.md` beantwortet sind; die Zahlen der Tabelle werden danach mit `docs/gameplay/messung/c-level7.js` und den s2-Skripten neu gemessen und hier ersetzt.
 
 ## Durchs ganze Spiel
 
