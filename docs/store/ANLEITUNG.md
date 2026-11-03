@@ -1,6 +1,6 @@
 # NACHTSCHICHT als App bauen und einreichen
 
-Stand: 2026-10-21. Grundlage ist `docs/gameplay/recherche-store.md` (Stand 2026-10-05). Was dort nicht steht oder nur als Erwartung markiert ist, steht hier mit **(prüfen)**. Kein Rechtsrat.
+Stand: 2026-10-21. Grundlage ist `docs/gameplay/recherche-store.md` (Stand 2026-10-05). Was dort nicht steht oder nur als Erwartung markiert ist, steht hier mit der Markierung „prüfen“ in Klammern (verbleibend) oder, wenn belegt, mit Quelle aus der Quellenliste am Ende (Stand der Prüfung: 2026-11-03). Kein Rechtsrat.
 
 Die Store-Texte stehen in `docs/store/texte.md`.
 
@@ -30,7 +30,7 @@ npm -v
 
 4. **Konten und Kosten** (recherche-store.md §4.4, §5):
    - **Google Play Console:** einmalig 25 USD, Identitätsprüfung Pflicht **(Betrag prüfen)**.
-   - **Apple Developer Program:** 99 USD bzw. 99 € pro Jahr **(prüfen)**. Ohne laufende Mitgliedschaft verschwindet die App.
+   - **Apple Developer Program:** 99 USD pro Mitgliedsjahr, in der Anmeldung in Landeswährung angezeigt (Quelle Q1). Ohne laufende Mitgliedschaft verschwindet die App.
 
 5. **Zeitbedarf** laut Recherche (recherche-store.md §1): Android-Hülle ungefähr 3 bis 5 Arbeitstage, iOS-Cloud-Build 1 bis 2 Tage, Store-Unterlagen 1 bis 2 Tage. Dazu kommen 14 Tage Testpflicht bei Google und Apples Prüfung (meist 1 bis 3 Tage, recherche-store.md §1).
 
@@ -115,17 +115,17 @@ npx cap open android
 
 ### 3.5 AAB bauen und signieren
 
-1. **Schlüssel anlegen (nur einmal).** Der Upload-Schlüssel (`.jks`) entsteht mit `keytool` aus dem JDK (recherche-store.md §5). Der Befehl unten ist aus meinem Wissen, nicht aus den Quellen **(prüfen)**. Der Pfad liegt bewusst außerhalb des Projekts:
+1. **Schlüssel anlegen (nur einmal).** Der Upload-Schlüssel (`.jks`) entsteht mit `keytool` aus dem JDK (recherche-store.md §5). Android Studio kann den Schlüssel auch selbst anlegen: Menü „Build > Generate Signed Bundle/APK“, dort „Create new“ (Quelle Q2). Der `keytool`-Befehl unten ist nicht in Q2 belegt (offen: keytool-Optionen nicht aus offizieller Quelle bestätigt; Q2 empfiehlt mindestens 25 Jahre Gültigkeit, der Befehl hat 10000 Tage, also rund 27 Jahre). Der Pfad liegt bewusst außerhalb des Projekts:
 
 ```bash
 keytool -genkeypair -v -keystore "C:/Users/spide/Schluessel/nachtschicht-upload.jks" -keyalg RSA -keysize 2048 -validity 10000 -alias upload
 ```
 
-2. **Schlüssel sicher aufbewahren.** Der Schlüssel und die Passwörter gehören **nie** ins Repo. Lege eine zweite Sicherung an einem anderen Ort an, zum Beispiel auf einem Datenträger, und merke dir die Passwörter in einem Passwortmanager. Ein verlorener Upload-Schlüssel erschwert die Updates. Was Google dann verlangt, ist **(prüfen)**.
+2. **Schlüssel sicher aufbewahren.** Der Schlüssel und die Passwörter gehören **nie** ins Repo. Lege eine zweite Sicherung an einem anderen Ort an, zum Beispiel auf einem Datenträger, und merke dir die Passwörter in einem Passwortmanager. Ein verlorener Upload-Schlüssel erschwert die Updates. Bei aktivem Play App Signing kannst du in der Play Console einen Zurücksetzen-Antrag für den Upload-Schlüssel stellen; der App-Signaturschlüssel bleibt davon unberührt (Quelle Q2).
 
 3. **`.gitignore` ergänzen.** Vor dem ersten Schlüssel die Zeilen aus dem Vorab-Abschnitt eintragen. `*.jks` und `*.keystore` müssen ignoriert werden.
 
-4. **AAB bauen.** In Android Studio das Menü für signierte Pakete öffnen (in etwa „Build“, dann „Generate Signed App Bundle“, Menüname **(prüfen)**). Format AAB wählen und den Upload-Schlüssel nehmen.
+4. **AAB bauen.** In Android Studio das Menü für signierte Pakete öffnen (Menü „Build > Generate Signed Bundle/APK“, dann „Android App Bundle“ wählen; Quelle Q2). Format AAB wählen und den Upload-Schlüssel nehmen.
 
 5. **Hochladen.** Die `.aab`-Datei geht zur Google Play Console. Google signiert die App über „Play App Signing“ neu (recherche-store.md §5).
 
@@ -148,7 +148,7 @@ npx cap sync
 
 3. **Werkzeug:** `@capacitor/assets` erzeugt aus der 1024er-Vorlage alle Größen (recherche-store.md §2.3). Den genauen Befehl dafür nennt die Quelle nicht **(prüfen)**.
 
-4. **`tools/icons.py`** kann die Vorlage liefern. Heute reicht es laut Recherche nur bis 512 Pixel **(prüfen)**. Das Skript braucht Pillow. Die Recherche nennt eine fremde Python-Umgebung (`hermes-agent`), besser eine eigene Installation **(prüfen)**.
+4. **`tools/icons.py`** kann die Vorlage liefern. Heute schreibt es nur bis 512 Pixel (geprüft in `tools/icons.py`, 2026-11-03: `icon-512.png`, `icon-maskable-512.png`, keine 1024er-Datei). Das Skript braucht Pillow. Die Recherche nennt eine fremde Python-Umgebung (`hermes-agent`), besser eine eigene Installation **(prüfen)**.
 
 5. **Startbild:** Vorlage 2732 Pixel, Hintergrund `#04030a` (recherche-store.md §9). Die Recherche empfiehlt ein kurzes Startbild, weil das Spiel ein eigenes Titelbild hat (§2.3).
 
@@ -174,13 +174,13 @@ npx cap sync
 
 7. **App-Inhalte.** Pflichtformulare: Werbung (nein), App-Zugriff (ohne Anmeldung), Zielgruppe, Altersfreigabe, Datensicherheit, Datenschutzerklärung (recherche-store.md §5).
 
-8. **Zielfrist Android-Version.** Laut Recherche musste ab 31.08.2026 Android 16 (API 36) angesteuert werden. Verlängerung bis 01.11.2026 auf Antrag (recherche-store.md §5). Heute ist die Hauptfrist vorbei. Ob du den Antrag brauchst, ist **(prüfen)**.
+8. **Zielfrist Android-Version.** Laut Recherche musste ab 31.08.2026 Android 16 (API 36) angesteuert werden. Verlängerung bis 01.11.2026 auf Antrag (recherche-store.md §5). Bestätigt (Q3): ab 31.08.2026 müssen neue Apps und Updates API 36 ansteuern, Verlängerung bis 01.11.2026 war per Antrag möglich. Beide Fristen sind heute (2026-11-03) vorbei, ein Antrag hilft nicht mehr: `targetSdkVersion` muss 36 oder höher sein.
 
 ---
 
 ## 6. Apple App Store
 
-1. **Konto.** Apple Developer Program, 99 USD bzw. 99 € pro Jahr **(prüfen)**. Ohne Mitgliedschaft verschwindet die App (recherche-store.md §4.4).
+1. **Konto.** Apple Developer Program, 99 USD pro Mitgliedsjahr, in der Anmeldung in Landeswährung angezeigt (Quelle Q1). Ohne Mitgliedschaft verschwindet die App (recherche-store.md §4.4).
 
 2. **Mac oder Cloud-Mac.** Ohne eigenen Mac nutzt du GitHub Actions (macOS-Läufer, für öffentliche Repos laut Recherche frei **(prüfen)**) oder Codemagic (500 macOS-Minuten im Monat frei laut Recherche, recherche-store.md §4.4). Die Signierung läuft über Secrets, nie im öffentlichen Repo.
 
@@ -195,7 +195,7 @@ npx cap sync
 5. **Risiken bei der Prüfung** (recherche-store.md §4.1):
    - **4.2 Minimum Functionality:** Die App muss mehr sein als eine umverpackte Website. Dazu gehören Dateien im Paket, Offline-Betrieb, native Bausteine (Haptik, sauberes Pausieren).
    - **2.5.2:** kein nachgeladener Code. Der Service Worker bleibt in der App aus, Updates kommen nur über den Store.
-   - **2.1 Vollständigkeit:** keine Platzhalter. `ueber.html` hat Platzhalter, die Zahl ist laut Recherche sieben, laut Stand heute vier (`[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]`, `[WEITERE CREDITS]`) **(prüfen)**.
+   - **2.1 Vollständigkeit:** keine Platzhalter. `ueber.html` hat Platzhalter, die Zahl ist laut Recherche sieben, laut Stand heute (Zählung in `ueber.html`, 2026-11-03) `[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]` und `[WEITERE CREDITS]`, also vier Arten.
    - **1.4.3 Alkohol:** Apps, die zu übermäßigem Trinken ermuntern, werden abgelehnt. Die Alkohol-Stellen gehören zur Entscheidung (`docs/store/texte.md`, Abschnitt 11).
    - **2.3.3 Screenshots:** müssen das Spiel im Spiel zeigen.
    - **2.3.6 Fragebogen:** ehrlich beantworten.
@@ -243,3 +243,14 @@ Vor dem Einreichen klären:
 3. **Startprüfung**, Abschnitt „OFFENE ENTSCHEIDUNGEN FÜR NICK“ in `LAUNCH.md`: echte Namen, Impressum, Lizenz, Marvin-Spiegel, Balance des Finales, Handy-Test, Alterstext.
 4. **Recherche-Entscheidungen** (`docs/gameplay/recherche-store.md`): Capacitor oder TWA (§3), Altersstufe (§4.3), Händlerstatus (§4.4), Alkohol-Stellen (§7, Punkt 12), Name (§7, Punkt 13).
 5. **Datenschutz-Adresse:** reicht der Anker in `ueber.html`, oder braucht es eine eigene `datenschutz.html`?
+
+## Quellen (Stand der Prüfung: 2026-11-03)
+
+- Q1: Apple Developer Program, Anmeldung und Jahresbeitrag: https://developer.apple.com/programs/enroll/
+- Q2: Android Studio, App signieren, Upload-Schlüssel, Reset: https://developer.android.com/studio/publish/app-signing
+- Q3: Google Play, Ziel-API-Ebene (Fristen): https://developer.android.com/google/play/requirements/target-sdk
+- Q4: App Store Connect, Screenshot-Größen: https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications
+- Q5: App Store Connect, Plattform-Versionsangaben (Werbetext, Beschreibung, Schlüsselwörter): https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information
+- Q6: App-Store-Kategorien: https://developer.apple.com/app-store/categories/
+
+Nicht abrufbar in dieser Sitzung (Netz gesperrt): capacitorjs.com und support.google.com. Deshalb bleiben Capacitor-Befehle, Play-Gebühr (25 USD), IARC, Data safety und Play-Screenshot-Größen offen.

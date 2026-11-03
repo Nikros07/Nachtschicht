@@ -5,7 +5,7 @@ Stand: 2026-10-21. Quellen: `docs/gameplay/recherche-store.md` (Stand 2026-10-05
 **Legende**
 
 - **ENTSCHEIDUNG NÖTIG**: Nick muss das festlegen. Ich schlage nur vor.
-- **(prüfen)**: steht nicht in den Quellen oder ist dort nur als Erwartung/Schätzung markiert.
+- Offene Punkte (Markierung „prüfen“ in Klammern): steht nicht in den Quellen oder ist dort nur als Erwartung/Schätzung markiert.
 - Zeichenzahlen sind mit Python gezählt, Zeilenumbrüche inklusive.
 - Kein Rechtsrat.
 
@@ -87,20 +87,20 @@ Bewusst weggelassen: „Kein Download“ (im Store falsch, recherche-store.md §
 Pixel-Art,Abenteuer,Schleichen,Dialog,Komödie,Party,Schule,Story,Prügel,Deutsch
 ```
 
-79 Zeichen. Grenze Apple: 100 (recherche-store.md §9). Der Name „Nachtschicht“ ist nicht wiederholt (Apple-Regel laut meinem Wissen, (prüfen)).
+79 Zeichen. Grenze Apple: 100 (recherche-store.md §9). Der Name „Nachtschicht“ ist nicht wiederholt (Apple-Regel laut meinem Wissen; (offen: Untertitel-Regeln stehen nicht auf der abgerufenen Apple-Seite)).
 
 ---
 
 ## 6. Kategorie-Vorschlag
 
-- **Apple:** Hauptkategorie **Spiele** (`manifest.webmanifest`: `"games"`). Unterkategorie und Zweitkategorie: (prüfen), in den Quellen nicht festgelegt.
+- **Apple:** Hauptkategorie **Spiele** (`manifest.webmanifest`: `"games"`). Apple erlaubt eine Haupt- und eine Zweitkategorie sowie bei Spielen bis zu zwei Unterkategorien (Beispiele: Action, Adventure, Family, Music, Puzzle, Role Playing; Quelle Q6 in ANLEITUNG.md). Welche gewählt wird, ist Geschmack: (offen: Entscheidung von Nick).
 - **Google Play:** Kategorie **Spiele**. Unterkategorie: (prüfen). Die Quelle `manifest.webmanifest` nennt zusätzlich `"entertainment"`; ob das als Kategorie passt, ist (prüfen).
 
 ---
 
 ## 7. Screenshots (8 Stück)
 
-Vorgabe (`LAUNCH.md`): jedes Bild in Pixel-Größe 3× hochskaliert, ohne Rand. Apple verlangt, dass Screenshots das Spiel im Spiel zeigen (recherche-store.md §4.1, Punkt 2.3.3). Handy-Screenshot-Größen für beide Stores: (prüfen).
+Vorgabe (`LAUNCH.md`): jedes Bild in Pixel-Größe 3× hochskaliert, ohne Rand. Apple verlangt, dass Screenshots das Spiel im Spiel zeigen (recherche-store.md §4.1, Punkt 2.3.3). Apple (Q4): mindestens 1, höchstens 10 je Größe; iPhone mit Dynamic Island hochkant 1179x2556 oder 1206x2622, quer 2556x1179 oder 2622x1206; JPEG/PNG ohne Alphakanal. Google Play: (offen: support.google.com in dieser Sitzung nicht abrufbar).
 
 1. Startmenü (mit Enden-Galerie)
 2. Level 1, Die Schule: Flur mit Sichtkegel der Lehrer
