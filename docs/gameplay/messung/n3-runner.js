@@ -21,3 +21,22 @@ for(let i=1;i<=4;i++){
   }
   console.log('Etappe-Index',i,'('+H.lade('runner.html','').api.ev('ETAPPEN['+i+'].name')+')',JSON.stringify(erg));
 }
+
+/* Flackerschutz/Wackeln im Runner: Blitz bei Treffer (.42) und Tod (.50) muss ueber FX laufen.
+   Gemessen wird der Alpha-Wert, mit dem draw() den Blitz wirklich fuellt. */
+{
+  const L=H.lade('runner.html',''); const E=c=>L.api.ev(c);
+  const alphaVon=(schutz,wackeln)=>{
+    E(`KOMFORT.setze('flackerschutz',${schutz}); KOMFORT.setze('wackeln',${wackeln});`);
+    E('startGame();'); E('update(1/60);'); E("S.flash=.5; S.flashCol='255,77,77'; S.shake=7;");
+    const a=E('(()=>{ const o=[]; const orig=ctx.fillRect; ctx.fillRect=function(){ const m=/rgba\\(255,77,77,([0-9.]+)\\)/.exec(String(ctx.fillStyle)); if(m) o.push(+m[1]); return orig.apply(this,arguments); }; draw(1/60); ctx.fillRect=orig; return JSON.stringify(o); })()');
+    return JSON.parse(a);
+  };
+  const aus=alphaVon(false,true), an=alphaVon(true,true);
+  console.log('Blitz-Alpha ohne Schutz',JSON.stringify(aus),'mit Flackerschutz',JSON.stringify(an),
+    '(FX.blitz(.45)=',E('FX.blitz(.45)'),')');
+  console.log('Wackeln FX.wackel(7): an',E('(KOMFORT.setze("flackerschutz",false),FX.wackel(7))'),
+    'Schutz',E('(KOMFORT.setze("flackerschutz",true),FX.wackel(7))'),
+    'aus',E('(KOMFORT.setze("flackerschutz",false),KOMFORT.setze("wackeln",false),FX.wackel(7))'));
+  if(!(an.length&&aus.length&&an[0]<aus[0]&&an[0]<=0.12)) { console.log('FEHLER: Flackerschutz daempft den Runner-Blitz nicht'); process.exitCode=1; }
+}

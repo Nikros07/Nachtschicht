@@ -1104,8 +1104,9 @@ function drawRain(et,dt){
 function draw(dt){
   const et=ETAPPEN[S.etappe], p=S.pegel/TUNE.pegelMax;
   ctx.save();
-  const wob=Math.sin(S.t*9)*TUNE.fxWobblePx*p+(Math.random()-.5)*S.shake;
-  const wob2=Math.cos(S.t*6.3)*TUNE.fxWobblePx*.6*p+(Math.random()-.5)*S.shake;
+  const shk=FX.wackel(S.shake);   // Wackeln aus / Flackerschutz: ueber FX (nacht/komfort.js)
+  const wob=FX.wackel(Math.sin(S.t*9)*TUNE.fxWobblePx*p)+(Math.random()-.5)*shk;
+  const wob2=FX.wackel(Math.cos(S.t*6.3)*TUNE.fxWobblePx*.6*p)+(Math.random()-.5)*shk;
   ctx.translate(Math.round(wob),Math.round(wob2));
 
   drawSky(et); drawSkyline(et);
@@ -1233,7 +1234,7 @@ function draw(dt){
     ctx.globalAlpha=(p-.5)*.22*TUNE.fxColorShift;
     ctx.fillStyle=et.neon; ctx.fillRect(-8,-8,W+16,H+16); ctx.globalAlpha=1;
   }
-  if(S.flash>0){ ctx.fillStyle=`rgba(${S.flashCol},${(S.flash*.9).toFixed(3)})`; ctx.fillRect(-8,-8,W+16,H+16); }
+  if(S.flash>0){ ctx.fillStyle=`rgba(${S.flashCol},${FX.blitz(S.flash*.9).toFixed(3)})`; ctx.fillRect(-8,-8,W+16,H+16); }
   ctx.restore();
 
   drawHUD(et,p); drawScreens(et);
