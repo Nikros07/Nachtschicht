@@ -282,6 +282,17 @@ const warte=()=>new Promise(r=>setImmediate(r));
     pruefe('Seiten ohne eigene Schleife: ein Hilfswort frame() bleibt unangetastet', b.lies('frame.nsGeschuetzt===undefined'));
   }
 
+  console.log('\n--- beiSichtbar: je Wechsel in den Hintergrund einmal ---');
+  {
+    const a=aufbau(); let n=0; a.G.beiSichtbar(()=>{ n++; });
+    const v=z=>{ a.doc.visibilityState=z; a.sb.feuereDok('visibilitychange'); };
+    v('visible'); pruefe('sichtbar ohne vorheriges hidden: keine Meldung', n===0);
+    v('hidden'); v('hidden'); pruefe('hidden meldet nichts', n===0);
+    v('visible'); pruefe('hidden, dann sichtbar: genau eine Meldung', n===1);
+    v('visible'); v('visible'); pruefe('weitere sichtbar-Ereignisse ohne neues hidden: keine Meldung', n===1);
+    v('hidden'); v('visible'); pruefe('naechster Wechsel: wieder eine Meldung', n===2);
+    a.sb.feuere('pagehide',{}); v('visible'); pruefe('pagehide zaehlt als Wechsel in den Hintergrund', n===3);
+  }
   console.log('\n--- Hintergrund (Ton) ---');
   {
     const mk=state=>{ const f={ state, suspend:0, resume:0, suspend(){ f.nSusp=(f.nSusp||0)+1; f.state='suspended'; return Promise.resolve(); },
@@ -420,7 +431,7 @@ const warte=()=>new Promise(r=>setImmediate(r));
     pruefe('allererste Installation (noch keine Steuerung): KEIN Hinweis', b.toasts().length===0);
     erst.ereignisse.controllerchange&&erst.ereignisse.controllerchange();
     pruefe('... und die Uebernahme des ersten Workers laedt nichts neu', b.ort.neu===0);
-    a.sb.feuereDok('visibilitychange'); a.vorspulen(11*60*1000); a.doc.visibilityState='visible'; a.sb.feuereDok('visibilitychange');
+    a.doc.visibilityState='hidden'; a.sb.feuereDok('visibilitychange'); a.vorspulen(11*60*1000); a.doc.visibilityState='visible'; a.sb.feuereDok('visibilitychange');
     pruefe('Rueckkehr nach laengerer Zeit stoesst eine Update-Pruefung an', sw.reg.updates===1, String(sw.reg.updates));
   }
   {

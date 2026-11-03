@@ -242,20 +242,22 @@ const GERAET={};
   const beiSichtbar=[];     // Nachrichten an andere Bausteine: "Tab ist wieder da"
   GERAET.beiSichtbar=function(f){ beiSichtbar.push(f); };   // spaetere Dateien melden sich hier an, geraet.js ruft nie in sie hinein
   let letzterBlick=Date.now();
+  let hinten=sicher(()=>hatDom()&&document.visibilityState==='hidden',false);         // war der Tab seit der letzten Rueckkehr wirklich im Hintergrund? (Auto-Pause je Wechsel nur einmal)
   function sichtbarkeit(){
     sicher(()=>{
-      if(document.visibilityState==='hidden'){ tonHalten(); return; }
+      if(document.visibilityState==='hidden'){ hinten=true; tonHalten(); return; }
+      const warHinten=hinten; hinten=false;
       letzterBlick=Date.now();
       tonWiederholen();
-      beiSichtbar.forEach(f=>sicher(f));
+      if(warHinten) beiSichtbar.forEach(f=>sicher(f));   // sichtbar ohne vorheriges hidden (Doppelmeldung, Fokus): nichts melden
     });
   }
   if(hatDom()){
     sicher(()=>document.addEventListener('visibilitychange',sichtbarkeit));
     /* pageshow: Zurueck-Taste oder Wiederkehr aus dem Seitenspeicher des Browsers (bfcache) -
        dort feuert visibilitychange nicht immer. */
-    sicher(()=>window.addEventListener('pageshow',e=>{ if(e&&e.persisted) sichtbarkeit(); }));
-    sicher(()=>window.addEventListener('pagehide',tonHalten));
+    sicher(()=>window.addEventListener('pageshow',e=>{ if(e&&e.persisted){ hinten=true; sichtbarkeit(); } }));
+    sicher(()=>window.addEventListener('pagehide',()=>{ hinten=true; tonHalten(); }));
   }
 
   /* ----------------------------------------------------------- Fehlerschutz --- */

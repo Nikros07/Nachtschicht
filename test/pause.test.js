@@ -237,5 +237,27 @@ pruefe('Tab zurueck am Handy (MOBIL.an): Pause bleibt zu', w.E('PAUSE.aktiv()')=
   pruefe('ohne window: beiSichtbar meldet sich trotzdem an, ruft ohne Wurf', w4.sichtbar.length===1&&wirftNicht(()=>w4.sichtbar[0]()));
 }
 
+console.log('\n--- AUTO-PAUSE: NICHT IM HINTERGRUND, NICHT SOFORT NEU ---');
+{
+  const w=welt(); w.kx.document.visibilityState='hidden';
+  w.sichtbar[0]();
+  pruefe('Meldung waehrend das Fenster noch hidden ist: Pause bleibt zu (hidden ohne blur)', w.E('PAUSE.aktiv()')===false&&w.musik.length===0);
+  w.kx.document.visibilityState='visible'; w.sichtbar[0]();
+  pruefe('danach sichtbar: Pause geht genau einmal auf (Blur einmal, Musik einmal)', w.E('PAUSE.aktiv()')===true&&w.blur.length===1&&w.musik.join()==='true');
+  w.sichtbar[0](); w.sichtbar[0]();
+  pruefe('mehrfache Meldungen bei offener Pause: kein zweites auf()', w.blur.length===1&&w.musik.join()==='true');
+  w.setzeZeit(1000); w.E('PAUSE.aktiviere("weiter")');
+  pruefe('WEITER schliesst die Pause', w.E('PAUSE.aktiv()')===false);
+  pruefe('nach WEITER ohne neue Meldung: bleibt zu', w.E('PAUSE.aktiv()')===false&&w.blur.length===1);
+  /* Schliessen, waehrend das Fenster hidden ist: die Meldung kommt erst nach dem naechsten
+     Sichtbarwerden (geraet.js meldet nur nach hidden), hier simuliert durch hidden-Sperre. */
+  w.kx.document.visibilityState='hidden'; w.sichtbar[0]();
+  pruefe('geschlossen waehrend hidden, Meldung im Hintergrund: oeffnet nicht wieder', w.E('PAUSE.aktiv()')===false&&w.blur.length===1);
+}
+{
+  const w=welt(); for(let i=0;i<3;i++){ w.E('window.dispatchEvent(new Event("blur"))'); }
+  pruefe('mehrfach blur ohne Sichtbarkeitsmeldung: Pause oeffnet nicht von selbst', w.E('PAUSE.aktiv()')===false);
+}
+
 console.log('\n'+ok+' ok, '+fail+' fehl');
 if(fail) process.exit(1);

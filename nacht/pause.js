@@ -284,7 +284,7 @@ const PAUSE=(function(){
   /* App in den Vordergrund geholt (Tab-Wechsel, Handy-Sperre): mitten im Level nicht
      einfach weiterlaufen. darfAuf() filtert selbst aus, wo das nicht passt (Handy-Menue,
      Titelbild, Kapitelkarte, Lektion). */
-  try{ if(typeof GERAET!=='undefined'&&GERAET&&typeof GERAET.beiSichtbar==='function') GERAET.beiSichtbar(auf); }catch(e){}
+  try{ if(typeof GERAET!=='undefined'&&GERAET&&typeof GERAET.beiSichtbar==='function') GERAET.beiSichtbar(function(){ try{ if(typeof document!=='undefined'&&document&&document.visibilityState==='hidden') return; }catch(e){} auf(); }); }catch(e){}
 
   return {
     eintraege:eintraege,
