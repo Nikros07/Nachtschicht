@@ -13,6 +13,7 @@
      P   Pause - das Level sagt selbst, was das heisst (pauseTaste)
      1-8 auf dem Titelbild: direkt zu diesem Level. Die Liste kommt aus
          der Levelleiste unter dem Bild, steht also nur einmal pro Seite.
+     L   auf dem Titelbild: die Lektion des Levels kommt beim Start noch einmal.
      TAB WAS JETZT? - Ziel, letzte Tipps, Steuerung (nacht/hilfe.js)
 
    Solange ein Gespraech laeuft, werden die Richtungstasten hier verbraucht
@@ -46,6 +47,14 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyM'){ muted=!muted; if(!muted) ensureAudio(); return; }
   if(e.code==='KeyF'){ e.preventDefault(); vollbild(); return; }
   if(e.code==='KeyP'){ if(typeof pauseTaste==='function') pauseTaste(); return; }
+
+  /* L auf dem Titelbild: die Lektion dieses Levels kommt beim Start noch einmal. */
+  if(e.code==='KeyL'&&typeof S!=='undefined'&&S&&(S.modus==='titel'||S.mode==='attract')){
+    if(window.LEHRE&&window.LEHRE.nochmalVormerken&&window.LEHRE.nochmalVormerken()){
+      try{ if(typeof piep==='function') piep(660,.06,'sine',.04); }catch(err){}
+    }
+    return;
+  }
 
   /* Sprungmarken - nur auf dem Titelbild, sonst waere es ein Ausrutscher
      mitten im Spiel. */

@@ -154,6 +154,7 @@ window.LEHRE=(function(){
   const abfrage=(typeof location!=='undefined'&&location.search)||'';
   const L=LEKTIONEN[seite]||null;
   const erzwungen=/[?&]lektion=1/.test(abfrage), aus=/[?&]lektion=0/.test(abfrage);
+  let nochmal=false;      // Taste L auf dem Titelbild: die Lektion zeigt sich beim Start wieder
   const gesehen=()=>{ try{ return !!localStorage.getItem(LEHRE_KEY+seite); }catch(e){ return false; } };
   const merke=()=>{ try{ localStorage.setItem(LEHRE_KEY+seite,'1'); }catch(e){} };
 
@@ -181,9 +182,10 @@ window.LEHRE=(function(){
   /* Das Gesamte fragt kern.js in jedem Bild. true = Lektion laeuft, Level ruht. */
   Z.pruefe=function(){
     if(Z.aktiv) return true;
-    if(Z.fertig||!L||aus) return false;
+    if(Z.fertig||!L||(aus&&!nochmal)) return false;
     if(typeof S==='undefined'||!S||S.modus!=='intro') return false;
-    if(gesehen()&&!erzwungen){ Z.fertig=true; return false; }
+    if(gesehen()&&!erzwungen&&!nochmal){ Z.fertig=true; return false; }
+    nochmal=false;
     if(typeof kapitelAktiv==='function'&&kapitelAktiv()) return false;   // erst die Kapitelkarte
     starten();
     return true;
@@ -194,6 +196,14 @@ window.LEHRE=(function(){
     if(!L) return false;
     Z.fertig=false;
     starten();
+    return true;
+  };
+
+  /* Taste L auf dem Titelbild (nacht/eingabe.js): merkt vor, dass die Lektion dieses
+     Levels beim Start wieder kommt - auch wenn sie schon gesehen oder uebersprungen ist. */
+  Z.nochmalVormerken=function(){
+    if(!L||Z.aktiv) return false;
+    nochmal=true; Z.fertig=false;
     return true;
   };
 
