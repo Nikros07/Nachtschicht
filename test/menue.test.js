@@ -98,6 +98,61 @@ pruefe('Modus erfolge: Zahl-Zeile', E("MENUE.eintraege('erfolge')[0].txt")==='1 
 pruefe('Modus erfolge: erreicht zeigt Titel, offen zeigt ???', E("MENUE.eintraege('erfolge')[1].txt")==='LEGENDE'&&E("MENUE.eintraege('erfolge')[2].txt")==='???');
 pruefe('Modus erfolge: ZURUECK ist vorgewaehlt', E("MENUE.standardWahl(MENUE.eintraege('erfolge'),'erfolge')")===3);
 pruefe('Modus erfolge: enthaelt ZURUECK', ids('erfolge').split(',').indexOf('zurueck')>=0);
+
+console.log('\n--- Beschreibung des markierten Erfolgs (auch bei ???) ---');
+// Echte Liste aus nacht/erfolge.js in eigenem Kontext laden (nur ERFOLGE lesen).
+const kE=vm.createContext({localStorage:speicher(), window:{}});
+vm.runInContext(fs.readFileSync('nacht/erfolge.js','utf8'),kE);
+const echte=vm.runInContext('ERFOLGE',kE);
+const erlaubtC=/^[A-Z0-9 .:\-!?\/+,<>*%()'"]*$/;
+pruefe('erfolge.js: Titel und Beschreibungen nur erlaubte Zeichen, Titel<=20, Text<=40',
+  echte.length>0&&echte.every(e=>erlaubtC.test(e.titel)&&erlaubtC.test(e.text)&&e.titel.length<=20&&e.text.length<=40),
+  echte.filter(e=>!erlaubtC.test(e.text)||e.text.length>40).map(e=>e.id).join(','));
+pruefe('erfolge.js: jede Beschreibung passt bei W=320 (textW < 312)',
+  echte.every(e=>String(e.text).length*4-1<312), echte.filter(e=>String(e.text).length*4-1>=312).map(e=>e.id).join(','));
+
+// Zeichnen braucht Leinwand und Startfenster: eigener Kontext mit Attrappen (kein Browser).
+const gezeichnet=[];
+const elem=()=>({style:{},children:[],appendChild(c){ this.children.push(c); return c; },
+  addEventListener(){}, setAttribute(){}, classList:{add(){},remove(){},toggle(){}}});
+const kD={ Math,console,Object,JSON,Date,Array,String,Number,Set,Map,
+  localStorage:speicher(), W:320, H:180, IS_TOUCH:false, setTimeout(){}, matchMedia:undefined,
+  window:{}, location:{pathname:'/index.html', search:''}, addEventListener(){}, removeEventListener(){},
+  document:{ createElement:elem, getElementById(){ return null; }, head:elem(), body:elem(),
+             addEventListener(){}, removeEventListener(){} },
+  cv:{ getBoundingClientRect(){ return {left:0,top:0,width:320,height:180}; } },
+  ctx:{fillStyle:'',globalAlpha:1,fillRect(){},fillText(){},save(){},restore(){}},
+  text:(s,x,y)=>{ gezeichnet.push({s:String(s),x,y}); },
+  textW:(s,m)=>String(s).length*4*(m||1)-(m||1),
+  textGlowC(){}, FX:{blitz:()=>0} };
+kD.textC=(s,y,c,m)=>kD.text(s,Math.round((kD.W-kD.textW(s,m))/2),y);
+vm.createContext(kD);
+const ladeD=f=>vm.runInContext(fs.readFileSync(f,'utf8'),kD);
+['nacht/komfort.js','nacht/stand.js','nacht/nacht.js','nacht/texte.js','nacht/epilog.js','nacht/menue.js'].forEach(ladeD);
+const ED=c=>vm.runInContext(c,kD);
+ED("ERFOLG={anzahl:()=>({hat:1,gesamt:2}), alle:()=>[{id:'legende',titel:'LEGENDE',text:'RUF 85 ERREICHT',hat:true},{id:'probe_ruf',titel:'MAN KENNT MICH',text:'EINE RUF-PROBE BESTANDEN',hat:false}]};");
+const zeigt=(t)=>gezeichnet.filter(z=>z.s===t);
+const wahl=(i)=>ED("MENUE.z.modus='erfolge'; MENUE.z.liste=MENUE.eintraege('erfolge'); MENUE.z.sel="+i+"; MENUE.z.off=0; MENUE.z.t=0;");
+const malen=()=>{ gezeichnet.length=0; ED('MENUE.zeichne()'); };
+wahl(2); malen();
+let b=zeigt('EINE RUF-PROBE BESTANDEN');
+pruefe('gesperrter Erfolg (???) markiert: Beschreibung wird unten gezeichnet', b.length===1&&b[0].y===158, JSON.stringify(b));
+pruefe('gesperrter Erfolg zeigt ??? im Listeneintrag', zeigt('???').length===1);
+pruefe('Beschreibung passt in die Bildbreite (x>=0, Rand rechts)', b.length===1&&b[0].x>=0&&b[0].x+(b[0].s.length*4-1)<=320-8);
+wahl(1); malen();
+b=zeigt('RUF 85 ERREICHT');
+pruefe('erreichter markierter Erfolg: Beschreibung wird gezeichnet', b.length===1&&b[0].y===158, JSON.stringify(b));
+pruefe('erreichter Erfolg: Titel steht im Eintrag', zeigt('LEGENDE').length===1);
+wahl(0); malen();
+pruefe('Zahl-Zeile markiert: keine Beschreibung gezeichnet', !gezeichnet.some(z=>z.s==='RUF 85 ERREICHT'||z.s==='EINE RUF-PROBE BESTANDEN'));
+wahl(3); malen();
+pruefe('ZURUECK markiert: keine Beschreibung gezeichnet', !gezeichnet.some(z=>z.s==='RUF 85 ERREICHT'||z.s==='EINE RUF-PROBE BESTANDEN'));
+ED("ERFOLG={anzahl:()=>({hat:0,gesamt:1}), alle:()=>[{id:'x',titel:'X',text:'W'.repeat(90),hat:false}]};");
+wahl(1); malen();
+b=gezeichnet.filter(z=>/^W+\.\.$/.test(z.s));
+pruefe('zu lange Beschreibung wird gekuerzt (".." am Ende, passt in W-16)', b.length===1&&b[0].x>=0&&b[0].x+(b[0].s.length*4-1)<=320-8, JSON.stringify(b));
+pruefe('Standardwahl im Erfolge-Menue ist ZURUECK', E("MENUE.standardWahl(MENUE.eintraege('erfolge'),'erfolge')")===E("MENUE.eintraege('erfolge').length-1"));
+
 E("delete ERFOLG;");
 pruefe('ERFOLG wieder weg: Hauptmenue wie bisher', ids('haupt')==='neu,einst,enden,ueber', ids('haupt'));
 

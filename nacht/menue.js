@@ -234,7 +234,8 @@ MENUE.eintraege=function(modus){
     let z={hat:0,gesamt:0}, liste=[];
     try{ if(typeof ERFOLG!=='undefined'&&ERFOLG){ z=ERFOLG.anzahl(); liste=ERFOLG.alle(); } }catch(e){}
     l.push({ id:'erfolgeZahl', txt:z.hat+' VON '+z.gesamt, typ:'info' });
-    liste.forEach(function(e){ l.push({ id:'e_'+e.id, txt:(e.hat?e.titel:'???'), typ:'info' }); });
+    /* Jeder Erfolg ist waehlbar; der Beschreibungstext (auch bei ???) steht unten in einer Zeile. */
+    liste.forEach(function(e){ l.push({ id:'e_'+e.id, txt:(e.hat?e.titel:'???'), beschr:String(e.text||'') }); });
     l.push({ id:'zurueck', txt:'ZURUECK' });
     return l;
   }
@@ -251,6 +252,7 @@ MENUE.eintraege=function(modus){
 /* Vorgewaehlt: im Hauptmenue WEITER (wenn da), bei der Rueckfrage ABBRECHEN. */
 MENUE.standardWahl=function(liste,modus){
   if(modus==='haupt'){ const i=liste.findIndex(function(e){ return e.id==='weiter'; }); if(i>=0) return i; }
+  if(modus==='erfolge'){ const i=liste.findIndex(function(e){ return e.id==='zurueck'; }); if(i>=0) return i; }
   const j=liste.findIndex(function(e){ return e.typ!=='info'; });
   return j<0?0:j;
 };
@@ -386,6 +388,14 @@ MENUE.naechste=function(liste,i,r){
     });
     if(z) zl.push(z); return zl;
   }
+  /* Kuerzt s mit ".." , bis es in maxB Bildpunkte passt (Zeile statt Umbruch). */
+  function passend(s,maxB){
+    const t=String(s);
+    if(textW(t)<=maxB) return t;
+    let k=t.length;
+    while(k>1&&textW(t.slice(0,k)+'..')>maxB) k--;
+    return t.slice(0,k)+'..';
+  }
   function massstab(){
     try{ const b=cv.getBoundingClientRect(); if(b.width>0) return b.width/W; }catch(e){}
     return 2;
@@ -402,9 +412,9 @@ MENUE.naechste=function(liste,i,r){
     ctx.fillStyle=col;
     for(let r=0;r<3;r++){ const w=runter?5-r*2:1+r*2; ctx.fillRect(x+(5-w)/2,y+r,w,1); }
   }
-  function zeichneListe(yOben){
+  function zeichneListe(yOben,yUnten){
     const touch=typeof IS_TOUCH!=='undefined'&&IS_TOUCH;
-    const g=Z.geo=geometrie(yOben,touch?H-3:H-16);
+    const g=Z.geo=geometrie(yOben,yUnten!==undefined?yUnten:(touch?H-3:H-16));
     const n=Z.liste.length;
     if(Z.sel<Z.off) Z.off=Z.sel;
     if(Z.sel>=Z.off+g.vis) Z.off=Z.sel-g.vis+1;
@@ -491,6 +501,12 @@ MENUE.naechste=function(liste,i,r){
           textC('LOCKER: LANGSAMERE GEGNER, MEHR ZEIT.',27,P.weiss);
           zeichneListe(36);
         }
+      } else if(Z.modus==='erfolge'){
+        /* Unten eine Zeile mit dem Text des markierten Erfolgs; am Rechner ueber der Tastenzeile. */
+        const beschrY=touch?H-12:H-22;
+        zeichneListe(kompakt?30:46,touch?H-20:H-30);
+        const e=Z.liste[Z.sel];
+        if(e&&typeof e.beschr==='string') textC(passend(e.beschr,W-16),beschrY,P.weiss);
       } else zeichneListe(kompakt?30:46);
     }
     if(!touch){
