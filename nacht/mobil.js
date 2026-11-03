@@ -63,6 +63,7 @@ const KNOPF_MAX_QUER=128;
 /* Bleibt quer so viel Hoehe uebrig (CSS-Pixel), rutscht das Bild nach oben und unten entsteht eine
    Leiste fuer Stick und Knoepfe (iPad: 190 px). Am iPhone bleiben nur ~30 px - dort aendert sich nichts. */
 const LEISTE_MIN=100;
+const LEISTE_TASTE=48, LEISTE_LUECKE=6;   // Tasten in der Tablet-Leiste (n3-mobil-layout.js: iPad mini 313 px, Air 262 px vom Rand)
 const einst=Object.assign({ hand:'rechts', groesse:'mittel', stick:'frei',
                             tippen:true, vibration:true },
   (function(){ try{ return JSON.parse(localStorage.getItem(EINST_KEY))||{}; }catch(e){ return {}; } })());
@@ -274,8 +275,8 @@ deck.innerHTML=[
   '<div id="mlinks"></div>',
   '<div id="mrechts"></div>',
   '<div id="mstick"><div class="mring"></div><div id="mknopf"></div></div>',
-  '<div class="mtaste extra aus" id="mb-x1"></div>',
-  '<div class="mtaste extra aus" id="mb-x2"></div>',
+  '<div class="mtaste extra aus" id="mb-x1" style="visibility:hidden"></div>',
+  '<div class="mtaste extra aus" id="mb-x2" style="visibility:hidden"></div>',
   '<div class="mtaste block aus" id="mb-block"></div>',
   '<div class="mtaste aus" id="mb-zwei"></div>',
   '<div class="mtaste haupt" id="mb-aktion"></div>',
@@ -310,6 +311,68 @@ function setze(elm,x,y,d){
   elm.style.left=Math.round(x-d/2)+'px'; elm.style.top=Math.round(y-d/2)+'px';
   elm.style.fontSize=Math.max(10,Math.round(d*0.14))+'px';
 }
+/* >>> RECHNUNG (rein, nur Zahlen - docs/gameplay/messung/n3-mobil-layout.js liest diesen Block aus) */
+function rechneAnordnung(p){
+  const dw=p.dw, dh=p.dh, sU=p.sU, sL=p.sL, sR=p.sR, quer=p.quer, sk=p.sk, leiste=p.leiste;
+  const leisteOben=leiste?p.leisteOben:0;
+  let k=Math.round((quer?Math.min(dh*0.27,dw*0.17,KNOPF_MAX_QUER):Math.min(dw*0.30,150))*sk);
+  /* In der Leiste: so klein, dass Aktion samt Rand hineinpasst (iPad mini: 114 px Leiste). */
+  if(leiste) k=Math.min(k,Math.round((dh-leisteOben-sU)/1.4));
+  const s=Math.round(k*0.72), luecke=Math.round(k*0.12), rand=Math.round(k*0.2);
+  const links=p.links, vz=links?-1:1;
+  const cx=links?(rand+sL+k/2):(dw-rand-sR-k/2), cy=dh-rand-sU-k/2;
+  const R=k/2+s/2+luecke, R2=R+s*0.95+luecke;
+  const o={ k:k, cx:cx, cy:cy, aktion:{x:cx,y:cy,d:k} };
+  const bogen=function(name,grad,radius,d){ const a=grad*Math.PI/180;
+    o[name]={x:cx-vz*Math.cos(a)*radius, y:cy-Math.sin(a)*radius, d:d}; };
+  const dx=Math.round(s*0.9);
+  if(leiste){
+    /* Tablet quer: alle Knoepfe unter dem Bild (Bildkante = leisteOben). Gleich grosse Tasten
+       (LEISTE_TASTE). Reicht die Leiste fuer zwei Reihen (iPad Air), stehen die Extras ueber
+       Sprung und Blocken; sonst (iPad mini, 114 px) in einer Reihe links vom Hauptknopf. */
+    const dl=LEISTE_TASTE, gl=LEISTE_LUECKE, x0=cx-vz*(k/2+gl+dl/2);
+    const zweiReihen=(cy-dl-gl-dl/2)>=leisteOben+2;
+    const pos=function(name,i,reihe){ o[name]={ x:x0-vz*i*(dl+gl), y:cy-(reihe?dl+gl:0), d:dl }; };
+    pos('zwei',0,0); pos('block',1,0);
+    if(zweiReihen){ pos('x1',0,1); pos('x2',1,1); } else { pos('x1',2,0); pos('x2',3,0); }
+  } else {
+    bogen('zwei',8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
+    bogen('block',62,R,s);               // darueber: Blocken
+    bogen('x1',quer?30:45,R2,dx);        // hochkant steiler, sonst ragt er in den Stick
+    bogen('x2',78,R2,dx);                // zweiter Ring: nur was dieses Level kann
+  }
+  /* Stick: Groesse und Ruhestellung auf der anderen Seite */
+  const stickGr=Math.max(100,Math.round(k*1.15));
+  const heimX=Math.max(dw*0.17,stickGr*0.6+sL);
+  const heim={ x:links?(dw-heimX):heimX, y:dh-Math.max(rand+sU,0)-stickGr*0.62 };
+  /* In der Leiste liegt der Stick ganz unter dem Bild, soweit die Hoehe reicht. */
+  if(leiste) heim.y=Math.min(dh-sU-stickGr/2,Math.max(heim.y,leisteOben+stickGr/2+4));
+  o.stickGr=stickGr; o.heim=heim;
+  return o;
+}
+/* Gespraechsleiste quer: Spalten und Hoehe so waehlen, dass alle Antworten ohne Scrollen
+   sichtbar sind (je mind. 44 px). Zeichenbreite 7.2 px bei 12px monospace, Zeile 16.2 px. */
+function rechneGespraech(p){
+  const innen=p.vw-20, zb=7.2, zh=16.2, wasH=p.wasZeilen*zh;
+  const fest=6+6+10+5+wasH+5+(p.safeU||0);           // Polster, Name, Luecken, Text
+  const probe=function(c){
+    const bw=(innen-(c-1)*6)/c, zpz=Math.max(1,Math.floor((bw-10*2-2)/zb));
+    const zeilen=Math.ceil(p.zmax/zpz), oh=Math.max(44,Math.ceil(zeilen*zh+16+2));
+    const reihen=Math.ceil(p.n/c);
+    return { spalten:c, optHoehe:oh, hoehe:Math.ceil(fest+reihen*oh+(reihen-1)*6) };
+  };
+  const std=Math.max(1,Math.floor((innen+6)/(190+6)));  // Spalten laut CSS (minmax 190)
+  let erg=probe(Math.min(p.n,std)), grenze=p.vh*0.45;
+  erg.maxHoehe=Math.round(grenze);
+  if(erg.hoehe<=grenze||p.n<4) { erg.passt=erg.hoehe<=grenze; return erg; }
+  /* zu eng: mehr Spalten probieren, dann die Obergrenze bis 60 % anheben */
+  let best=erg;
+  for(let c=Math.min(p.n,std)+1;c<=p.n;c++){ const e=probe(c); if(e.hoehe<best.hoehe) best=e; }
+  best.maxHoehe=Math.round(Math.max(grenze,Math.min(best.hoehe,p.vh*0.60)));
+  best.passt=best.hoehe<=best.maxHoehe;
+  return best;
+}
+/* <<< RECHNUNG */
 function platziere(){
   const r=deck.getBoundingClientRect(), dw=r.width, dh=r.height;
   if(!dw||!dh) return;
@@ -320,40 +383,19 @@ function platziere(){
   const leiste=quer&&html.classList.contains('mobil-leiste');
   /* Oberkante der Leiste = Unterkante des Bildes (relativ zum Bedienfeld). */
   const leisteOben=leiste?(cv.getBoundingClientRect().bottom-r.top):0;
-  let k=Math.round((quer?Math.min(dh*0.27,dw*0.17,KNOPF_MAX_QUER):Math.min(dw*0.30,150))*sk);
-  /* In der Leiste: so klein, dass Aktion samt Rand hineinpasst (iPad mini: 114 px Leiste). */
-  if(leiste) k=Math.min(k,Math.round((dh-leisteOben-sU)/1.4));
-  const s=Math.round(k*0.72), luecke=Math.round(k*0.12), rand=Math.round(k*0.2);
-  const links=einst.hand==='links', vz=links?-1:1;
-  const cx=links?(rand+sL+k/2):(dw-rand-sR-k/2), cy=dh-rand-sU-k/2;
-  mitte={x:cx,y:cy};
-  setze(bAktion,cx,cy,k);
-  const R=k/2+s/2+luecke, R2=R+s*0.95+luecke;
-  const bogen=function(elm,grad,radius,d){ const a=grad*Math.PI/180;
-    setze(elm,cx-vz*Math.cos(a)*radius,cy-Math.sin(a)*radius,d); };
-  if(leiste){
-    /* Tablet quer: flacher Bogen, damit Sprung und Blocken ganz in der Leiste unter dem Bild liegen.
-       Nur die Extra-Knoepfe (gibt es nicht in jedem Level) ragen noch etwas ins Bild. */
-    bogen(bZwei,8,R,s);
-    bogen(bBlock,6,R2,s);
-    bogen(bX[0],52,R,Math.round(s*0.9));
-    bogen(bX[1],30,R2,Math.round(s*0.9));
-  } else {
-  bogen(bZwei,8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
-  bogen(bBlock,62,R,s);               // darueber: Blocken
-  bogen(bX[0],quer?30:45,R2,Math.round(s*0.9));   // hochkant steiler, sonst ragt er in den Stick   // zweiter Ring: nur was dieses Level kann
-  bogen(bX[1],78,R2,Math.round(s*0.9));
-  }
-  /* Stick: Groesse und Ruhestellung auf der anderen Seite */
-  stickGr=Math.max(100,Math.round(k*1.15));
+  const o=rechneAnordnung({dw:dw,dh:dh,sU:sU,sL:sL,sR:sR,quer:quer,sk:sk,leiste:leiste,
+    leisteOben:leisteOben,links:einst.hand==='links'});
+  mitte={x:o.cx,y:o.cy};
+  setze(bAktion,o.aktion.x,o.aktion.y,o.aktion.d);
+  [[bZwei,o.zwei],[bBlock,o.block],[bX[0],o.x1],[bX[1],o.x2]].forEach(function(q){
+    setze(q[0],q[1].x,q[1].y,q[1].d); });
+  stickGr=o.stickGr;
   stick.style.width=stick.style.height=stickGr+'px';
-  const heimX=Math.max(dw*0.17,stickGr*0.6+sL);
-  stickHeimPos={ x:links?(dw-heimX):heimX,
-                 y:dh-Math.max(rand+sU,0)-stickGr*0.62 };
-  /* In der Leiste liegt der Stick ganz unter dem Bild, soweit die Hoehe reicht. */
-  if(leiste) stickHeimPos.y=Math.min(dh-sU-stickGr/2,Math.max(stickHeimPos.y,leisteOben+stickGr/2+4));
+  stickHeimPos=o.heim;
   if(stickId===null) stickHeim();
   if(wahlAn) wahlSetze();
+  /* Erst jetzt, wo sie ihren Platz haben, duerfen die Extra-Knoepfe sichtbar sein. */
+  bX.forEach(function(e){ e.style.visibility=''; });
 }
 /* Schwierigkeits-Knoepfe des Titelbilds: Zeile bei Bildpunkt-Hoehe 60 (Level 1).
    Links und rechts vom Text, 44 px hoch - ueber nichts anderem. */
@@ -603,6 +645,18 @@ el('mmenubtn').addEventListener('pointerdown',function(e){ e.preventDefault(); e
    die an Bedingungen haengen und deshalb manchmal fehlen.
    -------------------------------------------------------------------------- */
 let talkStand='';
+/* Quer, ab 4 Antworten: Spalten und Hoehe nach rechneGespraech(), sonst bleibt das CSS massgebend. */
+function talkMass(w){
+  const liste=talk.querySelector('.liste');
+  talk.style.maxHeight=''; liste.style.gridTemplateColumns='';
+  if(window.MOBIL.hoch||w.length<4) return;
+  const g=rechneGespraech({vw:innerWidth,vh:innerHeight,n:w.length,
+    zmax:w.reduce(function(m,o,i){ const t=(typeof gespraechWahlText==='function')?gespraechWahlText(i):o.txt;
+      return Math.max(m,String(t||'').length); },0),
+    wasZeilen:2,safeU:0});
+  liste.style.gridTemplateColumns='repeat('+g.spalten+',1fr)';
+  talk.style.maxHeight=g.maxHoehe+'px';
+}
 function talkPflege(){
   const aktiv=typeof gespraechAktiv==='function'&&gespraechAktiv();
   talk.classList.toggle('an',!!aktiv);
@@ -617,6 +671,7 @@ function talkPflege(){
     ? Math.round(100*GESPR.zeitRest/(GESPR.zeitGesamt||k.zeit))+'%' : '0';
   if(kennung===talkStand) return;
   talkStand=kennung;
+  talkMass(w);
   talk.querySelector('.wer').textContent=k.wer||'';
   talk.querySelector('.was').textContent=k.text||'';
   const liste=talk.querySelector('.liste'); liste.innerHTML='';
