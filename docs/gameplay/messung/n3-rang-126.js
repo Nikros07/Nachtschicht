@@ -4,42 +4,24 @@
    zufaellige Tasten (1-2 gleichzeitig, fester Seed), Titel mit Space verlassen, Intro ueberspringen,
    bei Verlust Aktionstaste (KeyE) fuer Neustart. Ende bei Levelsieg oder nach 600 s Spielzeit.
    Gemeldet wird der Rang, den WERTUNG.abschluss bekommt. Irgendein S -> Exit 1.
-   Vorlage: n3-level3-rang.js. Ohne Browser (tools/nachttest.js). */
+   Vorlage: n3-level3-rang.js; Helfer in tools/messhilfe.js. Ohne Browser. */
 'use strict';
-const path=require('path');
-const N=require(path.resolve(__dirname,'../../../tools/nachttest.js'));
-process.chdir(path.resolve(__dirname,'../../..'));
+const M=require('../../../tools/messhilfe.js');
 const seeds=parseInt(process.argv[2]||'8',10);
-const SEITEN=['index.html','level2.html','level6.html'];
-const TASTEN=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyE'];
 const tab={}; let sRang=0, ziel=0, laeufe=0;
 console.log('Seite           Seed  Ende          Punkte  Rang  Neustarts  Spielzeit');
-for(const seite of SEITEN){
+for(const seite of ['index.html','level2.html','level6.html']){
   for(let seed=1;seed<=seeds;seed++){
     laeufe++;
-    const L=N.lade(seite,'?lektion=0'), E=c=>L.api.ev(c), r=N.zufall(seed*7919+3);
+    const {L,E,takte}=M.starteLevel(seite,{lektion:0});
+    const tasten=M.zufallsTasten(L,seed*7919+3), rang=M.rangAbfangen(L);
     for(let i=0;i<seed*5;i++) L.rng();   // Spiel-Zufall je Seed verschieben
-    E('window.__rang=null; (()=>{ const f=WERTUNG.abschluss; WERTUNG.abschluss=function(...a){ const rr=f.apply(this,a); window.__rang={pkt:a[1],rang:rr&&rr.rang}; return rr; }; })()');
     let ausnahme=null, neustarts=0, spielzeit=0, ende='Zeit';
-    const gehalten=new Set(); let wechsel=0;
     try{
-      /* Titel und Intro ueberspringen: Space, bis das Spiel laeuft */
-      for(let i=0;i<300 && !['spiel','pause'].includes(E('S.modus'));i++){
-        L.taste('Space',true); L.taste('Space',false);
-        E('update(1/60)');
-        if(E('S.modus')==='intro') E('S.szeneT+=99');
-      }
-      const frames=60*60*600;
-      for(let i=0;i<frames;i++){
-        if(i>=wechsel){
-          for(const c of gehalten) L.taste(c,false); gehalten.clear();
-          const n=1+Math.floor(r()*2);
-          for(let k=0;k<n;k++){ const c=TASTEN[Math.floor(r()*TASTEN.length)]; if(!gehalten.has(c)){ gehalten.add(c); L.taste(c,true); } }
-          wechsel=i+6+Math.floor(r()*30);
-        }
-        E('update(1/60)');
-        const m=E('S.modus');
-        if(m==='ende'){
+      M.titelUndIntro(L);
+      for(let i=0;i<60*60*600;i++){
+        tasten.schritt(i); takte(1);
+        if(E('S.modus')==='ende'){
           if(E('S.gewonnen')){ ende='Sieg'; break; }
           neustarts++; L.taste('KeyE',true); L.taste('KeyE',false);
         }
@@ -47,12 +29,11 @@ for(const seite of SEITEN){
         if(spielzeit>=600) break;
       }
     }catch(e){ ausnahme=String(e.stack||e).split('\n').slice(0,2).join(' | '); ende='Ausnahme'; }
-    const w=E('window.__rang'), gew=E('S.gewonnen');
-    const rang=w&&w.rang?w.rang:'-';
-    tab[seite+' '+rang]=(tab[seite+' '+rang]||0)+1;
-    if(rang==='S') sRang++;
-    if(gew) ziel++;
-    console.log(`${seite.padEnd(15)} ${String(seed).padStart(4)}  ${ende.padEnd(12)}  ${String(w?w.pkt:'-').padStart(6)}  ${String(rang).padStart(4)}  ${String(neustarts).padStart(9)}  ${spielzeit.toFixed(0).padStart(4)} s${ausnahme?'  AUSNAHME '+ausnahme:''}`);
+    const w=rang(), r=w&&w.ergebnis&&w.ergebnis.rang, name=r||'-';
+    tab[seite+' '+name]=(tab[seite+' '+name]||0)+1;
+    if(name==='S') sRang++;
+    if(E('S.gewonnen')) ziel++;
+    console.log(`${seite.padEnd(15)} ${String(seed).padStart(4)}  ${ende.padEnd(12)}  ${String(w?w.args[1]:'-').padStart(6)}  ${name.padStart(4)}  ${String(neustarts).padStart(9)}  ${spielzeit.toFixed(0).padStart(4)} s${ausnahme?'  AUSNAHME '+ausnahme:''}`);
   }
 }
 console.log('Verteilung:',JSON.stringify(tab));
