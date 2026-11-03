@@ -791,7 +791,7 @@ function redeImTraum(z){
 }
 /* Wer das Echo ist, steht erst zur Laufzeit fest - der Name haengt an den
    Flags aus dem Club. */
-const echoName=e=>e.id==='moritz'?'MORITZ':e.id==='sie'?sieEcho().name:marvinEcho().name;
+const echoName=e=>e.name||(e.id==='sie'?sieEcho().name:marvinEcho().name);   // Feld name nur bei festen Namen, sonst aus den Flags
 
 /* Ein Licht beruehrt: Wachheit, Saft, Meldung. Jedes Licht nur einmal. */
 function lichtBeruehrt(L){
