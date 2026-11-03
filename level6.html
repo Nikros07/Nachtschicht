@@ -507,7 +507,7 @@ function neuesSpiel(){
     kondition:Math.max(35,wert('kondition')), ruht:null, sofa:SOFAS[0],
     weggeknickt:0, schwarzT:0, geredetMit:{}, schleifen:0,
     kamX:0,
-    pegel: parseFloat(localStorage.getItem(PEGEL_KEY))||0,
+    pegel: ladePegel(),
     erledigt:{}, durchsucht:{},
     reden:null, redeZeile:0, redeT:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
@@ -906,7 +906,7 @@ function levelGeschafft(){
   /* Der Pegel bleibt erhalten - Level 7 liest ihn als Startwert.
      Wird immer gespeichert, auch wenn er sich in dieser Runde kaum
      veraendert hat. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+  speicherePegel(S.pegel);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;

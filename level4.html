@@ -343,7 +343,7 @@ function neuesSpiel(){
   S={
     modus:'titel', t:0, zeit:0,
     maxHp:TUNE.leben+bonus.leben, hp:TUNE.leben+bonus.leben, fensterMult:bonus.fenster,
-    pegelStart:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
+    pegelStart:ladePegel(),
     treffer:0, erholungT:0, herzVerlust:0, kappeT:0, kappeText:'', warteT:0, onkelT:0, onkelGesagt:false,
     blitz:0,
     meldung:'', meldungT:0, hinweis:'', hinweisT:0,
@@ -758,7 +758,7 @@ function levelGeschafft(){
   /* Der Pegel bleibt unveraendert - dieses Level wird nicht getrunken, aber
      der aktuelle Wert muss trotzdem weitergereicht werden, sonst startet
      Level 5 faelschlich bei 0. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegelStart)); }catch(e){}
+  speicherePegel(S.pegelStart);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;

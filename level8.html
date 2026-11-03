@@ -876,7 +876,7 @@ function levelGeschafft(){
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
   /* Letztes Level - der Pegel wird nicht mehr gebraucht. Ein neuer Durchlauf
      ueber index.html soll wieder nuechtern anfangen. */
-  try{ localStorage.removeItem(PEGEL_KEY); }catch(e){}
+  speicherePegel(0);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;

@@ -279,7 +279,6 @@ const ladeBest=()=>ladeBestN(7);
    Das Lesen laeuft synchron beim Start von neuesSpiel() - faengt lokalStorage-
    Fehler ab, damit ein blockierter Speicher nicht die ganze Seite schwarz laesst. */
 
-const ladeStartPegel=()=>{ try{ const v=parseFloat(localStorage.getItem(PEGEL_KEY)); return isFinite(v)?v:0; }catch(e){ return 0; } };
 
 /* ==========================================================================
    DER SPAETI
@@ -597,7 +596,7 @@ function neuesSpiel(){
     x:40, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
     tiefe:0.5, vt:0,
     kamX:0,
-    pegel: ladeStartPegel(), minute:TUNE.startMinute,
+    pegel: ladePegel(), minute:TUNE.startMinute,
     crew:crew.da, crewWeg:crew.weg, geredet:{},
     pfand:PFAND_PLAETZE.map(([x,t])=>({x,t,weg:false})),
     heinz:{ x:20, t:0.5, blick:1, ziel:null, greifT:0, friedlich:false },
@@ -984,7 +983,7 @@ function levelGeschafft(){
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
   /* Der Pegel geht als Startwert an Level 8 - immer speichern, auch wenn
      er sich in diesem Level nur nach unten bewegt hat. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+  speicherePegel(S.pegel);
 }
 function cutscene(dt){
   if(aktionGehalten){ S.skipT+=dt;

@@ -810,7 +810,7 @@ function neuesSpiel(){
     x:40, y:BODEN, vx:0, blick:1, gehPhase:0, schritte:0,
     tiefe:0.6, vt:0,
     kamX:0,
-    pegel:parseFloat(localStorage.getItem(PEGEL_KEY))||0,
+    pegel:ladePegel(),
     minute:TUNE.startMinute,
     erfolge:0, abfuhren:0, wasserT:0, warAktiv:false,
     confidenceT:0, geknicktT:0, stolpernT:0,
@@ -1661,7 +1661,7 @@ function levelGeschafft(){
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
   /* Pegel wird immer geschrieben, auch unveraendert - Level 6 braucht den
      korrekten Startwert. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+  speicherePegel(S.pegel);
   musikDo(m=>m.stinger('sieg'));
   saftDo(s=>s.fund(W/2,H/2,'DRAUSSEN!'));
   /* Rang genau einmal pro Durchgang (WERTUNG, Stufe 2). */

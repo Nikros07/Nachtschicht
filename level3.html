@@ -851,7 +851,7 @@ function neuesSpiel(){
      Aufgefallen beim Messen, als der zweite Testlauf komplett stillstand. */
   if(typeof GESPR!=='undefined') GESPR=null;
   setzeFlag('jonasAngstTeilen',false);   // Entscheidungsflag: Wiederholung wirkt nicht nach
-  const startPegel=parseFloat(localStorage.getItem(PEGEL_KEY))||0;
+  const startPegel=ladePegel();
   S={
     modus:'titel', t:0, zeit:0, letzteSzene:'sprint',
     x:30, y:BODEN, vx:0, vy:0, amBoden:true, letzterBoden:0, blick:1, gehPhase:0, schritte:0,
@@ -1445,7 +1445,7 @@ function levelGeschafft(){
   if(S.erwischtZahl===0 && typeof ERFOLG!=='undefined') ERFOLG.gib('l3_schwarz');
   rangAbschluss();
   /* Der Pegel wird unveraendert an Level 4 weitergereicht. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+  speicherePegel(S.pegel);
 }
 
 /* ==========================================================================

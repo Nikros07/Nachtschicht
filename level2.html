@@ -1015,8 +1015,8 @@ function levelGeschafft(){
   if(best===null||S.zeit<best){ S.neueBestzeit=true;
     try{ localStorage.setItem(BEST_KEY,String(S.zeit)); }catch(e){} }
   /* Der Pegel bleibt erhalten - Level 3 liest ihn als Startwert.
-     Siehe PEGEL_KEY weiter oben. */
-  try{ localStorage.setItem(PEGEL_KEY,String(S.pegel)); }catch(e){}
+     Siehe speicherePegel in nacht/stand.js. */
+  speicherePegel(S.pegel);
   if(typeof MUSIK!=='undefined') MUSIK.stinger('sieg');
   if(SAFT_OK()) SAFT.fund(W/2,40,'GESCHAFFT');
   /* Rang: vier Kriterien, je linear zwischen schlecht und gut (TUNE.rang). */
