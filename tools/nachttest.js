@@ -291,6 +291,37 @@ function lade(seite,abfrage){
   return {api,taste,zeit,rng,handler,cv};
 }
 
+/* ---- Level-Vertrag pruefen (docs/architektur/LEVEL-VERTRAG.md) ----------------
+   pflicht: fehlt eins davon, ist das ein harter Fehler. optional: fehlt eins, steht es
+   nur als Hinweis in der Berichtzeile ("Vertrag: ohne pauseTaste"). karte.html hat
+   eigene Regeln (keine Titel/Intro-Folge, kein Pause/Neustart, kein TUNE). Die Tabelle
+   in der Doku und diese Listen muessen zusammen gepflegt werden. */
+function vertrag(L,seite){
+  const E=c=>L.api.ev(c);
+  const quelle=fs.readFileSync(seite,'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+  const karte=seite==='karte.html';
+  const fehler=[], hinweise=[];
+  const fn=n=>{ try{ return E('typeof '+n)==='function'; }catch(e){ return false; } };
+  const ist=c=>{ try{ return !!E(c); }catch(e){ return false; } };
+  // Pflicht
+  if(!fn('update')) fehler.push('update fehlt (kern.js:132)');
+  if(!fn('draw')) fehler.push('draw fehlt (kern.js:139)');
+  if(!ist('typeof S==="object"&&S!==null')) fehler.push('S fehlt oder ist kein Objekt');
+  else if(!ist('typeof S.modus==="string"')) fehler.push('S.modus ist kein Text');
+  else if(!karte&&E('S.modus')!=='titel') hinweise.push('S.modus startet nicht mit titel');
+  if(!karte&&!ist('typeof TUNE==="object"&&TUNE!==null')) fehler.push('TUNE fehlt (Projektregel)');
+  if(!/^starteSchleife\(\);/m.test(quelle)) fehler.push('starteSchleife() wird nie aufgerufen (geraet.js:449)');
+  // Optional
+  const opt=karte?['mobilKontext']:['starte','neuesSpiel','pauseTaste','mobilKontext'];
+  for(const n of opt) if(!fn(n)) hinweise.push('ohne '+n);
+  if(!karte){
+    if(!/S\.hinweisT/.test(quelle)) hinweise.push('liest S.hinweisT nicht (Tipps unsichtbar)');
+    if(!/S\.gewonnen/.test(quelle)) hinweise.push('ohne S.gewonnen');
+    if(!ist('typeof PLAUSCH_ZEILEN!=="undefined"')) hinweise.push('ohne PLAUSCH_ZEILEN');
+  }
+  return {fehler,hinweise};
+}
+
 /* ---- Gespraechsbaeume pruefen ---------------------------------------------- */
 function baeume(L,seite){
   const h=fs.readFileSync(seite,'utf8'), m=h.match(/<script>([\s\S]*?)<\/script>/)[1];
@@ -351,7 +382,7 @@ function konterLevel2(){
      const N=require('./tools/nachttest.js'); const L=N.lade('level5.html','?lektion=0');
      L.api.ev('update(1/60)'); L.taste('KeyE',true); L.api.ev('S.modus')
    Dann laeuft der Testlauf unten NICHT. Arbeitsordner muss die Projektwurzel sein. */
-if(require.main!==module){ module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm}; return; }
+if(require.main!==module){ module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm,vertrag}; return; }
 
 /* ---- Parallel: ohne Seitenfilter laeuft jede Seite in einem eigenen Prozess ----
    Warum: seriell dauert der volle Lauf 48 s (4 Kerne) bis ueber 120 s (Routine).
@@ -400,9 +431,14 @@ for(const seite of SEITEN){
   let L;
   try{ L=lade(seite); }catch(e){ meld(seite,'Laden: '+String(e.message).split('\n')[0]); continue; }
   const E=c=>L.api.ev(c);
-  const hat=n=>E('typeof '+n)==='function';
-  if(!hat('update')||!hat('draw')){ zeile(seite,'ohne update/draw - nur geladen'); continue; }
   const bericht=[];
+
+  /* 0) Vertrag: Pflichtnamen (hart) und optionale Namen (Hinweis) */
+  try{ const v=vertrag(L,seite);
+    v.fehler.forEach(f=>meld(seite,'Vertrag: '+f));
+    bericht.push(v.fehler.length?'Vertrag verletzt':(v.hinweise.length?'Vertrag: '+v.hinweise.join(', '):'Vertrag ok'));
+    if(v.fehler.some(f=>/^(update|draw) /.test(f))) continue;
+  }catch(e){ meld(seite,'Vertragspruefung: '+String(e.message).slice(0,120)); continue; }
 
   /* 1) Baeume */
   try{ const b=baeume(L,seite);
