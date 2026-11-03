@@ -43,24 +43,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · Level 6: Scheitern-Stinger verdrahten** — Level 6 hat keinen Scheiterpfad
   (wegknicken startet neu). Erst relevant, wenn ein Scheitern dazukommt. Wo: level6.html
   (levelGeschafft, traumEnde) · Fertig wenn: Scheiter-Pfad vorhanden und MUSIK.stinger('fail') ruft.
-- [ ] **P3 · nachttest.js ohne Filter zu langsam** — laeuft ueber 120 s (alle Seiten,
-  300 s Nichtstun). Wo: tools/nachttest.js · Fertig wenn: Gesamtlauf unter 60 s oder --kurz
-  als Standard fuer Routinen.
-- [ ] **P2 · Level 4: Tempo-Basis und Rang-Grenzen kalibrieren** — Rang-Grenzen (Zeit 150/60 s,
-  Konterquote 0.2/0.85) und TUNE.tempoBasis/tempoJeTreffer sind geschaetzt, nicht gemessen.
-  Wo: level4.html (TUNE.rang, musik()) · Fertig wenn: docs/gameplay/messung/s2-level4.js plus
-  ein Bot-Lauf (b-level4.js) zeigen, dass Profi-Bot im Schnitt A/S und Anfaenger-Bot B/C erreicht.
-- [ ] **P2 · Level 4: Zeitlupe-Wirkung pruefen** — Phasenwechsel ruft SAFT.zeitlupe(0.3,0.8);
-  gemessen 0.79 s Spielzeit in 1.5 s echter Zeit. Wo: level4.html (phaseWechsel) ·
-  Fertig wenn: Messskript zeigt 0.85-0.95 s oder die Zahl wird im TUNE-Block angepasst und begruendet.
 - [ ] **P3 · Level 4: Ton, Pixel und Handy der neuen Elemente ungeprueft** — Combo-Popups,
   PERFEKT-Popup, PHASE-Ansage (textGlowC Groesse 3), Musik-Abschnittswechsel phase2/phase3.
   Wo: level4.html (zeichneAnsage, Konter-Block in kampf()) · Fertig wenn: im Browser gehoert und
   auf Handy-Breite (375 px) gesehen, keine Ueberlappung der PHASE-Ansage mit dem Lebensbalken.
-- [ ] **P3 · Level 4: Polaroid-Moment vor dem Cutscene-Ende haelt die Cutscene an** — bestehendes
-  Verhalten (MOMENT.fund(4) in starteCutscene), im Messskript nur durch Tippen weitergekommen.
-  Wo: level4.html (starteCutscene) · Fertig wenn: Entscheidung, ob das gewollt ist; dann Messskript
-  entsprechend anpassen.
+  **Stand 03.11.:** headless Chromium: PHASE-Ansage ueberlappt nichts (PC, 812x375, 375x812); PERFEKT!-Popup laeuft durch den Ansagesatz -> neuer Punkt. Ton weiter ungeprueft.
 
 - [x] ~~**P2 · Beziehung zu DENNIS wird gesetzt, aber nirgends gelesen**~~ (erledigt in der
   Nacht zum 6.10., Commit `bb2369d`) — neue NACHHALL-Zeile in level8.html (gleiches Muster
@@ -92,18 +79,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt,
   dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei
   Start 40 der Wettlauf verloren gehen kann; Werte stehen hier. ERFUELLT, Werte oben.
-- [ ] **P2 · Level 8: Neustart, RUNDE-Ansage und Endbildschirm im Browser ansehen** — nur
-  headless gemessen (docs/gameplay/messung/s2-level8.js). Wo: level8.html (zeichneAnsage8,
-  neustartAbschnitt, Endbildschirm-Texte) · Fertig wenn: Screenshot zeigt "RUNDE 2" mit Satz
-  ohne Ueberlappung mit Lebensbalken, und der Fail-Text "E: NOCHMAL HIER - LEERTASTE: GANZ VON
-  VORN" passt bei W=320 in eine Zeile (textW < 312).
-- [ ] **P2 · Level 8: Rang-Grenzen kalibrieren** — TUNE.rang (Licht 100/20, Zeit 180/80 s)
-  ist geschaetzt. Wo: level8.html (TUNE.rang, rangAbschluss8) · Fertig wenn: der Wettlauf-Bot
-  aus dem Eintrag "Level 8: Wettlauf-Balance" ergibt bei Start-Licht 0 mit allen Abschieden
-  mindestens A und bei Start-Licht 40 ohne Abschiede hoechstens B.
-- [ ] **P2 · Level 7: Rang-Zeitgrenzen kalibrieren** — TUNE.rang.zeit (420/180 s) ist
-  geschaetzt. Wo: level7.html (TUNE.rang, rangRechnen) · Fertig wenn: ein Bot, der Liste und
-  5 Wuerfe erledigt, braucht gemessen weniger als TUNE.rang.zeit.schlecht und bekommt A oder S.
 - [ ] **P2 · Level 7: Pfandwurf am Handy pruefen** — Hauptknopf ZIELEN halten, loslassen
   wirft; nur am Rechner gemessen. Wo: level7.html (mobilKontext, wurfTakt) · Fertig wenn: in
   der Emulation 812x375 mit ?touch=1 trifft ein gehaltener und losgelassener Hauptknopf die
@@ -114,39 +89,9 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
   Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
   Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
-- [ ] **P2 · Proben-Antworten im Browser und am Handy sehen** — (RUF 60)/(MUT 40) grau bzw. gold,
-  Ruf-Popups (+3 RUF, RUF: BEKANNT!) und Erfolg-Popups sind nur headless getestet
-  (test/dialog.test.js 33, test/ruf.test.js 25, test/erfolge.test.js 41). Wo: nacht/dialog.js,
-  nacht/nacht.js (wertMeldung), nacht/erfolge.js, nacht/mobil.js (talkPflege) · Fertig wenn:
-  Screenshot je einer gesperrten und einer bestandenen Probe am Rechner und in der Emulation
-  812x375, Popups ueberlappen nicht mit dem Gespraechskasten.
-- [ ] **P2 · Erfolge-Liste zeigt nur Titel** — im Startmenue ERFOLGE stehen Titel oder ???, der
-  Beschreibungstext (z. B. LEVEL 1 OHNE ALARM) wird nirgends gezeigt; gesperrte Erfolge verraten
-  also nicht, was zu tun ist. Wo: nacht/menue.js (Modus 'erfolge') · Fertig wenn: der gewaehlte
-  Eintrag zeigt seinen Text (auch bei ???), test/menue.test.js prueft das.
-- [ ] **P2 · Tutorial: Tipps und WAS JETZT? im Browser sichten** — Tipps (hilfeTipp), Karte
-  WAS JETZT? (Tab, Pausemenue, Handy-Menue) und Lektionspuppe sind nur headless getestet
-  (test/hilfe.test.js, docs/gameplay/messung-tutorial.md). Wo: nacht/hilfe.js, alle Level ·
-  Fertig wenn: je Level ein Screenshot mit erstem Tipp ohne Ueberlappung mit dem HUD, und Tab oeffnet
-  nach geschlossener Kapitelkarte im Modus 'spiel' die Karte (HILFE.laeuft() true).
-- [ ] **P2 · Auto-Pause geht bei jedem Fokuswechsel neu auf** — im versteckten Vorschaufenster
-  oeffnete sich das Pausemenue nach jedem Schliessen sofort wieder (Fokus/visibilitychange, Commit
-  d7816ad). Pruefen, ob das bei echtem Alt-Tab nur einmal passiert. Wo: nacht/geraet.js,
-  nacht/pause.js · Fertig wenn: Messung zeigt, dass PAUSE.auf() je Wechsel in den Hintergrund
-  hoechstens einmal laeuft (test/pause.test.js um diesen Fall erweitert).
-- [ ] **P2 · Level 3: Gratis-Wiederholung ungetestet** — Ticket, Notbremse und Szene werden im
-  Testlauf nicht ausgeloest. Wo: level3.html (neustartImBus, Gratis-Logik aus T08) · Fertig wenn:
-  Messskript loest jede der drei Wege einmal aus und prueft den Zustand danach.
-- [ ] **P2 · Pause: NEU STARTEN und ZUM MENUE im Browser durchspielen** — nur mit Attrappen
-  getestet (test/pause.test.js). Wo: nacht/pause.js (aktiviere) · Fertig wenn: in level2.html
-  fuehrt Esc > NEU STARTEN > JA zu S.modus 'titel', und Esc > ZUM MENUE laedt index.html mit
-  sichtbarem Startmenue (MENUE.aktiv() true).
-- [ ] **P3 · Store-Doku: (prüfen)-Stellen klaeren** — docs/store/ANLEITUNG.md und texte.md
-  haben zusammen 25 Stellen "(prüfen)" (Gebuehren, Menuenamen, Befehle). Wo: docs/store/ ·
-  Fertig wenn: jede Stelle mit Quelle belegt oder begruendet offen; `grep -c "(prüfen)" docs/store/*.md`
-  halbiert.
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
+  **Stand 03.11.:** VORBEREITET, im Browser teils geprueft: quer ab 4 Antworten 4 Spalten (talkMass in mobil.js), Rechnung n3-mobil-layout.js; headless Chromium 667x375: alle 4 Knoepfe sichtbar, 157x67 px. Am echten Telefon ungeprueft.
 
 - [x] ~~**P2 · nachttest.js: Zufallslauf in Level 5 kommt nie über x≈400 hinaus**~~ (bereits
   erfuellt, nachgemessen in der Nacht zum 6.10. — kein Code geaendert) — Befund war veraltet,
@@ -187,8 +132,10 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   (4.10.) bereinigt, aber `mobilKontext()` zeigte den SPRUNG-Knopf weiterhin in jedem
   Zustand. Jetzt `zwei:null` an allen drei Stellen.
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
-- [ ] **P2 · Zwei Handys auf zwei Tasten** — `H` stumm (Level 1), `T` Engine-Handy.
-  Wo: index.html, nacht/handy.js · Fertig wenn: eine Taste, ein Handy.
+
+- [ ] **P2 · Gewinn-Bots fuer jedes Level** — Zufallstasten gewinnen Level 1, 2, 3, 6 nie (n3-rang-126.js, n3-level3-rang.js); Rang-Grenzen dort nur per Szenario. Plan: docs/architektur/PLAN.md 6.3, Helfer tools/messhilfe.js. Wo: docs/gameplay/messung/, tools/nachttest.js · Fertig wenn: `node tools/nachttest.js --bots` gewinnt jedes Level und meldet Zeit, Punkte, Rang.
+- [ ] **P2 · Level 4: PERFEKT!-Popup laeuft durch den PHASE-Ansagesatz** — Phasenwechsel im selben Bild wie der Konter (level4.html ~:704), das Popup steigt durch y=96 ("JETZT REICHTS."). Gesehen im headless Chromium (/home/user/browser-check ist fluechtig; Skript: SAFT.popup + phaseWechsel per evaluate). Wo: level4.html (phaseWechsel, Konter-Block) · Fertig wenn: Popup erscheint oberhalb/unterhalb der Ansage oder wird waehrend der Ansage unterdrueckt; Screenshot ohne Ueberlappung.
+- [ ] **P2 · Level 8: Arenaname beruehrt den RUNDE-2-Satz** — "DER HINTERHOF" (level8.html ~:1945, y=86, Groesse 2 mit Glow) sitzt 1-2 px ueber "DIE ANDEREN KOMMEN DAZU." (y=96). Wo: level8.html (zeichneAnsage8 / Arenaname) · Fertig wenn: Arenaname waehrend der Ansage aus oder >=4 px Abstand (Screenshot).
 
 ### P3
 - [ ] **P3 · iPad quer: Extra-Knoepfe ragen noch ins Bild** — seit 29./30.10. rutscht das Bild auf
@@ -198,21 +145,13 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   leiste) · Fertig wenn: im Browser bei beiden Groessen (?touch=1) auch mb-x1/mb-x2 nicht ueber dem
   Canvas und keine Knoepfe ueberlappen sich - ohne dass sie weiter als ~300 px vom rechten Rand liegen
   (Daumen). Braucht Browser.
-- [ ] **P3 · Tutorial: feste Taste E statt aktionsMarke()** — Level 6 Tipps `muede`/`aufstehen`
-  und die E-Zeile im Titelbild von Level 7 zeigen am Handy kein Knopfsymbol. Wo: level6.html,
-  level7.html · Fertig wenn: `grep -n "'E " level6.html level7.html` findet in Tipp- und
-  Titeltexten nichts mehr, test/hilfe.test.js gruen.
-- [ ] **P3 · Level 1: Hausmeister-Meldungen nicht auf Tipps umgestellt** — in update() und
-  hausmeisterHilft stehen noch SCHLUESSEL VOM GUERTEL GEZOGEN / RAUS HIER - ERDGESCHOSS als
-  meldung(), anders als im Schluessel-Zweig von imRaum. Wo: index.html · Fertig wenn: entschieden
-  und einheitlich (Meldung oder hilfeTipp), nachttest index gruen.
+  **Stand 03.11.:** VORBEREITET: im Zweig leiste liegen x1/x2 jetzt in der Leiste (rechneAnordnung, LEISTE_TASTE 48). headless Chromium 1180x820/1133x744: Hauptknopf, Zwei, Block, Stick unter dem Bild. Echtes iPad ungeprueft.
 
 - [ ] **P3 · Handy: LEICHTER/SCHWERER blitzen im ersten Bild** — vor dem ersten Takt sind beide kurz über dem Hinweistext zu sehen, danach ausgeblendet.
   Wo: nacht/mobil.js (Titelbild-Knöpfe) · Fertig wenn: im ersten Bild nach dem Laden (667x375) sind sie nicht sichtbar.
+  **Stand 03.11.:** VORBEREITET: #mb-x1/#mb-x2 starten mit visibility:hidden, erst nach platziere() sichtbar. Erstes Bild am Telefon ungeprueft.
 - [ ] **P3 · Optionale Story-Punkte der Aufträge nicht gebaut** — Karte: Pizza-Umweg, Brunnen, Musiker (`docs/launch/auftrag-karte.md`); Level 2: Trikot-Meldung und Karte GRUPPE (`auftrag-level2.md`); Level 5: Mia-Noten (`auftrag-level5.md`).
   Wo: karte.html, level2.html, level5.html · Fertig wenn: je Punkt umgesetzt oder im Auftrag als verworfen vermerkt; `node tools/nachttest.js` grün.
-- [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — `NACHT.kapitel` ist die einzige Quelle.
-  Wo: nacht/menue.js · Fertig wenn: entschieden (gewollt) oder Levelfortschritt gespeichert.
 
 - [ ] **P2 · Level 1, 6 und 7: toter Tiefen-Code** — drei Level haben
   `TIEFE_PRO_SEITE[...]=false` (nacht/welt.js:54/59/60), rechnen aber trotzdem mit
@@ -273,56 +212,41 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   `starteGrossenKampf()`) existiert. Jetzt nennt der Kommentar den Kampf gegen den
   Anfuehrer ausdruecklich.
   Wo: level8.html (Kopfkommentar) · Fertig wenn: Kommentar nennt den Kampf. ERFUELLT.
-- [ ] **P3 · Level 8: Kampfwerte (KAMPF8) stehen ausserhalb des TUNE-Blocks** —
-  anders als Level 3/4, die ihre Boss-Werte im einen TUNE-Block halten.
-  Wo: level8.html (:1480-1514 vs. TUNE am Dateianfang) · Fertig wenn: KAMPF8 in
-  TUNE zusammengefuehrt oder direkt danebengestellt.
-- [ ] **P2 · Analyse nachholen: Karte** — fünfter Teil, siehe oben. Wo: karte.html ·
-  Fertig wenn: eigener Abschnitt „Karte" in PLAYTEST.md.
-- [ ] **P2 · Analyse nachholen: Runner** — sechster Teil, siehe oben. Wo: runner.html ·
-  Fertig wenn: eigener Abschnitt „Runner" in PLAYTEST.md.
-- [ ] **P2 · Analyse nachholen: Engine** — siebter Teil, siehe oben. Wo: nacht/*.js ·
-  Fertig wenn: eigener Abschnitt „Engine" in PLAYTEST.md (Dateien, die quer durch alle
-  Level wirken, z.B. gemeinsame Zustaende, Tabellen).
-- [ ] **P2 · Analyse nachholen: Dramaturgie über die ganze Nacht** — achter und letzter
-  Teil, siehe oben. Fertig wenn: eigener Abschnitt „Dramaturgie" in PLAYTEST.md (Bogen
-  über alle acht Level hinweg, nicht einzelne Level).
 
 ### P3
 
-- [ ] **P3 · Level 6: ein Hinweistext, zwei unabhaengige Trigger** — „DIESEN RAUM GAB
-  ES SCHON EINMAL" wird sowohl beim Betreten des wiederholten Raums (level6.html:560)
-  als auch beim Anstossen an die Schleifenwand (:588) ausgeloest - koennen ueberlappend
-  auf dem Schirm stehen. Wo: level6.html · Fertig wenn: beide Stellen zeigen
-  unterschiedliche Texte.
-- [ ] **P3 · Level 6: `NACHTECHOS[].name` wird nirgends gelesen** — die Anzeige nutzt
-  ausschliesslich die hartcodierte Fallunterscheidung in `echoName()` (level6.html:668),
-  die `.name` dupliziert. Wo: level6.html · Fertig wenn: Feld entfernt oder `echoName()`
-  liest `e.name`.
-- [ ] **P3 · Rang-Grenzen Level 1, 2, 3 und 6 per Vollspiel pruefen** — nur per
-  Szenario gemessen (s2-index.js, s2-level2.js, s2-level3.js, s2-level6.js). Wo: TUNE.rang der
-  vier Level · Fertig wenn: je Level ergibt ein nachttest-Zufallslauf bis zum Levelende nicht S.
-- [ ] **P3 · Lektion wiederholen können** — wer sie übersprungen hat, bekommt sie nie wieder. Eine Taste
-  oder ein Menüpunkt (nur Adresse `?lektion=1` geht heute). Wo: nacht/lehre.js, nacht/eingabe.js ·
-  Fertig wenn: auf dem Titelbild lässt sich die Lektion des Levels erneut öffnen.
+- [ ] **P3 · HUD-Beschriftung verdeckt den Raumnamen** — level2: "MUT"/"PEGEL" ueber "WOHNZIMMER"; level5: "PEGEL" ueber dem Raumnamen (headless Chromium, E.pc.png). Wo: level2.html, level5.html (HUD/Raumname) · Fertig wenn: Screenshot zeigt beide lesbar.
+- [ ] **P3 · Runner: Boss-Werte doppelt** — ETAPPEN hp 4-7/telMul, TUNE.bossHp (~:139) toter Rueckfall. Wo: runner.html (ETAPPEN, startBoss) · Fertig wenn: hp und telMul im TUNE, toter Rueckfall weg.
+- [ ] **P3 · Wortgleiche Hilfsfunktionen in den Leveln** — meldung und zeigeHinweis in allen 8 Leveln, pauseTaste in 5 gleich (3, 4, 8 weichen ab). Wo: level*.html, index.html · Fertig wenn: meldung/zeigeHinweis in der Engine; pauseTaste-Abweichungen kommentiert oder angeglichen. (Browser-Durchlauf noetig)
+- [ ] **P3 · Tippfehler in wenn/tu bleiben still** — bedingungErfuellt ignoriert unbekannte Schluessel, wirke legt neue Werte an. Bestand ist sauber (n3-schluessel.js). Wo: nacht/nacht.js, tools/flagcheck.js · Fertig wenn: flagcheck meldet unbekannte Schluessel als harten Fehler.
+- [ ] **P3 · Tote Zeilen in TIEFE_PRO_SEITE** — karte.html und runner.html stehen drin, laden welt.js aber nicht. Wo: nacht/welt.js (~:62-63) · Fertig wenn: gestrichen oder kommentiert.
+- [ ] **P3 · Pruefwerkzeuge: Rest aus dem Architektur-Plan** — 6.4 grosse Seiten aufteilen (erst Level 4), 6.5 globale Namen buendeln, 6.6 Stempel-Merge-Ablauf, 6.7 Doku verschlanken (alte Erledigt-Eintraege nach docs/archiv/). Wo: docs/architektur/PLAN.md · Fertig wenn: je Schritt wie dort beschrieben.
+- [ ] **P3 · routinen/nacht.md nennt die alte Pruefliste** — dort stehen Einzelbefehle mit alten Zahlen ("22 bestanden"). Die Routine darf routinen/ nicht aendern; Nick/Eve von Hand: auf `node tools/pruefliste.js` umstellen. Wo: routinen/nacht.md (:35-38, :88) · Fertig wenn: Routine ruft pruefliste.js.
 
-- [ ] **P3 · `tools/level5_baeume.js` löschen** — wortgleiche Zweitkopie der Bäume, wird nur
-  von einem alten Umbau-Skript gelesen. Wo: tools/ · Fertig wenn: Datei weg, `pruefe.js` grün.
+
 - [x] ~~**P3 · Bahn oder Bus?**~~ (erledigt in der Sitzung 3.-5.10., Commit 427135a: überall Bus) — Intro sagt Bahn, das Schild sagt BUS. Wo: level3.html ·
   Fertig wenn: ein Wort überall.
 - [x] ~~**P3 · README: Handy-Steuerung beschreibt den alten Stand**~~ (erledigt mit der neuen Handy-Fassung) — „Steuerkreuz links,
   Aktionstasten rechts" gibt es nicht mehr. Wo: README.md · Fertig wenn: beschreibt
   Stick, Info-Tafel und MENÜ-Knopf.
-- [ ] **P3 · `TODO.md` ist veraltet** (Stand 17.9., „Level 3–8 Grundversionen") —
-  Wo: TODO.md · Fertig wenn: stimmt mit dem Stand überein oder verweist hierher.
 
-- [ ] **P2 · Level 5: Rang-Schwellen per Vollspiel kalibrieren** — Zeit (400/150 s) und Ruf (20/80) in TUNE.rang sind nur per Szenario gemessen. Wo: level5.html (TUNE.rang, rangAbschluss) · Fertig wenn: 5 Vollspiel-Laeufe (Bot oder Zufall bis zum Levelende) ergeben nicht nur C und nicht nur S; docs/gameplay/messung/s2-level5.js erweitert.
 - [ ] **P2 · Level 5: Optik im Browser pruefen** — Taktpunkt unten mittig, Nebelkreis (nebelRadius 62), Tanzpose (Hub 3 px, Seitenversatz) und Status-Zeilen rechts unter der Uhr sind nicht gemessen. Wo: level5.html (zeichneTaktpunkt, zeichneNebel, hudEreignisse, Spieler-Sprite in zeichneClub) · Fertig wenn: Screenshot mit Tanzfläche, Nebel und LICHT AUS zeigt alles lesbar, ohne Ueberlagerung mit HUD-Text.
-- [ ] **P2 · Level 5: Kloppe-Treffer-Pfad testen** — saftDo treffer/schaden in kloppe() und der Auftakt sind vom Headless-Lauf nicht erreicht. Wo: level5.html (kloppe, starteKloppe) · Fertig wenn: ein Messskript fuehrt die Kloppe bis zum Ende ohne Ausnahme und zaehlt mindestens einen SAFT-Treffer und einen Schaden.
 
 ---
 
 ## Entscheidung nötig (die Routinen lassen das liegen)
+
+- [ ] **P3 · Level 4: Polaroid-Moment vor dem Cutscene-Ende haelt die Cutscene an** — gemessen (n3-level4-moment.js): ohne Herzverlust 3,0 s Karte, Level steht, Cutscene ab 3,07 s; ab 0,8 s ueberspringbar. Karte im Sieg-Moment lassen oder nach der Cutscene zeigen? Vorlage: docs/entscheidungen/2026-11-03.md (1).
+- [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — Vorlage docs/entscheidungen/2026-11-03.md (4), Empfehlung: als gewollt schliessen.
+- [ ] **Level 8: Soll Rang S erreichbar sein?** — perfekter Bot-Lauf = 82 Punkte (A): Licht bei Ankunft ~56 %, Zeit trennt nicht. Vorlage docs/entscheidungen/2026-11-03.md (2).
+- [ ] **Rang-Zeitgrenzen gegen echte Spieler (Level 4, 5, 7, 8)** — Bots holen immer volle Zeitpunkte; Level 7 heute auf 240/45 s geschaetzt. Beim Playtest Levelzeiten notieren? Vorlage (3).
+- [ ] **Lektion wiederholen am Handy / Hinweis auf dem Titelbild** — L geht am Rechner; Handy-Menue-Eintrag? Vorlage (5).
+- [ ] **Handy-Symbol "!" im Tipptext lesbar?** — Vorlage (6).
+- [ ] **Abgelehnter Umweg kostet Sonne** — karte.html (machUmweg :199) setzt umweg_N auch bei "Nee, danke"; Level 8 zieht je 4 % Sonne ab. Gewollt? Und soll die Meldung die Sonnenfolge nennen (heute nur "ZEIT VERGEHT")? (PLAYTEST Karte)
+- [ ] **Umweg 5, 6 und 7 ohne Gegenueber** — Brunnen/Mama wer:"", Pizza ohne Antwortknoten (karte.html UMWEGE). Story-Frage.
+- [ ] **Runner verlinken oder verbergen? Erfolg fuer den Bonus?** — runner.html von nirgends verlinkt, laedt erfolge/menue/hilfe ohne Nutzung, sw.js laedt 63 KB vor. Zahlen in kampf.js:321 "aus runner.html erprobt" weichen ab (0,52 gegen 0,46).
+- [ ] **Zwei offene Tabs ueberschreiben den Spielstand** — NACHT wird einmal geladen und komplett zurueckgeschrieben (nacht/nacht.js). Absichern (storage-Ereignis) oder hinnehmen?
+- [ ] **Dramaturgie (PLAYTEST, Abschnitt Dramaturgie)** — Fragen: L6/L7 ohne Scheitern (Plateau gewollt?); Konter nach zwei kampffreien Leveln; L6 (Wendepunkt) nur ~73 s; Lampe/Werfen nur in L1, SHIFT mal Schleichen mal Blocken; Leas Frage kommt einmal; Karte als Atempause gestalten?; Gewicht der Umwege zum Ende.
 
 - **P2 · Level 5: "Theke gratis" (Ereignis SHOT) — Entscheidung nötig** — umgesetzt als: 10 s kein Auf-Ex-Spiel, jeder Druck an der Theke ist ein Schluck (+18 Pegel, 0,6 s Pause). Soll es so bleiben, oder ein echtes kostenloses Glas mit einmaligem Effekt? Wo: level5.html (gratisShot, TUNE.shotDauer/shotSchluck). Bis zur Antwort: so lassen.
 
@@ -363,6 +287,44 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] ~~**P3 · nachttest.js ohne Filter zu langsam**~~ (erledigt 03.11., claude/gameplay) — ohne Filter laeuft jetzt jede Seite in einem eigenen Prozess (eine je Kern): 48 s -> 26 s auf 4 Kernen; `--zeit`, `--seriell`. Dazu `tools/pruefliste.js` (ganze Pruefliste parallel, ~18 s).
+- [x] ~~**P2 · Level 4: Tempo-Basis und Rang-Grenzen kalibrieren**~~ (erledigt 03.11., claude/gameplay) — Bot-Messung n3-level4-rang.js (10 Laeufe je Bot): Profi vorher 72 Punkte im Schnitt (B), weil Nachsetzen nicht als Konter zaehlt. TUNE.rang konter.gut 0.85->0.7, combo.gut 5->4: Profi 81-83 (9x A, 1x B), Profi ohne Nachsetzen S, "lahm" B. tempoBasis/tempoJeTreffer nur gelesen (120/124/128 bpm) - Klang im Browser ungeprueft.
+- [x] ~~**P2 · Level 4: Zeitlupe-Wirkung pruefen**~~ (erledigt 03.11., claude/gameplay) — gemessen mit SAFT.takt wie in kern.js (n3-level4-zeitlupe.js): 0,94 s Spielzeit in 1,5 s echter Zeit - im Ziel 0,85-0,95. Keine Aenderung; die alte Zahl 0,79 kam aus einer Messung ohne SAFT.takt.
+- [x] ~~**P2 · Level 8: Rang-Grenzen kalibrieren**~~ (erledigt 03.11., claude/gameplay) — Bot n3-level8-rang.js: Start-Licht 0 + 4/4 Abschiede = 82 (A), Start-Licht 40 ohne Abschiede = 51 (C). TUNE.rang unveraendert (Messung im Kommentar). S ist praktisch unerreichbar -> Entscheidung nötig.
+- [x] ~~**P3 · Level 8: Kampfwerte (KAMPF8) stehen ausserhalb des TUNE-Blocks**~~ (erledigt 03.11., claude/gameplay) — KAMPF8 steht direkt unter TUNE; c-level8-kampf.js vorher/nachher byte-gleich.
+- [x] ~~**P2 · Level 8: Neustart, RUNDE-Ansage und Endbildschirm im Browser ansehen**~~ (erledigt 03.11., claude/gameplay) — Textbreiten headless (n3-level8-text.js: Fail-Text 167 px < 312) und im headless Chromium gesehen (Lebensbalken frei, Fail-Text lesbar). Neu gefunden: Arenaname-Glow beruehrt den RUNDE-2-Satz -> neuer Punkt.
+- [x] ~~**P2 · Level 7: Rang-Zeitgrenzen kalibrieren**~~ (erledigt 03.11., claude/gameplay) — n3-level7-rang.js: S.zeit zaehlt nur freies Spiel, Bot 19 s -> alte 420/180 nie spuerbar. Jetzt 240/45 s (Schaetzung "Mensch = Bot x2-10"); Bot bekommt S. Gegen echte Spielzeiten pruefen: Entscheidung nötig (Zeitgrenzen).
+- [x] ~~**P2 · Erfolge-Liste zeigt nur Titel**~~ (erledigt 03.11., claude/gameplay) — jeder Erfolg waehlbar, unten steht der Text des markierten (auch bei ???), zu lang -> ".."; test/menue.test.js 53. Im headless Chromium gesehen: keine Ueberlappung (PC und 812x375).
+- [x] ~~**P2 · Auto-Pause geht bei jedem Fokuswechsel neu auf**~~ (erledigt 03.11., claude/gameplay) — geraet.js meldet beiSichtbar nur nach echtem hidden/pagehide, pause.js oeffnet nicht, solange hidden. Tests in pause.test.js und geraet.test.js. Echter Alt-Tab am Geraet ungeprueft.
+- [x] ~~**P2 · Level 3: Gratis-Wiederholung ungetestet**~~ (erledigt 03.11., claude/gameplay) — n3-level3-gratis.js loest Ticket, Notbremse, Szene und neustartImBus aus - alles OK, kein Fehler im Level.
+- [x] ~~**P2 · Pause: NEU STARTEN und ZUM MENUE im Browser durchspielen**~~ (erledigt 03.11., claude/gameplay) — headless (n3-pause.js) und im headless Chromium: Esc > NEU STARTEN > JA -> Titelbild; ZUM MENUE -> index.html mit MENUE.aktiv().
+- [x] ~~**P3 · Store-Doku: (prüfen)-Stellen klaeren**~~ (erledigt 03.11., claude/gameplay) — 25 -> 13 Stellen; belegt mit offiziellen Quellen (Quellenliste am Ende von ANLEITUNG.md). Rest offen, weil capacitorjs.com und support.google.com aus der Cloud nicht erreichbar waren. WICHTIG: Google Play verlangt seit 31.08.2026 Ziel-API 36 (Verlaengerung bis 01.11.2026 abgelaufen).
+- [x] ~~**P2 · Zwei Handys auf zwei Tasten**~~ (erledigt 03.11., claude/gameplay) — H oeffnet kein zweites Handy, sondern schaltet nur die Vibration; Meldung sagte faelschlich TON AUS. Jetzt "VIBRATION AUS/AN" und passender Tipp (index.html).
+- [x] ~~**P3 · Tutorial: feste Taste E statt aktionsMarke()**~~ (erledigt 03.11., claude/gameplay) — Platzhalter {E} in hilfeTipp-Texten (nacht/hilfe.js), Level 6 muede/aufstehen und Level 7 wurf umgestellt; test/hilfe.test.js 51. Wie "!" im Tipptext am Handy wirkt: Entscheidung (Vorlage 6).
+- [x] ~~**P3 · Level 1: Hausmeister-Meldungen nicht auf Tipps umgestellt**~~ (erledigt 03.11., claude/gameplay) — Befund veraltet: RAUS HIER steht ueberall als zeigeHinweis, SCHLUESSEL VOM GUERTEL ist ein Ereignis (meldung) wie SCHLUESSEL GEFUNDEN. Nach der Regel "Ereignis = meldung, Mechanik = hilfeTipp" schon einheitlich.
+- [x] ~~**P3 · Level 6: ein Hinweistext, zwei unabhaengige Trigger**~~ (erledigt 03.11., claude/gameplay) — Befund veraltet: die Schleifenwand hat eigene, gestaffelte Texte; "DIESEN RAUM GAB ES SCHON EINMAL" kommt nur beim Betreten.
+- [x] ~~**P3 · Level 6: `NACHTECHOS[].name` wird nirgends gelesen**~~ (erledigt 03.11., claude/gameplay) — echoName() liest e.name; Namen vorher/nachher gleich (n3-level6-echoname.js).
+- [x] ~~**P3 · Rang-Grenzen Level 1, 2, 3 und 6 per Vollspiel pruefen**~~ (erledigt 03.11., claude/gameplay) — n3-level3-rang.js und n3-rang-126.js: Zufallstasten gewinnen keines der vier Level in 600 s (8-12 Seeds), also nie S. Fuer echte Kalibrierung braucht es Gewinn-Bots -> neuer Punkt (PLAN 6.3).
+- [x] ~~**P3 · Lektion wiederholen können**~~ (erledigt 03.11., claude/gameplay) — Taste L auf dem Titelbild holt die Lektion zurueck (nacht/eingabe.js, LEHRE.nochmalVormerken), test/lehre.test.js. Handy-Weg und Hinweis auf dem Titelbild: Entscheidung (Vorlage 5).
+- [x] ~~**P3 · `tools/level5_baeume.js` löschen**~~ (erledigt 03.11., claude/gameplay) — geloescht; 28 erledigte Umbau-Skripte nach tools/alt/ (mit README).
+- [x] ~~**P3 · `TODO.md` ist veraltet**~~ (erledigt 03.11., claude/gameplay) — oben als veraltet markiert, verweist auf NACHT-TODO.md und docs/architektur/PLAN.md.
+- [x] ~~**P2 · Level 5: Rang-Schwellen per Vollspiel kalibrieren**~~ (erledigt 03.11., claude/gameplay) — n3-level5-rang.js, 8 Bot-Laeufe: C C C B C C C C (nicht nur C, nicht nur S). TUNE.rang unveraendert; Zeit trennt bei Bots nicht (13-17 s) -> Entscheidung Zeitgrenzen.
+- [x] ~~**P2 · Level 5: Kloppe-Treffer-Pfad testen**~~ (erledigt 03.11., claude/gameplay) — n3-level5-kloppe.js: 3 Seeds bis kloppeVorbei, 10 SAFT.treffer, 5 SAFT.schaden, keine Ausnahme.
+- [x] ~~**P2 · Analyse nachholen: Karte**~~ (erledigt 03.11., claude/gameplay) — PLAYTEST.md Abschnitt Karte, Messskript n3-karte.js; Funde als neue Punkte.
+- [x] ~~**P2 · Analyse nachholen: Runner**~~ (erledigt 03.11., claude/gameplay) — PLAYTEST.md Abschnitt Runner, n3-runner.js; Funde als neue Punkte.
+- [x] ~~**P2 · Analyse nachholen: Engine**~~ (erledigt 03.11., claude/gameplay) — PLAYTEST.md Abschnitt Engine, n3-speicher/-speicherfehler/-schluessel.js; Funde als neue Punkte.
+- [x] ~~**P2 · Analyse nachholen: Dramaturgie über die ganze Nacht**~~ (erledigt 03.11., claude/gameplay) — PLAYTEST.md Abschnitt Dramaturgie, n3-dramaturgie.js; Fragen unter Entscheidung nötig.
+- [x] ~~**P2 · Proben-Antworten im Browser und am Handy sehen**~~ (erledigt 03.11., claude/gameplay) — im headless Chromium (Baum KARTONS, level2): gesperrt grau "(MUT 40)", bestanden gold, PC und 812x375, keine Ueberlappung. Echtes Telefon ungeprueft.
+- [x] ~~**P2 · Tutorial: Tipps und WAS JETZT? im Browser sichten**~~ (erledigt 03.11., claude/gameplay) — im headless Chromium in index.html und level5.html: keine Ueberlappung mit dem HUD (PC, 812x375 Touch). Andere Level nicht einzeln.
+- [x] ~~**P3 · Karte stuerzt bei ?nach=3.5 ab**~~ (gefunden und erledigt 03.11., claude/gameplay) — Math.round vor dem Klemmen, ungueltig -> 1 (n3-karte.js).
+- [x] ~~**P3 · Karte: Doppeltipp ueberspringt den Umweg**~~ (gefunden und erledigt 03.11.) — TUNE.eingabeSperre 0,4 s nach Ankommen und Umweg; Doppeltipp bleibt auf der Karte (n3-karte.js).
+- [x] ~~**P3 · Karte: "DIE JUNGS FEIERN DICH" bei leerer Crew**~~ (gefunden und erledigt 03.11.) — ohne Crew jetzt "DAS TUT GUT" (Wortwahl tauschbar).
+- [x] ~~**P2 · ladeBest ohne try in sieben Leveln**~~ (gefunden und erledigt 03.11.) — alle Level nutzen ladeBestN(N) aus nacht/stand.js; n3-speicherfehler.js: vorher Level 4 und 8 in 120/120 Bildern Ausnahme bei gesperrtem Speicher, jetzt 0 auf allen 9 Seiten. Echter gesperrter Speicher im Browser ungeprueft.
+- [x] ~~**P3 · Pegel direkt aus localStorage**~~ (gefunden und erledigt 03.11.) — ladePegel()/speicherePegel() ueberall, `grep PEGEL_KEY level*.html index.html` leer. Hinweis: die Engine-Funktionen klemmen nicht (Obergrenze waere eine TUNE-Entscheidung).
+- [x] ~~**P3 · iPad quer: MENUE-Knopf ueberlappt das Bild**~~ (gefunden und erledigt 03.11.) — im Zweig leiste liegt MENUE jetzt unter dem Bild zwischen Stick und Tasten (rechneAnordnung o.menue). headless Chromium 1180x820: vorher 24 px im Bild, jetzt 573,708-619,752; 1133x744: vorher voll im Bild, jetzt 508,666-554,710. Telefone unveraendert (DOM-Rechtecke). Daumengefuehl am echten iPad ungeprueft.
+- [x] ~~**P2 · Runner ignoriert Flackerschutz und Wackeln**~~ (gefunden und erledigt 03.11.) — Blitz und Wackeln ueber FX; n3-runner.js: Blitz-Alpha 0,45 -> mit Flackerschutz 0,113. Folge: "Wackeln aus" schaltet das Treffer-Wackeln jetzt ganz ab. Im Browser ungeprueft.
+- [x] ~~**P2 · Runner fehlt im nachttest**~~ (gefunden und erledigt 03.11.) — runner.html in SEITEN mit eigenen Regeln (runnerLauf: Demo, Bot ab jeder Etappe inkl. Bosse, Nichtstun endet nach 10 s); gruen.
 
 - [x] 2026-10-29 · P1 · Ruf zaehlt in Gespraechen: Proben-Antworten (probe:{ruf:N}/{mut:N},
   sichtbar, gesperrt grau mit (RUF 60), bestanden gold), Ruf-/Mut-Popups, fuenf Ruf-Stufen mit

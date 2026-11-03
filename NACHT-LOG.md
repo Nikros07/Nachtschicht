@@ -620,3 +620,30 @@ Schweben im Browser pruefen** und **Level 6: Handy-Sprungknopf testen** (beide o
 Browser/Emulation nicht prüfbar), dann **Level 4: Tempo-Basis und Rang-Grenzen
 kalibrieren** (braucht einen Bot-Lauf wie beim Level-8-Wettlauf) und **Level 4:
 Zeitlupe-Wirkung pruefen** (reine Messung, kleinster Kandidat für die nächste Nacht).
+
+## 03.11.2026 – Architektur, Liste, Halbfertiges (Branch claude/gameplay)
+
+Kein Routinenlauf, sondern eine Sitzung auf Eves Auftrag. Der Nachtlauf ab 01:50 Berlin brach sofort
+ab: alle Agents bekamen beim Start HTTP 429 (5-Stunden-Limit), es war noch nichts geändert. Weiter ging
+es am 03.11. ab 13:41 UTC. Planung und Prüfung machte das Hauptmodell, umgesetzt haben Sonnet-/Haiku-Agents
+in eigenen Worktrees. Ausführlich: `docs/BERICHT-2026-11-03.md`.
+
+- **Architektur**
+  - Neu: `docs/architektur/PLAN.md` und `LEVEL-VERTRAG.md`.
+  - `tools/pruefliste.js`: ganze Prüfliste mit einem Befehl, parallel.
+  - `nachttest` läuft parallel: 48 s → 26 s. Neu darin: Vertragsprüfung und `runner.html`.
+  - `pruefe.js` prüft die Ladereihenfolge.
+  - Neu: `tools/messhilfe.js`. Die alten Umbau-Skripte liegen jetzt in `tools/alt/`.
+- **NACHT-TODO:** 29 Punkte erledigt, dazu 8 neu gefundene Fehler behoben:
+  - Level 4 und 8 stürzten bei gesperrtem Speicher ab.
+  - Karte: drei kleine Fehler.
+  - iPad: der MENÜ-Knopf lag über dem Bild.
+  - Runner: Blitz am Flackerschutz vorbei, und er fehlte im Nachttest.
+- **Kalibriert per Bot:** Level 4 Rang (`konter.gut` 0.7, `combo.gut` 4) und Level 7 Zeit (240/45 s, geschätzt).
+  Level 3, 5 und 8 sind gemessen und blieben unverändert.
+- **Browser:** headless Chromium (Playwright) gibt es in dieser Umgebung. Screenshots ergaben drei neue
+  kleine Layout-Punkte.
+- **Tests:** `node tools/pruefliste.js` → alle 23 Prüfungen grün. Alle 22 `n3-*`-Messskripte laufen mit Exit 0.
+- **Offen bzw. ungeprüft:** echtes Telefon/iPad und Ton. Elf Fragen stehen unter „Entscheidung nötig“, Vorlagen in
+  `docs/entscheidungen/2026-11-03.md`. `routinen/nacht.md` nennt noch die alte Prüfliste und muss von Hand
+  umgestellt werden.
