@@ -197,6 +197,25 @@ Engine-Dateien, insbesondere nacht/kampf.js, nacht/lehre.js und nacht/epilog.js;
 | ~~`gruppeGross`/`gruppeKlein` wurden nie zurückgesetzt~~ | Die Wahl des letzten Durchlaufs fälscht vier spätere Stellen. | hoch | ~~Behoben~~ |
 | ~~Springen, Hoch und Runter werden beigebracht und tun nichts~~ | Drei von sechs Eingaben ohne Zweck. | mittel | ~~Titelbild nennt Sprung nicht mehr als Steuerung, Sprung selbst bleibt im Code (4.10.)~~ |
 
+## Karte — die Stadt zwischen den Leveln
+
+Analyse vom 3.11. `karte.html` (329 Zeilen) vollständig gelesen; gemessen mit
+`docs/gameplay/messung/c-karte.js` (7 Karten, je mit und ohne Umweg) und neu
+`docs/gameplay/messung/n3-karte.js` (Beschriftungen, `?nach=3.5`).
+Die Karte kostet ohne Umweg 7,1–7,8 s (2,6 s Fahrt, Rest Lesen), mit Umweg 13,6–20,7 s.
+Beschriftungen überlappen bei keiner der sieben Karten (Breite 336).
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| Ein **abgelehnter** Umweg kostet trotzdem Sonne: `setzeFlag('umweg_'+NACH)` (karte.html:199) läuft im Ende-Rückruf jedes Gesprächs. Gemessen für nach=1,3,5,7: „Nee, danke"/„Lass stecken"/„Weitergehen" setzt `umweg_N`, Meldung „ZEIT VERGEHT"; Level 8 rechnet 4 % je Flag (level8.html:358, `lichtProUmweg`) | Wer nur nachsieht und geht, verliert bis zu 28 % Sonne, ohne etwas getan zu haben. Die Strafe trifft den Vorsichtigen | P2 | Flag nur setzen, wenn eine Wahl mit Folge gewählt wurde — oder bewusst lassen und im Angebot sagen |
+| Die Sonnenfolge ist **unsichtbar**: „ZEIT VERGEHT" (:206) ist alles; beim Pizza-Teilen steht stattdessen „DIE JUNGS FEIERN DICH" und gar kein Zeithinweis (Messung: `sonneErwaehnt` false bei nach=5). Auch die Uhrzeit der Station (`zeit:`, :88-95) bleibt nach einem Umweg unverändert | Die Kosten des Umwegs erfährt man erst in Level 8, Stunden später und ohne Ursache | P2 | Meldung nennt die Folge („SONNE 4 % FRUEHER"); Uhrzeit der nächsten Station springt sichtbar |
+| `?nach=3.5` (oder jede Nicht-Ganzzahl) stürzt ab: `NACH` (:76) wird nur geklemmt, nicht gerundet, `STATIONEN[NACH]` ist `undefined` → „Cannot read properties of undefined (reading 'x')" im Bild. Gemessen | Nur per Hand-URL erreichbar, aber die Seite ist von den Leveln aus mit festen Zahlen verlinkt - niedriger Aufwand, harter Absturz | P3 | `Math.round` vor dem Klemmen |
+| „DIE JUNGS FEIERN DICH" (:204) erscheint auch bei leerer Crew; `ladeCrew()` ist dann `[]`, kein `aendereBeziehung` läuft | Die Meldung behauptet eine Wirkung, die nicht stattfindet („ALLEIN UNTERWEGS" steht im selben Bild) | P3 | Meldung nur bei `ladeCrew().length>0`, sonst „DER PIZZAMANN FREUT SICH" o.ä. |
+| Doppeltipp beim Ankommen: das erste E setzt `S.weg=1` (:217), das zweite wählt schon WEITER. Gemessen: Seitenwechsel nach 0,15 s Kartenzeit, die Umweg-Option war nur ein Bild lang da | Wer das Gespräch davor mit E durchgeklickt hat, überspringt den Umweg unabsichtlich | P3 | Nach dem Ankommen 0,5 s Eingabesperre in `druckAktion` |
+| Zwei Umwege (6 Brunnen, 7 Mama) haben `wer:''`; Pizza (5) hat keinen Folgeknoten: nach dem Kauf endet das Gespräch ohne Antwort des Pizzamanns | Im Rahmen der Karte klingen die anderen fünf nach Personen, diese nach Formularen | P3 | Je ein Antwortknoten (Texte in `nacht/texte.js`-Stil, Story-Entscheidung) |
+
+**Fertig wenn:** `node docs/gameplay/messung/c-karte.js` zeigt für „Nee, danke" je Karte `umweg_N` nicht gesetzt (oder die Absicht ist im Angebot benannt); `?nach=3.5` lädt ohne Ausnahme.
+
 ## Durchs ganze Spiel
 
 | Problem | Warum es nervt | Grad | Lösung |
