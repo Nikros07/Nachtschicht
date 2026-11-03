@@ -2,6 +2,8 @@
    node tools/nachttest.js            alles
    node tools/nachttest.js level5     nur Seiten, deren Name das enthaelt
    node tools/nachttest.js --kurz     nur 20 statt 60 Sekunden Spiel, 60 statt 300 Nichtstun
+   node tools/nachttest.js --zeit     dazu die Laufzeit je Seite
+   node tools/nachttest.js --seriell  alles in einem Prozess (ohne Filter sonst: eine Seite je Kern)
 
    Warum es das gibt: die Nachtroutine laeuft in der Cloud, und dort gibt es
    keinen Browser. Engine und Level-Script werden hier in einer Funktion
@@ -350,6 +352,43 @@ function konterLevel2(){
      L.api.ev('update(1/60)'); L.taste('KeyE',true); L.api.ev('S.modus')
    Dann laeuft der Testlauf unten NICHT. Arbeitsordner muss die Projektwurzel sein. */
 if(require.main!==module){ module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm}; return; }
+
+/* ---- Parallel: ohne Seitenfilter laeuft jede Seite in einem eigenen Prozess ----
+   Warum: seriell dauert der volle Lauf 48 s (4 Kerne) bis ueber 120 s (Routine).
+   Jeder Kindprozess bekommt genau eine Seite als Filter; damit laufen auch die
+   Text-Pruefung (haengt an index.html) und der Konter-Test (an level2.html) mit.
+   Ausgabe in fester Seitenreihenfolge, Exit 1, wenn ein Kind Fehler meldet.
+   --seriell erzwingt den alten Ablauf in einem Prozess. */
+if(!filter.length&&!argv.includes('--seriell')){
+  const {spawn}=require('child_process'), os=require('os');
+  const plaetze=Math.max(1,Math.min(SEITEN.length,(os.cpus()||[]).length||1));
+  const t0=Date.now(), erg=new Array(SEITEN.length);
+  let naechste=0, laufend=0, fertig=0;
+  const starte=()=>{
+    while(laufend<plaetze&&naechste<SEITEN.length){
+      const i=naechste++, ts=Date.now(); laufend++;
+      const k=spawn(process.execPath,[__filename,SEITEN[i],'--seriell',...argv.filter(a=>a.startsWith('--'))]);
+      let out=''; k.stdout.on('data',d=>out+=d); k.stderr.on('data',d=>out+=d);
+      k.on('close',code=>{
+        /* Die Schlusszeile jedes Kindes weglassen - es gibt eine gemeinsame. */
+        const zeilen=out.split('\n').filter(z=>z.trim()&&!/^(alles gruen|\d+ harte Fehler)/.test(z.trim()));
+        erg[i]={code,zeilen,sek:(Date.now()-ts)/1000}; laufend--; fertig++;
+        if(fertig===SEITEN.length) schluss(); else starte();
+      });
+    }
+  };
+  const schluss=()=>{
+    let fehl=0;
+    erg.forEach((e,i)=>{ e.zeilen.forEach(z=>console.log(z));
+      if(argv.includes('--zeit')) console.log(''.padEnd(14)+'('+SEITEN[i]+': '+e.sek.toFixed(1)+' s)');
+      if(e.code) fehl++; });
+    console.log('\n'+(fehl?fehl+' Seiten mit harten Fehlern':'alles gruen')
+      +'  ('+((Date.now()-t0)/1000).toFixed(1)+' s, '+plaetze+' parallel; nicht geprueft: Pixel, Ton, Layout, runner.html)');
+    process.exit(fehl?1:0);
+  };
+  starte();
+  return;
+}
 
 /* ---- Lauf ----------------------------------------------------------------- */
 let hart=0;
