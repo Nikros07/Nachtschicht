@@ -48,6 +48,13 @@ for(const [n,w,h] of G){
       const x1=b.x1,x2=b.x2;
       for(let i=0;i<E.length;i++) for(let j=i+1;j<E.length;j++){ const [ka,A]=E[i],[kb,B]=E[j];
         const dist=Math.hypot(A.x-B.x,A.y-B.y); if(dist<(A.d+B.d)/2){ fehler++; console.log(' !! Ueberlappung '+ka+'/'+kb+' Abstand '+dist.toFixed(1)); } }
+      const mn=b.menue, mg=b.menueGr;
+      if(!mn){ fehler++; console.log(' !! MENUE nicht in der Leiste'); } else {
+        const mr={x:mn.x,y:mn.y}; console.log(' MENUE x '+Math.round(mn.x-mg.w/2)+'..'+Math.round(mn.x+mg.w/2)+' y '+Math.round(mn.y-mg.h/2)+'..'+Math.round(mn.y+mg.h/2));
+        if(mn.y-mg.h/2<bh-0.5){ fehler++; console.log(' !! MENUE ragt ins Bild'); }
+        const sg=b.stickGr; const sOb=b.heim.x, sR=sOb+sg/2;
+        for(const [k,e] of [...E,['stick',{x:b.heim.x,y:b.heim.y,d:sg}]]){ if(Math.abs(mn.x-e.x)<(mg.w+e.d)/2&&Math.abs(mn.y-e.y)<(mg.h+e.d)/2){ fehler++; console.log(' !! MENUE ueberlappt '+k); } }
+      }
       const rest=Math.max(...E.map(([k,e])=>w-(e.x-e.d/2)))  ; const links=Math.min(...E.map(([k,e])=>e.x-e.d/2));
       console.log(' Abstand linkster Knopf zum rechten Rand: '+Math.round(rest)+' px (Soll ca. 300, Grenze 320)');
       if(rest>320){ fehler++; console.log(' !! zu weit links'); }

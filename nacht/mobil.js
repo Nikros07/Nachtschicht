@@ -335,6 +335,13 @@ function rechneAnordnung(p){
     const pos=function(name,i,reihe){ o[name]={ x:x0-vz*i*(dl+gl), y:cy-(reihe?dl+gl:0), d:dl }; };
     pos('zwei',0,0); pos('block',1,0);
     if(zweiReihen){ pos('x1',0,1); pos('x2',1,1); } else { pos('x1',2,0); pos('x2',3,0); }
+    /* MENUE in dieselbe Leiste (sonst ragt es am Tablet ins Bild): mittig zwischen Stick und
+       Tastenreihe, auf Hoehe des Hauptknopfs. Mass 46x44 wie der Knopf im Stylesheet. */
+    o.menueGr={ w:46, h:44 };
+    const reihenN=zweiReihen?2:4, tasteAussen=x0-vz*((reihenN-1)*(dl+gl)+dl/2);
+    const stickAussen=(links?(dw-Math.max(dw*0.17,Math.max(100,Math.round(k*1.15))*0.6+sL)):Math.max(dw*0.17,Math.max(100,Math.round(k*1.15))*0.6+sL))
+      +(links?-1:1)*Math.max(100,Math.round(k*1.15))/2;
+    o.menue={ x:(stickAussen+tasteAussen)/2, y:cy };
   } else {
     bogen('zwei',8,R,s);                 // fast waagerecht: Sprung/Rolle, am haeufigsten
     bogen('block',62,R,s);               // darueber: Blocken
@@ -389,6 +396,9 @@ function platziere(){
   setze(bAktion,o.aktion.x,o.aktion.y,o.aktion.d);
   [[bZwei,o.zwei],[bBlock,o.block],[bX[0],o.x1],[bX[1],o.x2]].forEach(function(q){
     setze(q[0],q[1].x,q[1].y,q[1].d); });
+  const mb=el('mmenubtn');
+  if(o.menue){ mb.style.left=Math.round(o.menue.x-o.menueGr.w/2)+'px'; mb.style.top=Math.round(o.menue.y-o.menueGr.h/2)+'px'; mb.style.right='auto'; }
+  else { mb.style.left=mb.style.top=mb.style.right=''; }
   stickGr=o.stickGr;
   stick.style.width=stick.style.height=stickGr+'px';
   stickHeimPos=o.heim;
