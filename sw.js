@@ -31,8 +31,8 @@
    eigenen Speicher (nicht in die anderer Projekte derselben github.io-Adresse).
    ========================================================================== */
 
-const BUILD='202611031359';      // wird von tools/version.py gestempelt
-const INHALT='ca8d555c56c6f1d6';          // Pruefsumme der Dateien (python tools/version.py --pruefen)
+const BUILD='202611031401';      // wird von tools/version.py gestempelt
+const INHALT='aa3d64401a7e5686';          // Pruefsumme der Dateien (python tools/version.py --pruefen)
 const CACHE_PRAEFIX='nachtschicht-';
 const CACHE=CACHE_PRAEFIX+BUILD;
 const KERN='index.html';  // ohne diese Datei wird nichts installiert
