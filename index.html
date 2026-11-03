@@ -446,7 +446,7 @@ const NOTIZEN = [
 
 
 const BEST_KEY='nachtschicht.bestzeit1';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(1);
 /* Max Ferdi ist Sportler - mit ihm laeufst du schneller. */
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 

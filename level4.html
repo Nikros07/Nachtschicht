@@ -288,7 +288,7 @@ const BODEN=142;
 
 
 const BEST_KEY='nachtschicht.bestzeit4';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(4);
 
 /* DENNIS - boxt, koerperlich selbstbewusst, hilft im Kampf. Er wird ERST am
    Ende DIESES Levels freigeschaltet, kann also in diesem Kampf selbst noch

@@ -491,7 +491,7 @@ function traumEnde(e){
 const saft=f=>{ if(typeof SAFT!=='undefined') f(SAFT); };
 
 const BEST_KEY='nachtschicht.bestzeit6';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(6);
 /* Der Pegel ist levelübergreifend. Hier LESEN wir ihn als Startwert -
    nach Level 2 und 5 ist er wahrscheinlich hoch, und das ist die Ausrede
    fuer die ganze Verzerrung in diesem Level. */

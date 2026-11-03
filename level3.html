@@ -830,7 +830,7 @@ function kloppeHud(){
 
 
 const BEST_KEY='nachtschicht.bestzeit3';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(3);
 /* Max Ferdi (Level 1) laeuft in jedem Level 15% schneller - so im README versprochen. */
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 /* Jonas (dieses Level) redet sich raus - baut Verdacht 20% langsamer auf,

@@ -435,7 +435,7 @@ LEUTE.forEach((l,i)=>{ l.t=[0.25,0.62,0.8,0.4][i%4]; });
 
 
 const BEST_KEY='nachtschicht.bestzeit2';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(2);
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 /* Der Pegel ist levelübergreifend - siehe TUNE-Kommentar "bleibt dir erhalten".
    Level 2 startet immer bei 0 (hier faengt das Trinken erst an), speichert aber

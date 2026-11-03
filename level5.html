@@ -792,7 +792,7 @@ const MARVIN_BAUM = {
 
 
 const BEST_KEY='nachtschicht.bestzeit5';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(5);
 /* Der Pegel ist levelübergreifend. Level 5 liest den Endwert aus Level 2 (und
    allem danach) als Startwert und schreibt seinen eigenen Endwert fuer
    Level 6 zurueck - auch wenn er sich in dieser Runde nicht veraendert hat. */

@@ -378,7 +378,7 @@ const LATERNEN=[200,1150,2200,3250,4350,4950];
 
 
 const BEST_KEY='nachtschicht.bestzeit8';
-const ladeBest=()=>{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; };
+const ladeBest=()=>ladeBestN(8);
 const tempoBonus=()=>ladeCrew().includes('MAX FERDI')?1.15:1;
 
 let S={};

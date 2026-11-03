@@ -273,7 +273,7 @@ const PLAUSCH_ZEILEN=[
 ];
 
 const BEST_KEY='nachtschicht.bestzeit7';
-const ladeBest=()=>{ try{ const v=parseFloat(localStorage.getItem(BEST_KEY)); return isFinite(v)?v:null; }catch(e){ return null; } };
+const ladeBest=()=>ladeBestN(7);
 /* Der Pegel ist levelübergreifend - hier baut er bewusst deutlich ab
    (siehe TUNE.pegelAbbau) und der Endwert geht als Startwert an Level 8.
    Das Lesen laeuft synchron beim Start von neuesSpiel() - faengt lokalStorage-
