@@ -291,10 +291,10 @@ Die Uhrzeiten der Karte und der Levelkopf (`startMinute`/`endMinute` in L1, L2, 
 | **Verben kommen ungleich verteilt**: L1 lehrt sieben Schritte (vier optional), L4 drei neue (Blocken, Rolle, Ausweichen), L2/L6/L7 je eines, L3/L5/L8 keines. Taschenlampe (`Q`) und Werfen (`R`) gibt es **nur** in L1 (Grep: `KeyQ`/`KeyR` nur `index.html`) | `lehre.js`, Grep über die Level | P3 | Sollen Lampe und Werfen später wiederkehren oder bleiben sie ein L1-Werkzeug? |
 | **`SHIFT` bedeutet zwei Dinge**: Schleichen (L1, L3), Blocken (L4, L5, L8) | `lehre.js`, `LEKTIONEN` | P3 | Ist die Doppelbelegung bei L3 (Bus schleichen, dann Kloppe blocken) geübt genug? |
 | **Die Frage der Nacht kommt genau einmal** (`level6.html:448`, Lea, Wendepunkt in der Mitte), ihre Antwort „Man darf" im Abbiegen von L8 (Tschuess rufen, `level8.html:128-134`); dazwischen trägt L7 die Leitidee nur durch Text | `STORY-BIBEL.md` §1, `level6.html:448`, `level8.html:128` | P3 | Reicht das Echo in L7, oder fehlt dort ein Satz zur Frage? |
-| **Das Passive ist ein Viertel der Nacht**: Intro, Abspann, Kapitelkarte (3,5 s) und Karte (7-21 s) zusammen etwa 5 von 21 Minuten (104 + 135 + 28 + 50 s gegenüber ~16,5 min Spiel); in den Leveln selbst liegt der Zuschau-Anteil bei 54-84 % (Oktober) | `n3-dramaturgie.js`, `messung-b.md` | P3 | Ist die Karte (7 s) als Atempause gedacht - dann fehlt ihr Musik/Bewegung - oder als Weg? |
+| **Das Passive ist ein Viertel der Nacht**: Intro, Abspann, Kapitelkarte (3,5 s) und Karte (7-21 s) zusammen etwa 5 von 22 Minuten (104 + 135 + 28 + 50 s gegenüber ~16,5 min Spiel); in den Leveln selbst liegt der Zuschau-Anteil bei 54-84 % (Oktober) | `n3-dramaturgie.js`, `messung-b.md` | P3 | Ist die Karte (7 s) als Atempause gedacht (die Spieluhr läuft: `MUSIK.spiele('karte')`) oder nur als Weg? |
 | **Der Umweg-Takt ist unausgeglichen**: sieben Umwege, einer je Wegstück, jeder kostet 4 % Sonne in L8 (siehe Karte); in L1-L4 liegt nach dem Umweg das nächste Level mit Kampf, nach L7 der Gipfel | `karte.html:199`, `level8.html:358` | P3 | Soll das Gewicht der Umwege zum Ende zunehmen? |
 
-**Offene Punkte als Fragen an Eve** (nichts davon wurde entschieden): Plateau L6/L7 (oben, erste Zeile); Rückkehr der Verben Lampe und Werfen; ob die Karte Musik und Bewegung bekommt (`MUSIK.spiele('karte')` läuft bereits, `karte.html:244`); Länge von L6 gegenüber L5 und L7.
+**Offene Punkte als Fragen an Eve** (nichts davon wurde entschieden): Plateau L6/L7 (oben, erste Zeile); Rückkehr der Verben Lampe und Werfen; ob die Karte als Atempause gestaltet werden soll (die Spieluhr läuft schon, `karte.html:245`); Länge von L6 gegenüber L5 und L7.
 
 **Fertig wenn:** die vier Fragen unter „Entscheidung nötig" in `NACHT-TODO.md` beantwortet sind; die Zahlen der Tabelle werden danach mit `docs/gameplay/messung/c-level7.js` und den s2-Skripten neu gemessen und hier ersetzt.
 
@@ -353,11 +353,11 @@ Damit das nicht untergeht:
 Die Analyse lief mit vierzehn parallelen Prüfern. **Neun sind am
 Nutzungslimit des Kontos gescheitert** (HTTP 429, Fünf-Stunden-Limit).
 Fertig geworden sind Level 2, Level 3, Level 4 und zweimal Level 5.
-Level 1 und Level 6 kamen am 5.10. als Nachtroutine-Analysen dazu (siehe oben).
+Level 1 und Level 6 kamen am 5.10. als Nachtroutine-Analysen dazu, Karte,
+Runner, Engine und Dramaturgie am 3.11. (siehe oben).
 
-Noch ohne vollständige Prüfung: Level 7, Level 8,
-`karte.html`, `runner.html`, die Engine-Dateien und die Dramaturgie über
-die ganze Nacht.
+Noch ohne vollständige Prüfung: Level 7 und Level 8.
+Alles ohne Browser: Pixel, Ton und Handy-Layout bleiben ungeprüft.
 
 Was zu diesen Teilen in diesem Bericht steht, stammt aus eigenen Messungen
 im Browser. Es ist belastbar, aber nicht erschöpfend.
