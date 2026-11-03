@@ -216,6 +216,28 @@ Beschriftungen überlappen bei keiner der sieben Karten (Breite 336).
 
 **Fertig wenn:** `node docs/gameplay/messung/c-karte.js` zeigt für „Nee, danke" je Karte `umweg_N` nicht gesetzt (oder die Absicht ist im Angebot benannt); `?nach=3.5` lädt ohne Ausnahme.
 
+## Runner — der Bonus-Level (runner.html)
+
+Analyse vom 3.11. Nur gelesen und gemessen, nichts geändert. `runner.html` (1363 Zeilen,
+63 KB) ist der alte Endlos-Modus vor dem Umbau zur Nacht (`index.html:92`). Gemessen mit
+`docs/gameplay/messung/c-runner.js` (vier Bot-Varianten à 6 Läufe) und neu
+`docs/gameplay/messung/n3-runner.js` (jede Etappe einzeln erreicht: `S.dist` gesetzt, `demoBrain` 90 s, 4 Seeds).
+
+Bestand: Demo-Bot kommt im Mittel auf 317 m / 55 s (mit 0,25 s Trägheit 390 m / 72 s), also
+nur bis Etappe 2 (TUERSTEHER, 250 m). Ein Bot, der nur nach rechts läuft oder nie schlägt, verliert alle drei Leben nach 10,2 / 10,7 s bei rund 70 m.
+Bei gesetzter Distanz fällt jeder der vier Bosse (hp 4/5/6/7) dem Bot in 11-40 s zum Opfer, ohne Ausnahme und ohne NaN; das Spiel endet danach durch die Sperrstunde oder die Leben.
+
+| Problem | Warum es nervt | Grad | Lösung |
+|:--|:--|:--|:--|
+| Flackerschutz und Wackeln greifen hier nicht: `S.flash` (Vollbild-Blitz bis Alpha 0,45, gesetzt bei Treffer :887, Tod :900, Konter :815) wird roh gezeichnet (:1236), `S.shake` roh in `wob` (:1107). Null Treffer für `FX.` in der Datei, obwohl `nacht/komfort.js` geladen ist | Gleicher Befund wie in „Durchs ganze Spiel", hier mit dem stärksten Blitz des Projekts (3 Blitze in 2 s beim Sterben) | P2 | Beide über `FX.blitz()`/`FX.wackel()` führen; mit dem Rest der Level in einem Zug |
+| Der Level ist von **nirgends** verlinkt: kein Menüpunkt (`nacht/menue.js`), keine Karte, kein Link in `ueber.html`; nur die README (:140) und ein Kommentar (`index.html:92`) kennen ihn, die Rückseite führt mit `← NACHTSCHICHT` heraus. Der Service Worker legt ihn trotzdem vor (`sw.js:87`) | 63 KB Offline-Speicher und ein eigener Prüfpfad für eine Seite, die nur per Hand-URL erreichbar ist; ein Bonus, den niemand findet, ist keiner | P3 | Entscheidung benennen: verlinken (Menü „BONUS") oder bewusst verborgen lassen und im Kommentar sagen |
+| `tools/nachttest.js` überspringt ihn (:23 und :526 „nicht geprüft: runner.html"), `tools/pruefe.js` prüft nur Syntax. Dabei lädt `N.lade('runner.html')` einwandfrei (so laufen die Messskripte) | Ausnahmen oder NaN im Runner fielen bis jetzt nur dem Zufall auf; die Prüfliste in CLAUDE.md sagt „alle 10 Seiten" und meint den Runner nur für die Syntax | P2 | Runner-Rauchtest in `nachttest.js` (demoBrain 60 s, ohne Ausnahme/NaN) nach dem Muster von `n3-runner.js` |
+| Zwei Stellschraubenblöcke: Boss-Leben stehen in `ETAPPEN` (:152-155, `hp:4..7`, `telMul`), `TUNE.bossHp` (:139) ist nur der Rückfall und wird nie erreicht (jeder Boss setzt `hp`) | Wer `bossHp` dreht, sieht nichts; die Regel „alles im TUNE" ist doppelt verletzt | P3 | `hp`/`telMul` in `TUNE` (z.B. `bossHp:[4,5,6,7]`) und den toten Rückfall streichen |
+| `nacht/kampf.js:321` nennt seine Gegnertabelle „aus runner.html, dort erprobt" - die Werte stehen aber an zwei Orten (`TUNE.foe*` hier, `GEGNER_ARTEN` dort, z.B. `schlaeger.ausholen` 0,52 gegen `foeWindSec` 0,46) | Wer eine Seite abstimmt, ahnt nicht, dass die andere schon abweicht; die „Erprobung" gilt für die Zahlen von damals | P3 | Kommentar auf „stammt ursprünglich aus" ändern oder Zahlen angleichen (Entscheidung) |
+| `erfolge.js`, `menue.js`, `hilfe.js` werden geladen (:40-42), `ERFOLG`/`WERTUNG`/`NACHT` aber nirgends aufgerufen (Grep: null Treffer) | Der Runner zählt für nichts; Highscore liegt allein in `nachtschicht.scores.v1` (:394) und fällt nur durch `?reset=1` | P3 | Entscheiden, ob der Bonus einen Erfolg bekommt; sonst Skripte weglassen |
+
+**Fertig wenn:** `node tools/nachttest.js runner` läuft 60 s Demo-Spiel ohne Ausnahme; mit gesetztem Flackerschutz (`FX`) bleibt `S.flash` im Bild unter der Schwelle von `komfort.js`.
+
 ## Durchs ganze Spiel
 
 | Problem | Warum es nervt | Grad | Lösung |
