@@ -1,7 +1,8 @@
 # NACHTSCHICHT — Regeln für jede Sitzung
 
 Pixel-Art-Partyspiel im Browser, deutsch, ohne Build. Die Karte des Codes steht
-in `ARCHITEKTUR.md` — vor jeder Änderung lesen.
+in `ARCHITEKTUR.md` — vor jeder Änderung lesen (Abschnitt „Wo ändere ich was?“).
+Der Plan für größere Umbauten: `docs/architektur/PLAN.md`.
 
 ## Pflicht am Ende jeder Aufgabe
 
@@ -32,31 +33,20 @@ Nachtroutine selbst, die ihre Liste eigenständig pflegt.
 ## Prüfen vor jedem Commit
 
 ```bash
-node tools/pruefe.js        # alle 10 Seiten: Syntax, doppelte Namen
-node test/kampf.test.js     # 22 Prüfungen der Kampflogik
-node tools/nachttest.js     # jede Seite ohne Browser durchspielen (Ausnahmen, NaN,
-                            # tote Gesprächsverweise, Konter in Level 2) - ~2 s
-node tools/flagcheck.js     # Entscheidungen, die nie gelesen werden
-node test/erzaehl.test.js   # Kapitelkarte, Plausch, Momente
-node test/epilog.test.js    # Knoten, Enden, Epilog, Galerie-Daten
-node test/menue.test.js     # Startmenü
-node test/geraet.test.js    # Fehlerschutz, Service-Worker-Anmeldung, ?reset
-node test/sw.test.js        # Service Worker (Offline, Stempelprüfung)
-node test/launch.test.js    # Tests der Startwerkzeuge
-node test/musik.test.js     # Musik-Planer (Notenstau, Klangbudget)
-node test/songs.test.js     # Songs (Laenge, Ebenen, Tonhoehen)
-node test/saft.test.js      # Hitstop, Wackeln, Teilchen, Flackerschutz
-node test/wertung.test.js   # Rang S/A/B/C und Bestrang
-node test/pause.test.js     # Pausemenue am Rechner (Esc)
-node test/www.test.js       # tools/www.py (Kopie fuer die App-Huellen)
-node test/hilfe.test.js     # Tipps, WAS JETZT?, LOCKER-Angebot, Tipp-Texte aller Seiten
-node test/dialog.test.js    # Gespraeche: vorgewaehlte Standardantwort
-python tools/version.py --pruefen   # alles gestempelt? (sonst: python tools/version.py)
-node tools/launchcheck.js   # Startprüfung, muss BEREIT sagen
+python tools/version.py       # erst stempeln (nach Änderungen an *.html, nacht/, Symbolen)
+node tools/pruefliste.js      # ALLE Prüfungen, parallel, ~20 s - muss "alle ... gruen" sagen
 ```
 
+`pruefliste.js` ist die eine Quelle der Liste: `pruefe.js` (Syntax, doppelte Namen,
+Ladereihenfolge), `nachttest.js` (jede Seite ohne Browser durchspielen), `flagcheck.js`,
+**jeder** `test/*.test.js` (neue Tests laufen automatisch mit), `version.py --pruefen`,
+`launchcheck.js` (muss BEREIT sagen). Bei Rot zeigt sie die letzten 15 Zeilen der Prüfung;
+einzeln nachstarten geht wie gewohnt (`node test/pause.test.js`, `node tools/nachttest.js level5`).
+In einem ungestempelten Worktree: `node tools/pruefliste.js --ohne-stempel`.
+
 Reihenfolge-Faustregel: erst `python tools/version.py`, dann die Prüfliste; `launchcheck` und
-`sw.test` schlagen sonst wegen alter Stempel an. Bei einer neuen Version: `GERAET.version`
+`sw.test` schlagen sonst wegen alter Stempel an. Den Stempel als **eigenen, letzten Commit**
+machen (weniger Merge-Konflikte). Bei einer neuen Version: `GERAET.version`
 (`nacht/geraet.js`) und die oberste Überschrift in `CHANGELOG.md` gleich halten.
 
 `nachttest.js` kann **keine Pixel** messen und nichts hören — dafür den Browser
@@ -69,4 +59,5 @@ Die Routine läuft unbeaufsichtigt **in der Cloud** und arbeitet auf dem Branch
 Sie löschen nichts außer dem, was ein Listenpunkt ausdrücklich verlangt, und sie
 fassen den Abschnitt „Entscheidung nötig" in `NACHT-TODO.md` nicht an.
 Protokoll: `NACHT-LOG.md`. Testbericht: `NACHT-BERICHT.md`.
-Eine Cloud-Sitzung hat **keinen Browser** — Messungen gehen über `tools/nachttest.js`.
+Messungen gehen über `tools/nachttest.js`. Manche Cloud-Umgebungen haben ein headless Chromium
+(Playwright) – damit gehen Screenshots und DOM-Maße, aber kein Ton und kein echtes Gerät.

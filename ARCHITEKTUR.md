@@ -39,12 +39,16 @@ Reihenfolge der Script-Tags ist die Ladereihenfolge — `kern.js` zuerst, danach
 (damit auch spätere Ladefehler gefangen werden). Die Tabelle steht in dieser Reihenfolge
 (`kampf.js` nur in den Seiten mit Kampf):
 
-`kern → geraet → bild → hud → ton → komfort → musik → songs → saft → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → hilfe → epilog → wertung → menue → pause`
+`kern → geraet → bild → hud → ton → komfort → musik → songs → saft → stand → welt → nacht → dialog → [kampf] → eingabe → lehre → mobil → handy → texte → erzaehl → hilfe → erfolge → epilog → wertung → menue → pause`
+
+Die verbindliche Liste steht als `REIHENFOLGE` in `tools/pruefe.js` und wird geprüft (weglassen erlaubt,
+vertauschen nicht; begründete Ausnahmen in `AUSNAHMEN`).
 
 (`pause` nur in den acht Leveln, nicht in `karte.html` und `runner.html`.)
 
 Eine neue Engine-Datei hängt `python tools/engine_einbinden.py NAME --nach VORGAENGER` in alle
-Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach `python tools/version.py`.
+Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach den Namen in `REIHENFOLGE`
+(`tools/pruefe.js`) eintragen und `python tools/version.py`.
 
 | Datei | Verantwortung |
 |:--|:--|
@@ -69,10 +73,36 @@ Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach `python tool
 | `texte.js` | Reine Daten: Kapitelkarten (`TEXTE_KAPITEL`), Rückblick-Zeilen (`TEXTE_BISHER`), Polaroid-Texte (`TEXTE_MOMENTE`), Menütexte (`TEXTE_MENUE`) |
 | `erzaehl.js` | Was die Nacht erzählt, ohne anzuhalten: `STIMMEN` (Farbe und Ton je Sprecher), `zeichneKarte`, Kapitelkarte (`kapitelZeigen`), `PLAUSCH` (Untertitel beim Gehen), `MOMENT` (Polaroids) |
 | `hilfe.js` | Hilfen `HILFE`: Erst-Tipps beim ersten Auftreten einer Mechanik (`hilfeTipp(id,pc,handy)`, je Gerät gemerkt, im Hinweisplatz `S.hinweis`), Karte WAS JETZT? (Tab, Pausemenü, Handy-Menü), LOCKER-Angebot nach 2 Niederlagen je Level. Stumm bei `?lektion=0` (außer `?hilfe=1`). |
+| `erfolge.js` | Erfolge `ERFOLG`: Tabelle `ERFOLGE` (Titel, Text), `ERFOLG.alle()`, `anzahl()`; dauerhaft gemerkt. Das Startmenü zeigt im Modus ERFOLGE den Text des markierten Eintrags. |
 | `epilog.js` | Was nach dem Finale kommt: Epilog-Folien je Crew-Figur, Gruppenchat, Album, „Was wir nie wieder erwähnen“, Kater, die Wolle mit den drei Knoten, `ENDEN_ALLE` und `endeRegistrieren` |
 | `wertung.js` | Rang am Levelende `WERTUNG`: `abschluss(level,punkte,zeilen)` gibt S/A/B/C, merkt den Bestrang je Level (`nachtschicht.rangN`), zeichnet Tafel und Abzeichen im Modus `ende` |
 | `menue.js` | Startmenü (Titel von Level 1), Einstellungen, Enden-Galerie und Momente-Sammlung (`MENUE.galerie()`), Credits |
-| `pause.js` | Pausemenü am Rechner (Esc): WEITER, NEU STARTEN, EINSTELLUNGEN, ZUM MENÜ. Am Handy tut es nichts, dort gibt es das Menü aus `mobil.js`. |
+| `pause.js` | Pausemenü am Rechner (Esc): WEITER, NEU STARTEN, EINSTELLUNGEN, ZUM MENÜ. Am Handy tut es nichts, dort gibt es das Menü aus `mobil.js`. Öffnet sich von selbst, wenn der Tab aus dem Hintergrund zurückkommt (`GERAET.beiSichtbar`, je Wechsel einmal). |
+
+## Wo ändere ich was?
+
+| Ich will … | Datei · Stelle |
+|:--|:--|
+| eine Zahl im Spielgefühl drehen (Tempo, Zeit, Schaden, Rang-Grenzen) | `TUNE`-Block oben im Level (`grep -n "const TUNE" levelN.html`) |
+| die Rang-Schwellen S/A/B ändern (für alle) | `nacht/wertung.js` |
+| ein Gespräch ändern | Baum im Level (`grep -n "_BAUM\|wahl:" levelN.html`), Regeln `wenn`/`tu` in `nacht/nacht.js` |
+| eine Proben-Antwort (RUF/MUT) | `probe:{…}` im Baum; Anzeige `nacht/dialog.js` |
+| Kapitelkarte, Rückblick, Polaroid-Text | `nacht/texte.js` |
+| Plausch-Zeilen | `PLAUSCH_ZEILEN` im Level |
+| einen Erst-Tipp | `hilfeTipp(id,pc,handy)` im Level; `{E}` steht für die Aktionstaste |
+| eine Lektion | `LEKTIONEN` in `nacht/lehre.js` (L auf dem Titelbild zeigt sie erneut) |
+| eine Handy-Nachricht | `HANDY_DREHBUCH` in `nacht/handy.js` |
+| Handy-Knopfaufschriften | `mobilKontext()` im Level |
+| Handy-Knopflage | `rechneAnordnung()` in `nacht/mobil.js` (reine Rechnung, Messung `docs/gameplay/messung/n3-mobil-layout.js`) |
+| einen Effekt (Blitz, Wackeln) | über `FX` (`nacht/komfort.js`) bzw. `SAFT` (`nacht/saft.js`) |
+| Musik eines Levels | `SONGS` in `nacht/songs.js`; Spannung/Tempo im Level über `MUSIK` |
+| Enden, Epilog | `nacht/epilog.js` (Story zuerst in `docs/launch/STORY-BIBEL.md`) |
+| Startmenü, Erfolge-Liste | `nacht/menue.js` |
+| Pausemenü | `nacht/pause.js` |
+| Offline/Version | nie von Hand: `python tools/version.py` |
+| eine Taste für alle Seiten | `nacht/eingabe.js` |
+| etwas messen | `tools/nachttest.js` (`lade(seite,abfrage)`), Skript nach `docs/gameplay/messung/` |
+| alles prüfen | `node tools/pruefliste.js` |
 
 ## Die vier zentralen Tabellen
 
@@ -222,6 +252,8 @@ gibt `{aktion, zwei, block, extras}` zurück.
 
 ## Testen
 
+Alles auf einmal: `node tools/pruefliste.js` (nimmt jeden `test/*.test.js` mit). Einzeln:
+
 ```bash
 node tools/pruefe.js            # alle 10 Seiten gegen ihre Engine: Syntax, Doppelnamen
 node test/kampf.test.js         # 22 Prüfungen der Kampflogik
@@ -247,6 +279,10 @@ Das Handy ist bisher nur in Emulation gemessen (`docs/launch/handy-abnahme.md`).
 
 | Werkzeug | Zweck |
 |:--|:--|
+| `tools/pruefliste.js` | **die ganze Prüfliste mit einem Befehl** (parallel, ~20 s); `--kurz`, `--ohne-stempel` |
+| `tools/pruefe.js` | Syntax, doppelte Namen, Ladereihenfolge aller zehn Seiten |
+| `tools/nachttest.js` | jede Seite ohne Browser; parallel je Kern, `--zeit`, `--seriell`, `--kurz`; als Bibliothek `require` für Messskripte |
+| `tools/alt/` | erledigte Einmal-Umbau-Skripte, nur noch Nachweis – nicht ausführen |
 | `tools/version.py` | stempelt Seiten, Engine, Stil und `sw.js` (BUILD, Prüfsumme, Offline-Liste) sowie `GERAET.build`; `--pruefen`, `--neu` |
 | `tools/launchcheck.js` | statische Startprüfung: Kopfzeilen, Symbole, Manifest, Offline-Liste, Versionen (`GERAET.version` gegen `CHANGELOG.md`), fremde Adressen, Platzhalter; `--leise`, `--git` |
 | `tools/paket.py` | baut `dist/nachtschicht-<version>.zip` für itch.io (vorher läuft die Startprüfung) |

@@ -1,5 +1,10 @@
 # Was noch fertig werden muss
 
+> **Veraltet (Stand 17.9.2026).** Diese Liste wird nicht mehr gepflegt. Was heute offen ist,
+> steht in [`NACHT-TODO.md`](NACHT-TODO.md) (Offen P1–P3, Entscheidung nötig); der Plan für
+> größere Umbauten in [`docs/architektur/PLAN.md`](docs/architektur/PLAN.md). Der Text unten
+> bleibt nur als Rückblick stehen.
+
 Stand: Alle acht Level sind durchspielbar. Level 1 und 2 sind ausgereift,
 Level 3 bis 8 sind erste Grundversionen — spielbar, aber mit sichtbaren Ecken
 und Kanten. Was daran noch fehlt, steht hier.
