@@ -781,7 +781,7 @@ function update(dt){
     if(typeof SAFT!=='undefined') SAFT.landung(bildX7(S.x),Math.round(bodenY(S.tiefe))-2,0.4); }
     S.vy=0; S.amBoden=true; S.letzterBoden=S.t; } else S.amBoden=false;
 
-  { const nz=naechstesZiel(); if(nz&&nz.obj===PFANDWURF) hilfeTipp('wurf','E HALTEN, IM GRUENEN LOS: 0,50 EURO','ZIELEN HALTEN, IM GRUENEN LOS: 0,50 EURO'); }
+  { const nz=naechstesZiel(); if(nz&&nz.obj===PFANDWURF) hilfeTipp('wurf','{E} HALTEN, IM GRUENEN LOS: 0,50 EURO','{E} HALTEN, IM GRUENEN LOS: 0,50 EURO'); }
   if(alleFertig()&&!S.zielEcke){ S.zielEcke=true; HILFE.ziel('ZUR ECKE GANZ RECHTS'); }
   heinzTakt(dt);
   radioTakt(dt);

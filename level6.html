@@ -654,7 +654,7 @@ function update(dt){
   if(!(S.suchT>0)){ S.kondition-=(TUNE.konditionAbbau+TUNE.konditionPegel*S.pegel/100
                +TUNE.konditionRennen*renntAnteil)*schwer().muede*dt;
   if(S.kondition<=0){ S.kondition=0; wegknicken(); return; }
-  if(S.kondition<50) hilfeTipp('muede','MUEDE? E AM SOFA: HINLEGEN','MUEDE? AM SOFA HINLEGEN');
+  if(S.kondition<50) hilfeTipp('muede','MUEDE? AM SOFA {E} DRUECKEN: HINLEGEN','MUEDE? AM SOFA {E} ANTIPPEN: HINLEGEN');
   }
 
   const ort=ortBei(S.x);
@@ -736,7 +736,7 @@ function update(dt){
     if(z.art==='ding'){ benutze(z.obj); break; }
     if(z.art==='sofa'){
       S.ruht=z.obj; S.sofa=z.obj; S.vx=0; S.vt=0;
-      meldung('DU LEGST DICH KURZ HIN',1.4); hilfeTipp('aufstehen','LAUFEN ODER E: AUFSTEHEN','STICK ODER AUFSTEHEN: WEITER'); break;
+      meldung('DU LEGST DICH KURZ HIN',1.4); hilfeTipp('aufstehen','LAUFEN ODER {E}: AUFSTEHEN','STICK ODER {E}: AUFSTEHEN'); break;
     }
     if(z.art==='tuer'){
       S.x=z.obj.ziel; S.kamX=Math.max(0,Math.min(LEVEL_B-W,S.x-W/2)); S.blitz=.6; SFX.nichts();

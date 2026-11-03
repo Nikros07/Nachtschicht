@@ -69,6 +69,15 @@ console.log('\n--- GERAET (Handy-Text) ---');
   pruefe('d) IS_TOUCH: Handy-Text gezeigt', h.tipp('t','PC T','HANDY T')===true && S.hinweis==='HANDY T', S.hinweis);
   pruefe('d) leerer Handy-Text: false', h.tipp('t2','PC T2','')===false);
 }
+console.log('\n--- PLATZHALTER {E} ---');
+{
+  const S=frischS(); const h=baue({S,localStorage:speicher()}).HILFE;
+  h.tipp('p','AUF {E} DRUECKEN','AUF {E} TIPPEN');
+  pruefe('p) PC: {E} wird E', S.hinweis==='AUF E DRUECKEN', S.hinweis);
+  const S2=frischS(); const h2=baue({S:S2,touch:true,localStorage:speicher()}).HILFE;
+  h2.tipp('p','AUF {E} DRUECKEN','AUF {E} TIPPEN');
+  pruefe('p) Touch: {E} wird Knopfsymbol !', S2.hinweis==='AUF ! TIPPEN', S2.hinweis);
+}
 console.log('\n--- STUMM-SCHALTER ---');
 {
   const S=frischS(); const h=baue({S,search:'?lektion=0',localStorage:speicher()}).HILFE;
@@ -198,8 +207,9 @@ console.log('\n--- SEITEN-SCAN (Literal-Aufrufe in *.html) ---');
     let m; reTipp.lastIndex=0;
     while((m=reTipp.exec(inhalt))){
       treffer++;
-      const id=m[1], pc=m[2], handy=m[3];
+      const id=m[1]; let pc=m[2], handy=m[3];
       const ort=datei+' id '+id;
+      pc=pc.replace(/\{E\}/g,'!'); handy=handy.replace(/\{E\}/g,'!'); // Platzhalter: laengste Ersetzung 1 Zeichen
       if(pc.length>44) probleme.push(ort+': PC-Text zu lang: '+pc);
       if(handy.length>44) probleme.push(ort+': Handy-Text zu lang: '+handy);
       if(!zeichenOk.test(pc)) probleme.push(ort+': PC-Text mit ungueltigen Zeichen: '+pc);

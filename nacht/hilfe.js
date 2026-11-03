@@ -21,6 +21,7 @@
    HILFE.niederlage()                -> wird aus takt() beim Wechsel auf 'ende' gerufen (nicht gewonnen).
    HILFE.angebotAktiv() / HILFE.angebotAntwort(ja) -> LOCKER-Angebot.
    HILFE.an() / HILFE.eingeschaltet() / HILFE.setze(b) / HILFE.vergiss() / HILFE.stumm()
+   Platzhalter {E} im Text -> aktionsMarke() (PC: E, Handy: Knopfsymbol), 1 Zeichen.
    HILFE.text(pc, handy)             -> Anzeigetext (Handy-Text, wenn IS_TOUCH).
    Globale Wrapper: hilfeTipp(id,pc,handy,dauer) und hilfeSag(pc,handy,dauer) (Seiten-Literale).
 
@@ -74,7 +75,9 @@ var HILFE=(function(){
   }
   function nimmText(pc,handy){
     const t=touch()?(handy||''):(pc||'');
-    return String(t).trim();
+    // Platzhalter {E}: Aktionstaste (PC: E, Handy: Knopfsymbol aus aktionsMarke)
+    const marke=typeof aktionsMarke==='function'?aktionsMarke():(touch()?'!':'E');
+    return String(t).replace(/\{E\}/g,marke).trim();
   }
   function an(){ return !istStumm&&!d.aus; }
   function eingeschaltet(){ return !d.aus; }
