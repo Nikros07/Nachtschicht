@@ -162,13 +162,53 @@ const TUNE = {
   tempoJeLicht:     40,
   spannungKampf:    0.8,     // Musik-Spannung im Kampf (0..1)
 
-  /* (11) RANG - Summe 100. Je Kriterium linear zwischen "schlecht" und "gut". */
+  /* (11) RANG - Summe 100. Je Kriterium linear zwischen "schlecht" und "gut".
+     Gemessen (n3-level8-rang.js, Bot springt perfekt): Start-Licht 0 + 4/4 Abschiede + Frieden/gewonnen = 82 = A;
+     Start-Licht 40 ohne Abschiede = 51 = C. Zeit des Bots 45-51 s (immer volle 15 Punkte), S unter 100 nicht erreicht. */
   rang:{
     licht:    {schlecht:100, gut:20,  punkte:40},   // Sonne bei Ankunft: weniger ist besser
     kampf:    {frieden:30, gewonnen:30, verloren:8}, // Ergebnis des Kampfes (fest)
     tschuess: {punkte:15},                           // Anteil der Abbieger, dem du Tschuess gesagt hast
     zeit:     {schlecht:180, gut:80, punkte:15},     // Sekunden auf dem Weg: weniger ist besser
   },
+};
+
+/* Stellschrauben des grossen Endkampfs (gehoeren zum TUNE-Block; das Verhalten steht unten bei DER GROSSE FIGHT). */
+const KAMPF8 = {
+  /* (1) DER ANFUEHRER */
+  anfuehrerHp:      7,
+  anfuehrerReich:  19,
+  schwungWindup: 0.95, schwungSchlag: 0.22,
+  jabWindup:     0.62, jabSchlag:     0.14,
+  rammeWindup:   0.72, rammeSchlag:   0.28,
+  wurfWindup:    0.85, wurfSchlag:    0.16,
+  pause:         1.0,
+  pauseKuerzerProPhase: 0.20,
+  windupKuerzerProPhase:0.05,
+  konterAnteil8: 0.45,   // Konterfenster im Finale (vorher KAMPF.konterAnteil 0.34)
+
+  /* (2) HANDLANGER - ab Phase 2, sie kreisen dich ein */
+  handlangerAb:     2,
+  handlangerAnzahl: 2,
+
+  /* (3) FLASCHEN - ab Phase 3, kommen geflogen */
+  flascheTempo:   122,
+  wurfAb:          58,   // ab dieser Entfernung wirft er statt zu schlagen
+  flascheSchaden:   1,
+
+  /* (4) DEINE CREW - wer dich mag, geht dazwischen */
+  hilfeIntervall: 4.0,   // Sekunden zwischen zwei Einmischungen (vorher 5.5)
+  hilfeBetaeubung: 1.0,
+
+  /* (5) ARENA */
+  arenaLinks:   18,
+  arenaRechts:  22,
+  tiefeHinten: 118,
+  tiefeVorne:  152,
+  gehTempo:     78,
+
+  /* (6) NIEDERLAGE - kein Spielende, nur ein schwererer Heimweg */
+  lichtStrafeBeiNiederlage: 10,
 };
 
 const P = {
@@ -1557,43 +1597,6 @@ function baueEnde(){
    Verlieren beendet das Spiel NICHT. Es kostet Licht-Vorsprung fuer den
    Heimweg und faerbt das Ende ein.
    ========================================================================== */
-const KAMPF8 = {
-  /* (1) DER ANFUEHRER */
-  anfuehrerHp:      7,
-  anfuehrerReich:  19,
-  schwungWindup: 0.95, schwungSchlag: 0.22,
-  jabWindup:     0.62, jabSchlag:     0.14,
-  rammeWindup:   0.72, rammeSchlag:   0.28,
-  wurfWindup:    0.85, wurfSchlag:    0.16,
-  pause:         1.0,
-  pauseKuerzerProPhase: 0.20,
-  windupKuerzerProPhase:0.05,
-  konterAnteil8: 0.45,   // Konterfenster im Finale (vorher KAMPF.konterAnteil 0.34)
-
-  /* (2) HANDLANGER - ab Phase 2, sie kreisen dich ein */
-  handlangerAb:     2,
-  handlangerAnzahl: 2,
-
-  /* (3) FLASCHEN - ab Phase 3, kommen geflogen */
-  flascheTempo:   122,
-  wurfAb:          58,   // ab dieser Entfernung wirft er statt zu schlagen
-  flascheSchaden:   1,
-
-  /* (4) DEINE CREW - wer dich mag, geht dazwischen */
-  hilfeIntervall: 4.0,   // Sekunden zwischen zwei Einmischungen (vorher 5.5)
-  hilfeBetaeubung: 1.0,
-
-  /* (5) ARENA */
-  arenaLinks:   18,
-  arenaRechts:  22,
-  tiefeHinten: 118,
-  tiefeVorne:  152,
-  gehTempo:     78,
-
-  /* (6) NIEDERLAGE - kein Spielende, nur ein schwererer Heimweg */
-  lichtStrafeBeiNiederlage: 10,
-};
-
 const ARENEN = [
   { name:'DIE STRASSE',   himmel:'#12101f', boden:'#1d1728', kante:'#3a2f4e' },
   { name:'DER HINTERHOF', himmel:'#0f1418', boden:'#18201c', kante:'#2e3a32' },
