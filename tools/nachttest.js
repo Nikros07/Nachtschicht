@@ -15,6 +15,10 @@
    Pixel misst der Software-Canvas unten (leinwand/leereProzent) - naeherungsweise,
    nicht browsergetreu (keine Textur-Glaettung, Kreise/Pfade grob gerastert).
 
+   runner.html ist kein Level (S.mode statt S.modus, keine Gespraeche, keine Lektion, kein Level-
+   Vertrag): dort spielt runnerLauf() Demo, Bot-Spiel (jede Etappe/jeden Boss) und Nichtstun
+   und meldet Ausnahmen und NaN in Position/Leben/Pegel/Strecke.
+
    Harte Fehler (Exit 1): Ausnahme, NaN in der Position, toter Gespraechs-
    verweis, Zeichen ausserhalb der Schrift, Konter-Test von Level 2. */
 const fs=require('fs');
@@ -22,7 +26,7 @@ const argv=process.argv.slice(2);
 const KURZ=argv.includes('--kurz');
 const filter=argv.filter(a=>!a.startsWith('--'));
 const SEITEN=['index.html','level2.html','level3.html','level4.html','level5.html',
-  'level6.html','level7.html','level8.html','karte.html'];   // runner.html hat eine eigene Schleife
+  'level6.html','level7.html','level8.html','karte.html','runner.html'];   // runner.html: eigene Regeln (runnerLauf)
 const SPIEL_SEK=KURZ?20:60, NICHTS_SEK=KURZ?60:300;
 
 /* ---- Attrappen ------------------------------------------------------- */
@@ -414,11 +418,60 @@ if(!filter.length&&!argv.includes('--seriell')){
       if(argv.includes('--zeit')) console.log(''.padEnd(14)+'('+SEITEN[i]+': '+e.sek.toFixed(1)+' s)');
       if(e.code) fehl++; });
     console.log('\n'+(fehl?fehl+' Seiten mit harten Fehlern':'alles gruen')
-      +'  ('+((Date.now()-t0)/1000).toFixed(1)+' s, '+plaetze+' parallel; nicht geprueft: Pixel, Ton, Layout, runner.html)');
+      +'  ('+((Date.now()-t0)/1000).toFixed(1)+' s, '+plaetze+' parallel; nicht geprueft: Pixel, Ton, Layout; runner.html nur mit eigenen, lockeren Regeln)');
     process.exit(fehl?1:0);
   };
   starte();
   return;
+}
+
+/* ---- Runner: eigene, lockere Regeln ----------------------------------------------
+   Der Runner hat keinen Level-Vertrag (S.mode, kein TUNE-Titel-Ablauf, keine Gespraeche).
+   1) Demo (attract) SPIEL_SEK lang, 2) Bot-Spiel (demoBrain) ab jeder Etappe, damit auch
+   die Bosse drankommen, bei Spielende neu starten, 3) Nichtstun-Spiel (kein Druck) bis zum
+   Ende. Geprueft: keine Ausnahme, kein NaN in px/vy/hp/pegel/dist/combo. */
+function runnerLauf(seite){
+  const bericht=[], felder=['S.px','S.vy','S.hp','S.pegel','S.dist','S.t'];
+  const nan=(E)=>{ for(const f of felder){ const v=E(f); if(typeof v==='number'&&!isFinite(v)) return f+' ist '+v; } return ''; };
+  const L=lade(seite), E=c=>L.api.ev(c);
+  const modi=new Set(); let bilder=0;
+  try{
+    /* 1) Demo */
+    for(let i=0;i<SPIEL_SEK*60;i++){
+      E('update(1/60)'); if(i%6===0){ E('draw(1/60)'); bilder++; }
+      modi.add(E('S.mode')); const f=nan(E); if(f){ meld(seite,'Demo nach '+(i/60).toFixed(1)+' s: '+f); break; }
+    }
+    bericht.push('Demo '+SPIEL_SEK+' s, Modi: '+[...modi].join('/'));
+  }catch(e){ meld(seite,'Demo: '+String(e.message)+' ('+String(e.stack).split('\n').slice(1,3).join(' | ').replace(/\s+/g,' ').slice(0,160)+')'); }
+  try{
+    /* 2) Bot-Spiel ab jeder Etappe (Strecke gesetzt -> Boss kommt dran) */
+    const M=lade(seite), EM=c=>M.api.ev(c);
+    const n=EM('ETAPPEN.length'); let bosse=0, restarts=0, schlecht='';
+    const je=Math.max(5,Math.floor(SPIEL_SEK/n));
+    for(let et=0;et<n&&!schlecht;et++){
+      EM('startGame();'); EM(`S.dist=(ETAPPEN[${et}].m+1)*10;`);
+      for(let i=0;i<je*60&&!schlecht;i++){
+        if(EM('S.mode')!=='play'){ if(EM('S.mode')==='over'||EM('S.mode')==='initials'){ EM('startGame();'); restarts++; } else break; }
+        EM('demoBrain();'); EM('update(1/60)');
+        if(i%6===0) EM('draw(1/60)');
+        if(EM('!!S.boss')) bosse++;
+        const f=nan(EM); if(f) schlecht='Etappe '+et+' nach '+(i/60).toFixed(1)+' s: '+f;
+      }
+    }
+    if(schlecht) meld(seite,'Bot-Spiel: '+schlecht);
+    bericht.push('Bot-Spiel '+n+' Etappen a '+je+' s ('+bosse+' Takte mit Boss, '+restarts+' Neustarts)');
+  }catch(e){ meld(seite,'Bot-Spiel: '+String(e.message)+' ('+String(e.stack).split('\n').slice(1,3).join(' | ').replace(/\s+/g,' ').slice(0,160)+')'); }
+  try{
+    /* 3) Nichtstun: Spiel starten, nichts druecken - muss enden (Game over), nicht haengen */
+    const N=lade(seite), EN=c=>N.api.ev(c);
+    EN('startGame();'); let ende=-1;
+    for(let i=0;i<NICHTS_SEK*60;i++){ EN('update(1/60)'); if(i%12===0) EN('draw(1/60)');
+      const f=nan(EN); if(f){ meld(seite,'Nichtstun nach '+(i/60).toFixed(1)+' s: '+f); break; }
+      if(EN('S.mode')!=='play'){ ende=i/60; break; } }
+    if(ende<0) meld(seite,'Nichtstun: nach '+NICHTS_SEK+' s noch kein Spielende (Softlock?)');
+    else bericht.push('Nichtstun: Spielende nach '+ende.toFixed(0)+' s');
+  }catch(e){ meld(seite,'Nichtstun: '+String(e.message).slice(0,140)); }
+  zeile(seite,bericht.join(' | ')+' | (ohne Level-Vertrag)');
 }
 
 /* ---- Lauf ----------------------------------------------------------------- */
@@ -428,6 +481,7 @@ const meld=(s,t)=>{ hart++; console.log(s.padEnd(14)+'FEHLER  '+t); };
 
 for(const seite of SEITEN){
   if(filter.length&&!filter.some(f=>seite.includes(f))) continue;
+  if(seite==='runner.html'){ runnerLauf(seite); continue; }
   let L;
   try{ L=lade(seite); }catch(e){ meld(seite,'Laden: '+String(e.message).split('\n')[0]); continue; }
   const E=c=>L.api.ev(c);
@@ -598,5 +652,5 @@ if(!filter.length||filter.some(f=>'level2.html'.includes(f))){
   }catch(e){ meld('Konter L2',e.message); }
 }
 
-console.log('\n'+(hart?hart+' harte Fehler':'alles gruen')+'  (nicht geprueft: Pixel, Ton, Layout, runner.html)');
+console.log('\n'+(hart?hart+' harte Fehler':'alles gruen')+'  (nicht geprueft: Pixel, Ton, Layout; runner.html nur mit eigenen, lockeren Regeln)');
 process.exit(hart?1:0);
