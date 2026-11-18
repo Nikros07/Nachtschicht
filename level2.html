@@ -137,12 +137,93 @@ const TUNE = {
     versteckGut:2, versteckSchlecht:0,  // erledigte versteckte Aufgaben; 15 Punkte
     kassiertGut:0, kassiertSchlecht:3,  // kassierte Treffer im Kampf; 25 Punkte
   },
+  /* (8) DIE WOHNUNG ALS ORT - alle Zahlen in Bildpunkten (Bild 320x180, Boden y=142, Wand y 20-142).
+     Frei halten: HUD y 0-23, Aufgabenliste x 0-110 y 22-57 (mit Unterlage), Raumname y=raumNameY,
+     Figuren und Dinge y ~100-150, Gespraechskasten ab y=136. Das Gross-Mobiliar steht an der Wand HINTER
+     den kleinen Moebel-Sprites (DINGE), nie davor und nie auf deren x. */
+  ort:{
+    streifenAbst: 8, streifenB: 3,          // Streifentapete: Abstand / Breite
+    punktAbst:    9,                        // Punktetapete
+    fliesenOben: 20, fliesenH: 7, fliesenB: 12,
+    sockelH:      4,                        // Sockelleiste ueber dem Boden
+    schachB: 14, schachH: 6,                // Schachbrettboden
+    sterne:      10,                        // Sterne je Fenster
+    stadtLicht:  .32,                       // Anteil beleuchteter Fenster in den Haeusern
+    /* Licht - langsam, ueber FX.hz gedeckelt; FX.ruhig() = still */
+    kette:{ x0:132, x1:398, y:27, haenge:5, bogenB:66, abst:9, farben:['neon','gold','neon2','gruen'],
+            glowR:11, glowA:.20, glowAtem:.12, hz:.35 },
+    tvA:  .12, tvAtem:.07, tvHz:.3,         // Fernsehlicht
+    partyA: .07, partyAtem: .05, partyHz: .5,  // altes Partylicht, vorher sin(t*6) und zu hell
+    flur:{
+      leisteX:50, leisteY:62, leisteB:46,
+      jacken:[[52,24,'jackeA'],[62,28,'jackeB'],[72,22,'jackeC']], muetzeX:84,
+      spiegel:[100,66,16,32],
+      tuer:[34,118,8],                       // x, Oberkante des Rahmens, Breite (Sprite SPR.tuer bei x=34)
+      schuhe:[[96,0,'schuhA',0],[103,0,'schuhB',1],[110,0,'schuhC',0],[99,3,'schuhD',1],[106,3,'schuhE',0],[114,2,'schuhA',1],[119,0,'schuhD',0],[116,5,'schuhB',0]],
+      brettX:14, brettY:84,
+    },
+    wohn:{
+      poster:[[140,42,20,28,'LIVE','posterA','posterB'],[240,52,20,22,'ROCK','posterC','posterB']],
+      fenster:[340,44,38,44,7,1,1],          // x, y, b, h, Zufallssamen, Vorhang, Mond
+      regal:[166,46,38,56],
+      buecher:['posterA','posterC','posterD','gruenPflanze','sofaHell','dim'],
+      sofa:[236,110,40],                     // Rueckenlehne x, y, Breite (Sprite sofa steht bei x=250)
+      tv:[286,80,32,22], boardY:112,         // Bildschirm x,y,b,h; Oberkante der Anrichte
+      teppich:[296,144,70,9],
+      tischFlaschen:[[331,6,'flGruen'],[333,4,'flBraun']], glasX:335,
+    },
+    kueche:{
+      schrankX:456, schrankY:30, schrankB:142, schrankH:22, schrankT:18,
+      fenster:[514,60,34,32,11,0,0],
+      uhr:[476,70],
+      kuehl:[426,54,24,28],                  // x, y, b, Hoehe Gefrierfach (Sprite kuehl steht bei x=430)
+      platte:[452,110,146], unterT:20,
+      pizza:[458,26],                        // x, Breite
+      flaschen:[[490,9,'flGruen'],[495,7,'flBraun'],[499,10,'flGruen'],[570,8,'flBraun'],[575,6,'dosenBlau'],[580,9,'flGruen']],
+      kiste:[582,14,10],                     // x, Breite, Hoehe (am Boden)
+    },
+    moritz:{
+      poster:[[608,42,22,28,'DERBY','posterC','posterB'],[768,52,20,26,'BASS','posterA','posterB']],
+      schalX:636, schalB:54, schalY:36,
+      bett:[628,100,28],
+      schrank:[694,62,26],
+      regal:[742,66,22],
+      buecher:['posterD','posterC','posterA','dim','blauTrikot','gruenPflanze'],
+      fenster:[724,58,12,30,13,0,1],
+      teppich:[640,144,110,9],
+    },
+    bad:{
+      dusche:[852,40,32,86], spiegel:[810,58,22,32], becken:[808,110,28],
+      handtuchX:842, handtuchY:70, papierX:794, papierY:104, matteX:812, matteB:20,
+    },
+    balkon:{ seed:5, sterne:16, mondX:62, mondY:30, licht:.28,
+             skyline:[[10,40,'nachtStadt2'],[0,26,'nachtStadt']],
+             kastenX:8, kastenB:30, lichtY:115, lichtAbst:9 },
+  },
 };
 
 const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Wohnung (Level 2) */
+  leiste:'#1a1424', leisteHell:'#3a2f48', sockel:'#16111f', trenn:'#0d0a14',
+  holz:'#7a5532', holzDunkel:'#3a2818', chrom:'#b8b0d0', rahmenGold:'#8a6a2a',
+  spiegelGlas:'#3a4a68', spiegelBlitz:'#5a6e92', tuerWand:'#2e2024', matte:'#5a2d3d', matteBad:'#2d5a6a',
+  schuhA:'#d84a6a', schuhB:'#e8e4f4', schuhC:'#4a8ad8', schuhD:'#ffd447', schuhE:'#6a5a90',
+  jackeA:'#7a2d3d', jackeB:'#2f6fd0', jackeC:'#3a6a48',
+  nachtHimmel:'#0b1024', nachtHimmel2:'#121a38', nachtDunst:'#22284a', nachtStadt:'#1a2040', nachtStadt2:'#151b36',
+  fensterGelb:'#ffd98a', mond:'#f2f0d0', fensterRahmen:'#0d0a14', stange:'#8a8498', vorhang:'#7a2a4a', vorhangDunkel:'#5a1e38',
+  posterRand:'#0d0a14', posterA:'#ff3d8b', posterB:'#2a2060', posterC:'#42d9ff', posterD:'#ffd447',
+  draht:'#1a1426', gruenDunkel:'#1e5a38', gruenPflanze:'#3ac078',
+  sofaRueck:'#8a2a42', sofaHell:'#b04060', sofaArm:'#6a1e34',
+  tvRahmen:'#0c0a12', tvRasen:'#2a8a4a', tvRasen2:'#2f9a52', tvLinie:'#d8f2e0',
+  teppich:'#4a2a58', teppichRand:'#6a3a78', glas:'#9ac8e8', flGruen:'#2f8a4a', flBraun:'#8a5a1e', dosenBlau:'#42d9ff',
+  kSchrank:'#34424e', kUnter:'#2c3842', kPlatte:'#7a6a58', kPlatteHell:'#a09078', kuehl:'#9aa4b8', kuehlHell:'#c8d0e0',
+  karton:'#c89858', karton2:'#b88848', kartonHell:'#e0b878', kiste:'#a85a3a',
+  blauTrikot:'#2f6fd0', kissenBlau:'#2f4a8a', teppichBlau:'#1e2a5a',
+  duschA:'#3a8aa8', duschB:'#a8e0f0', hellgrau:'#c8cce0', gelaender:'#2a3450',
+  listeGrund:'#08060f',
 };
 
 /* ==========================================================================
@@ -270,12 +351,12 @@ const BODEN=142;
    ========================================================================== */
 const LEVEL_B=980;
 const ORTE=[
-  { von:0,   bis:130, name:'FLUR',        wand:'#2a2336', boden:'#1d1727' },
-  { von:130, bis:400, name:'WOHNZIMMER',  wand:'#33253c', boden:'#241a2c' },
-  { von:400, bis:600, name:'KUECHE',      wand:'#26303a', boden:'#1a222a' },
-  { von:600, bis:790, name:'MORITZ ZIMMER',wand:'#2b2740', boden:'#1e1b2e' },
-  { von:790, bis:890, name:'BAD',         wand:'#243440', boden:'#182630' },
-  { von:890, bis:980, name:'BALKON',      wand:'#141a2c', boden:'#101624' },
+  { von:0,   bis:130, name:'FLUR',        wand:'#2f2840', wand2:'#372e4c', tapete:'streifen', boden:'#2a2030', boden2:'#3a2c3c', belag:'schach' },
+  { von:130, bis:400, name:'WOHNZIMMER',  wand:'#3a2a46', wand2:'#44305a', tapete:'streifen', boden:'#2c2030', boden2:'#382838', belag:'parkett' },
+  { von:400, bis:600, name:'KUECHE',  nameX:458,  wand:'#2e3c48', wand2:'#374858', tapete:'fliesen',  boden:'#202c34', boden2:'#2a3844', belag:'schach' },
+  { von:600, bis:790, name:'MORITZ ZIMMER',wand:'#2b2c4a', wand2:'#363860', tapete:'punkte',  boden:'#1e2238', boden2:'#262c48', belag:'teppich' },
+  { von:790, bis:890, name:'BAD',         wand:'#2a4250', wand2:'#34566a', tapete:'fliesen',  boden:'#1c303c', boden2:'#26404e', belag:'fliese' },
+  { von:890, bis:980, name:'BALKON',      wand:'#141a2c', wand2:'#141a2c', tapete:'',         boden:'#1a2030', boden2:'#242c44', belag:'deck' },
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 
@@ -1079,61 +1160,348 @@ function draw(dt){
   erzaehlZeichne();
 }
 
-function zeichneWohnung(){
-  const kx=Math.round(S.kamX);
-  ctx.save(); ctx.translate(-kx,0);
+/* ==========================================================================
+   DIE WOHNUNG ALS BILD (vorgezeichnet)
+   malWohnung() zeichnet EINMAL die ganze Wohnung (LEVEL_B x H) in einen Cache
+   (verlauf('wohnung')). Alle Zahlen stehen in TUNE.ort und ORTE, alle Farben
+   in P. Nichts davon ist zufaellig je Bild; woZufall(seed) ist nur der
+   Zufall fuer die Nachtstadt, einmal beim Backen. Bewegt sich nur das
+   Licht (Lichterkette, Fernseher, Partylicht) - langsam und ueber FX.
+   ========================================================================== */
+const woRect=(g,x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w,h); };
+function woZufall(seed){ let s=seed>>>0;
+  return ()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296); }
 
-  /* Raeume */
+/* Tapete bzw. Wandflaeche eines Raums */
+function woWand(g,o){
+  const O=TUNE.ort, b=o.bis-o.von, hoehe=BODEN-20;
+  woRect(g,o.von,20,b,hoehe,o.wand);
+  if(o.tapete==='streifen'){
+    for(let x=o.von+3;x<o.bis-2;x+=O.streifenAbst) woRect(g,x,24,O.streifenB,hoehe-4,o.wand2);
+  } else if(o.tapete==='punkte'){
+    for(let r=0,y=28;y<BODEN-8;r++,y+=O.punktAbst)
+      for(let x=o.von+4+(r%2)*(O.punktAbst>>1);x<o.bis-3;x+=O.punktAbst) woRect(g,x,y,1,1,o.wand2);
+  } else if(o.tapete==='fliesen'){
+    /* Fliesen: Raster in Fugenfarbe, helle Fliesen im Wechsel */
+    for(let y=O.fliesenOben,r=0;y<BODEN;y+=O.fliesenH,r++){
+      woRect(g,o.von,y,b,1,o.wand2);
+      for(let x=o.von+(r%2)*(O.fliesenB>>1);x<o.bis;x+=O.fliesenB) woRect(g,x,y,1,O.fliesenH,o.wand2);
+    }
+  } else if(o.tapete==='holz'){
+    for(let y=O.holzOben;y<BODEN;y+=O.holzH) woRect(g,o.von,y,b,1,o.wand2);
+  }
+  /* Stuckleiste oben, Sockelleiste unten */
+  woRect(g,o.von,20,b,3,P.leiste); woRect(g,o.von,23,b,1,'#00000066');
+  woRect(g,o.von,BODEN-O.sockelH,b,O.sockelH,P.sockel); woRect(g,o.von,BODEN-O.sockelH,b,1,P.leisteHell);
+}
+/* Boden: je Raum ein anderes Muster */
+function woBoden(g,o){
+  const O=TUNE.ort, b=o.bis-o.von;
+  woRect(g,o.von,BODEN,b,H-BODEN,o.boden);
+  if(o.belag==='parkett'){
+    for(let y=BODEN+4,r=0;y<H;y+=6,r++){ woRect(g,o.von,y,b,1,o.boden2);
+      for(let x=o.von+(r%2)*11;x<o.bis;x+=22) woRect(g,x,y-5,1,5,o.boden2); }
+  } else if(o.belag==='schach'){
+    for(let r=0,y=BODEN;y<H;r++,y+=O.schachH)
+      for(let x=o.von+((r%2)*O.schachB);x<o.bis;x+=O.schachB*2) woRect(g,x,y,Math.min(O.schachB,o.bis-x),O.schachH,o.boden2);
+  } else if(o.belag==='fliese'){
+    for(let y=BODEN+5,r=0;y<H;y+=9,r++){ woRect(g,o.von,y,b,1,o.boden2);
+      for(let x=o.von+(r%2)*8;x<o.bis;x+=16) woRect(g,x,y-8,1,8,o.boden2); }
+  } else if(o.belag==='teppich'){
+    for(let y=BODEN+3;y<H;y+=4) for(let x=o.von+((y>>2)%2)*2;x<o.bis;x+=4) woRect(g,x,y,1,1,o.boden2);
+  } else if(o.belag==='deck'){
+    for(let y=BODEN+6;y<H;y+=7) woRect(g,o.von,y,b,1,o.boden2);
+  }
+  woRect(g,o.von,BODEN,b,1,P.bodenKante);
+  woRect(g,o.von,BODEN+1,b,2,'#00000044');   // Schatten unter der Sockelleiste
+  /* Trennwand */
+  woRect(g,o.bis-2,20,2,BODEN-20,P.trenn);
+}
+/* Fenster mit Nachtstadt: f = [x,y,b,h,seed,vorhang(0/1),mond(0/1)] */
+function woFenster(g,f){
+  const O=TUNE.ort, [x,y,b,h,seed,vorhang,mond]=f, rnd=woZufall(seed);
+  woRect(g,x-2,y-2,b+4,h+4,P.fensterRahmen);
+  woRect(g,x,y,b,h,P.nachtHimmel);
+  woRect(g,x,y+(h>>1),b,h>>1,P.nachtHimmel2);
+  woRect(g,x,y+h-(h>>2),b,h>>2,P.nachtDunst);
+  for(let i=0;i<O.sterne;i++) woRect(g,x+1+Math.floor(rnd()*(b-2)),y+1+Math.floor(rnd()*(h*.4)),1,1,i%3?'#ffffff55':'#ffffffaa');
+  if(mond){ woRect(g,x+b-9,y+4,4,4,P.mond); woRect(g,x+b-8,y+3,2,6,P.mond); woRect(g,x+b-10,y+5,6,2,P.mond); }
+  /* Haeuser mit beleuchteten Fenstern */
+  for(let bx=0;bx<b;){
+    const bw=4+Math.floor(rnd()*5), bh=Math.floor(h*(.22+rnd()*.34)), w2=Math.min(bw,b-bx);
+    woRect(g,x+bx,y+h-bh,w2,bh,P.nachtStadt);
+    for(let wy=y+h-bh+2;wy<y+h-2;wy+=3) for(let wx=x+bx+1;wx<x+bx+w2-1;wx+=2)
+      if(rnd()<O.stadtLicht) woRect(g,wx,wy,1,1,rnd()<.25?P.neon2:P.fensterGelb);
+    bx+=bw+1;
+  }
+  /* Rahmenkreuz */
+  woRect(g,x+(b>>1),y,1,h,P.fensterRahmen);
+  woRect(g,x,y+(h>>1)-1,b,1,P.fensterRahmen);
+  woRect(g,x-3,y+h+2,b+6,2,P.leisteHell); woRect(g,x-3,y+h+4,b+6,1,'#00000066');   // Fensterbank
+  if(vorhang){
+    woRect(g,x-4,y-3,b+8,2,P.stange);
+    woRect(g,x-3,y-1,5,h+4,P.vorhang); woRect(g,x+b-2,y-1,5,h+4,P.vorhang);
+    for(let i=0;i<h+4;i+=4){ woRect(g,x-1,y-1+i,1,3,P.vorhangDunkel); woRect(g,x+b,y-1+i,1,3,P.vorhangDunkel); }
+  }
+}
+/* Poster: p = [x,y,b,h,wort,farbe,farbe2] */
+function woPoster(g,p){
+  const [x,y,b,h,wort,c1,c2]=p;
+  woRect(g,x-1,y-1,b+2,h+2,P.posterRand);
+  woRect(g,x,y,b,h,P[c1]);
+  woRect(g,x,y+(h>>1),b,h-(h>>1),P[c2]);
+  woRect(g,x+(b>>1)-2,y+3,5,5,P.weiss); woRect(g,x+(b>>1)-1,y+4,3,3,P[c1]);   // Sonne/Kreis als Motiv
+  textTo(g,wort,x+((b-(wort.length*4-1))>>1),y+h-8,P.weiss,1);
+  woRect(g,x+1,y+h-2,b-2,1,'#00000055');
+}
+/* Lichterkette: Punkte [x,y,farbe] entlang der Baenge. Wird zum Backen UND fuer den Schimmer gebraucht. */
+function woKettePunkte(){
+  const K=TUNE.ort.kette, pts=[], n=Math.round((K.x1-K.x0)/K.bogenB), bw=(K.x1-K.x0)/n;
+  for(let x=K.x0;x<=K.x1;x+=K.abst){
+    const u=((x-K.x0)%bw)/bw, y=K.y+Math.round(K.haenge*4*u*(1-u));
+    pts.push([x,y,K.farben[pts.length%K.farben.length]]);
+  }
+  return pts;
+}
+function woKette(g){
+  const K=TUNE.ort.kette;
+  for(let x=K.x0;x<=K.x1;x++){ const n=Math.round((K.x1-K.x0)/K.bogenB), bw=(K.x1-K.x0)/n, u=((x-K.x0)%bw)/bw;
+    woRect(g,x,K.y+Math.round(K.haenge*4*u*(1-u)),1,1,P.draht); }
+  for(const [x,y,c] of woKettePunkte()){ woRect(g,x,y+1,1,1,P.draht); woRect(g,x-1,y+2,3,2,P[c]); woRect(g,x,y+2,1,1,P.weiss); }
+}
+
+/* ---- Flur ---- */
+function woFlur(g){
+  const F=TUNE.ort.flur;
+  /* Garderobenleiste mit Haken und Jacken */
+  woRect(g,F.leisteX,F.leisteY,F.leisteB,3,P.holzDunkel); woRect(g,F.leisteX,F.leisteY,F.leisteB,1,P.holz);
+  woRect(g,F.leisteX,F.leisteY-4,F.leisteB,1,'#00000044');
+  for(const [x,hh,c] of F.jacken){
+    woRect(g,x+3,F.leisteY+3,1,2,P.chrom);
+    woRect(g,x,F.leisteY+5,8,hh,P[c]); woRect(g,x,F.leisteY+5,8,1,'#ffffff33');
+    woRect(g,x+3,F.leisteY+7,1,hh-3,'#00000055'); woRect(g,x+7,F.leisteY+5,1,hh,'#00000044');
+  }
+  woRect(g,F.muetzeX,F.leisteY+3,6,2,P.neon); woRect(g,F.muetzeX+1,F.leisteY+5,4,3,P.neon);   // Muetze am letzten Haken
+  /* Spiegel (Flur) */
+  const s=F.spiegel;
+  woRect(g,s[0]-2,s[1]-2,s[2]+4,s[3]+4,P.rahmenGold); woRect(g,s[0],s[1],s[2],s[3],P.spiegelGlas);
+  woRect(g,s[0]+2,s[1]+2,2,s[3]-6,P.spiegelBlitz); woRect(g,s[0]+5,s[1]+2,1,s[3]-10,P.spiegelBlitz);
+  /* Tuerrahmen mit Lampe und Matte */
+  const t=F.tuer;
+  woRect(g,t[0]-4,t[1],t[2]+8,BODEN-t[1],P.holzDunkel); woRect(g,t[0]-3,t[1]+1,t[2]+6,BODEN-t[1]-1,P.tuerWand);
+  woRect(g,t[0]+(t[2]>>1)-3,t[1]-7,6,3,P.gold); woRect(g,t[0]+(t[2]>>1)-1,t[1]-9,2,2,P.holz);   // Lampe ueber der Tuer
+  woRect(g,t[0]-4,BODEN+1,t[2]+8,3,P.matte);
+  /* Schuhberg */
+  for(const [x,dy,c,f] of F.schuhe){
+    const y=BODEN-3-dy; woRect(g,x,y,5,3,P[c]); woRect(g,f?x:x+3,y-1,2,2,P[c]); woRect(g,x,y+2,5,1,'#000000aa');
+  }
+  /* Schluesselbrett */
+  woRect(g,F.brettX,F.brettY,10,6,P.holz); woRect(g,F.brettX+1,F.brettY+1,8,4,P.holzDunkel);
+  woRect(g,F.brettX+2,F.brettY+4,1,2,P.gold); woRect(g,F.brettX+6,F.brettY+4,1,2,P.chrom);
+}
+/* ---- Wohnzimmer ---- */
+function woWohnzimmer(g){
+  const W2=TUNE.ort.wohn;
+  W2.poster.forEach(p=>woPoster(g,p));
+  woFenster(g,W2.fenster);
+  /* Regal mit Buechern, Pflanze, Kerze */
+  const r=W2.regal;
+  woRect(g,r[0],r[1],r[2],r[3],P.holzDunkel);
+  for(let i=0;i<4;i++){
+    const y=r[1]+2+i*Math.floor((r[3]-2)/4);
+    woRect(g,r[0]+1,y+Math.floor((r[3]-2)/4)-2,r[2]-2,2,P.holz);
+    let x=r[0]+2;
+    for(let k=0;x<r[0]+r[2]-4;k++){ const bw=2+((k*3+i)%3), bh=6+((k+i*2)%4);
+      woRect(g,x,y+Math.floor((r[3]-2)/4)-2-bh,bw,bh,P[W2.buecher[(k+i)%W2.buecher.length]]); x+=bw+(k%4===3?2:0); }
+  }
+  woRect(g,r[0]+3,r[1]-5,4,5,P.gruenDunkel); woRect(g,r[0]+2,r[1]-8,6,4,P.gruenPflanze);   // Pflanze auf dem Regal
+  /* Sofarueckenlehne, grosses Sofa hinter dem kleinen Sofa-Sprite */
+  const s=W2.sofa;
+  woRect(g,s[0],s[1],s[2],BODEN-s[1]-1,P.sofaRueck); woRect(g,s[0],s[1],s[2],2,P.sofaHell);
+  woRect(g,s[0]-3,s[1]+6,4,BODEN-s[1]-6,P.sofaArm); woRect(g,s[0]+s[2]-1,s[1]+6,4,BODEN-s[1]-6,P.sofaArm);
+  woRect(g,s[0]+(s[2]>>1),s[1]+3,1,BODEN-s[1]-5,'#00000055');
+  woRect(g,s[0]+4,s[1]-2,8,5,P.neon2); woRect(g,s[0]+s[2]-12,s[1]-1,8,4,P.gold);   // Kissen
+  /* Fernseher auf der Anrichte */
+  const t=W2.tv;
+  woRect(g,t[0]-4,W2.boardY,t[2]+8,BODEN-W2.boardY,P.holzDunkel); woRect(g,t[0]-4,W2.boardY,t[2]+8,2,P.holz);
+  woRect(g,t[0]+4,W2.boardY+5,10,BODEN-W2.boardY-8,P.holz); woRect(g,t[0]+t[2]-14,W2.boardY+5,10,BODEN-W2.boardY-8,P.holz);
+  woRect(g,t[0]+(t[2]>>1)-3,t[1]+t[3]+2,6,W2.boardY-t[1]-t[3]-2,P.tvRahmen);
+  woRect(g,t[0]-2,t[1]-2,t[2]+4,t[3]+4,P.tvRahmen);
+  woRect(g,t[0],t[1],t[2],t[3],P.tvRasen);          // Fussballbild
+  for(let y=t[1];y<t[1]+t[3];y+=6) woRect(g,t[0],y,t[2],3,P.tvRasen2);
+  woRect(g,t[0]+(t[2]>>1),t[1],1,t[3],P.tvLinie); woRect(g,t[0]+1,t[1]+4,t[2]-2,1,P.tvLinie); woRect(g,t[0]+1,t[1]+t[3]-5,t[2]-2,1,P.tvLinie);
+  woRect(g,t[0]+8,t[1]+8,2,2,P.rot); woRect(g,t[0]+20,t[1]+11,2,2,P.neon2); woRect(g,t[0]+15,t[1]+9,1,1,P.weiss);
+  woRect(g,t[0]+3,t[1]+t[3]-3,9,2,'#000000aa'); woRect(g,t[0]+t[2]-12,t[1]+1,10,3,'#000000aa');   // Spielstand
+  woRect(g,t[0]+t[2]-2,t[1]+t[3]+3,1,1,P.gruen);   // Standby-LED
+  /* Teppich unter dem Tisch (niedrig, leise) */
+  const tp=W2.teppich;
+  woRect(g,tp[0],tp[1],tp[2],tp[3],P.teppich); woRect(g,tp[0]+2,tp[1]+1,tp[2]-4,1,P.teppichRand); woRect(g,tp[0]+2,tp[1]+tp[3]-2,tp[2]-4,1,P.teppichRand);
+  /* Flaschen und Glaeser auf dem Tisch (Tisch-Sprite sitzt bei y=BODEN-6) */
+  for(const [x,h2,c] of W2.tischFlaschen){ woRect(g,x,BODEN-6-h2,2,h2,P[c]); woRect(g,x,BODEN-6-h2-2,2,2,P.chrom); woRect(g,x,BODEN-6-h2+1,2,1,'#ffffff55'); }
+  woRect(g,W2.glasX,BODEN-9,3,3,P.glas); woRect(g,W2.glasX+1,BODEN-8,1,1,P.gold);
+}
+/* ---- Kueche ---- */
+function woKueche(g){
+  const K=TUNE.ort.kueche;
+  /* Wandschraenke und Dunstabzug */
+  woRect(g,K.schrankX,K.schrankY,K.schrankB,K.schrankH,P.kSchrank); woRect(g,K.schrankX,K.schrankY+K.schrankH,K.schrankB,1,'#00000088');
+  for(let x=K.schrankX;x<K.schrankX+K.schrankB;x+=K.schrankT){ woRect(g,x,K.schrankY,1,K.schrankH,'#00000066'); woRect(g,x+K.schrankT-4,K.schrankY+K.schrankH-5,1,3,P.chrom); }
+  woRect(g,K.schrankX,K.schrankY,K.schrankB,1,'#ffffff22');
+  /* Fenster mit Nachtstadt */
+  woFenster(g,K.fenster);
+  /* Wanduhr */
+  const u=K.uhr;
+  woRect(g,u[0]-4,u[1]-4,9,9,P.rahmenGold); woRect(g,u[0]-3,u[1]-3,7,7,P.weiss); woRect(g,u[0],u[1]-2,1,3,P.ink); woRect(g,u[0],u[1],3,1,P.ink);
+  /* Kuehlschrank gross (der kleine Kuehlschrank-Sprite steht davor) */
+  const f=K.kuehl;
+  woRect(g,f[0],f[1],f[2],BODEN-f[1]-1,P.kuehl); woRect(g,f[0],f[1],f[2],1,P.kuehlHell); woRect(g,f[0],f[1]+f[3],f[2],1,'#00000066');
+  woRect(g,f[0]+f[2]-4,f[1]+3,1,10,P.chrom); woRect(g,f[0]+f[2]-4,f[1]+f[3]+4,1,10,P.chrom);
+  woRect(g,f[0]+f[2],f[1]+2,1,BODEN-f[1]-3,'#00000055');
+  /* Magnete und Zettel an der Tuer */
+  woRect(g,f[0]+3,f[1]+5,6,7,P.weiss); woRect(g,f[0]+4,f[1]+7,4,1,P.dim); woRect(g,f[0]+4,f[1]+9,3,1,P.dim); woRect(g,f[0]+5,f[1]+4,2,2,P.rot);
+  woRect(g,f[0]+4,f[1]+f[3]+4,3,3,P.neon); woRect(g,f[0]+9,f[1]+f[3]+8,3,3,P.gold);
+  /* Arbeitsplatte mit Unterschraenken */
+  const a=K.platte;
+  woRect(g,a[0],a[1],a[2],BODEN-a[1]-1,P.kUnter);
+  for(let x=a[0];x<a[0]+a[2];x+=K.unterT){ woRect(g,x,a[1]+4,1,BODEN-a[1]-5,'#00000066'); woRect(g,x+K.unterT-5,a[1]+7,3,1,P.chrom); }
+  woRect(g,a[0],a[1],a[2],3,P.kPlatte); woRect(g,a[0],a[1],a[2],1,P.kPlatteHell);
+  /* Spritzschutz-Fliesen zwischen Platte und Schrank */
+  /* Pizzakarton (flach, liegt auf der Platte) */
+  const p=K.pizza;
+  woRect(g,p[0],a[1]-4,p[1],4,P.karton); woRect(g,p[0],a[1]-4,p[1],1,P.kartonHell); woRect(g,p[0],a[1]-1,p[1],1,'#00000055');
+  textTo(g,'PIZZA',p[0]+((p[1]-19)>>1),a[1]-3,P.rot,1);
+  woRect(g,p[0]+4,a[1]-7,p[1]-8,3,P.karton2); woRect(g,p[0]+4,a[1]-7,p[1]-8,1,P.kartonHell);   // zweiter Karton obendrauf, schief
+  /* Flaschen und Dosen auf der Platte */
+  for(const [x,h2,c] of K.flaschen){ woRect(g,x,a[1]-h2,3,h2,P[c]); woRect(g,x+1,a[1]-h2-2,1,2,P[c]); woRect(g,x,a[1]-h2+2,3,1,'#ffffff44'); }
+  /* Pfandkiste mit leeren Flaschen am Boden */
+  const k=K.kiste;
+  woRect(g,k[0],BODEN-k[2],k[1],k[2]-1,P.kiste); woRect(g,k[0],BODEN-k[2],k[1],1,'#ffffff33');
+  for(let x=k[0]+1;x<k[0]+k[1]-2;x+=3){ woRect(g,x,BODEN-k[2]-5,2,5,x%2?P.flGruen:P.flBraun); woRect(g,x,BODEN-k[2]-6,2,1,P.chrom); }
+}
+/* ---- Moritz' Zimmer ---- */
+function woMoritz(g){
+  const M=TUNE.ort.moritz;
+  M.poster.forEach(p=>woPoster(g,p));
+  /* Schal ueber der Tuer zum Flur-Ende: Vereinsfarben */
+  for(let x=M.schalX;x<M.schalX+M.schalB;x++){ woRect(g,x,M.schalY+Math.round(2*Math.sin((x-M.schalX)/M.schalB*Math.PI)),1,3,(x>>2)%2?P.weiss:P.blauTrikot); }
+  /* Bettkopfteil */
+  const b=M.bett;
+  woRect(g,b[0],b[1],b[2],BODEN-b[1]-1,P.holzDunkel); woRect(g,b[0]+1,b[1]+1,b[2]-2,3,P.holz);
+  woRect(g,b[0]+3,b[1]+14,b[2]-6,BODEN-b[1]-15,P.kissenBlau); woRect(g,b[0]+3,b[1]+14,b[2]-6,1,'#ffffff44');
+  /* Schreibtischlampe und Schrank */
+  const s=M.schrank;
+  woRect(g,s[0],s[1],s[2],BODEN-s[1]-1,P.holzDunkel); woRect(g,s[0]+1,s[1]+1,(s[2]>>1)-1,BODEN-s[1]-3,P.holz); woRect(g,s[0]+(s[2]>>1)+1,s[1]+1,(s[2]>>1)-2,BODEN-s[1]-3,P.holz);
+  woRect(g,s[0]+(s[2]>>1)-3,s[1]+30,1,5,P.gold); woRect(g,s[0]+(s[2]>>1)+2,s[1]+30,1,5,P.gold);
+  /* Regalwand hinter dem Regal-Sprite */
+  const r=M.regal;
+  woRect(g,r[0],r[1],r[2],BODEN-r[1]-1,P.holzDunkel);
+  for(let i=0;i<5;i++){ const y=r[1]+4+i*14;
+    woRect(g,r[0]+1,y+10,r[2]-2,2,P.holz);
+    for(let k=0,x=r[0]+2;x<r[0]+r[2]-3;k++){ const bw=2+(k+i)%3; woRect(g,x,y+10-(5+(k*2+i)%4),bw,5+(k*2+i)%4,P[M.buecher[(k+i)%M.buecher.length]]); x+=bw; } }
+  /* Fenster */
+  woFenster(g,M.fenster);
+  /* Teppich */
+  woRect(g,M.teppich[0],M.teppich[1],M.teppich[2],M.teppich[3],P.teppichBlau); woRect(g,M.teppich[0]+2,M.teppich[1]+1,M.teppich[2]-4,1,P.kissenBlau);
+}
+/* ---- Bad ---- */
+function woBad(g){
+  const B=TUNE.ort.bad;
+  /* Duschvorhang an der Stange */
+  const d=B.dusche;
+  woRect(g,d[0]-2,d[1]-2,d[2]+4,2,P.chrom);
+  for(let x=d[0];x<d[0]+d[2];x+=4){ woRect(g,x,d[1],3,d[3],(x>>2)%2?P.duschA:P.duschB); woRect(g,x,d[1]+d[3]-1,3,1,'#00000055'); woRect(g,x+1,d[1]-3,1,3,P.chrom); }
+  /* Spiegel, Waschbecken und Handtuch */
+  const s=B.spiegel;
+  woRect(g,s[0]-2,s[1]-2,s[2]+4,s[3]+4,P.chrom); woRect(g,s[0],s[1],s[2],s[3],P.spiegelGlas);
+  woRect(g,s[0]+3,s[1]+2,2,s[3]-8,P.spiegelBlitz); woRect(g,s[0]+7,s[1]+2,1,s[3]-14,P.spiegelBlitz);
+  woRect(g,s[0]+2,s[1]+s[3]+3,s[2]-4,2,P.chrom);
+  const w=B.becken;
+  woRect(g,w[0],w[1],w[2],10,P.weiss); woRect(g,w[0]+2,w[1]+10,w[2]-4,4,P.hellgrau); woRect(g,w[0],w[1],w[2],1,P.chrom);
+  woRect(g,w[0]+(w[2]>>1)-1,w[1]-4,2,4,P.chrom);
+  woRect(g,B.handtuchX,B.handtuchY,2,2,P.chrom); woRect(g,B.handtuchX-2,B.handtuchY+2,8,12,P.neon); woRect(g,B.handtuchX-2,B.handtuchY+2,8,2,'#ffffff44');
+  /* Wc-Ecke: Toilettenpapier */
+  woRect(g,B.papierX,B.papierY,4,4,P.weiss);
+  /* Fussmatte */
+  woRect(g,B.matteX,BODEN+2,B.matteB,3,P.matteBad);
+}
+/* ---- Balkon ---- */
+function woBalkon(g,o){
+  const B=TUNE.ort.balkon, b=o.bis-o.von;
+  woRect(g,o.von,20,b,BODEN-20,P.nachtHimmel); woRect(g,o.von,70,b,BODEN-70,P.nachtHimmel2); woRect(g,o.von,100,b,BODEN-100,P.nachtDunst);
+  const rnd=woZufall(B.seed);
+  for(let i=0;i<B.sterne;i++){ woRect(g,o.von+2+Math.floor(rnd()*(b-4)),22+Math.floor(rnd()*60),1,1,i%4===0?'#ffffffaa':'#ffffff44'); }
+  woRect(g,o.von+B.mondX,B.mondY,7,7,P.mond); woRect(g,o.von+B.mondX+1,B.mondY-1,5,9,P.mond); woRect(g,o.von+B.mondX-1,B.mondY+1,9,5,P.mond);
+  woRect(g,o.von+B.mondX+4,B.mondY+1,3,5,P.nachtHimmel);   // Sichel
+  /* Haeuser dahinter in zwei Reihen */
+  for(const [reihe,hmax,col] of B.skyline){
+    for(let x=0;x<b;){ const bw=7+Math.floor(rnd()*9), bh=10+Math.floor(rnd()*hmax), w2=Math.min(bw,b-x);
+      woRect(g,o.von+x,BODEN-bh-reihe,w2,bh+reihe,P[col]);
+      for(let wy=BODEN-bh-reihe+3;wy<BODEN-26;wy+=4) for(let wx=o.von+x+2;wx<o.von+x+w2-2;wx+=3)
+        if(rnd()<B.licht) woRect(g,wx,wy,1,2,rnd()<.2?P.neon2:P.fensterGelb);
+      x+=bw+1+Math.floor(rnd()*3); }
+  }
+  /* Gelaender und Pflanzkasten */
+  woRect(g,o.von,BODEN-26,b,2,P.gelaender);
+  for(let x=o.von;x<o.bis;x+=8) woRect(g,x,BODEN-24,2,24,P.gelaender);
+  woRect(g,o.von,BODEN-14,b,1,P.gelaender);
+  woRect(g,o.von+B.kastenX,BODEN-12,B.kastenB,6,P.holzDunkel); woRect(g,o.von+B.kastenX,BODEN-12,B.kastenB,1,P.holz);
+  for(let x=o.von+B.kastenX;x<o.von+B.kastenX+B.kastenB-2;x+=3) woRect(g,x,BODEN-17-(x%5),2,5+(x%5),P.gruenPflanze);
+  woRect(g,o.von,BODEN-27,b,1,'#ffffff18');
+  /* Lichterkette am Gelaender, warm */
+  for(let x=o.von+4;x<o.bis-3;x+=B.lichtAbst){ woRect(g,x,B.lichtY+((x>>3)%2),2,2,x%3?P.gold:P.neon); }
+}
+
+/* Alles in ein Bild */
+function malWohnung(g){
   for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,BODEN-20);
-    ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    /* Trennwand */
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,BODEN-20);
-    /* Boden */
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,BODEN,o.bis-o.von,H-BODEN);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,BODEN,o.bis-o.von,1);
-    ctx.fillStyle='#00000033';
-    for(let x=o.von;x<o.bis;x+=14) ctx.fillRect(x,BODEN+5,7,1);
-    /* Name des Raums */
-    text(o.name,o.von+6,TUNE.raumNameY,'#ffffff18');
+    if(o.name==='BALKON'){ woBalkon(g,o); woBoden(g,o); continue; }
+    woWand(g,o); woBoden(g,o);
   }
-  /* Bilderreihe und Regalbrett an der Wand - gegen die leere obere
-     Bildhaelfte (PLAYTEST.md). Keine neue Kunst, zwei Muster, wiederholt. */
-  for(let x=20;x<890;x+=50){
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,23,20,21);
-    ctx.fillStyle='#4a3d5c'; ctx.fillRect(x+2,25,16,17);
-    ctx.fillStyle='#6a5a80'; ctx.fillRect(x+2,25,16,1);
+  woFlur(g); woWohnzimmer(g); woKueche(g); woMoritz(g); woBad(g);
+  woKette(g);
+}
+/* Lichtschimmer: Lichterkette (Punkt fuer Punkt), Fernseher, Partylicht - gebacken, nur Alpha bewegt sich */
+function malKetteGlow(g){
+  for(const [x,y,c] of woKettePunkte()){
+    const gr=g.createRadialGradient(x,y,1,x,y,TUNE.ort.kette.glowR), farbe=P[c];
+    gr.addColorStop(0,farbe+'cc'); gr.addColorStop(1,farbe+'00');
+    g.fillStyle=gr; g.fillRect(x-TUNE.ort.kette.glowR,y-TUNE.ort.kette.glowR,TUNE.ort.kette.glowR*2,TUNE.ort.kette.glowR*2);
   }
-  ctx.fillStyle='#241f30'; ctx.fillRect(14,56,870,3);
-  ctx.fillStyle='#000000aa'; ctx.fillRect(14,59,870,1);
-  for(let x=20;x<884;x+=36){
-    const hoeh=6+(Math.floor(x/36)%3)*3;
-    ctx.fillStyle=(Math.floor(x/36)%2===0)?'#5c4a70':'#3c3350';
-    ctx.fillRect(x,56-hoeh,10,hoeh);
-  }
-  /* Wandverkleidung: senkrechte Paneelfugen unter dem Regal, sonst
-     bleibt die Wand bis zum Boden leer. */
-  ctx.fillStyle='#000000aa'; ctx.fillRect(14,68,870,1); ctx.fillRect(14,88,870,1);
-  for(let x=18;x<884;x+=18) ctx.fillRect(x,69,1,18);
-  /* Wohnungstuer im Flur */
-  sprite(SPR.tuer,34,BODEN-12);
-  text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dunkel);
-
-  /* Partylicht im Wohnzimmer */
-  const puls=(Math.sin(S.t*6)*.5+.5);
-  ctx.globalAlpha=.10+puls*.10;
+}
+function zeichneLicht(){
+  const O=TUNE.ort, ruhig=FX.ruhig();
+  /* Lichterkette: sanftes Atmen, ueber FX.hz gedeckelt */
+  const atem=ruhig?.5:Math.sin(S.t*FX.hz(O.kette.hz)*6.283)*.5+.5;
+  ctx.globalAlpha=O.kette.glowA+atem*O.kette.glowAtem;
+  ctx.drawImage(verlauf('kettenglow',LEVEL_B,60,malKetteGlow),0,0);
+  /* Fernseher: kuehles Licht auf Wand und Sofa */
+  const tv=O.wohn.tv, a=ruhig?.5:Math.sin(S.t*FX.hz(O.tvHz)*6.283)*.5+.5;
+  ctx.globalAlpha=O.tvA+a*O.tvAtem;
+  ctx.drawImage(verlauf('tvlicht',130,100,g=>{
+    const gr=g.createRadialGradient(65,28,3,65,28,64);
+    gr.addColorStop(0,'rgba(120,255,200,1)'); gr.addColorStop(1,'rgba(60,200,255,0)');
+    g.fillStyle=gr; g.fillRect(0,0,130,100); }),tv[0]+(tv[2]>>1)-65,tv[1]+(tv[3]>>1)-28);
+  /* Partylicht im Wohnzimmer (wie zuvor, aber leiser und gedeckelt) */
+  const puls=ruhig?.5:(Math.sin(S.t*FX.hz(O.partyHz)*6.283)*.5+.5);
+  ctx.globalAlpha=O.partyA+puls*O.partyAtem;
   ctx.drawImage(verlauf('partylicht',200,120,g=>{
     const gr=g.createRadialGradient(100,20,4,100,20,100);
     gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
     g.fillStyle=gr; g.fillRect(0,0,200,120); }),160,26);
   ctx.globalAlpha=1;
-  /* Balkon: Nachthimmel */
-  ctx.fillStyle='#0b1024'; ctx.fillRect(890,20,90,BODEN-20);
-  for(let i=0;i<22;i++) { ctx.fillStyle=i%4===0?'#ffffff55':'#ffffff22';
-    ctx.fillRect(895+(i*37)%84,26+(i*29)%70,1,1); }
-  ctx.fillStyle='#2a3450';
-  for(let x=890;x<980;x+=8) ctx.fillRect(x,BODEN-24,2,24);
-  ctx.fillRect(890,BODEN-26,90,2);
+}
+
+function zeichneWohnung(){
+  const kx=Math.round(S.kamX);
+  ctx.save(); ctx.translate(-kx,0);
+
+  /* Die ganze Wohnung ist ein vorgezeichnetes Bild (malWohnung); nur Namen, Tuer und Licht kommen je Bild. */
+  ctx.drawImage(verlauf('wohnung',LEVEL_B,H,malWohnung),0,0);
+  for(const o of ORTE) text(o.name,o.nameX||o.von+6,TUNE.raumNameY,'#ffffff22');
+  /* Wohnungstuer im Flur */
+  sprite(SPR.tuer,34,BODEN-12);
+  text('RAUS',34+4-textW('RAUS')/2,BODEN-20,alleFertig()?P.gold:P.dim);
+  zeichneLicht();
 
   /* Dinge */
   const taste=aktionsMarke();
@@ -1278,12 +1646,17 @@ function hud(){
   ctx.fillRect(bx,by,Math.round(bw*p),4);
   /* Mut-Marke */
   ctx.fillStyle=P.gruen; ctx.fillRect(bx+Math.round(bw*TUNE.mutAb/100),by-1,1,6);
-  text('MUT',bx+Math.round(bw*TUNE.mutAb/100)-5,by+12,P.gruen);
-  text('PEGEL',bx+(bw-textW('PEGEL'))/2,by+6,P.dunkel);
+  /* PEGEL rechts neben dem Balken (Mitte der Balkenhoehe), MUT eigene Zeile darunter an der Marke: die
+     beiden Woerter beruehren sich nicht mehr (vorher y=12 und y=18 direkt uebereinander, PEGEL in dunkelgrau). */
+  text('PEGEL',bx+bw+5,by,P.dim);
+  text('MUT',bx+Math.round(bw*TUNE.mutAb/100)-5,by+8,P.gruen);
 
   /* Aufgabenliste. Erledigte werden durchgestrichen: die Linie waechst in
      TUNE.durchstrichSek. Versteckte stehen als ??? bis man sie erledigt. */
   let y=22;
+  /* Unterlage hinter der Liste: die Wand dahinter ist jetzt bunt, die Schrift muss lesbar bleiben. */
+  { let bm=0; for(const a of alleAufgaben()){ const n=(VERSTECKT.includes(a)&&!S.erledigt[a.id])?3:a.text.length; bm=Math.max(bm,n*4-1); }
+    ctx.fillStyle=P.listeGrund+'b0'; ctx.fillRect(2,y-3,bm+18,alleAufgaben().length*7+4); }
   for(const a of alleAufgaben()){
     const versteckt=VERSTECKT.includes(a);
     const ok=!!S.erledigt[a.id];
