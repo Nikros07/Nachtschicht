@@ -208,6 +208,17 @@ const TUNE = {
   /* (6) OPTIK */
   flackern:      true,
   staub:         true,
+  /* (6b) NACHT-KULISSE - Fenster, Pinnwaende, Fussleisten, Himmel ueber dem Dach, Keller darunter.
+     Alles ruhig und statisch (kein Flackern). Gemessen: tools/nachttest.js index, leere Bildzeilen. */
+  kulisse:       true,
+  fensterRaster: 120,    // Abstand der Wandfelder (Fenster/Pinnwand), versetzt zu den Lampen (60+120k)
+  fensterX0:     120,    // erstes Wandfeld
+  fensterMond:   0.07,   // Deckkraft des Mondlichtflecks unter den Fenstern
+  fensterFern:   0.32,   // Deckkraft der Kulisse auf fremden Etagen
+  fussleiste:    true,
+  dachHoehe:     70,     // Himmelsstreifen ueber dem obersten Flur
+  kellerHoehe:   64,     // Fundament unter dem Erdgeschoss
+  vignetteStaerke: 0.58, // Abdunkelung am Bildrand (vorher 0.72 - das untere Drittel war fast schwarz)
 };
 
 /* ---- Palette ---- */
@@ -216,6 +227,10 @@ const P = {
   weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#484263',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   licht:'#cfe3ff', tuer:'#5a4632', tuerHell:'#7a6244',
+  /* Nacht-Kulisse */
+  himmelOben:'#06081a', himmelUnten:'#26387a', mond:'#e8ecff', stadt:'#0a0d1c', stadtNah:'#10142a',
+  rahmen:'#3a3f5c', ziegel:'#1a141c', ziegelHell:'#251c28', rohr:'#2e3350', rohrHell:'#4a5278',
+  kork:'#3d2f22', mondlicht:'#a8c4ff', notgruen:'#1f8a54',
 };
 
 /* ==========================================================================
@@ -1756,10 +1771,106 @@ function zeichneAlles(dt){
 /* Ohne Tiefe stehen alle auf der Bodenlinie - kein Versatz. */
 const tiefeVersatz = t => tiefeAn()?Math.round(TUNE.tiefeBand*(1-Math.max(0,Math.min(1,t)))):0;
 
+
+/* ---- Nacht-Kulisse ----
+   Kleine, einmal gebackene Bilder (Fenster, Pinnwand, Notausgang, Himmel, Keller).
+   Zufall nur beim Backen, und dort ein fester Startwert - das Bild ist immer gleich. */
+function kulisseZufall(seed){ let z=seed>>>0; return ()=>{ z=(z*1664525+1013904223)>>>0; return z/4294967296; }; }
+/* Skyline: Hausreihe mit festen Fenstern (Gold), von hinten nach vorn. */
+function malStadt(g,w,yBasis,hMin,hMax,seed,farbe,fensterChance){
+  const R=kulisseZufall(seed); let x=0;
+  while(x<w){ const bw=3+Math.floor(R()*5), bh=hMin+Math.floor(R()*(hMax-hMin));
+    g.fillStyle=farbe; g.fillRect(x,yBasis-bh,bw,bh);
+    if(fensterChance>0) for(let yy=yBasis-bh+2; yy<yBasis-1; yy+=3) for(let xx=x+1; xx<x+bw-1; xx+=2)
+      if(R()<fensterChance){ g.fillStyle=P.gold; g.globalAlpha=.55; g.fillRect(xx,yy,1,1); g.globalAlpha=1; }
+    x+=bw; }
+}
+function fensterBild(v){
+  return verlauf('kulFenster'+v,18,16,g=>{
+    const gr=g.createLinearGradient(0,0,0,16); gr.addColorStop(0,P.himmelOben); gr.addColorStop(1,P.himmelUnten);
+    g.fillStyle=gr; g.fillRect(0,0,18,16);
+    const R=kulisseZufall(7+v*13); g.fillStyle=P.mond;
+    for(let i=0;i<5;i++){ g.globalAlpha=.5; g.fillRect(1+Math.floor(R()*16),1+Math.floor(R()*5),1,1); } g.globalAlpha=1;
+    if(v===0){ g.fillStyle=P.mond; g.fillRect(12,2,3,3); g.fillRect(11,3,5,1); g.fillStyle=P.himmelUnten; g.fillRect(14,3,1,1); }
+    malStadt(g,18,15,3,7,31+v*5,P.stadt,.25);
+    g.fillStyle=P.rahmen; g.fillRect(0,0,18,1); g.fillRect(0,0,1,16); g.fillRect(17,0,1,16); g.fillRect(0,15,18,1);
+    g.fillRect(8,0,2,16); g.fillRect(0,7,18,1);
+    g.fillStyle=P.rohrHell; g.fillRect(0,15,18,1); });
+}
+function pinnwandBild(){
+  return verlauf('kulPinn',18,14,g=>{
+    g.fillStyle=P.tuer; g.fillRect(0,0,18,14); g.fillStyle=P.kork; g.fillRect(1,1,16,12);
+    const zettel=[[2,2,5,6,P.dim],[8,2,4,4,P.neon2],[13,3,3,6,P.gold],[8,7,5,5,P.dim],[3,9,4,3,P.neon]];
+    for(const [x,y,w,h,c] of zettel){ g.globalAlpha=.55; g.fillStyle=c; g.fillRect(x,y,w,h); g.globalAlpha=1;
+      g.fillStyle=P.rot; g.fillRect(x+Math.floor(w/2),y,1,1); } });
+}
+function notausgangBild(){
+  return verlauf('kulNotaus',11,6,g=>{
+    g.fillStyle=P.ink; g.fillRect(0,0,11,6); g.fillStyle=P.notgruen; g.fillRect(1,1,9,4);
+    g.fillStyle=P.gruen; g.fillRect(2,3,2,1); g.fillRect(3,2,1,1); g.fillRect(4,3,1,2); g.fillRect(6,2,3,1); g.fillRect(8,2,1,3); g.fillRect(6,4,2,1); });
+}
+/* Himmel ueber dem obersten Flur: Sterne, Mond, Skyline, Dachkante. */
+function dachBild(){
+  return verlauf('kulDach',LEVEL_B,TUNE.dachHoehe,g=>{
+    const h=TUNE.dachHoehe, gr=g.createLinearGradient(0,0,0,h);
+    gr.addColorStop(0,P.himmelOben); gr.addColorStop(1,P.himmelUnten); g.fillStyle=gr; g.fillRect(0,0,LEVEL_B,h);
+    const R=kulisseZufall(99); g.fillStyle=P.mond;
+    for(let i=0;i<260;i++){ g.globalAlpha=.45+R()*.5; g.fillRect(Math.floor(R()*LEVEL_B),Math.floor(R()*(h-22)),1,1); } g.globalAlpha=1;
+    const mx=560,my=16, hof=g.createRadialGradient(mx,my,3,mx,my,22);
+    hof.addColorStop(0,'rgba(200,220,255,.25)'); hof.addColorStop(1,'rgba(200,220,255,0)'); g.fillStyle=hof; g.fillRect(mx-22,my-22,44,44);
+    g.fillStyle=P.mond; g.fillRect(mx-3,my-4,6,8); g.fillRect(mx-4,my-3,8,6); g.fillStyle=P.himmelUnten; g.fillRect(mx+1,my-3,2,2);
+    const yb=h-4; malStadt(g,LEVEL_B,yb,6,18,5,P.stadt,0); malStadt(g,LEVEL_B,yb,3,12,11,P.stadtNah,.22);
+    g.fillStyle=P.stadtNah; g.fillRect(380,yb-30,1,30); g.fillRect(377,yb-24,7,1); g.fillRect(150,yb-14,5,14); g.fillRect(149,yb-15,7,1); g.fillStyle=P.rot; g.fillRect(380,yb-31,1,1);
+    g.fillStyle=P.wandHell; g.fillRect(0,h-4,LEVEL_B,1); g.fillStyle=P.wand; g.fillRect(0,h-3,LEVEL_B,3);
+    g.fillStyle=P.ink; g.fillRect(0,h-1,LEVEL_B,1); });
+}
+/* Fundament unter dem Erdgeschoss: Ziegel, Rohre, Kellerfenster mit Mondstreifen. */
+function kellerBild(){
+  return verlauf('kulKeller',LEVEL_B,TUNE.kellerHoehe,g=>{
+    const h=TUNE.kellerHoehe; g.fillStyle=P.ziegel; g.fillRect(0,0,LEVEL_B,h);
+    for(let y=0,r=0;y<h;y+=4,r++){ g.fillStyle=P.ziegelHell; g.fillRect(0,y,LEVEL_B,1);
+      for(let x=(r%2)*6;x<LEVEL_B;x+=12) g.fillRect(x,y,1,4); }
+    for(const [y,hh] of [[14,3],[34,2]]){
+      g.fillStyle=P.rohr; g.fillRect(0,y,LEVEL_B,hh); g.fillStyle=P.rohrHell; g.fillRect(0,y,LEVEL_B,1);
+      g.fillStyle=P.ink; g.fillRect(0,y+hh,LEVEL_B,1);
+      g.fillStyle=P.rohrHell; for(let x=20;x<LEVEL_B;x+=70) g.fillRect(x,y-1,3,hh+2); }
+    g.fillStyle=P.rot; g.globalAlpha=.6; g.fillRect(300,10,5,1); g.fillRect(302,8,1,3); g.globalAlpha=1;
+    for(let x=90;x<LEVEL_B;x+=150){
+      g.fillStyle=P.ink; g.fillRect(x,2,14,7); g.fillStyle=P.himmelUnten; g.fillRect(x+1,3,12,5);
+      g.fillStyle=P.rahmen; g.fillRect(x+4,3,1,5); g.fillRect(x+9,3,1,5);
+      g.fillStyle=P.mondlicht; g.globalAlpha=.07; g.beginPath(); g.moveTo(x+1,9); g.lineTo(x+13,9); g.lineTo(x+26,h); g.lineTo(x+10,h); g.fill(); g.globalAlpha=1; }
+    const fade=g.createLinearGradient(0,0,0,h); fade.addColorStop(0,'rgba(7,6,13,.15)'); fade.addColorStop(1,'rgba(7,6,13,.5)');
+    g.fillStyle=fade; g.fillRect(0,0,LEVEL_B,h); });
+}
+const kulBild=(c,x,y)=>ctx.drawImage(c,Math.round(x),Math.round(y));
+/* Wandfelder einer Etage: Fenster mit Mond und Stadt, dazwischen Pinnwaende. */
+function zeichneWandfelder(e,by,fern){
+  const von=S.kamX-24, bis=S.kamX+W+24, deckeY=by-52;
+  ctx.globalAlpha=fern?TUNE.fensterFern:1;
+  let k=0;
+  for(let x=TUNE.fensterX0;x<LEVEL_B-TREPPE_L-20;x+=TUNE.fensterRaster,k++){
+    if(Math.abs(x-TREPPE_R)<30||x<von||x>bis) continue;
+    const art=(k+e)%3;
+    if(art===2){ kulBild(pinnwandBild(),x-9,deckeY+13); continue; }
+    kulBild(fensterBild(art),x-9,deckeY+9);
+    if(!fern){ ctx.globalAlpha=TUNE.fensterMond; ctx.fillStyle=P.mondlicht;
+      ctx.beginPath(); ctx.moveTo(x-9,deckeY+25); ctx.lineTo(x+9,deckeY+25);
+      ctx.lineTo(x+19,by-TUNE.tiefeBand); ctx.lineTo(x+1,by-TUNE.tiefeBand); ctx.fill(); ctx.globalAlpha=1; }
+  }
+  ctx.globalAlpha=fern?TUNE.fensterFern:1;
+  for(const tx of [TREPPE_L,TREPPE_R]){ const sx=tx+(tx<LEVEL_B/2?27:-38);
+    if(sx>von&&sx<bis) kulBild(notausgangBild(),sx,deckeY+14); }
+  ctx.globalAlpha=1;
+}
+
 function zeichneKorridor(){
   const kx=Math.round(S.kamX), ky=Math.round(S.kamY);
   ctx.save(); ctx.translate(-kx,-ky);
 
+  if(TUNE.kulisse){
+    ctx.drawImage(dachBild(),0,BODEN[BODEN.length-1]-52-TUNE.dachHoehe);
+    ctx.drawImage(kellerBild(),0,BODEN[0]+10);
+  }
   for(let e=0;e<BODEN.length;e++){
     const by=BODEN[e], deckeY=by-52;
     const fern = e!==S.etage;
@@ -1778,10 +1889,17 @@ function zeichneKorridor(){
     /* Fliesenmuster */
     ctx.fillStyle = fern?'#101320':'#191d2e';
     for(let x=0;x<LEVEL_B;x+=16) ctx.fillRect(x,by+3,8,1);
-    /* Wandkacheln */
-    if(!fern){ ctx.fillStyle=P.wandHell;
-      for(let x=0;x<LEVEL_B;x+=24) ctx.fillRect(x,deckeY+30,1,22);
-      ctx.fillRect(0,deckeY+30,LEVEL_B,1); }
+    /* Wandkacheln (auf fremden Etagen schwaecher: angedeutet, damit unten kein schwarzes Loch bleibt) */
+    ctx.fillStyle=fern?'#20243a':P.wandHell;
+    for(let x=0;x<LEVEL_B;x+=24) ctx.fillRect(x,deckeY+30,1,22);
+    ctx.fillRect(0,deckeY+30,LEVEL_B,1);
+    /* Fugen im Laufband - nur auf der eigenen Etage, ganz leise */
+    if(TUNE.kulisse&&!fern){ ctx.fillStyle='#1f2438'; for(let x=20;x<LEVEL_B;x+=40) ctx.fillRect(x,by-TUNE.tiefeBand+1,1,TUNE.tiefeBand-1); }
+    if(TUNE.kulisse){
+      zeichneWandfelder(e,by,fern);
+      if(TUNE.fussleiste){ ctx.fillStyle=fern?'#171a28':'#272b43'; ctx.fillRect(0,by-TUNE.tiefeBand-3,LEVEL_B,3);
+        ctx.fillStyle=fern?'#1b1e2e':'#363b5a'; ctx.fillRect(0,by-TUNE.tiefeBand-3,LEVEL_B,1); }
+    }
     /* Deckenlampen mit Flackern */
     for(let x=60;x<LEVEL_B;x+=120){
       const flack = TUNE.flackern ? (Math.sin(x*3.1+S.t*(x%7+3))>-.75?1:.25) : 1;
@@ -2036,7 +2154,7 @@ function zeichneKorridor(){
   /* Dunkelheit auf fremde Etagen */
   ctx.drawImage(verlauf('vignette',W,H,g=>{
     const gr=g.createRadialGradient(W/2,H*.6,40,W/2,H*.6,W*.62);
-    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.72)');
+    gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,'+TUNE.vignetteStaerke+')');
     g.fillStyle=gr; g.fillRect(0,0,W,H); }),0,0);
 
   /* Dunkelheit: Stromausfall oder die kaputte Etage.
