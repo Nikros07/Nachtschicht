@@ -153,12 +153,50 @@ const TUNE = {
     combo:   {schlecht:1,   gut:4,    punkte:20},  // beste Combo
     zeit:    {schlecht:150, gut:60,   punkte:15},  // Sekunden: weniger ist besser
   },
+  /* (11) DER ORT - Fassade, Schlange, Kordel, Laterne. Alles Zahlen in Bildpunkten (Bild 320x180).
+     Die Wand endet am Laufband (tiefeHinten-2); die Wartenden stehen HINTER der Kordel auf der Wandseite,
+     damit sie weder Spieler noch Tuersteher (Laufband y 122-160) noch HUD (y 0-36) verdecken. */
+  ort:{
+    himmelBis:   26,    // Himmel/Skyline oben, darunter beginnt die Fassade
+    ziegelB:     16,    // Ziegel: Breite / Hoehe (nur Struktur, haelt die Wand nicht leer)
+    ziegelH:      6,
+    tuerX:      236,    // Clubtuer: linke Kante, Breite, Hoehe (Unterkante = Wandfuss)
+    tuerB:       30,
+    tuerH:       40,
+    laterneX:   302,    // Strassenlaterne rechts neben der Tuer
+    laterneY:    52,    // Hoehe des Lampenkopfs
+    schildY:     37,    // Schildplatte unter dem HUD (HUD belegt y 0-36)
+    bassHz:       2,    // Bass-Schimmer der Tuer = Songtempo 120 bpm; FX.hz klemmt, FX.ruhig() = still
+    bassStaerke: .10,   // Schwankung der Tuerhelligkeit (Alpha-Anteil), bewusst klein
+    skyline:    [[0,9,11],[9,7,16],[16,10,8],[26,8,14],[40,12,19],[56,9,10],[71,8,15],[84,12,9],[101,9,17],[118,10,12],
+                 [136,9,8],[150,8,14],[170,12,18],[186,9,10],[205,8,15],[220,12,9],[250,9,17],[262,10,12],[278,12,19],[296,9,11],[308,12,15]],
+    fenster:    [[24,40],[44,40],[64,40],[262,40],[282,40]],  // beleuchtete Fenster in der Wand: x, y (je 10x12)
+    plakate:    [[96,64,'LIVE','#ff3d8b'],[122,70,'DJ','#42d9ff'],[190,56,'HOUSE','#ffd447'],[204,80,'OPEN','#48e08a']],
+    graffiti:   [[28,92,'#42d9ff'],[150,88,'#ff3d8b']],         // Zickzack-Tags: x, y, Farbe
+    pfostenAb:   14,    // Absperrpfosten: erster x, Abstand
+    pfostenAbst: 46,
+    kordelHang:   3,    // Durchhang der Kordel
+    /* Die Schlange: zwei Reihen, Fuss-y relativ zur Wandkante. Alles Weitere folgt deterministisch aus dem Index. */
+    reihen:     [{fuss:-1, x0:6,  abst:13, n:17},   // vordere Reihe
+                 {fuss:-8, x0:12, abst:14, n:16}],  // hintere Reihe (gestaffelt)
+    typen:      ['normal','klein','gross','normal'],
+    handyJeN:     3,    // jede n-te Person schaut aufs Handy
+    wechselMin:  2.2,   // Gewicht verlagern: Wechselzeit in Sekunden (je Person +0.25*(h%7)); langsam, kein Flackern
+    handyPuls:   .06,   // Schwankung des Handylichts im Gesicht
+    handyBasis:  .14,
+    kampfDimm:   .38,   // im Kampf: Schlange dunkler und ohne Bewegung - die Augen gehoeren dem Zweikampf
+  },
 };
 
 const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Ort (Level 4) */
+  himmel:'#0b0a1a', skyline:'#120e22', skylineFenster:'#3a2f5c', wand:'#1c1630', wandHell:'#221a3a', fuge:'#120e20',
+  gesims:'#0f0c1a', tuerRahmen:'#0c0a14', tuerInnen:'#2a1030', tuerLicht:'#ff8fc4', schildPlatte:'#0d0a18',
+  fensterLicht:'#3d2a52', laterne:'#ffd9a0', mast:'#2b2540', chrom:'#b8b0d0', kordel:'#c4285e',
+  laneFuge:'#251d35', platte:'#171126', plattenFuge:'#2a2140',
 };
 
 /* ==========================================================================
@@ -175,7 +213,12 @@ const KEY={ k:'#08060f', s:'#e8b088', h:'#2a1c14', w:'#f2f0ff',
   g:'#ffd447', n:'#ff3d8b', c:'#42d9ff', r:'#ff4d4d', d:'#4a4363', p:'#2b2b48',
   o:'#a8681f', e:'#20182e', u:'#8c94ad', z:'#5a4632',
   /* Tuersteher: schwarzer Anzug, Glatze, Sonnenbrille */
-  b:'#191420', x:'#0c0a12', y:'#c99a6a' };
+  b:'#191420', x:'#0c0a12', y:'#c99a6a',
+  /* Wartende: gedaempft, damit die Spielfigur (weisses Hemd) heraussticht.
+     A-F Jacken, G-J Haare, S Haut, P Hose, K Schuhe, L Handylicht */
+  A:'#3a2f5c', B:'#5c2e4a', C:'#2e4a5c', D:'#4a4a38', E:'#52305c', F:'#2e5c4a',
+  G:'#14100c', H:'#4a2c18', I:'#7a5a2e', J:'#6a6a78',
+  S:'#a37458', P:'#1e1c34', K:'#0d0a16', L:'#9aeaff' };
 
 
 /* ==========================================================================
@@ -795,6 +838,166 @@ function update(dt){
   if(S.modus==='cutscene'){ cutscene(dt); return; }
 }
 
+
+/* ==========================================================================
+   DER ORT: Fassade, Kordel, Schlange (alles aus TUNE.ort; statische Teile einmal gebacken)
+   ========================================================================== */
+const WAND_FUSS=TUNE.tiefeHinten-2;
+/* Koerper-Vorlagen der Wartenden: J Jacke, P Hose, S Haut, K Schuhe, L Handy. Zwei Standbilder je Person (Gewicht links/rechts). */
+const WARTE_KOERPER={
+  normal:{ a:['..JJJ..','.JJJJJ.','S.JJJ.S','..JJJ..','..PPP..','..P.P..','.PP.PP.','.KK.KK.'],
+           b:['..JJJ..','.JJJJJ.','S.JJJ.S','..JJJ..','..PPP..','..PP...','.PP.P..','.KK.K..'] },
+  klein: { a:['..JJJ..','.JJJJJ.','S.JJJ.S','..PPP..','..P.P..','.PP.PP.','.KK.KK.'],
+           b:['..JJJ..','.JJJJJ.','S.JJJ.S','..PPP..','..PP...','.PP.P..','.KK.K..'] },
+  gross: { a:['..JJJ..','.JJJJJ.','S.JJJ.S','.JJJJJ.','..JJJ..','..PPP..','..P.P..','.PP.PP.','.KK.KK.'],
+           b:['..JJJ..','.JJJJJ.','S.JJJ.S','.JJJJJ.','..JJJ..','..PPP..','..PP...','.PP.P..','.KK.K..'] },
+};
+const _warteRows=new Map();
+function warteRows(typ,jk,hr,handy){
+  const k=typ+jk+hr+(handy?1:0); let r=_warteRows.get(k);
+  if(!r){
+    const ers=z=>z.replace(/J/g,jk);
+    const kopf=['..HHH..','.HSSSH.','.SSSSS.','..SSS..'].map(z=>z.replace(/H/g,hr));
+    const kb=WARTE_KOERPER[typ], mach=rows=>rows.map((z,i)=>{ z=ers(z);
+      /* Handy: der Arm hebt sich vors Gesicht, ein helles Pixel darunter */
+      return handy&&i===1?'.'+jk+jk+jk+'SL':z; });
+    r={kopf, a:mach(kb.a), b:mach(kb.b)};
+    _warteRows.set(k,r);
+  }
+  return r;
+}
+/* Die Schlange aus TUNE.ort.reihen - Zufall nur beim Aufbau, nie je Bild (Hash aus dem Index). */
+const WARTENDE=(function(){
+  const O=TUNE.ort, liste=[];
+  O.reihen.forEach((rh,ri)=>{
+    for(let i=0;i<rh.n;i++){
+      const h=(i*37+ri*11+5)%97;
+      liste.push({ x:rh.x0+i*rh.abst, fuss:WAND_FUSS+rh.fuss, reihe:ri,
+        typ:O.typen[h%O.typen.length], jk:'ABCDEF'[(h>>1)%6], hr:'GHIJ'[h%4],
+        handy:(h%O.handyJeN)===0, spiegel:(i%5===2||i%5===3),
+        ph:(h%17)/17*6.28, per:O.wechselMin+(h%7)*.25 });
+    }
+  });
+  return liste.sort((a,b)=>b.reihe-a.reihe||a.x-b.x);   // hintere Reihe zuerst
+})();
+
+function ortLinie(g,x0,y0,x1,y1,col){
+  g.fillStyle=col; const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))||1;
+  for(let i=0;i<=n;i++) g.fillRect(Math.round(x0+(x1-x0)*i/n),Math.round(y0+(y1-y0)*i/n),1,1);
+}
+/* Statischer Hintergrund: Himmel, Skyline, Fassade, Tuer, Plakate, Laterne, Gehweg. Einmal gebacken. */
+function malOrtHinten(g){
+  const O=TUNE.ort, WF=WAND_FUSS;
+  g.fillStyle=P.himmel; g.fillRect(0,0,W,O.himmelBis);
+  for(let i=0;i<40;i++){ g.fillStyle=i%5===0?'#ffffff44':'#ffffff1c'; g.fillRect((i*57)%W,4+(i*31)%(O.himmelBis-8),1,1); }
+  O.skyline.forEach(([x,w,h],i)=>{ g.fillStyle=P.skyline; g.fillRect(x,O.himmelBis-h,w,h);
+    for(let fy=O.himmelBis-h+2;fy<O.himmelBis-2;fy+=4) for(let fx=x+1;fx<x+w-1;fx+=3)
+      if((fx*7+fy*3+i)%5<2){ g.fillStyle=P.skylineFenster; g.fillRect(fx,fy,1,2); } });
+  /* Wand mit versetzten Ziegeln */
+  g.fillStyle=P.wand; g.fillRect(0,O.himmelBis,W,WF-O.himmelBis);
+  for(let r=0,y=O.himmelBis+3;y<WF;r++,y+=O.ziegelH){
+    g.fillStyle=P.fuge; g.fillRect(0,y,W,1);
+    for(let c=0,x=(r%2)*(O.ziegelB>>1);x<W+O.ziegelB;c++,x+=O.ziegelB){
+      g.fillStyle=P.fuge; g.fillRect(x,y+1,1,O.ziegelH-1);
+      if((r*3+c*5)%4===0){ g.fillStyle=P.wandHell; g.fillRect(x+1,y+1,O.ziegelB-1,O.ziegelH-1); } }
+  }
+  g.fillStyle=P.gesims; g.fillRect(0,O.himmelBis,W,3);
+  g.fillStyle=P.skyline; g.fillRect(0,O.himmelBis+3,W,1);
+  /* Fenster */
+  O.fenster.forEach(([x,y])=>{ g.fillStyle=P.tuerRahmen; g.fillRect(x-1,y-1,12,14);
+    g.fillStyle=P.fensterLicht; g.fillRect(x,y,10,12);
+    g.fillStyle=P.tuerRahmen; g.fillRect(x+4,y,1,12); g.fillRect(x,y+5,10,1); });
+  /* Plakate und Graffiti */
+  O.plakate.forEach(([x,y,wort,col])=>{ const w=wort.length*4+3;
+    g.fillStyle='#e8e4f4'; g.fillRect(x,y,w,20); g.fillStyle='#0d0a18'; g.fillRect(x+1,y+1,w-2,18);
+    g.fillStyle=col; g.fillRect(x+1,y+1,w-2,3); textTo(g,wort,x+2,y+8,col,1);
+    g.fillStyle=P.dim; g.fillRect(x+2,y+15,w-4,1); g.fillRect(x+2,y+17,(w-4)>>1,1); });
+  O.graffiti.forEach(([x,y,col])=>{ g.globalAlpha=.6;
+    [[0,6,4,0],[4,0,8,8],[8,8,13,1],[13,1,17,9],[17,9,22,3]].forEach(l=>ortLinie(g,x+l[0],y+l[1],x+l[2],y+l[3],col));
+    ortLinie(g,x,y+11,x+22,y+12,col); g.globalAlpha=1; });
+  /* Tuer: Rahmen, Vordach, Innenlicht, Stufen */
+  const tx=O.tuerX, ty=WF-O.tuerH;
+  g.fillStyle=P.tuerRahmen; g.fillRect(tx-3,ty-5,O.tuerB+6,O.tuerH+5);
+  g.fillStyle=P.gesims; g.fillRect(tx-6,ty-8,O.tuerB+12,4);
+  g.fillStyle=P.laterne; g.fillRect(tx-4,ty-4,2,1); g.fillRect(tx+O.tuerB+2,ty-4,2,1);
+  g.fillStyle=P.tuerInnen; g.fillRect(tx,ty,O.tuerB,O.tuerH);
+  g.fillStyle=P.neon; g.globalAlpha=.35; g.fillRect(tx+2,ty+2,O.tuerB-4,O.tuerH-2); g.globalAlpha=1;
+  g.fillStyle=P.tuerLicht; g.fillRect(tx+(O.tuerB>>1)-1,ty+2,2,O.tuerH-2);   // Spalt, durch den der Bass kommt
+  g.fillStyle=P.tuerRahmen; g.fillRect(tx+(O.tuerB>>1)-3,ty+O.tuerH*.5,1,3); g.fillRect(tx+(O.tuerB>>1)+2,ty+O.tuerH*.5,1,3);
+  textTo(g,'AB 18',tx+(O.tuerB>>1)-9,ty-6,P.dim,1);
+  g.fillStyle=P.gesims; g.fillRect(tx-3,WF-1,O.tuerB+6,1);
+  /* Schildplatte hinter CLUB */
+  g.fillStyle=P.schildPlatte; g.fillRect(W/2-34,O.schildY,68,16);
+  g.fillStyle=P.neon; g.globalAlpha=.4; g.fillRect(W/2-34,O.schildY,68,1); g.fillRect(W/2-34,O.schildY+15,68,1); g.globalAlpha=1;
+  /* Strassenlaterne: Mast, Arm, Kopf, warmes Licht (statisch - kein Flackern) */
+  const lx=O.laterneX, ly=O.laterneY;
+  g.fillStyle=P.mast; g.fillRect(lx,ly,2,WF-ly); g.fillRect(lx-8,ly,10,2); g.fillRect(lx-3,WF-3,8,3);
+  g.fillStyle=P.laterne; g.fillRect(lx-12,ly+1,6,2);
+  const gl=verlauf('laterne',70,70,q=>{ const gr=q.createRadialGradient(35,35,2,35,35,35);
+    gr.addColorStop(0,'rgba(255,217,160,.55)'); gr.addColorStop(1,'rgba(255,217,160,0)'); q.fillStyle=gr; q.fillRect(0,0,70,70); });
+  g.drawImage(gl,lx-9-35,ly+2-35);
+  /* Gehweg unter dem Laufband (y>=160 bleibt sichtbar): Platten mit Fugen */
+  g.fillStyle=P.platte; g.fillRect(0,WF,W,H-WF);
+  for(let r=0,y=WF+2;y<H;r++,y+=8){ g.fillStyle=P.plattenFuge; g.fillRect(0,y,W,1);
+    for(let x=(r%2)*14;x<W;x+=28) g.fillRect(x,y+1,1,7); }
+}
+/* Statisch VOR dem Laufband-Untergrund: Pflaster im Laufband, Lichtpfuetze vor der Tuer, Pfosten mit Kordel. */
+function malOrtVorn(g){
+  const O=TUNE.ort, WF=WAND_FUSS, y1=bodenY(1)+4;
+  /* Pflaster im Laufband - sehr leise, damit Figuren klar bleiben */
+  for(let r=0,y=WF+6;y<y1;r++,y+=10){ g.fillStyle=P.laneFuge; for(let x=(r%2)*16;x<W;x+=32) g.fillRect(x,y,1,9); }
+  /* Lichtpfuetze der Tuer */
+  const pf=verlauf('tuerpfuetze',120,50,q=>{ const gr=q.createRadialGradient(60,0,2,60,0,60);
+    gr.addColorStop(0,'rgba(255,100,180,.22)'); gr.addColorStop(1,'rgba(255,100,180,0)');
+    q.fillStyle=gr; q.fillRect(0,0,120,50); });
+  g.drawImage(pf,O.tuerX+(O.tuerB>>1)-60,WF);
+  /* Pfosten und Kordel vor der Schlange */
+  const xs=[]; for(let x=O.pfostenAb;x<W;x+=O.pfostenAbst) xs.push(x);
+  xs.forEach((x,i)=>{
+    g.fillStyle=P.chrom; g.fillRect(x,WF-12,2,12);
+    g.fillStyle=P.gold; g.fillRect(x-1,WF-14,4,2);
+    g.fillStyle=P.dunkel; g.fillRect(x-1,WF-1,4,1);
+    if(i<xs.length-1){ const x2=xs[i+1]; g.fillStyle=P.kordel;
+      for(let xx=x+3;xx<x2;xx++){ const u=(xx-x)/(x2-x);
+        g.fillRect(xx,WF-11+Math.round(O.kordelHang*4*u*(1-u)),1,1); } }
+  });
+}
+function zeichneWartende(ruhig){
+  const O=TUNE.ort, t=S.t;
+  for(const p of WARTENDE){
+    const r=warteRows(p.typ,p.jk,p.hr,p.handy);
+    const f=ruhig?0:(Math.floor(t/p.per+p.ph)%2+2)%2;
+    const rows=f?r.b:r.a, hoch=r.kopf.length+rows.length;
+    const y=p.fuss-hoch, dx=f?1:0;
+    const flip=p.spiegel?spriteFlip:sprite;
+    flip(r.kopf,p.x,y); flip(rows,p.x+(p.spiegel?-dx:dx),y+r.kopf.length);
+    if(p.handy){
+      const a=ruhig?O.handyBasis:O.handyBasis+Math.sin(t*1.3+p.ph)*O.handyPuls;
+      ctx.fillStyle=`rgba(120,225,255,${a.toFixed(3)})`; ctx.fillRect(p.x+(p.spiegel?1:1),y+1,5,3);
+    }
+  }
+}
+/* Hintergrund pro Bild: gebackene Ebene + Schild + Tuerschimmer + Schlange. */
+function zeichneOrt(){
+  const O=TUNE.ort, ruhig=S.modus==='kampf'||FX.ruhig();
+  ctx.drawImage(verlauf('orthinten',W,H,malOrtHinten),0,0);
+  /* Neonschild */
+  const puls=ruhig?.5:(Math.sin(S.t*FX.hz(.8)*6.283)*.5+.5);
+  ctx.globalAlpha=.16+puls*.14;
+  ctx.drawImage(verlauf('clublicht',220,90,g=>{
+    const gr=g.createRadialGradient(110,10,4,110,10,90);
+    gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
+    g.fillStyle=gr; g.fillRect(0,0,220,90); }),W/2-110,34);
+  ctx.globalAlpha=1;
+  textGlowC('CLUB',O.schildY+5,P.neon,2);
+  /* Bass-Schimmer aus der Tuer: Beat ueber FX.hz (Flackerschutz: gedeckelt), unter FX.ruhig() gleichmaessig */
+  const bass=FX.ruhig()?.5:Math.pow(Math.max(0,Math.sin(S.t*FX.hz(O.bassHz)*6.283)),2);
+  ctx.fillStyle=`rgba(255,120,190,${(.10+bass*O.bassStaerke).toFixed(3)})`;
+  ctx.fillRect(O.tuerX,WAND_FUSS-O.tuerH,O.tuerB,O.tuerH);
+  zeichneWartende(ruhig);
+  if(S.modus==='kampf'){ ctx.fillStyle=`rgba(8,6,15,${O.kampfDimm})`; ctx.fillRect(0,WAND_FUSS-30,W,30); }
+}
+
 /* ==========================================================================
    ZEICHNEN
    ========================================================================== */
@@ -824,42 +1027,7 @@ function draw(dt){
   erzaehlZeichne();
 }
 
-function zeichneKulisse(){
-  /* Nachthimmel */
-  ctx.fillStyle='#0b0a1a'; ctx.fillRect(0,0,W,BODEN);
-  for(let i=0;i<40;i++){ ctx.fillStyle=i%5===0?'#ffffff44':'#ffffff1c';
-    ctx.fillRect((i*57)%W,4+(i*31)%(BODEN-40),1,1); }
-  /* Fassade */
-  ctx.fillStyle='#171224'; ctx.fillRect(0,18,W,BODEN-18);
-  ctx.fillStyle='#0f0c1a'; ctx.fillRect(0,18,W,3);
-  /* Neonschild CLUB - bewusst UNTER der HUD-Zeile (Herzen, Lebensbalken,
-     Angriffsname, Ausholbalken belegen y 0-36), sonst ueberlappt sich das
-     Schild mit dem Kampf-HUD. */
-  const puls=(Math.sin(S.t*5)*.5+.5);
-  ctx.globalAlpha=.16+puls*.14;
-  ctx.drawImage(verlauf('clublicht',220,90,g=>{
-    const gr=g.createRadialGradient(110,10,4,110,10,90);
-    gr.addColorStop(0,'rgba(255,60,180,1)'); gr.addColorStop(1,'rgba(255,60,180,0)');
-    g.fillStyle=gr; g.fillRect(0,0,220,90); }),W/2-110,34);
-  ctx.globalAlpha=1;
-  textGlowC('CLUB',42,P.neon,2);
-  /* Boden */
-  ctx.fillStyle=P.boden; ctx.fillRect(0,BODEN,W,H-BODEN);
-  ctx.fillStyle=P.bodenKante; ctx.fillRect(0,BODEN,W,1);
-  for(let x=0;x<W;x+=14) { ctx.fillStyle='#00000033'; ctx.fillRect(x,BODEN+5,7,1); }
-
-  /* Die Schlange - Silhouetten, die um die Ecke warten */
-  for(let i=0;i<7;i++){
-    const x=8+i*11, wippe=Math.sin(S.t*2+i)*1;
-    ctx.fillStyle='#0d0a16';
-    ctx.fillRect(x,BODEN-11+wippe,3,4); ctx.fillRect(x-1,BODEN-7+wippe,5,7);
-  }
-  /* Absperrung vor dem Boss */
-  const px=Math.round(W*0.46), py=Math.round(W*0.78);
-  sprite(SPR.absperrpfosten,px,BODEN-14);
-  sprite(SPR.absperrpfosten,py,BODEN-14);
-  ctx.fillStyle=P.neon; ctx.fillRect(px+4,BODEN-13,py-px-4,1);
-}
+function zeichneKulisse(){ zeichneOrt(); }
 
 function zeichneArena(){
   zeichneKulisse();
@@ -870,11 +1038,8 @@ function zeichneArena(){
   ctx.fillRect(0,bodenY(0)-2,W,bodenY(1)-bodenY(0)+6);
   ctx.fillStyle='#2b2340'; ctx.fillRect(0,bodenY(0)-2,W,1);
   ctx.fillStyle='#0d0a16'; ctx.fillRect(0,bodenY(1)+3,W,1);
-  /* Absperrung hinten - macht die hintere Grenze lesbar */
-  for(let x=6;x<W;x+=26){
-    ctx.fillStyle='#3a3152'; ctx.fillRect(x,bodenY(0)-9,1,8);
-    ctx.fillStyle='#4a3f66'; ctx.fillRect(x,bodenY(0)-10,2,1);
-  }
+  /* Pflaster, Lichtpfuetze, Pfosten mit Kordel: machen die hintere Grenze lesbar */
+  ctx.drawImage(verlauf('ortvorn',W,H,malOrtVorn),0,0);
 
   /* Erst NACH dem Boden: die Spuren und die Marke unter dem Gegner wurden
      sonst vom Laufband wieder uebermalt. */
