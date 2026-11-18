@@ -216,6 +216,10 @@ const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Kulisse des Endkampfs (gedaempft, damit Kaempfer und Balken vorne bleiben) */
+  fensterG:'#ffd447', lampe:'#ffe9a0', hausDunkel:'#141224', hausMittel:'#1e1a30',
+  stein:'#3a2326', steinFuge:'#2a1a1d', stahl:'#2b2a3c', stahlHell:'#4a4863',
+  container:'#2a4a38', baustelle:'#e0873a', beton:'#3a3640', sandBoden:'#4a3a28',
 };
 
 /* ==========================================================================
@@ -1862,23 +1866,232 @@ function beendeGrossenKampf(gewonnen){
 }
 
 /* ---- Zeichnen ---- */
+/* ---- Kulisse des Endkampfs ----
+   Jede Arena ist ein eigener Ort und wird EINMAL in eine Leinwand gemalt
+   (verlauf()-Cache, Schluessel enthaelt die Bildbreite). Alles ist aus
+   Zahlen berechnet, nie zufaellig - das Bild steht von Bild zu Bild gleich.
+   Bewusst gedaempft: Kaempfer, Balken und Ansagen bleiben die hellsten Dinge.
+   Die Daemmerung steigt mit der Runde: Nacht, Hof im Zwielicht, Sonnenaufgang. */
+const KULISSE8 = {
+  horizont: 118,                       // = KAMPF8.tiefeHinten, ab hier ist Boden
+  fensterAlpha: 0.5,                   // Fenster-Gold der Haeuser (gedaempft)
+  kegelAlpha: 0.2,                     // Laternen-/Lampenlicht
+  dampfAlpha: 0.11, dampfSek: 5,       // Gullydampf: ein Puff, langsam, ohne Blinken
+};
+
+function rechteck8(x,c,a,b,w,h){ x.fillStyle=c; x.fillRect(Math.round(a),Math.round(b),Math.round(w),Math.round(h)); }
+function himmelVerlauf8(x,w,oben,unten,bis){
+  const g=x.createLinearGradient(0,0,0,bis); g.addColorStop(0,oben); g.addColorStop(1,unten);
+  x.fillStyle=g; x.fillRect(0,0,w,bis);
+}
+function sterne8(x,w,n,bisY){
+  for(let i=0;i<n;i++){ x.fillStyle=i%5===0?'#ffffff99':'#ffffff44';
+    x.fillRect((i*47+13)%w,(i*29)%bisY+3,1,1); }
+}
+/* Lichtkegel: Dreieck von (lx,ly) nach unten, nach unten hin durchsichtig. */
+function kegel8(x,lx,ly,breite,tief,farbe,alpha){
+  const g=x.createLinearGradient(0,ly,0,ly+tief);
+  g.addColorStop(0,'rgba('+farbe+','+alpha+')'); g.addColorStop(1,'rgba('+farbe+',0)');
+  x.fillStyle=g; x.beginPath(); x.moveTo(lx-1,ly); x.lineTo(lx+1,ly);
+  x.lineTo(lx+breite,ly+tief); x.lineTo(lx-breite,ly+tief); x.closePath(); x.fill();
+}
+function glut8(x,cx,cy,r,farbe,alpha){
+  const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+  g.addColorStop(0,'rgba('+farbe+','+alpha+')'); g.addColorStop(1,'rgba('+farbe+',0)');
+  x.fillStyle=g; x.fillRect(cx-r,cy-r,r*2,r*2);
+}
+/* Fensterraster eines Hauses: einige hell, einige dunkel (aus Index berechnet). */
+function fenster8(x,bx,by,bw,bh,seed,hell){
+  for(let wy=by+6,j=0;wy<by+bh-6;wy+=10,j++)
+    for(let wx=bx+5,i=0;wx<bx+bw-8;wx+=12,i++){
+      const an=((seed*7+i*5+j*3)%5)<2;
+      rechteck8(x,an?'rgba(255,212,71,'+hell+')':'rgba(0,0,0,.28)',wx,wy,5,6);
+      if(an) rechteck8(x,'rgba(255,255,255,.1)',wx,wy,5,1);
+    }
+}
+function haeuserReihe8(x,w,yh,farbe,hmin,hspan,breite,seed,hell){
+  for(let i=0,bx=-8;bx<w;i++){
+    const bw=breite+((i*13+seed)%3)*8, bh=hmin+((i*53+seed*17)%hspan);
+    rechteck8(x,farbe,bx,yh-bh,bw,bh);
+    rechteck8(x,'rgba(255,255,255,.05)',bx,yh-bh,bw,1);
+    if(hell>0) fenster8(x,bx,yh-bh,bw,bh,i+seed,hell);
+    bx+=bw;
+  }
+}
+function laterne8(x,lx,yh,hoehe){
+  rechteck8(x,P.stahl,lx,yh-hoehe,1,hoehe);
+  rechteck8(x,P.stahl,lx-2,yh-hoehe,6,1);
+  kegel8(x,lx+1,yh-hoehe+1,26,hoehe+8,'255,233,160',KULISSE8.kegelAlpha);
+  glut8(x,lx+1,yh-hoehe+1,9,'255,233,160',.28);
+  rechteck8(x,P.lampe,lx-1,yh-hoehe,4,2);
+  glut8(x,lx+1,yh+9,26,'255,233,160',.08);          // Lichtfleck auf dem Boden
+}
+function tonne8(x,tx,yh,farbe){
+  rechteck8(x,farbe,tx,yh-12,9,12); rechteck8(x,'rgba(255,255,255,.12)',tx,yh-12,9,1);
+  rechteck8(x,'rgba(0,0,0,.35)',tx+1,yh-8,7,1); rechteck8(x,'rgba(0,0,0,.35)',tx+1,yh-4,7,1);
+  rechteck8(x,'#4a4863',tx-1,yh-14,11,2);
+}
+function auto8(x,ax,yh){
+  rechteck8(x,'#25263e',ax,yh-11,44,8);                // Karosserie
+  rechteck8(x,'#25263e',ax+9,yh-17,26,7);              // Dach
+  rechteck8(x,'#3a4766',ax+11,yh-16,10,5); rechteck8(x,'#3a4766',ax+23,yh-16,10,5);   // Scheiben
+  rechteck8(x,'rgba(255,255,255,.1)',ax,yh-11,44,1);
+  rechteck8(x,'#ffd44799',ax+42,yh-9,2,2);             // Scheinwerfer
+  glut8(x,ax+44,yh-8,9,'255,212,71',.14);
+  rechteck8(x,'#0a0912',ax+6,yh-4,8,5); rechteck8(x,'#0a0912',ax+30,yh-4,8,5);        // Raeder
+  rechteck8(x,'#5a5878',ax+9,yh-2,2,2); rechteck8(x,'#5a5878',ax+33,yh-2,2,2);
+}
+
+/* RUNDE 1 - DIE STRASSE: Nacht, Mond, beleuchtete Haeuser, Laternen */
+function malStrasse8(x,w,h){
+  const yh=KULISSE8.horizont;
+  himmelVerlauf8(x,w,'#0b0f2a','#2a1a40',yh);
+  sterne8(x,w,70,60);
+  x.fillStyle='#d8dcee'; x.beginPath(); x.arc(Math.round(w*0.76),34,8,0,Math.PI*2); x.fill();
+  x.fillStyle='#0f1030'; x.beginPath(); x.arc(Math.round(w*0.76)+4,31,7,0,Math.PI*2); x.fill();
+  glut8(x,Math.round(w*0.76),34,26,'216,220,238',.1);
+  haeuserReihe8(x,w,yh-12,P.hausDunkel,38,32,34,1,KULISSE8.fensterAlpha*0.6);
+  haeuserReihe8(x,w,yh,P.hausMittel,24,26,46,5,KULISSE8.fensterAlpha);
+  for(const f of [0.2,0.55,0.88]) laterne8(x,Math.round(w*f),yh,44);
+  tonne8(x,Math.round(w*0.06),yh,'#2c3a34'); tonne8(x,Math.round(w*0.06)+12,yh,'#34303e');
+  auto8(x,Math.round(w*0.66),yh);
+  rechteck8(x,'#3a2f4e',0,yh-2,w,2);                   // Bordstein
+  const gb=x.createLinearGradient(0,yh,0,h); gb.addColorStop(0,'#241d30'); gb.addColorStop(1,'#14101c');
+  x.fillStyle=gb; x.fillRect(0,yh,w,h-yh);
+  for(let px=4;px<w;px+=28) rechteck8(x,'rgba(255,255,255,.07)',px,yh+26,12,1);   // Fahrbahnmarkierung
+  const gx=Math.round(w*0.42);                          // Gullydeckel
+  rechteck8(x,'#0c0a14',gx,yh+7,14,4);
+  for(let i=1;i<14;i+=3) rechteck8(x,'#3a3050',gx+i,yh+7,1,4);
+}
+/* RUNDE 2 - DER HINTERHOF: Backsteinwand, Feuertreppe, Container, Lampe ueber der Tuer */
+function malHinterhof8(x,w,h){
+  const yh=KULISSE8.horizont;
+  himmelVerlauf8(x,w,'#101a30','#2a2a44',16);           // schmaler Himmelsstreifen
+  rechteck8(x,P.stein,0,14,w,yh-14);
+  for(let by=14,j=0;by<yh;by+=4,j++){                   // Fugen
+    rechteck8(x,P.steinFuge,0,by,w,1);
+    for(let bx=(j%2)*6;bx<w;bx+=12) rechteck8(x,P.steinFuge,bx,by,1,4);
+  }
+  for(let i=0;i<46;i++){ const bx=(i*37)%w, by=14+(i*23)%(yh-20);   // einzelne hellere Steine
+    rechteck8(x,'rgba(255,255,255,.05)',bx,by,10,3); }
+  const dunkel=x.createLinearGradient(0,14,0,yh);       // nach oben dunkler: ruhig hinter HUD
+  dunkel.addColorStop(0,'rgba(8,6,15,.7)'); dunkel.addColorStop(1,'rgba(8,6,15,.1)');
+  x.fillStyle=dunkel; x.fillRect(0,14,w,yh-14);
+  rechteck8(x,'#1a1420',0,12,w,3); rechteck8(x,'#2e2638',0,12,w,1);   // Dachkante
+  rechteck8(x,'#2a2634',Math.round(w*0.46),14,3,yh-14);               // Fallrohr
+  // Fenster mit Licht
+  for(const [f,y,an] of [[0.12,36,true],[0.12,64,false],[0.84,40,true]]){
+    const fx=Math.round(w*f);
+    rechteck8(x,'#0c0a14',fx-1,y-1,12,16);
+    rechteck8(x,an?'rgba(255,212,71,.5)':'#14121e',fx,y,10,14);
+    rechteck8(x,'rgba(0,0,0,.45)',fx+4,y,1,14); rechteck8(x,'rgba(0,0,0,.45)',fx,y+6,10,1);
+  }
+  // Feuertreppe
+  const fx0=Math.round(w*0.56);
+  for(const [py,off] of [[48,0],[74,18],[100,0]]){
+    rechteck8(x,P.stahl,fx0+off-4,py,44,2); rechteck8(x,P.stahlHell,fx0+off-4,py,44,1);
+    for(let r=0;r<=44;r+=6) rechteck8(x,P.stahl,fx0+off-4+r,py-8,1,8);
+    rechteck8(x,P.stahl,fx0+off-4,py-8,44,1);
+  }
+  for(const [ya,xa,rev] of [[48,fx0+34,false],[74,fx0+14,true]]){   // Treppen
+    for(let k=0;k<26;k++){ const sx=rev?xa+k*1:xa-k*1; rechteck8(x,P.stahl,sx,ya+k,3,1); }
+  }
+  rechteck8(x,P.stahl,fx0+38,100,1,18);                              // Leiter bis zum Boden
+  // Tuer mit Lampe darueber
+  const tx=Math.round(w*0.27);
+  rechteck8(x,'#14101a',tx-1,yh-34,18,35); rechteck8(x,'#2a2230',tx,yh-33,16,33);
+  rechteck8(x,'#3a3046',tx+11,yh-17,2,2);
+  kegel8(x,tx+8,yh-44,30,50,'255,200,90',KULISSE8.kegelAlpha+0.04);
+  glut8(x,tx+8,yh-43,22,'255,200,90',.22);
+  rechteck8(x,P.stahl,tx+4,yh-46,8,3); rechteck8(x,P.lampe,tx+5,yh-44,6,2);
+  // Container
+  const cx=Math.round(w*0.8);
+  rechteck8(x,'#18281f',cx-1,yh-27,47,28); rechteck8(x,P.container,cx,yh-26,45,26);
+  for(let r=3;r<45;r+=5) rechteck8(x,'rgba(0,0,0,.3)',cx+r,yh-24,1,22);
+  rechteck8(x,'#1c3a2b',cx-2,yh-29,49,4); rechteck8(x,'rgba(255,255,255,.12)',cx-2,yh-29,49,1);
+  // Graffiti (neon, halb durchsichtig): Krone und Schlangenlinie
+  x.globalAlpha=.55; x.fillStyle=P.neon;
+  const kr=['..N...N...N..','..NN.NNN.NN..','..NNNNNNNNN..','..NNNNNNNNN..','..NNNNNNNNN..'];
+  const gxk=Math.round(w*0.36), gyk=yh-40;
+  kr.forEach((r,j)=>{ for(let i=0;i<r.length;i++) if(r[i]==='N') x.fillRect(gxk+i*2,gyk+j*2,2,2); });
+  x.globalAlpha=.5; x.fillStyle=P.neon2;
+  for(let i=0;i<24;i++) x.fillRect(gxk-2+i*1.4,gyk+14+Math.round(Math.sin(i*.8)*2),2,2);
+  x.globalAlpha=1;
+  // Boden
+  const gb=x.createLinearGradient(0,yh,0,h); gb.addColorStop(0,'#1c241f'); gb.addColorStop(1,'#101612');
+  x.fillStyle=gb; x.fillRect(0,yh-2,w,h-yh+2);
+  rechteck8(x,'#2e3a32',0,yh-2,w,1);
+  for(let px=0;px<w;px+=20) rechteck8(x,'rgba(0,0,0,.25)',px,yh+10+((px/20)%3)*14,20,1);   // Plattenfugen
+  glut8(x,tx+8,yh+10,26,'255,200,90',.1);
+  rechteck8(x,'rgba(60,90,120,.25)',Math.round(w*0.62),yh+30,26,3);                         // Pfuetze
+}
+/* RUNDE 3 - DIE BAUSTELLE: Sonnenaufgang, Kran, Rohbau, Bauzaun */
+function malBaustelle8(x,w,h){
+  const yh=KULISSE8.horizont;
+  const g=x.createLinearGradient(0,0,0,yh);
+  g.addColorStop(0,'#1b1a38'); g.addColorStop(.55,'#5a3358'); g.addColorStop(1,'#b8603e');
+  x.fillStyle=g; x.fillRect(0,0,w,yh);
+  sterne8(x,w,24,30);
+  const sx=Math.round(w*0.3);
+  glut8(x,sx,yh-14,60,'255,160,80',.3);
+  x.fillStyle='#f0a860'; x.beginPath(); x.arc(sx,yh-12,14,Math.PI,0); x.fill();   // halbe Sonne
+  haeuserReihe8(x,w,yh-3,'#2a1c30',5,9,40,9,0);                                  // ferne Stadt, niedrige Silhouette
+  rechteck8(x,'rgba(255,160,80,.08)',0,yh-30,w,30);
+  // Kran
+  const kx=Math.round(w*0.74);
+  rechteck8(x,'#171220',kx,22,4,yh-22);
+  for(let y=26;y<yh-4;y+=8){ rechteck8(x,'#171220',kx-1,y,6,1); }
+  rechteck8(x,'#171220',kx-52,22,96,3);                                          // Ausleger
+  rechteck8(x,'#171220',kx+32,18,12,8);                                          // Gegengewicht
+  rechteck8(x,'#171220',kx-52,25,1,26); rechteck8(x,'#3a2a30',kx-53,50,3,5);     // Seil + Haken
+  rechteck8(x,P.baustelle,kx+1,14,2,2); glut8(x,kx+2,15,8,'224,135,58',.3);       // Warnlicht, stetig
+  // Rohbau mit Stuetzen und Decken
+  const rx=Math.round(w*0.46), rw=Math.round(w*0.2);
+  for(let k=0;k<3;k++){ const fy=yh-12-k*22;
+    rechteck8(x,P.beton,rx,fy,rw,3); rechteck8(x,'rgba(255,255,255,.07)',rx,fy,rw,1);
+    for(let sxp=rx;sxp<=rx+rw-2;sxp+=Math.round(rw/3)) rechteck8(x,'#2c2832',sxp,fy-19,3,19);
+  }
+  rechteck8(x,'rgba(0,0,0,.3)',rx,yh-70,rw,58);
+  // Geruest links
+  const gx0=Math.round(w*0.04);
+  for(let k=0;k<4;k++){ rechteck8(x,P.stahl,gx0+k*14,yh-58,2,58); }
+  for(let y=yh-58;y<yh;y+=14){ rechteck8(x,P.stahlHell,gx0,y,44,1); rechteck8(x,'#3a2a22',gx0,y+1,44,2); }
+  // Betonmischer und Sandhaufen
+  const mx=Math.round(w*0.24);
+  rechteck8(x,'#e0873a99',mx,yh-12,12,9); rechteck8(x,'#a05a28',mx+2,yh-14,8,3);
+  rechteck8(x,'#0a0912',mx+1,yh-3,3,3); rechteck8(x,'#0a0912',mx+9,yh-3,3,3);
+  x.fillStyle='#6a5236'; x.beginPath(); x.moveTo(Math.round(w*0.9),yh); x.lineTo(Math.round(w*0.9)+14,yh-11);
+  x.lineTo(Math.round(w*0.9)+34,yh); x.closePath(); x.fill();
+  // Bauzaun mit Warnstreifen
+  for(let fxp=0;fxp<w;fxp+=12){ rechteck8(x,'#2a2230',fxp,yh-9,11,8);
+    rechteck8(x,((fxp/12)%2)?'#6a4322':'#8a8478',fxp,yh-8,11,2); rechteck8(x,'rgba(0,0,0,.35)',fxp,yh-5,11,1); }
+  rechteck8(x,'#1a1420',0,yh-10,w,1);
+  const gb=x.createLinearGradient(0,yh,0,h); gb.addColorStop(0,'#3a2c1c'); gb.addColorStop(1,'#1c150e');
+  x.fillStyle=gb; x.fillRect(0,yh-2,w,h-yh+2);
+  rechteck8(x,'#4a3720',0,yh-2,w,1);
+  glut8(x,sx,yh+8,70,'255,160,80',.07);
+  for(let px=8;px<w;px+=37) rechteck8(x,'rgba(0,0,0,.22)',px,yh+14+((px/37)%3)*16,10,2);       // Reifenspuren, Schotter
+}
+const KULISSEN8=[malStrasse8,malHinterhof8,malBaustelle8];
+function kulisseBild8(i){ return verlauf('kampf8-'+i+'-'+W+'-'+H,W,H,x=>KULISSEN8[i](x,W,H)); }
+
+/* Gullydampf: ein ruhiger Puff pro Zyklus, steigt langsam und verblasst. Nur in Runde 1. */
+function zeichneDampf8(){
+  const yh=KULISSE8.horizont, gx=Math.round(W*0.42)+7;
+  for(let k=0;k<2;k++){
+    const f=((S.t/KULISSE8.dampfSek)+k*.5)%1;
+    ctx.globalAlpha=KULISSE8.dampfAlpha*Math.sin(f*Math.PI);
+    ctx.fillStyle='#c8c4e0';
+    const px=Math.round(gx+Math.sin(f*5+k)*3), py=Math.round(yh+8-f*26);
+    ctx.fillRect(px-2,py,5,3); ctx.fillRect(px-4,py+3,9,3);
+  }
+  ctx.globalAlpha=1;
+}
+
 function zeichneKampf8(){
   const A=ARENEN[S.arena], s=S.spielerK, g=S.gegner;
-  ctx.fillStyle=A.himmel; ctx.fillRect(0,0,W,H);
-
-  /* Kulisse je Arena - grob, aber klar unterscheidbar */
-  ctx.fillStyle='#00000033';
-  for(let i=0;i<6;i++){
-    const bx=(i*61)%W, bh=30+((i*37)%40);
-    ctx.fillRect(bx,bodenY(0)-bh-16,44,bh);
-  }
-  if(S.arena===1){ ctx.fillStyle='#232c26';
-    for(let i=0;i<4;i++) ctx.fillRect(20+i*74,bodenY(0)-26,16,26); }
-  if(S.arena===2){ ctx.fillStyle='#5a4420';
-    for(let i=0;i<5;i++){ ctx.fillRect(14+i*62,bodenY(0)-34,3,34); ctx.fillRect(14+i*62,bodenY(0)-34,26,3); } }
-
-  ctx.fillStyle=A.boden; ctx.fillRect(0,bodenY(0)-2,W,H-bodenY(0)+2);
-  ctx.fillStyle=A.kante; ctx.fillRect(0,bodenY(0)-2,W,1);
+  ctx.drawImage(kulisseBild8(S.arena),0,0);
+  if(S.arena===0) zeichneDampf8();
   ctx.fillStyle='#00000044'; ctx.fillRect(0,bodenY(1)+3,W,H-bodenY(1));
 
   /* Erst nach dem Boden, sonst uebermalt ihn die Arena wieder. */
