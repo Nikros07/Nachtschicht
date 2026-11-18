@@ -676,3 +676,14 @@ angesehen und, wo nötig, nachgebessert.
   - `TIEFE_PRO_SEITE` aufgeräumt.
 - **Tests:** `node tools/pruefliste.js` → alle 25 Prüfungen grün. Alle 10 Seiten laden im Chromium ohne Fehler.
 - **Offen bzw. ungeprüft:** Ton und echte Geräte. Dazu 4 neue kleine Layout-Punkte (P3) in NACHT-TODO.
+
+### 18.11.2026, Nachtrag – Level 2, 5, 6 und Merge
+
+- `main` ist auf 5d0348f vorgezogen (Fast-Forward, 25 Prüfungen grün).
+- **Neue Kulissen**, jede im headless Chromium angesehen:
+  - Level 2: bewohnte Wohnung je Raum.
+  - Level 5: echter Club mit Tanzfläche, Menge im Takt, DJ und Bar.
+  - Level 6: traumhafte Erinnerungsräume; die Periodentafel wurde nachträglich gedämpft.
+- **Flackerschutz Level 5 gemessen:** mit Schutz ein Standbild (0,01 % Schwankung). Ohne Schutz schwankt das Bild wie vorher (Stroboskop-Konzept), bei höchstens einem Sprung über 10 % in 2 s.
+- **Leere Bildzeilen jetzt** (nachttest --kurz): L2 27 %, L3 44 %, L4 14 %, L5 19 %, L6 39 %, L7 18 %, L8 48 %.
+- **Offen:** die Klassenräume innen in Level 1, dünnere Club-Ecken (P3) sowie Ton und echtes Gerät.

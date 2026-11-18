@@ -196,6 +196,9 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
+- [ ] **P3 · Level 5: Raucherecke, Klos, Hinterausgang duenner als der Rest** — 23-27 % leere Zeilen gegen 9-14 % auf Tanzflaeche und Bar. Wo: level5.html (TUNE.ort, zeichneOrt5/ortEbene5) · Fertig wenn: `node docs/gameplay/messung/n3-level5-ort.js` zeigt jeden Bereich unter 20 %, Screenshot lesbar.
+- [ ] **P2 · Level 1: Raeume innen noch ohne Kulisse** — Flur, Himmel und Keller sind seit 18.11. belebt, die Klassenraeume innen nicht; nachttest --kurz misst fuer index.html noch 74 % (der Zufallslauf steht viel in Raeumen). Wo: index.html (Zeichnen der Raeume, imRaum) · Fertig wenn: ein Messskript n3-level1-raum.js zeigt je Raum unter 50 % leere Zeilen, Sichtkegel und Schluessel lesbar (Screenshot).
+
 - [ ] **P3 · Level 4: P-Taste pausiert in der Schlange nicht** — pauseTaste in level4.html kennt nur kampf<->pause; im Modus schlange tut P nichts (Chromium 18.11.; Esc-Menue aus pause.js nicht geprueft). Wo: level4.html (pauseTaste) · Fertig wenn: P im Modus schlange pausiert und setzt zurueck auf schlange (Messung per update-Schleife), Bots gewinnen weiter.
 
 - [ ] **P3 · Level 6: Erinnerungsliste ueberdeckt links die Wanduhr** — gesehen im headless Chromium (Szene Afterhour). Wo: level6.html (hud, Wanduhr-Deko) · Fertig wenn: Screenshot zeigt Uhr und Liste getrennt.
@@ -270,6 +273,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] ~~**P2 · Aussehen: Level 2, 5 und 6**~~ (erledigt 18.11., claude/gameplay) — Level 2 bewohnte Wohnung je Raum (Flur, Wohnzimmer mit Lichterkette und TV, Kueche, Moritz-Zimmer, Bad, Balkon; PEGEL/MUT getrennt), Level 5 Club (Tanzflaeche, Menge im Takt, DJ, Bar, Lichtstrahlen; BAR-Doppelung weg), Level 6 traumhafte Kulisse (Raumverlaeufe, durchscheinende Erinnerungen, Staub). Leere Bildzeilen (nachttest --kurz): L2 39 -> 27 %, L5 42 -> 19 %, L6 45 -> 39 %. Flackerschutz L5 gemessen: Standbild (0,01 % Schwankung). Bots gewinnen. Ton und Geraet ungeprueft.
 
 - [x] ~~**P3 · Wortgleiche Hilfsfunktionen in den Leveln**~~ (erledigt 18.11., claude/gameplay) — meldung, zeigeHinweis und pauseTasteSpiel stehen in nacht/hud.js; abweichende Fassungen (meldung in index/karte, pauseTaste in Level 3/4/8) kommentiert. nachttest und Bots vorher/nachher gleich, test/hud.test.js neu, alle Seiten im Chromium ohne Fehler.
 
