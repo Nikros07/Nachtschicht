@@ -215,6 +215,7 @@ const TUNE = {
   fensterX0:     120,    // erstes Wandfeld
   fensterMond:   0.07,   // Deckkraft des Mondlichtflecks unter den Fenstern
   fensterFern:   0.32,   // Deckkraft der Kulisse auf fremden Etagen
+  hudFrei:         24,   // fremde Etagen zeichnen oben bis hier keine Fenster (Herzen, Ziel, Uhr bleiben frei)
   fussleiste:    true,
   dachHoehe:     70,     // Himmelsstreifen ueber dem obersten Flur
   kellerHoehe:   64,     // Fundament unter dem Erdgeschoss
@@ -1846,6 +1847,8 @@ const kulBild=(c,x,y)=>ctx.drawImage(c,Math.round(x),Math.round(y));
 /* Wandfelder einer Etage: Fenster mit Mond und Stadt, dazwischen Pinnwaende. */
 function zeichneWandfelder(e,by,fern){
   const von=S.kamX-24, bis=S.kamX+W+24, deckeY=by-52;
+  /* Fremde Etage oben am Bildrand: dort stehen HUD und Ziel - Wandfelder weglassen. */
+  if(fern&&deckeY+9-S.kamY<TUNE.hudFrei) return;
   ctx.globalAlpha=fern?TUNE.fensterFern:1;
   let k=0;
   for(let x=TUNE.fensterX0;x<LEVEL_B-TREPPE_L-20;x+=TUNE.fensterRaster,k++){
