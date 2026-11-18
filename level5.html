@@ -100,6 +100,8 @@ const TUNE = {
   wackelnAb:       55,
   langsamAb:       70,
   blackoutBei:    100,
+  raumNameFarbe:'#ffffff2a',   // Raumname an der Wand (Alpha etwas hoeher als vorher: er liegt jetzt ueber Dekor)
+  raumNameY:       58,   // Hoehe des Raumnamens an der Wand: unter der Deckenreihe (Lautsprecher y 21-51) und dem HUD (Status-Zeilen bis y=45)
   neustartPegelMax: 60,  // Neustart nie mit mehr Pegel - sonst endet jeder Neustart sofort im Blackout
 
   /* (4) DIE UHR */
@@ -1754,7 +1756,6 @@ function zeichneClub(){
     ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
     ctx.fillStyle='#00000033';
     for(let y=TIEFE.hinten+8;y<H;y+=9) for(let x=o.von+((y>>1)%14);x<o.bis;x+=14) ctx.fillRect(x,y,7,1);
-    text(o.name,o.von+6,26,'#ffffff18');
   }
 
   /* Deckenreihe: Lautsprecher und Lampen, wiederholt ueber die ganze
@@ -1796,6 +1797,8 @@ function zeichneClub(){
     ctx.fillStyle='#ffffff22'; ctx.fillRect(x+3,23,34,1);
     ctx.fillStyle='#00000055'; ctx.fillRect(x+3,TIEFE.hinten-3,34,1);
   }
+  /* Raumnamen zuletzt: Deckenreihe, Discokugel-Saeulen und Banner decken sie sonst zu. */
+  for(const o of ORTE) text(o.name,o.von+6,TUNE.raumNameY,TUNE.raumNameFarbe);
 
   /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
   const lichter=[[240,'#ff3d8b',0],[390,'#42d9ff',1.4],[540,'#ffd447',.6]];

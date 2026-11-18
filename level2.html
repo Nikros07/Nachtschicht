@@ -96,6 +96,7 @@ const TUNE = {
   wackelnAb:       55,     // ab hier faengt das Bild an zu schwanken
   langsamAb:       70,     // ab hier wirst du spuerbar langsamer
   blackoutBei:    100,
+  raumNameY:       96,     // Hoehe des Raumnamens an der Wand: unter HUD (Pegel/MUT bis y=23, Aufgabenliste bis y=57)
 
   /* (4) DIE UHR - um 22:00 faehrt der Bus */
   startMinute:   21*60+10,
@@ -1098,7 +1099,7 @@ function zeichneWohnung(){
     ctx.fillStyle='#00000033';
     for(let x=o.von;x<o.bis;x+=14) ctx.fillRect(x,BODEN+5,7,1);
     /* Name des Raums */
-    text(o.name,o.von+6,26,'#ffffff18');
+    text(o.name,o.von+6,TUNE.raumNameY,'#ffffff18');
   }
   /* Bilderreihe und Regalbrett an der Wand - gegen die leere obere
      Bildhaelfte (PLAYTEST.md). Keine neue Kunst, zwei Muster, wiederholt. */
