@@ -33,13 +33,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 *Regel für alles Folgende: ein Punkt = höchstens ~15 Minuten, ein Bereich, eine Messzahl. Ist er größer, vorher teilen.*
 
 ### P2
-- [ ] **P2 · Level 6: Sprung-Hinweis und Schweben im Browser pruefen** — Schwebesprung
-  (Leertaste halten = 18 px/s Sinken, Schwerkraft 0.33) ist nur gemessen, nicht gesehen oder
-  gehoert. Wo: level6.html (update, zeichneFlur, Lichter) · Fertig wenn: im Browser
-  springt man ueber alle drei Lichter, Hinweis "SPRUNG HALTEN" erscheint beim ersten Sprung.
-- [ ] **P2 · Level 6: Handy-Sprungknopf testen** — zweiter Knopf SPRUNG (mobilKontext
-  `zwei:'SPRUNG'`) sendet Space; Lichter per Handy erreichbar. Wo: level6.html · Fertig wenn:
-  Handy-Test (Chrome-Geraet oder Browser-Emulation 375x812) erreicht alle drei Lichter.
 - [ ] **P3 · Level 6: Scheitern-Stinger verdrahten** — Level 6 hat keinen Scheiterpfad
   (wegknicken startet neu). Erst relevant, wenn ein Scheitern dazukommt. Wo: level6.html
   (levelGeschafft, traumEnde) · Fertig wenn: Scheiter-Pfad vorhanden und MUSIK.stinger('fail') ruft.
@@ -79,16 +72,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Wo: level8.html (`abbiegeReserve`, `lichtBeiAnkunft`, TUNE) · Fertig wenn: ein Messskript zeigt,
   dass bei Start-Licht 0 bis 28 und Max Ferdi in der Crew die Haustür erreichbar bleibt und bei
   Start 40 der Wettlauf verloren gehen kann; Werte stehen hier. ERFUELLT, Werte oben.
-- [ ] **P2 · Level 7: Pfandwurf am Handy pruefen** — Hauptknopf ZIELEN halten, loslassen
-  wirft; nur am Rechner gemessen. Wo: level7.html (mobilKontext, wurfTakt) · Fertig wenn: in
-  der Emulation 812x375 mit ?touch=1 trifft ein gehaltener und losgelassener Hauptknopf die
-  Kiste (S.treffer steigt).
-- [ ] **P2 · Level 2: Einschenken am Handy pruefen** — Halten fuellt, Loslassen gibt Pegel;
-  nur am Rechner gemessen. Wo: level2.html (startSchenk, schenkTakt) · Fertig wenn: in der
-  Emulation 812x375 mit ?touch=1 ergibt Halten+Loslassen in der Zone "PERFEKT".
-- [ ] **P2 · Level 5: Tanzen am Handy pruefen** — Tippen im Takt (Fenster 0,10 s) nur am
-  Rechner gemessen. Wo: level5.html (tanzSchritt, mobilKontext) · Fertig wenn: in der
-  Emulation mit ?touch=1 zaehlt ein Tipp auf dem Schlag als Treffer (S.combo steigt).
 - [ ] **P2 · Gesprächsleiste quer: mehr als 3 lange Antworten scrollen** — begrenzt auf 45 % der Höhe, bei 4 Antworten nur 45 px je Antwort.
   Wo: nacht/mobil.js (Gesprächsleiste) · Fertig wenn: bei 4 langen Antworten (667x375) alle sichtbar, jede mindestens 44 px, ohne Scrollen.
   **Stand 03.11.:** VORBEREITET, im Browser teils geprueft: quer ab 4 Antworten 4 Spalten (talkMass in mobil.js), Rechnung n3-mobil-layout.js; headless Chromium 667x375: alle 4 Knoepfe sichtbar, 157x67 px. Am echten Telefon ungeprueft.
@@ -133,9 +116,7 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Zustand. Jetzt `zwei:null` an allen drei Stellen.
   Wo: level2.html (Titelbild, Eingaben) · Fertig wenn: nur noch Eingaben, die etwas tun.
 
-- [ ] **P2 · Gewinn-Bots fuer jedes Level** — Zufallstasten gewinnen Level 1, 2, 3, 6 nie (n3-rang-126.js, n3-level3-rang.js); Rang-Grenzen dort nur per Szenario. Plan: docs/architektur/PLAN.md 6.3, Helfer tools/messhilfe.js. Wo: docs/gameplay/messung/, tools/nachttest.js · Fertig wenn: `node tools/nachttest.js --bots` gewinnt jedes Level und meldet Zeit, Punkte, Rang.
-- [ ] **P2 · Level 4: PERFEKT!-Popup laeuft durch den PHASE-Ansagesatz** — Phasenwechsel im selben Bild wie der Konter (level4.html ~:704), das Popup steigt durch y=96 ("JETZT REICHTS."). Gesehen im headless Chromium (/home/user/browser-check ist fluechtig; Skript: SAFT.popup + phaseWechsel per evaluate). Wo: level4.html (phaseWechsel, Konter-Block) · Fertig wenn: Popup erscheint oberhalb/unterhalb der Ansage oder wird waehrend der Ansage unterdrueckt; Screenshot ohne Ueberlappung.
-- [ ] **P2 · Level 8: Arenaname beruehrt den RUNDE-2-Satz** — "DER HINTERHOF" (level8.html ~:1945, y=86, Groesse 2 mit Glow) sitzt 1-2 px ueber "DIE ANDEREN KOMMEN DAZU." (y=96). Wo: level8.html (zeichneAnsage8 / Arenaname) · Fertig wenn: Arenaname waehrend der Ansage aus oder >=4 px Abstand (Screenshot).
+
 
 ### P3
 - [ ] **P3 · iPad quer: Extra-Knoepfe ragen noch ins Bild** — seit 29./30.10. rutscht das Bild auf
@@ -215,11 +196,12 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
-- [ ] **P3 · HUD-Beschriftung verdeckt den Raumnamen** — level2: "MUT"/"PEGEL" ueber "WOHNZIMMER"; level5: "PEGEL" ueber dem Raumnamen (headless Chromium, E.pc.png). Wo: level2.html, level5.html (HUD/Raumname) · Fertig wenn: Screenshot zeigt beide lesbar.
-- [ ] **P3 · Runner: Boss-Werte doppelt** — ETAPPEN hp 4-7/telMul, TUNE.bossHp (~:139) toter Rueckfall. Wo: runner.html (ETAPPEN, startBoss) · Fertig wenn: hp und telMul im TUNE, toter Rueckfall weg.
+- [ ] **P3 · Level 6: Erinnerungsliste ueberdeckt links die Wanduhr** — gesehen im headless Chromium (Szene Afterhour). Wo: level6.html (hud, Wanduhr-Deko) · Fertig wenn: Screenshot zeigt Uhr und Liste getrennt.
+- [ ] **P3 · Level 7: Label PFANDWURF liegt hinter der Figur; Raumname-Geist unter der Einkaufsliste** — Wo: level7.html (Pfandwurf-Beschriftung, Raumname) · Fertig wenn: Screenshot zeigt beides frei.
+- [ ] **P3 · Level 8: Popups waehrend RUNDE-Ansage pruefen** — in Level 4 behoben (TUNE.popupBeiAnsage); Level 8 setzt bei Handlanger-Treffern/Rundenwechsel ebenfalls SAFT-Popups. Wo: level8.html · Fertig wenn: Screenshot beim Rundenwechsel ohne Popup im Ansagesatz.
+- [ ] **P3 · Kulissen: Farben teils als Literale** — Level 8 (malStrasse8 u. a.) nutzt einzelne Farbliterale statt P; ARENEN.himmel/boden/kante sind seitdem ungenutzt. Wo: level8.html · Fertig wenn: Farben in P, ungenutzte Felder entfernt, n3-level8-kulisse.js gleiche Zahlen.
+
 - [ ] **P3 · Wortgleiche Hilfsfunktionen in den Leveln** — meldung und zeigeHinweis in allen 8 Leveln, pauseTaste in 5 gleich (3, 4, 8 weichen ab). Wo: level*.html, index.html · Fertig wenn: meldung/zeigeHinweis in der Engine; pauseTaste-Abweichungen kommentiert oder angeglichen. (Browser-Durchlauf noetig)
-- [ ] **P3 · Tippfehler in wenn/tu bleiben still** — bedingungErfuellt ignoriert unbekannte Schluessel, wirke legt neue Werte an. Bestand ist sauber (n3-schluessel.js). Wo: nacht/nacht.js, tools/flagcheck.js · Fertig wenn: flagcheck meldet unbekannte Schluessel als harten Fehler.
-- [ ] **P3 · Tote Zeilen in TIEFE_PRO_SEITE** — karte.html und runner.html stehen drin, laden welt.js aber nicht. Wo: nacht/welt.js (~:62-63) · Fertig wenn: gestrichen oder kommentiert.
 - [ ] **P3 · Pruefwerkzeuge: Rest aus dem Architektur-Plan** — 6.4 grosse Seiten aufteilen (erst Level 4), 6.5 globale Namen buendeln, 6.6 Stempel-Merge-Ablauf, 6.7 Doku verschlanken (alte Erledigt-Eintraege nach docs/archiv/). Wo: docs/architektur/PLAN.md · Fertig wenn: je Schritt wie dort beschrieben.
 - [ ] **P3 · routinen/nacht.md nennt die alte Pruefliste** — dort stehen Einzelbefehle mit alten Zahlen ("22 bestanden"). Die Routine darf routinen/ nicht aendern; Nick/Eve von Hand: auf `node tools/pruefliste.js` umstellen. Wo: routinen/nacht.md (:35-38, :88) · Fertig wenn: Routine ruft pruefliste.js.
 
@@ -230,11 +212,11 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
   Aktionstasten rechts" gibt es nicht mehr. Wo: README.md · Fertig wenn: beschreibt
   Stick, Info-Tafel und MENÜ-Knopf.
 
-- [ ] **P2 · Level 5: Optik im Browser pruefen** — Taktpunkt unten mittig, Nebelkreis (nebelRadius 62), Tanzpose (Hub 3 px, Seitenversatz) und Status-Zeilen rechts unter der Uhr sind nicht gemessen. Wo: level5.html (zeichneTaktpunkt, zeichneNebel, hudEreignisse, Spieler-Sprite in zeichneClub) · Fertig wenn: Screenshot mit Tanzfläche, Nebel und LICHT AUS zeigt alles lesbar, ohne Ueberlagerung mit HUD-Text.
 
 ---
 
 ## Entscheidung nötig (die Routinen lassen das liegen)
+
 
 - [ ] **P3 · Level 4: Polaroid-Moment vor dem Cutscene-Ende haelt die Cutscene an** — gemessen (n3-level4-moment.js): ohne Herzverlust 3,0 s Karte, Level steht, Cutscene ab 3,07 s; ab 0,8 s ueberspringbar. Karte im Sieg-Moment lassen oder nach der Cutscene zeigen? Vorlage: docs/entscheidungen/2026-11-03.md (1).
 - [ ] **P3 · Startmenü: WEITER merkt nur das Level, nicht die Stelle** — Vorlage docs/entscheidungen/2026-11-03.md (4), Empfehlung: als gewollt schliessen.
@@ -287,6 +269,22 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] ~~**P2 · Gewinn-Bots fuer jedes Level**~~ (erledigt 18.11., claude/gameplay) — tools/bots/ (ein Bot je Level, spielt ueber Tasten), `node tools/nachttest.js --bots`: alle 8 gewonnen in < 1 s; laeuft jetzt in tools/pruefliste.js mit (jedes Level bleibt gewinnbar).
+- [x] ~~**P2 · Level 4: PERFEKT!-Popup laeuft durch den PHASE-Ansagesatz**~~ (erledigt 18.11., claude/gameplay) — waehrend der PHASE-Ansage keine PERFEKT-/Combo-Popups (TUNE.popupBeiAnsage); Screenshot ohne Ueberlappung (headless Chromium).
+- [x] ~~**P2 · Level 8: Arenaname beruehrt den RUNDE-2-Satz**~~ (erledigt 18.11., claude/gameplay) — grosser Arenaname waehrend der RUNDE-Ansage aus; Screenshot sauber.
+- [x] ~~**P3 · HUD-Beschriftung verdeckt den Raumnamen**~~ (erledigt 18.11., claude/gameplay) — TUNE.raumNameY in level2 (96) und level5 (58, ueber dem Dekor); Screenshots PC und 812x375.
+- [x] ~~**P2 · Level 6: Sprung-Hinweis und Schweben im Browser pruefen**~~ (erledigt 18.11., claude/gameplay) — headless Chromium: alle drei Lichter erreicht, Hinweis beim ersten Sprung, Sinken 18 px/s.
+- [x] ~~**P2 · Level 6: Handy-Sprungknopf testen**~~ (erledigt 18.11., claude/gameplay) — Emulation 812x375 und 375x812 (Touch per CDP auf #mb-zwei): Tippen springt, Halten schwebt, alle drei Lichter erreichbar. Echtes Geraet ungeprueft.
+- [x] ~~**P2 · Level 7: Pfandwurf am Handy pruefen**~~ (erledigt 18.11., claude/gameplay) — Emulation 812x375/375x812: Halten zeigt LOSLASSEN, Loslassen wirft, S.treffer steigt (2/4 bzw. 3/4).
+- [x] ~~**P2 · Level 2: Einschenken am Handy pruefen**~~ (erledigt 18.11., claude/gameplay) — Emulation 812x375, echte Touch-Ereignisse: Halten bis 0,80, Loslassen -> PERFEKT. MUT +3.
+- [x] ~~**P2 · Level 5: Tanzen am Handy pruefen**~~ (erledigt 18.11., claude/gameplay) — Emulation: Tipp auf dem Schlag -> Combo steigt, daneben -> AUS DEM TAKT. Latenz am echten Geraet ungeprueft.
+- [x] ~~**P2 · Level 5: Optik im Browser pruefen**~~ (erledigt 18.11., claude/gameplay) — Taktpunkt, Nebel, Status-Zeilen ohne Ueberlagerung (960x600, 812x375).
+- [x] ~~**P3 · Runner: Boss-Werte doppelt**~~ (erledigt 18.11., claude/gameplay) — TUNE.bossHp/bossTelMul je Etappe, toter Rueckfall weg; n3-runner.js byte-gleich.
+- [x] ~~**P3 · Tippfehler in wenn/tu bleiben still**~~ (erledigt 18.11., claude/gameplay) — tools/flagcheck.js meldet unbekannte Schluessel als harten Fehler (Werte aus STAND_VORLAGE + pegel); Gegenprobe nichFlag -> Exit 1.
+- [x] ~~**P3 · Tote Zeilen in TIEFE_PRO_SEITE**~~ (erledigt 18.11., claude/gameplay) — karte/runner gestrichen, Kommentar.
+- [x] ~~**P2 · Aussehen: leere Level-Kulissen**~~ (erledigt 18.11., claude/gameplay) — neue Orte statt leerer Flaechen, je im headless Chromium gesehen; leere Bildzeilen (Software-Canvas): Level 3 Sprint 69 -> 50 % (Mond, Fenster, Laternen, Haltestelle), Level 1 Flur 66 -> 45 % (Fenster, Pinnwaende, Keller, Himmel), Level 4 73 -> 17 % (Clubfassade, Schlange mit 33 Wartenden, Kordel), Level 7 51 -> 19 % (Spaeti mit Schaufenster, Leuchtschild), Level 8 Kampf 79/52/53 -> 44/34/36 % (Strasse, Hinterhof, Baustelle bei Sonnenaufgang). Kampf-Simulation L8 byte-gleich, Bots gewinnen. Ton und echtes Geraet ungeprueft.
+- [x] ~~**P3 · Level 8: Phasenanzeige dunkel auf dunkel**~~ (erledigt 18.11.) — Phase 1 jetzt in P.dim.
 
 - [x] ~~**P3 · nachttest.js ohne Filter zu langsam**~~ (erledigt 03.11., claude/gameplay) — ohne Filter laeuft jetzt jede Seite in einem eigenen Prozess (eine je Kern): 48 s -> 26 s auf 4 Kernen; `--zeit`, `--seriell`. Dazu `tools/pruefliste.js` (ganze Pruefliste parallel, ~18 s).
 - [x] ~~**P2 · Level 4: Tempo-Basis und Rang-Grenzen kalibrieren**~~ (erledigt 03.11., claude/gameplay) — Bot-Messung n3-level4-rang.js (10 Laeufe je Bot): Profi vorher 72 Punkte im Schnitt (B), weil Nachsetzen nicht als Konter zaehlt. TUNE.rang konter.gut 0.85->0.7, combo.gut 5->4: Profi 81-83 (9x A, 1x B), Profi ohne Nachsetzen S, "lahm" B. tempoBasis/tempoJeTreffer nur gelesen (120/124/128 bpm) - Klang im Browser ungeprueft.
