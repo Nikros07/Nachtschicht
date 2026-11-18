@@ -647,3 +647,32 @@ in eigenen Worktrees. Ausführlich: `docs/BERICHT-2026-11-03.md`.
 - **Offen bzw. ungeprüft:** echtes Telefon/iPad und Ton. Elf Fragen stehen unter „Entscheidung nötig“, Vorlagen in
   `docs/entscheidungen/2026-11-03.md`. `routinen/nacht.md` nennt noch die alte Prüfliste und muss von Hand
   umgestellt werden.
+
+## 18.11.2026 – „Alles besser“: Spielgefühl, Aussehen, Handy, Werkzeuge (Branch claude/gameplay)
+
+Sitzung auf Eves Auftrag („verbessern statt neu“, alle vier Bereiche). Planung und Abnahme machte das
+Hauptmodell, umgesetzt haben Sonnet-Agents in eigenen Worktrees. Jede Kulisse wurde im headless Chromium
+angesehen und, wo nötig, nachgebessert.
+
+- **Aussehen:** neue Orte statt leerer Flächen.
+  - Level 1: Schule bei Nacht, mit Fenstern, Pinnwänden und Keller.
+  - Level 3: Straße mit Mond, Laternen und Haltestelle.
+  - Level 4: Clubfassade mit einer Schlange aus 33 Wartenden.
+  - Level 7: Späti mit Schaufenster und Leuchtschild.
+  - Level 8: drei Kampf-Arenen (Straße, Hinterhof, Baustelle bei Sonnenaufgang).
+  - Leere Bildzeilen sinken je Ort um 20 bis 56 Prozentpunkte.
+- **Spielgefühl:**
+  - Gewinn-Bots für alle 8 Level (`tools/bots/`, `nachttest --bots`, < 1 s, laufen jetzt in der Prüfliste mit).
+  - Layout-Fehler behoben:
+    - Level 4: Popup lief durch die PHASE-Ansage.
+    - Level 8: Arenaname lag über dem Satz; Phasenanzeige war zu dunkel.
+    - Level 2, 5 und 6: Raumnamen lagen unter dem HUD.
+- **Handy:** Einschenken (L2), Tanzen (L5), Schwebesprung und Sprungknopf (L6) und Pfandwurf (L7) in der
+  Touch-Emulation geprüft. Alles funktioniert, nichts war zu ändern.
+- **Code:**
+  - `meldung`, `zeigeHinweis` und `pauseTasteSpiel` stehen jetzt in `nacht/hud.js`.
+  - `flagcheck` meldet Tippfehler in `wenn`/`tu`.
+  - Runner: Boss-Werte im TUNE.
+  - `TIEFE_PRO_SEITE` aufgeräumt.
+- **Tests:** `node tools/pruefliste.js` → alle 25 Prüfungen grün. Alle 10 Seiten laden im Chromium ohne Fehler.
+- **Offen bzw. ungeprüft:** Ton und echte Geräte. Dazu 4 neue kleine Layout-Punkte (P3) in NACHT-TODO.
