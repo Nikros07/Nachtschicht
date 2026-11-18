@@ -63,6 +63,30 @@ for(const d of dateien){ const s=fs.readFileSync(d,'utf8');
 const bzNie=Object.keys(bz.s).filter(n=>!bz.l[n]);
 console.log('\nBEZIEHUNGEN: '+Object.keys(bz.s).length+' veraendert | nie gelesen: '+(bzNie.join(', ')||'-'));
 
+/* ---- Schluessel in wenn:{} / tu:{} / probe:{} ----
+   nacht/nacht.js (bedingungErfuellt, wirke) schluckt unbekannte Schluessel still: ein Tippfehler
+   wie nichFlag ist immer wahr, kondtion legt einen neuen Wert an. Gueltig sind die festen Namen
+   unten plus jeder Wert aus STAND_VORLAGE.werte - die Liste wird aus nacht.js gelesen, damit ein
+   neuer Wert hier nicht vergessen wird. Unbekannter Schluessel = harter Fehler (Exit 1). */
+const nachtJs=fs.readFileSync('nacht/nacht.js','utf8');
+const werteBlock=(nachtJs.match(/STAND_VORLAGE=\{[\s\S]*?werte:\{([\s\S]*?)\}/)||[,''])[1];
+/* pegel ist ein Sonderwert mit eigenem Speicher (nacht.js: wert('pegel') -> ladePegel). */
+const WERTE=[...werteBlock.matchAll(/^\s*([a-z]+)\s*:/gm)].map(m=>m[1]).concat(['pegel']);
+const FEST={ wenn:['crew','hat','flag','nichtFlag','nichtHat','mag'], probe:['crew','hat','flag','nichtFlag','nichtHat','mag'],
+  tu:['flag','mag','nimm','gib','crew'] };
+let unbekannt=0;
+for(const art of Object.keys(FEST)){
+  const gueltig=new Set([...FEST[art],...WERTE]);
+  for(const d of dateien.concat(fs.readdirSync('nacht').filter(f=>f.endsWith('.js')).map(f=>'nacht/'+f))){
+    const s=fs.readFileSync(d,'utf8');
+    for(const m of s.matchAll(new RegExp('\\b'+art+':\\s*\\{([^{}]*)\\}','g')))
+      for(const k of m[1].matchAll(/(?:^|,)\s*([A-Za-z_]+)\s*:/g))
+        if(!gueltig.has(k[1])){ unbekannt++; console.log('UNBEKANNT  '+art+':{'+k[1]+':..} in '+d); }
+  }
+}
+console.log('\nSCHLUESSEL in wenn/tu/probe: '+(unbekannt?unbekannt+' unbekannt (Tippfehler?)':'alle gueltig')+' | Werte: '+WERTE.join(' '));
+if(unbekannt) process.exit(1);
+
 /* Mit --streng schlaegt der Lauf bei Flags ohne Setzer fehl (toter Inhalt
    ist ein echter Fehler; verlorene Entscheidungen sind eine Schwaeche). */
 if(process.argv.includes('--streng')&&tot.length) process.exit(1);

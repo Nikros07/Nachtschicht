@@ -59,9 +59,8 @@ const TIEFE_PRO_SEITE={
   'level6.html': false,    // Afterhour
   'level7.html': false,    // Spaeti
   'level8.html': true,     // Heimweg - der grosse Fight
-  'karte.html':  false,
-  'runner.html': false,
 };
+/* karte.html und runner.html laden welt.js nicht und stehen deshalb nicht in der Tabelle. */
 /* Ohne Browser (test/kampf.test.js laeuft in node) gibt es kein location.
    Dort gilt Tiefe an - die Kampftests pruefen ja genau sie. */
 TIEFE.seite=(typeof location!=='undefined')
