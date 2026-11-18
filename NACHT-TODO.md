@@ -196,6 +196,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 
 ### P3
 
+- [ ] **P3 · Level 4: P-Taste pausiert in der Schlange nicht** — pauseTaste in level4.html kennt nur kampf<->pause; im Modus schlange tut P nichts (Chromium 18.11.; Esc-Menue aus pause.js nicht geprueft). Wo: level4.html (pauseTaste) · Fertig wenn: P im Modus schlange pausiert und setzt zurueck auf schlange (Messung per update-Schleife), Bots gewinnen weiter.
+
 - [ ] **P3 · Level 6: Erinnerungsliste ueberdeckt links die Wanduhr** — gesehen im headless Chromium (Szene Afterhour). Wo: level6.html (hud, Wanduhr-Deko) · Fertig wenn: Screenshot zeigt Uhr und Liste getrennt.
 - [ ] **P3 · Level 7: Label PFANDWURF liegt hinter der Figur; Raumname-Geist unter der Einkaufsliste** — Wo: level7.html (Pfandwurf-Beschriftung, Raumname) · Fertig wenn: Screenshot zeigt beides frei.
 - [ ] **P3 · Level 8: Popups waehrend RUNDE-Ansage pruefen** — in Level 4 behoben (TUNE.popupBeiAnsage); Level 8 setzt bei Handlanger-Treffern/Rundenwechsel ebenfalls SAFT-Popups. Wo: level8.html · Fertig wenn: Screenshot beim Rundenwechsel ohne Popup im Ansagesatz.
