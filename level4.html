@@ -135,6 +135,7 @@ const TUNE = {
   zeitlupeFaktor:     0.3,    // Phasenwechsel: Spielzeit auf diesen Anteil ...
   zeitlupeSek:        0.8,    // ... fuer so viele Sekunden
   ansageSek:          1.5,    // Dauer der grossen PHASE-Ansage
+  popupBeiAnsage:     false,  // true: PERFEKT!/X-Popups auch waehrend der Ansage (laufen durch den Satz)
   ansageSatz2:        'JETZT REICHTS.',
   ansageSatz3:        'LETZTE CHANCE.',
 
@@ -635,8 +636,11 @@ function kampf(dt){
       if(typeof SAFT!=='undefined'){
         const p=bildPunkt(b,12), pc=bildPunkt(b,18), pp=bildPunkt(b,30);
         SAFT.treffer(p.x,p.y,s.blick,perfekt?1:0.5);
-        if(perfekt) SAFT.popup('PERFEKT!',pp.x,pp.y,'#ffd447');
-        if(S.combo>=TUNE.comboPopupAb) SAFT.popup('X'+S.combo,pc.x,pc.y,'#42d9ff');
+        /* Waehrend der PHASE-Ansage (und im Treffer, der sie ausloest) steigen keine Popups:
+           sie liefen sonst durch den Ansagesatz (y=96). TUNE.popupBeiAnsage schaltet das um. */
+        const ansageDa=!TUNE.popupBeiAnsage&&(S.ansageT>0||bossPhase(b)>S.phase);
+        if(perfekt&&!ansageDa) SAFT.popup('PERFEKT!',pp.x,pp.y,'#ffd447');
+        if(S.combo>=TUNE.comboPopupAb&&!ansageDa) SAFT.popup('X'+S.combo,pc.x,pc.y,'#42d9ff');
       }
       if(S.combo>=TUNE.comboPopupAb){
         if(S.combo===TUNE.comboPopupAb&&!S.hinweisCombo){
