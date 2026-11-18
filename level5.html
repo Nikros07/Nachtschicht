@@ -226,6 +226,69 @@ const TUNE = {
   shotSchluck:      18,     // Pegel je Gratis-Schluck
 
   /* (19) RANG - Summe 100. Je Kriterium linear zwischen schlecht und sehr gut. */
+  /* (19) DER ORT - Club-Kulisse. Alles in Bildpunkten (Bild 320x180, Wandfuss = tiefeHinten).
+     Bewegtes im Takt / mit Helligkeit nur ueber FX (hoechstens 3 Hz, ruhig = Standbild). */
+  ort:{
+    paneelB:       18,   // Wandpaneele: Fugenabstand
+    tuer:          [10,70,24],            // Eingangsportal: x, Oberkante y, Breite (Raumname liegt darueber, y 58-62)
+    garderobe:     [44,50,9],             // Kleiderstange: x, Breite, Anzahl Jacken
+    jacken:        ['#6a2a3a','#2a3a6a','#3a3a44','#5a4a2a','#2a5a4a'],
+    polaroids:     [[104,70,'#c26a8a'],[116,74,'#6a9ac2'],[128,68,'#c2b26a'],[140,73,'#6ac29a']],
+    seilPfosten:   [150,164],             // Samtseil am Eingang
+    neonEingang:   [30,47,100],           // Leuchtlinie: x ab Bereichsbeginn, y, Breite (unter dem HUD)
+    kachel:        [14,8],                // Tanzflaechen-Kachel: Breite, Hoehe
+    fliesen:       ['#22102a','#0c1628','#2a0e22','#082226'],   // gedaempfte Neonfarben (Luma < 0.1), damit Figuren davor lesen
+    glimmFarben:   ['#ff3d8b','#42d9ff','#ffd447','#48e08a'],
+    glimmJeN:       4,    // jede n-te Kachel glimmt
+    glimmHz:       .7,    // langsames Glimmen (FX.hz klemmt auf 3, Flackerschutz 2)
+    glimmMin:      .03,   // Alpha-Spanne der glimmenden Kacheln
+    glimmMax:      .09,
+    waschlicht:    [[176,90,'255,61,139'],[270,76,'120,80,255'],[340,100,'66,217,255'],[445,90,'255,210,80'],[536,84,'255,61,139']],
+    waschH:         34,   // Hoehe des Wand-Waschlichts am Sockel (hinterleuchtet die Menge)
+    waschA:        .30,
+    traverse:      [24,4],                // Lichttraverse: y, Hoehe
+    lampen:        [{x:204,rgb:'255,61,139',farbe:'#c2306e',ph:0},{x:262,rgb:'66,217,255',farbe:'#2a9ec4',ph:1.4},
+                    {x:322,rgb:'255,210,80',farbe:'#c9a232',ph:2.6},{x:470,rgb:'66,217,255',farbe:'#2a9ec4',ph:.7},
+                    {x:530,rgb:'255,61,139',farbe:'#c2306e',ph:2},{x:590,rgb:'255,210,80',farbe:'#c9a232',ph:3.4}],
+    strahlB:        44, strahlH:110,      // Strahl: Breite unten, Hoehe
+    strahlA:       .045,  // Strahl-Deckkraft je Stufe (Spitze 5x, Mitte 2x; additiv, nie hell genug fuer die Figuren)
+    schwenk:       .30,   // Schiefe (Seitenversatz je Pixel Tiefe) der schwenkenden Strahlen
+    schwenkHz:     .3,    // Schwenkfrequenz in Hz
+    kugeln:        [290,520],
+    kugelKette:     6,
+    tuerme:        [176,328,446,586],     // Lautsprechertuerme: linke Kante
+    turmB:          22, turmH:54,
+    ledWand:       [352,40,86,52],        // x, y, Breite, Hoehe
+    eqN:            10, eqHz:1.2, eqSegmente:16,
+    dj:            {x:395,b:70,podest:6,tisch:9,dju:0,leds:8},
+    ledHz:         1.5,   // Pult-LEDs wechseln hoechstens so oft
+    menge:         {reihen:[{fuss:-6,x0:8,abst:13},{fuss:-2,x0:14,abst:13}],
+                    farben:['#0a0714','#120c20','#0e0a1a'], vorn:['#2e2248','#3a2a54','#2a1e40']},
+    dunst:         [{x:270,y:98,b:220,h:44,rgb:'180,140,255',a:.16,drift:14,ph:0},
+                    {x:480,y:104,b:240,h:40,rgb:'120,200,255',a:.12,drift:16,ph:2},
+                    {x:960,y:92,b:230,h:54,rgb:'200,190,170',a:.24,drift:10,ph:1},
+                    {x:700,y:112,b:200,h:30,rgb:'255,190,120',a:.10,drift:8,ph:3}],
+    dunstTempo:    .25,   // rad/s: ein Zyklus gut 25 s
+    rauch:         {n:6,x0:872,abst:30,y0:118,h:46,b:30,bh:14,tempo:5,a:.18},
+    regal:         {x:636,y:66,b:204,h:42,regale:3},
+    flaschen:      ['#2f8a4a','#b8662a','#4a7ac2','#a82c4a','#c9a232','#7a4ac2','#2a9ec4'],
+    flaschenAbst:   6,
+    baerLampen:    [668,742,816], lampH:12,
+    theke:         [640,210,11],          // x, Breite, Hoehe
+    hocker:        [668,712,770,812],
+    rauchFenster:  [884,70,36,26],
+    laterne:       [976,48],
+    aschen:        [950,1040],
+    kloKachel:      8,
+    spiegel:       [1100,64,36,26],
+    roehre:        [1086,24,70],
+    kloTueren:     [1072,1166],
+    waschPfeife:   [1119,90],
+    rohre:         [30,100],
+    kaefig:        [1240,1300],
+    notausgang:    [1342,64,18,9],
+  },
+
   rang: {
     flirtSchlecht:  0.5,    // Flirt-Wert: ja = 1, nummer = 0,85, nett = 0,35 (je Frau, Summe)
     flirtSehrGut:   2.8,
@@ -242,6 +305,8 @@ const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  fuge:'#07050d', stahl:'#2a2a38', stahlLicht:'#5a5a74', box:'#15101f', messing:'#b8923e',
+  holz:'#5a3a22', holzLicht:'#8a5c34', glas:'#4a7a88', samt:'#a8203c',
 };
 
 /* ==========================================================================
@@ -357,12 +422,12 @@ const LEVEL_B=1400;
 /* Fuenf Bereiche. Das Stroboskop laeuft nur auf der Tanzflaeche - wer reden
    will, geht an die Bar oder raus zu den Rauchern. */
 const ORTE=[
-  { von:0,    bis:170,  name:'EINGANG',       wand:'#241a30', boden:'#1a1322', strobe:false },
-  { von:170,  bis:620,  name:'TANZFLAECHE',   wand:'#2c1c38', boden:'#20142a', strobe:true  },
-  { von:620,  bis:860,  name:'BAR',           wand:'#26303a', boden:'#1a222a', strobe:false },
-  { von:860,  bis:1060, name:'RAUCHERECKE',   wand:'#1c2426', boden:'#141a1c', strobe:false },
-  { von:1060, bis:1200, name:'KLOS',          wand:'#20262e', boden:'#181c22', strobe:false },
-  { von:1200, bis:1400, name:'HINTERAUSGANG', wand:'#141a2c', boden:'#101624', strobe:false },
+  { von:0,    bis:170,  name:'EINGANG',       oben:'#07050c', wand:'#1c1026', boden:'#150e1c', kante:'#ff3d8b', strobe:false },
+  { von:170,  bis:620,  name:'TANZFLAECHE',   oben:'#060410', wand:'#1c1034', boden:'#12091c', kante:'#42d9ff', strobe:true, fliesen:true },
+  { von:620,  bis:860,  name:'BAR',           oben:'#060a10', wand:'#10202a', boden:'#0e1218', kante:'#ffd447', strobe:false },
+  { von:860,  bis:1060, name:'RAUCHERECKE',   oben:'#060808', wand:'#16201e', boden:'#0e1210', kante:'#ffd447', strobe:false },
+  { von:1060, bis:1200, name:'KLOS',          oben:'#080c10', wand:'#1a2a34', boden:'#10161a', kante:'#c8f0f0', strobe:false },
+  { von:1200, bis:1400, name:'HINTERAUSGANG', oben:'#050810', wand:'#121a2c', boden:'#0c101c', kante:'#48e08a', strobe:false },
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 
@@ -1356,9 +1421,9 @@ function kloppe(dt){
 function tanzSchlag(){
   let s=null;
   try{ if(typeof MUSIK!=='undefined') s=MUSIK.schlag(); }catch(e){ s=null; }
-  if(s&&isFinite(s.bisSchlag)&&isFinite(s.seitSchlag)) return { bis:s.bisSchlag, seit:s.seitSchlag, echt:true };
+  if(s&&isFinite(s.bisSchlag)&&isFinite(s.seitSchlag)) return { bis:s.bisSchlag, seit:s.seitSchlag, echt:true, idx:(s.takt|0)*4+((s.schritt|0)>>2) };
   const per=60/TUNE.tanzBpm, ph=((S.t%per)+per)%per;
-  return { bis:per-ph, seit:ph, echt:false };
+  return { bis:per-ph, seit:ph, echt:false, idx:Math.floor(S.t/per) };
 }
 function tanzSchritt(){
   const s=tanzSchlag(), abst=Math.min(s.seit,s.bis), p=bildPos();
@@ -1740,78 +1805,296 @@ function zeichneEcke(){
   if(Math.floor(S.t*2)%2===0) textC(IS_TOUCH?'TIPPEN':'E',H-14,P.dunkel);
 }
 
+/* ==========================================================================
+   DER ORT: Club-Kulisse. Statisches (Waende, Boden, Regale, Tuerme) wird einmal
+   in eine Ebene gebacken; pro Bild kommen nur Menge, DJ, Strahlen, Equalizer und
+   Dunst dazu. Alles Bewegte im Takt oder mit Helligkeit laeuft ueber FX
+   (FX.hz klemmt auf hoechstens 3 Hz, FX.ruhig() = Standbild). Keine Zufallszahlen
+   je Bild: Streuung kommt aus einem Hash des Index.
+   ========================================================================== */
+/* Tanzende Silhouetten, 9 breit, 11 hoch: unten Boden, 'q' wird eingefaerbt. */
+const SIL5=[
+  /* 0 Arme unten */ ['...qqq...','...qqq...','....q....','..qqqqq..','.qqqqqqq.','.q.qqq.q.','.q.qqq.q.','...q.q...','...q.q...','...q.q...','..qq.qq..'],
+  /* 1 beide Arme hoch */ ['q..qqq..q','q..qqq..q','qq..q..qq','.qqqqqqq.','..qqqqq..','..qqqqq..','...qqq...','...q.q...','...q.q...','...q.q...','..qq.qq..'],
+  /* 2 ein Arm hoch */ ['.......q.','...qqq.q.','...qqq.q.','....qqq..','..qqqqq..','.qqqqqq..','.q.qqq...','...q.q...','...q.q...','...q.q...','..qq.qq..'],
+];
+const POSEN5=[0,1,0,2];   // Reihenfolge ueber vier Schlaege
+const _beat5={idx:0,ph:0};
+function beat5(){
+  const s=tanzSchlag(), per=Math.max(.05,s.seit+s.bis);
+  _beat5.idx=s.idx; _beat5.ph=Math.min(1,s.seit/per); return _beat5;
+}
+/* Eine Silhouette im Takt. h = Hash des Tanzenden (Versatz, Spiegelung); ruhig: Standbild. */
+function silhouette5(x,fuss,h,farbe,bt,ruhig){
+  const pose=ruhig?0:POSEN5[(bt.idx+(h%4))&3], rows=SIL5[pose], y=Math.round(fuss)-rows.length;
+  if(!ruhig&&(h&1)&&pose===2) spriteFlip(rows,x-4,y,1,farbe); else sprite(rows,x-4,y,1,farbe);
+}
+const hash5=(i,m=97)=>((i*37+11)*(i*7+3)+i*13)%m;
+
+/* Baut Waende, Boden und festes Inventar - einmal, ueber die ganze Levelbreite. */
+function ortEbene5(){
+  const O=TUNE.ort, hi=TIEFE.hinten;
+  return verlauf('club5|'+H,LEVEL_B,H,g=>{
+    const r=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w,h); };
+    const strahl=(x,y,w,h,rgb,a)=>{ const gr=g.createLinearGradient(0,y,0,y+h);
+      gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(1,`rgba(${rgb},0)`); g.fillStyle=gr; g.fillRect(x,y,w,h); };
+    const kegel=(cx,y,w0,w1,h,rgb,a)=>{ const gr=g.createLinearGradient(0,y,0,y+h);
+      gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(1,`rgba(${rgb},0)`); g.fillStyle=gr;
+      g.beginPath(); g.moveTo(cx-w0/2,y); g.lineTo(cx+w0/2,y); g.lineTo(cx+w1/2,y+h); g.lineTo(cx-w1/2,y+h); g.closePath(); g.fill(); };
+    const glanz=(x,y,w,h,rgb,a)=>{ const gr=g.createRadialGradient(x+w/2,y+h/2,1,x+w/2,y+h/2,Math.max(w,h)/2);
+      gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(1,`rgba(${rgb},0)`); g.fillStyle=gr; g.fillRect(x,y,w,h); };
+
+    /* Waende und Boeden je Bereich */
+    for(const o of ORTE){
+      const w=o.bis-o.von;
+      const gr=g.createLinearGradient(0,20,0,hi); gr.addColorStop(0,o.oben); gr.addColorStop(1,o.wand);
+      g.fillStyle=gr; g.fillRect(o.von,20,w,hi-20);
+      /* Paneele: senkrechte Fugen, dezent */
+      for(let x=o.von+O.paneelB;x<o.bis;x+=O.paneelB) r(x,22,1,hi-22,P.fuge+'66');
+      r(o.von,20,w,2,P.fuge);                 // Deckenkante
+      r(o.von,hi-3,w,3,P.fuge+'aa');          // Sockelleiste
+      r(o.von,hi-4,w,1,o.kante+'55');
+      r(o.von,hi,w,H-hi,o.boden); r(o.von,hi,w,1,P.bodenKante);
+      r(o.bis-2,20,2,hi-20,P.fuge);
+    }
+    /* Boden: Dielen mit Fugen ueberall, auf der Tanzflaeche Kacheln (unten) */
+    for(const o of ORTE){ if(o.fliesen) continue;
+      for(let y=hi+9;y<H;y+=9) for(let x=o.von+((y>>1)%14);x<o.bis;x+=14) r(x,y,7,1,'#00000033'); }
+
+    /* ---- EINGANG (0-170): Portal mit Strassenlicht, Garderobe, Seil, Polaroids */
+    { const e=ORTE[0], tx=O.tuer;
+      r(tx[0]-2,tx[1]-2,tx[2]+4,hi-tx[1]+2,P.fuge);
+      const gt=g.createLinearGradient(0,tx[1],0,hi); gt.addColorStop(0,'#2a3a5a'); gt.addColorStop(1,'#5a6a8a');
+      g.fillStyle=gt; g.fillRect(tx[0],tx[1],tx[2],hi-tx[1]);
+      r(tx[0]+tx[2]/2,tx[1],1,hi-tx[1],P.fuge+'aa');                // Tuerspalt
+      strahl(tx[0]-4,tx[1],tx[2]+8,60,'150,170,210',.18);
+      kegel(tx[0]+tx[2]/2,hi,tx[2],tx[2]+26,26,'150,170,210',.12);   // Lichtspill auf den Boden
+      r(tx[0]-3,tx[1]-4,tx[2]+6,2,P.neon);                            // Leuchtkante oben
+      /* Garderobe: Garderobenstange mit Jacken ueber dem Tresen */
+      const gx=O.garderobe[0];
+      r(gx,64,O.garderobe[1],1,P.stahlLicht);
+      for(let i=0;i<O.garderobe[2];i++){ const jx=gx+3+i*5, c=O.jacken[(i*3+1)%O.jacken.length];
+        r(jx,64,1,2,P.stahlLicht); r(jx-1,66,4,14,c); r(jx-1,66,4,1,'#ffffff22'); }
+      /* Polaroid-Wand */
+      O.polaroids.forEach((p,i)=>{ r(p[0],p[1],8,9,'#d8d0c0'); r(p[0]+1,p[1]+1,6,6,p[2]); r(p[0]+1,p[1]+1,6,1,'#ffffff33'); });
+      /* Absperrpfosten mit Samtseil */
+      for(const px of O.seilPfosten){ r(px,hi-14,2,14,P.messing); r(px-1,hi-16,4,2,P.messing); }
+      for(let i=0;i<=8;i++){ const ph=O.seilPfosten, d=i/8; r(Math.round(ph[0]+1+d*(ph[1]-ph[0])),hi-14+Math.round(Math.sin(d*Math.PI)*3),2,1,P.samt); }
+      r(e.von+O.neonEingang[0],O.neonEingang[1],O.neonEingang[2],1,P.neon);
+      r(e.von+O.neonEingang[0],O.neonEingang[1]+1,O.neonEingang[2],3,P.neon+'22');
+    }
+
+    /* ---- TANZFLAECHE (170-620): Kacheln, Traverse, Boxentuerme, LED-Wand, DJ-Podest */
+    { const t=ORTE[1], k=O.kachel, y0=hi+1;
+      for(let cy=0,y=y0;y<H;cy++,y+=k[1]) for(let cx=0,x=t.von;x<t.bis;cx++,x+=k[0]){
+        const c=O.fliesen[hash5(cx*5+cy*3)%O.fliesen.length];
+        r(x,y,k[0],k[1],c); r(x,y,k[0],1,'#ffffff0c'); r(x,y,1,k[1],'#ffffff06');
+        r(x+k[0]-1,y,1,k[1],P.fuge+'88'); r(x,y+k[1]-1,k[0],1,P.fuge+'88'); }
+      /* Wand-Waschlicht: farbiges Aufleuchten unten, damit Silhouetten davor lesbar bleiben */
+      O.waschlicht.forEach(([x,w,rgb])=>{ const gr=g.createLinearGradient(0,hi-O.waschH,0,hi);
+        gr.addColorStop(0,`rgba(${rgb},0)`); gr.addColorStop(1,`rgba(${rgb},${O.waschA})`);
+        g.fillStyle=gr; g.fillRect(x,hi-O.waschH,w,O.waschH); });
+      /* Traverse */
+      r(t.von+2,O.traverse[0],t.bis-t.von-4,O.traverse[1],P.stahl);
+      r(t.von+2,O.traverse[0],t.bis-t.von-4,1,P.stahlLicht);
+      for(let x=t.von+6;x<t.bis-4;x+=8) r(x,O.traverse[0]+1,1,O.traverse[1]-1,'#000000aa');
+      for(const lp of O.lampen){ r(lp.x-2,O.traverse[0]+O.traverse[1],5,3,P.stahl); r(lp.x-1,O.traverse[0]+O.traverse[1]+3,3,2,lp.farbe); }
+      /* Boxentuerme */
+      for(const bx of O.tuerme){
+        for(let c=0;c<3;c++){ const cy=hi-O.turmH+c*(O.turmH/3|0), ch=(O.turmH/3|0)-1;
+          r(bx,cy,O.turmB,ch,P.box); r(bx,cy,O.turmB,1,P.stahlLicht); r(bx,cy,1,ch,P.stahlLicht+'88');
+          r(bx+O.turmB-1,cy,1,ch,'#00000088');
+          const mx=bx+(O.turmB>>1), my=cy+(ch>>1);
+          g.fillStyle='#050308'; g.beginPath(); g.arc(mx+.5,my+.5,ch*.38,0,6.283); g.fill();
+          g.strokeStyle=P.stahl; g.lineWidth=1; g.beginPath(); g.arc(mx+.5,my+.5,ch*.38,0,6.283); g.stroke();
+          r(mx-1,my-1,3,3,P.stahlLicht); }
+        r(bx-1,hi-1,O.turmB+2,1,P.fuge); }
+      /* LED-Wand hinter dem DJ */
+      const L=O.ledWand; r(L[0]-2,L[1]-2,L[2]+4,L[3]+4,P.fuge); r(L[0],L[1],L[2],L[3],'#0a0c1c');
+      for(let x=L[0];x<L[0]+L[2];x+=2) r(x,L[1],1,L[3],'#ffffff08');
+      for(let y=L[1];y<L[1]+L[3];y+=2) r(L[0],y,L[2],1,'#ffffff08');
+      /* DJ-Podest */
+      const D=O.dj; r(D.x-D.b/2-2,hi-D.podest,D.b+4,D.podest,'#14101e'); r(D.x-D.b/2-2,hi-D.podest,D.b+4,1,P.stahlLicht);
+      r(D.x-D.b/2-2,hi-2,D.b+4,1,P.neon2+'cc');
+      strahl(D.x-D.b/2-10,hi-D.podest-4,D.b+20,26,'66,217,255',.07);
+      kegel(D.x,O.traverse[0]+O.traverse[1]+2,10,D.b+10,hi-O.traverse[0]-O.traverse[1]-6,'200,215,255',.13);   // Spot aufs Pult
+      /* Kugeln haengen an einer Kette */
+      for(const kx of O.kugeln){ r(kx,O.traverse[0]+O.traverse[1],1,O.kugelKette,P.stahlLicht); }
+    }
+
+    /* ---- BAR (620-860): Flaschenregal mit Hinterleuchtung, Theke, Hocker, Haengelampen */
+    { const b=ORTE[2], R=O.regal;
+      glanz(R.x-10,R.y-8,R.b+20,R.h+18,'255,160,60',.28);          // warmer Schein ums Regal
+      r(R.x-2,R.y-2,R.b+4,R.h+4,P.fuge); r(R.x,R.y,R.b,R.h,'#1a0f0a');
+      const gr=g.createLinearGradient(0,R.y,0,R.y+R.h); gr.addColorStop(0,'rgba(255,150,50,.34)'); gr.addColorStop(1,'rgba(60,200,220,.30)');
+      g.fillStyle=gr; g.fillRect(R.x,R.y,R.b,R.h);
+      for(let s=0;s<R.regale;s++){
+        const sy=R.y+(R.h/R.regale|0)*(s+1)-2;
+        for(let x=R.x+3,i=s*7;x<R.x+R.b-5;x+=O.flaschenAbst,i++){
+          const h=hash5(i), bh=6+h%4, c=O.flaschen[h%O.flaschen.length];
+          r(x,sy-bh,3,bh,c); r(x+1,sy-bh-2,1,2,c); r(x,sy-bh,1,bh,'#ffffff33'); r(x+1,sy-bh-3,1,1,'#00000066'); }
+        r(R.x,sy,R.b,1,P.glas); r(R.x,sy+1,R.b,1,P.fuge); }
+      /* Haengelampen */
+      for(const lx of O.baerLampen){ r(lx,20,1,O.lampH,P.stahlLicht); r(lx-3,20+O.lampH,7,3,'#2a1c10'); r(lx-2,23+O.lampH,5,1,P.gold);
+        kegel(lx,24+O.lampH,6,26,50,'255,190,90',.20); }
+      /* Theke: Holz, Messingkante, Leuchtband unten, Hocker */
+      const T=O.theke; r(T[0],hi-T[2],T[1],T[2],P.holz); r(T[0],hi-T[2],T[1],1,P.messing); r(T[0],hi-T[2]+1,T[1],1,P.holzLicht);
+      for(let x=T[0]+6;x<T[0]+T[1];x+=12) r(x,hi-T[2]+3,1,T[2]-4,'#00000055');
+      r(T[0],hi-2,T[1],1,P.neon2+'dd');
+      for(const hx of O.hocker){ r(hx-3,hi-8,7,2,P.neon+'cc'); r(hx,hi-6,1,6,P.stahl); r(hx-2,hi-1,5,1,P.stahl); }
+    }
+
+    /* ---- RAUCHERECKE (860-1060): Backstein, Fenster, Laterne, Aschenbecher */
+    { const c=ORTE[3], w=O.rauchFenster;
+      for(let y=24,z=0;y<hi-4;y+=5,z++) for(let x=c.von+((z&1)?4:0);x<c.bis;x+=9)
+        r(x,y,8,4,((x*3+y)%7===0)?'#ffffff08':'#00000033');
+      r(w[0]-2,w[1]-2,w[2]+4,w[3]+4,P.fuge); r(w[0],w[1],w[2],w[3],'#0c1428');
+      for(let i=0;i<6;i++) r(w[0]+3+((i*13)%(w[2]-6)),w[1]+3+((i*7)%(w[3]-8)),1,1,'#c8d4ff88');
+      r(w[0]+w[2]/2,w[1],1,w[3],P.fuge); r(w[0],w[1]+w[3]/2,w[2],1,P.fuge);
+      const L=O.laterne; r(L[0],L[1],1,6,P.stahlLicht); r(L[0]-2,L[1]+6,5,3,'#ffcf6a');
+      glanz(L[0]-34,L[1]-8,69,62,'255,190,80',.34); kegel(L[0],L[1]+9,5,40,hi-L[1]-14,'255,190,80',.16);
+      for(const ax of O.aschen){ r(ax,hi-12,1,12,P.stahl); r(ax-2,hi-13,5,2,P.stahlLicht); r(ax-1,hi-12,3,1,'#c8501e'); }
+    }
+
+    /* ---- KLOS (1060-1200): Kacheln, Spiegel, Leuchtstoffroehre */
+    { const k=ORTE[4], S2=O.kloKachel;
+      for(let y=24;y<hi-4;y+=S2) r(k.von,y,k.bis-k.von,1,'#ffffff0e');
+      for(let x=k.von+S2;x<k.bis;x+=S2) r(x,24,1,hi-28,'#ffffff0e');
+      const m=O.spiegel; r(m[0]-2,m[1]-2,m[2]+4,m[3]+4,P.stahlLicht); r(m[0],m[1],m[2],m[3],'#3a5060');
+      r(m[0]+2,m[1]+2,2,m[3]-4,'#ffffff22'); r(m[0]+6,m[1]+2,1,m[3]-4,'#ffffff12');
+      const l=O.roehre; r(l[0],l[1],l[2],2,'#d8f0f0'); strahl(l[0]-6,l[1]+2,l[2]+12,60,'200,235,235',.16);
+      for(const dx of O.kloTueren){ r(dx,64,16,hi-64,'#10161c'); r(dx,64,16,1,P.stahlLicht); r(dx+3,hi-30,10,1,'#ffffff18'); r(dx+12,92,2,2,P.messing); }
+      r(O.waschPfeife[0],O.waschPfeife[1],2,hi-O.waschPfeife[1]-3,P.stahlLicht);
+    }
+
+    /* ---- HINTERAUSGANG (1200-1400): Beton, Rohre, Kaefiglampe, Notausgang-Schild */
+    { const h=ORTE[5];
+      for(let y=24;y<hi-4;y+=12) r(h.von,y,h.bis-h.von,1,'#ffffff0c');
+      for(const py of O.rohre){ r(h.von,py,h.bis-h.von,3,P.stahl); r(h.von,py,h.bis-h.von,1,P.stahlLicht); r(h.von,py+2,h.bis-h.von,1,'#00000066');
+        for(let x=h.von+16;x<h.bis;x+=40) r(x,py-1,3,5,P.stahlLicht); }
+      for(const lx of O.kaefig){ r(lx-3,38,7,6,'#0a0c14'); r(lx-2,39,5,4,'#c8e4ff');
+        glanz(lx-30,30,61,70,'150,190,255',.26); kegel(lx,44,6,44,hi-48,'150,190,255',.12); }
+      const n=O.notausgang; r(n[0]-1,n[1]-1,n[2]+2,n[3]+2,P.fuge); r(n[0],n[1],n[2],n[3],'#12683a');
+      r(n[0]+2,n[1]+2,n[2]-4,1,P.gruen); r(n[0]+2,n[1]+n[3]-3,n[2]-4,1,P.gruen); r(n[0]+n[2]/2,n[1]+2,1,n[3]-4,P.gruen);
+      glanz(n[0]-14,n[1]-8,n[2]+28,n[3]+16,'72,224,138',.22);
+    }
+    /* Raumbluenden: dunkle Kante zu den Nachbarn */
+    for(const o of ORTE){ strahl(o.von,20,3,hi-20,'0,0,0',.35); }
+  });
+}
+
+function dunstBild5(key,w,h,rgb,a){
+  return verlauf(key,w,h,g=>{ const gr=g.createRadialGradient(w/2,h/2,1,w/2,h/2,w/2);
+    gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(1,`rgba(${rgb},0)`);
+    g.save(); g.translate(0,h/2); g.scale(1,h/w); g.translate(0,-w/2); g.fillStyle=gr; g.fillRect(0,0,w,w); g.restore(); });
+}
+
+/* Bewegtes: Strahlen, Kugeln, LED-Wand, Boxen, DJ, Menge, Kachelglimmen, Dunst. */
+function zeichneOrt5(kx){
+  const O=TUNE.ort, hi=TIEFE.hinten, ruhig=FX.ruhig(), bt=beat5();
+  ctx.drawImage(ortEbene5(),kx,0,W,H,kx,0,W,H);
+  const sicht=(x,b=0)=>x>kx-b-4&&x<kx+W+b+4;
+
+  /* Kachelglimmen: wenige Kacheln heller, langsam (FX.hz), unter ruhig gleichmaessig */
+  const t=ORTE[1], k=O.kachel;
+  const ph=ruhig?.5:Math.sin(S.t*FX.hz(O.glimmHz)*6.283)*.5+.5;
+  for(let cy=0;cy*k[1]+hi+1<H;cy++) for(let cx=0;t.von+cx*k[0]<t.bis;cx++){
+    const x=t.von+cx*k[0]; if(x<kx-k[0]||x>kx+W) continue;
+    const h=hash5(cx*5+cy*3); if(h%O.glimmJeN!==0) continue;
+    ctx.globalAlpha=O.glimmMin+(ruhig?0:(O.glimmMax-O.glimmMin)*Math.sin(S.t*FX.hz(O.glimmHz)*6.283+h)*.5+(O.glimmMax-O.glimmMin)*.5);
+    ctx.fillStyle=O.glimmFarben[h%O.glimmFarben.length]; ctx.fillRect(x+1,hi+1+cy*k[1]+1,k[0]-2,k[1]-2);
+  }
+  ctx.globalAlpha=1;
+
+  /* LED-Wand: Equalizer. Hoehe folgt langsamen Sinuswellen (je Balken eigene Frequenz, alle <= FX.hz). */
+  { const L=O.ledWand, n=O.eqN, bw=Math.floor((L[2]-2)/n);
+    for(let i=0;i<n;i++){
+      const w=ruhig?.55:Math.sin(S.t*FX.hz(O.eqHz*(0.5+(i%3)*.25))*6.283+i*1.9)*.5+.5;
+      const seg=Math.max(1,Math.round((L[3]-4)/3*(.18+.82*w)));
+      for(let j=0;j<seg;j++){
+        ctx.fillStyle=j>=O.eqSegmente-2?P.neon:(j>=O.eqSegmente-5?P.gold:P.gruen);
+        ctx.globalAlpha=.85; ctx.fillRect(L[0]+2+i*bw,L[1]+L[3]-3-j*3,bw-1,2);
+      }
+    }
+    ctx.globalAlpha=1; }
+
+  /* Boxen: Basskegel schlaegt im Takt aus (nur Ringhelligkeit, klein) */
+  for(const bx of O.tuerme){ if(!sicht(bx,O.turmB)) continue;
+    const puls=ruhig?0:Math.max(0,1-bt.ph*3);
+    ctx.globalAlpha=.10+.22*puls; ctx.fillStyle='#8a7aa8';
+    for(let c=0;c<3;c++){ const ch=(O.turmH/3|0)-1, cy=hi-O.turmH+c*(O.turmH/3|0), mx=bx+(O.turmB>>1), my=cy+(ch>>1);
+      ctx.fillRect(mx-2,my-2,5,5); }
+    ctx.globalAlpha=1; }
+
+  /* Strahlen von der Traverse: langsames Schwenken, additiv; unter ruhig feststehend */
+  ctx.globalCompositeOperation='lighter';
+  for(const lp of O.lampen){ if(!sicht(lp.x,O.strahlB)) continue;
+    const sk=(ruhig?Math.sin(lp.ph):Math.sin(S.t*FX.hz(O.schwenkHz)*6.283+lp.ph))*O.schwenk;
+    const y0=O.traverse[0]+O.traverse[1]+3, y1=y0+O.strahlH, x1=lp.x+sk*O.strahlH, hb=O.strahlB/2;
+    const gr=ctx.createLinearGradient(0,y0,0,y1);
+    gr.addColorStop(0,`rgba(${lp.rgb},${O.strahlA*5})`); gr.addColorStop(.7,`rgba(${lp.rgb},${O.strahlA*2})`); gr.addColorStop(1,`rgba(${lp.rgb},0)`);
+    ctx.fillStyle=gr; ctx.beginPath(); ctx.moveTo(lp.x-1,y0); ctx.lineTo(lp.x+1,y0); ctx.lineTo(x1+hb,y1); ctx.lineTo(x1-hb,y1); ctx.closePath(); ctx.fill(); }
+  ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
+
+  /* Discokugeln */
+  for(const kxx of O.kugeln){ if(!sicht(kxx,8)) continue;
+    const ky=O.traverse[0]+O.traverse[1]+O.kugelKette;
+    sprite(SPR.kugel,kxx-3,ky);
+    ctx.globalAlpha=.5; ctx.fillStyle='#fff'; ctx.fillRect(kxx-1+(ruhig?0:Math.round(Math.sin(S.t*FX.hz(1)*6.283)*1)),ky+1,1,1); ctx.globalAlpha=1; }
+
+  /* DJ-Pult: DJ dahinter, Pult davor */
+  { const D=O.dj, py=hi-D.podest;
+    if(sicht(D.x,D.b)){
+      const pose=ruhig?0:POSEN5[(bt.idx)&3];
+      const rows=SIL5[pose===2?1:pose], y=py-D.tisch+3-rows.length+D.dju;
+      sprite(rows,D.x-4,y,1,'#08060f');
+      ctx.fillStyle=P.neon2; ctx.fillRect(D.x-3,y+1,1,2); ctx.fillRect(D.x+3,y+1,1,2);    // Kopfhoerer
+      const tx=D.x-D.b/2+4, tw=D.b-8, ty=py-D.tisch;
+      ctx.fillStyle='#1c1628'; ctx.fillRect(tx,ty,tw,D.tisch); ctx.fillStyle=P.stahlLicht; ctx.fillRect(tx,ty,tw,1);
+      for(const dx of [tx+5,tx+tw-13]){ ctx.fillStyle='#0a0810'; ctx.fillRect(dx,ty-2,9,3); ctx.fillStyle='#4a4660'; ctx.fillRect(dx+2,ty-2,5,1); }
+      ctx.fillStyle='#2a2a38'; ctx.fillRect(D.x-5,ty-4,10,3); ctx.fillStyle=P.neon2; ctx.globalAlpha=.55; ctx.fillRect(D.x-4,ty-4,8,2); ctx.globalAlpha=1;
+      for(let i=0;i<D.leds;i++){
+        const an=ruhig?.75:(Math.floor(S.t*FX.hz(O.ledHz)+i*.37)%2?.95:.45);
+        ctx.globalAlpha=an; ctx.fillStyle=O.glimmFarben[i%O.glimmFarben.length];
+        ctx.fillRect(tx+3+i*Math.floor((tw-6)/D.leds),ty+3,3,2); ctx.fillRect(tx+3+i*Math.floor((tw-6)/D.leds),ty+6,3,1); }
+      ctx.globalAlpha=1;
+    } }
+
+  /* Menge: zwei Reihen am Wandfuss, tanzend im Takt (ausserhalb des DJ-Podests) */
+  { const M=O.menge, t0=ORTE[1];
+    for(const reihe of M.reihen){
+      for(let i=0;;i++){
+        const x=t0.von+reihe.x0+i*reihe.abst; if(x>t0.bis-6) break;
+        if(x<kx-8||x>kx+W+8) continue;
+        if(x>O.dj.x-O.dj.b/2-4&&x<O.dj.x+O.dj.b/2+4) continue;
+        const h=hash5(i*3+reihe.fuss);
+        silhouette5(x+(h%5)-2,hi+reihe.fuss,h,M.farben[h%M.farben.length],bt,ruhig);
+      } } }
+
+  /* Dunst ueber der Tanzflaeche und in der Raucherecke - treibt langsam, unter ruhig still */
+  ctx.globalCompositeOperation='source-over';
+  for(const d of O.dunst){
+    if(!sicht(d.x,d.b)) continue;
+    const dr=ruhig?0:Math.sin(S.t*O.dunstTempo+d.ph)*d.drift;
+    ctx.globalAlpha=d.a; ctx.drawImage(dunstBild5('dunst5'+d.rgb+d.b,d.b,d.h,d.rgb,1),Math.round(d.x-d.b/2+dr),d.y);
+  }
+  ctx.globalAlpha=1;
+  /* Rauch steigt in der Raucherecke auf (Schleife aus Zeit und Index, still unter ruhig) */
+  for(let i=0;i<O.rauch.n;i++){
+    const R=O.rauch, x=R.x0+i*R.abst+(hash5(i)%7), z=ruhig?(i*.37)%1:((S.t*R.tempo/R.h+i*.29)%1);
+    ctx.globalAlpha=R.a*Math.sin(z*Math.PI);
+    ctx.drawImage(dunstBild5('rauch5',R.b,R.bh,'200,200,210',1),Math.round(x-R.b/2),Math.round(R.y0-z*R.h));
+  }
+  ctx.globalAlpha=1;
+}
+
 function zeichneClub(){
   const kx=Math.round(S.kamX);
   ctx.save(); ctx.translate(-kx,0);
 
-  for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,TIEFE.hinten-20);
-    ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
-    ctx.fillStyle='#00000033';
-    for(let y=TIEFE.hinten+8;y<H;y+=9) for(let x=o.von+((y>>1)%14);x<o.bis;x+=14) ctx.fillRect(x,y,7,1);
-  }
-
-  /* Deckenreihe: Lautsprecher und Lampen, wiederholt ueber die ganze
-     Levelbreite - erster Schritt gegen die leere obere Bildhaelfte
-     (PLAYTEST.md). Keine neue Kunst, nur ein Muster, das sich wiederholt. */
-  for(let x=24;x<LEVEL_B;x+=50){
-    /* Lautsprecher-Saeule mit Gitterstreifen - jede Zeile bekommt eigene
-       Kanten, nicht nur eine einzelne duenne Stange. */
-    ctx.fillStyle='#1c1428'; ctx.fillRect(x,21,14,30);
-    ctx.fillStyle='#000000aa';
-    for(let gy=23;gy<49;gy+=3) ctx.fillRect(x+2,gy,10,1);
-    ctx.globalAlpha=.55+Math.sin(S.t*2+x)*.2;
-    ctx.fillStyle=P.gold; ctx.fillRect(x+16,27,7,4);
-    ctx.globalAlpha=1;
-  }
-
-  /* Discokugel ueber der Tanzflaeche - zweiter Schritt gegen die leere
-     Decke (PLAYTEST.md). Harte Kanten (Schachbrett, Streifen), der
-     Verlauf darunter bleibt nur der Lichtschein. */
-  for(const lx of [195,315,445,565]){
-    sprite(SPR.kugel,lx-3,24);
-    for(let by=29;by<TIEFE.hinten;by+=6){
-      ctx.fillStyle=((by-29)/6)%2===0?'#ffd447':'#2a2440';
-      ctx.fillRect(lx-5,by,11,4);
-    }
-  }
-
-  /* Rueckwand-Banner ueber Bar, Raucherecke, Klos und Hinterausgang - dritter
-     und vierter Schritt gegen die leere Decke (PLAYTEST.md). Hohe Banner ueber
-     die volle Wandhoehe (y 20 bis TIEFE.hinten, Boden-Y der Rueckwand),
-     abwechselnd eingefaerbt, wiederholt ueber x 625-1400 (Bar, Raucherecke,
-     Klos, Hinterausgang, siehe ORTE). Ein erster, nur halb so hoher Versuch
-     (Rahmen bei y 38-105) liess die Wand darueber und darunter leer - deckt
-     jetzt die ganze Wand ab. */
-  for(let x=625;x<1400;x+=48){
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,20,40,TIEFE.hinten-20);
-    ctx.fillStyle=(Math.floor((x-625)/48)%2===0)?'#3a4452':'#4a2c38';
-    ctx.fillRect(x+3,23,34,TIEFE.hinten-26);
-    ctx.fillStyle='#ffffff22'; ctx.fillRect(x+3,23,34,1);
-    ctx.fillStyle='#00000055'; ctx.fillRect(x+3,TIEFE.hinten-3,34,1);
-  }
-  /* Raumnamen zuletzt: Deckenreihe, Discokugel-Saeulen und Banner decken sie sonst zu. */
+  zeichneOrt5(kx);
+  /* Raumnamen zuletzt: Strahlen, Tuerme und Dunst decken sie sonst zu. */
   for(const o of ORTE) text(o.name,o.von+6,TUNE.raumNameY,TUNE.raumNameFarbe);
-
-  /* Partylicht - nur ueber der Tanzflaeche, gedaempft, nie reines Weiss */
-  const lichter=[[240,'#ff3d8b',0],[390,'#42d9ff',1.4],[540,'#ffd447',.6]];
-  for(const [lx,col,off] of lichter){
-    const puls=(Math.sin(S.t*1+off)*.5+.5);
-    ctx.globalAlpha=.08+puls*.09;
-    ctx.drawImage(verlauf('licht'+col,180,110,g=>{
-      const gr=g.createRadialGradient(90,18,4,90,18,90);
-      const rgb=col==='#ff3d8b'?'255,60,180':col==='#42d9ff'?'70,210,255':'255,210,80';
-      gr.addColorStop(0,`rgba(${rgb},1)`); gr.addColorStop(1,`rgba(${rgb},0)`);
-      g.fillStyle=gr; g.fillRect(0,0,180,110); }),lx-90,20);
-  }
-  ctx.globalAlpha=1;
-  /* Raucherecke: eine Laterne statt Discolicht */
-  ctx.globalAlpha=.12; ctx.fillStyle='#ffd447'; ctx.fillRect(900,30,120,TIEFE.hinten-30); ctx.globalAlpha=1;
-
-  sprite(SPR.dj,120,TIEFE.hinten-14);
 
   const naechst=S.modus==='spiel'?naechstesZiel():null;
   const blink=Math.floor(S.t*4)%2===0;
@@ -1819,19 +2102,22 @@ function zeichneClub(){
   const schatten=(x,t)=>{ ctx.globalAlpha=.24; ctx.fillStyle='#000';
     ctx.fillRect(Math.round(x-3),Math.round(bodenY(t)),7,1); ctx.globalAlpha=1; };
 
+  const bt5=beat5(), ruhig5=FX.ruhig(), OM=TUNE.ort.menge;
   for(const tz of TANZER){
     liste.push({t:tz.t, mal:()=>{
-      const y=bodenY(tz.t)-SPR.tanzer.length+Math.round(Math.sin(S.t*6+tz.seed));
-      sprite(SPR.tanzer,tz.x-3,y,1,'#3a3052');
+      const h=Math.round(tz.seed*10), rows=ruhig5?SIL5[0]:SIL5[POSEN5[(bt5.idx+(h%4))&3]];
+      const y=Math.round(bodenY(tz.t))-rows.length;
+      outline(rows,tz.x-4,y,1,.5); silhouette5(tz.x,bodenY(tz.t),h,OM.vorn[h%OM.vorn.length],bt5,ruhig5);
     }});
   }
 
   /* Bar und Waschbecken stehen an der Rueckwand */
   liste.push({t:BARTHEKE.t, mal:()=>{
-    const y=bodenY(BARTHEKE.t)-4;
-    outline(SPR.theke,BARTHEKE.x-6,y,1,.5); sprite(SPR.theke,BARTHEKE.x-6,y);
-    text('BAR',BARTHEKE.x-textW('BAR')/2+0,y-10,P.dim);
-    if(naechst&&naechst.obj===BARTHEKE&&blink) text(aktionsMarke(),BARTHEKE.x-2,y-18,P.gold);
+    /* Der Schankplatz: Glaeser auf der Theke im Warmlicht. Der Name BAR steht schon als Raumname an der Wand. */
+    const y=Math.round(bodenY(BARTHEKE.t))-TUNE.ort.theke[2]-3;
+    ctx.globalAlpha=.22; ctx.fillStyle='#ffb85a'; ctx.fillRect(BARTHEKE.x-10,y-1,22,5); ctx.globalAlpha=1;
+    for(let i=0;i<3;i++){ ctx.fillStyle=P.glas; ctx.fillRect(BARTHEKE.x-6+i*5,y,3,4); ctx.fillStyle='#ffffff44'; ctx.fillRect(BARTHEKE.x-6+i*5,y,1,4); }
+    if(naechst&&naechst.obj===BARTHEKE&&blink) text(aktionsMarke(),BARTHEKE.x-2,y-10,P.gold);
   }});
   liste.push({t:WASCHBECKEN.t, mal:()=>{
     const y=bodenY(WASCHBECKEN.t)-SPR.waschbecken.length;
