@@ -158,7 +158,7 @@ const TUNE = {
   ansageSek:        1.5,     // Dauer der grossen RUNDE-Ansage
   ansageSatz2:      'DIE ANDEREN KOMMEN DAZU.',
   ansageSatz3:      'JETZT FLIEGT WAS.',
-  arenaNameY:       106,     // Arenaname beim Rundenwechsel: unter dem Ansagesatz (y=96, 5 px hoch) mit 5 px Luft; vorher 86 = Beruehrung
+  arenaNameY:        86,     // grosser Arenaname beim Arenawechsel; waehrend einer RUNDE-Ansage aus (sie stuende sonst auf dem Satz bei y=96)
   tempoBasis:       112,     // Song-Tempo; auf dem Weg kommt Licht * tempoJeLicht dazu
   tempoJeLicht:     40,
   spannungKampf:    0.8,     // Musik-Spannung im Kampf (0..1)
@@ -1943,7 +1943,7 @@ function hudKampf8(){
   if(g.zustand!=='ausholen'){ const h=naechsterAngreifer(S.handlanger,S.spielerK); if(h) zeichneAusholbalken(h,'VON DER SEITE',30); }
 
   zeichneAnsage8();
-  if(S.arenaWechselT>0) textGlowC(ARENEN[S.arena].name,TUNE.arenaNameY,P.gold,2);
+  if(S.arenaWechselT>0&&!(S.ansageT>0)) textGlowC(ARENEN[S.arena].name,TUNE.arenaNameY,P.gold,2);
   if(S.meldungT>0){ ctx.globalAlpha=Math.min(1,S.meldungT*2);
     textGlowC(S.meldung,H-30,P.weiss,1); ctx.globalAlpha=1; }
   if(S.hinweisT>0){ ctx.globalAlpha=Math.min(1,S.hinweisT);
