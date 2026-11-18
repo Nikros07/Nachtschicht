@@ -4,6 +4,9 @@
    node tools/nachttest.js --kurz     nur 20 statt 60 Sekunden Spiel, 60 statt 300 Nichtstun
    node tools/nachttest.js --zeit     dazu die Laufzeit je Seite
    node tools/nachttest.js --seriell  alles in einem Prozess (ohne Filter sonst: eine Seite je Kern)
+   node tools/nachttest.js --bots     die Gewinn-Bots (tools/bots/, siehe README dort): je Level eine Zeile
+                                      mit Sieg ja/nein, Spielzeit, Punkten, Rang, Echtzeit. Ohne Filter parallel,
+                                      mit Filter (z.B. level3) einzeln. NICHT Teil des normalen Laufs.
 
    Warum es das gibt: die Nachtroutine laeuft in der Cloud, und dort gibt es
    keinen Browser. Engine und Level-Script werden hier in einer Funktion
@@ -27,6 +30,7 @@ const KURZ=argv.includes('--kurz');
 const filter=argv.filter(a=>!a.startsWith('--'));
 const SEITEN=['index.html','level2.html','level3.html','level4.html','level5.html',
   'level6.html','level7.html','level8.html','karte.html','runner.html'];   // runner.html: eigene Regeln (runnerLauf)
+const BOTS=argv.includes('--bots');
 const SPIEL_SEK=KURZ?20:60, NICHTS_SEK=KURZ?60:300;
 
 /* ---- Attrappen ------------------------------------------------------- */
@@ -387,6 +391,54 @@ function konterLevel2(){
      L.api.ev('update(1/60)'); L.taste('KeyE',true); L.api.ev('S.modus')
    Dann laeuft der Testlauf unten NICHT. Arbeitsordner muss die Projektwurzel sein. */
 if(require.main!==module){ module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm,vertrag}; return; }
+
+/* ---- Gewinn-Bots (--bots): tools/bots/level1.js ... level8.js ----------------------
+   Jeder Bot spielt sein Level ueber Tasten bis zum Sieg (Endzustand S.modus 'ende' + S.gewonnen).
+   Harter Fehler (Exit 1): Bot gewinnt nicht oder wirft eine Ausnahme.
+   Ohne Filter laeuft jeder Bot in einem eigenen Prozess (parallel), mit Filter einzeln. */
+if(BOTS){
+  module.exports={lade,leinwand,leereProzent,speicher,zufall,stumm,vertrag};   // die Bots laden nachttest.js als Modul (messhilfe.js)
+  const path=require('path');
+  const dir=path.join(__dirname,'bots');
+  const dateien=fs.readdirSync(dir).filter(n=>/^level\d+\.js$/.test(n)).sort();
+  const gewaehlt=dateien.filter(n=>!filter.length||filter.some(f=>n.includes(f)||require(path.join(dir,n)).seite.includes(f)));
+  const zeileFuer=r=>{
+    const f=n=>typeof n==='number'?n:'-';
+    const sieg=r.gewonnen&&!r.fehler;
+    return r.seite.padEnd(13)+(sieg?'gewonnen ja  ':'gewonnen NEIN ')
+      +'Spielzeit '+(typeof r.zeit==='number'?r.zeit.toFixed(1).padStart(6):'     -')+' s  Punkte '+String(f(r.punkte)).padStart(3)
+      +'  Rang '+(r.rang||'-')+'  ('+r.echtzeit.toFixed(1)+' s Echtzeit)'
+      +(r.fehler?'  FEHLER: '+String(r.fehler.message).slice(0,120):(sieg?'':'  Endzustand: '+r.modus+(r.faenger?' / '+r.faenger:'')));
+  };
+  if(filter.length||argv.includes('--seriell')){
+    const K=require('./bots/_kern.js'); let fehl=0;
+    for(const n of gewaehlt){
+      const r=K.spiele(require(path.join(dir,n)));
+      console.log(zeileFuer(r)); if(!r.gewonnen||r.fehler){ fehl++; if(r.fehler&&process.env.BOT_STACK) console.log(r.fehler.stack); }
+    }
+    process.exit(fehl?1:0);
+  }
+  const {spawn}=require('child_process'), os=require('os');
+  const t0=Date.now(), erg=new Array(gewaehlt.length);
+  const plaetze=Math.max(1,Math.min(gewaehlt.length,(os.cpus()||[]).length||1));
+  let naechste=0, fertig=0, laufend=0;
+  const starte=()=>{
+    while(laufend<plaetze&&naechste<gewaehlt.length){
+      const i=naechste++; laufend++;
+      const k=spawn(process.execPath,[__filename,'--bots','--seriell',gewaehlt[i]]);
+      let out=''; k.stdout.on('data',d=>out+=d); k.stderr.on('data',d=>out+=d);
+      k.on('close',code=>{ erg[i]={code,out:out.trim()}; laufend--; fertig++; if(fertig===gewaehlt.length) schluss(); else starte(); });
+    }
+  };
+  const schluss=()=>{
+    let fehl=0; erg.forEach(e=>{ console.log(e.out); if(e.code) fehl++; });
+    console.log('\n'+(fehl?fehl+' Bots ohne Sieg':'alle '+gewaehlt.length+' Bots gewinnen')+'  ('+((Date.now()-t0)/1000).toFixed(1)+' s, '+plaetze+' parallel)');
+    process.exit(fehl?1:0);
+  };
+  if(!gewaehlt.length){ console.log('kein Bot gefunden'); process.exit(1); }
+  starte();
+  return;
+}
 
 /* ---- Parallel: ohne Seitenfilter laeuft jede Seite in einem eigenen Prozess ----
    Warum: seriell dauert der volle Lauf 48 s (4 Kerne) bis ueber 120 s (Routine).
