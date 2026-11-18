@@ -974,7 +974,8 @@ function zeichneFlur(){
     ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
     ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
     ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
-    text(raumName(o),o.von+6,26,'#ffffff60');
+    /* Raumname unter der Uhrenreihe (y 50), nicht in der HUD-Zone: bei y 26 lag er unter der Erinnerungsliste und unter WACH (Screenshot-Pruefung 03.11.). */
+    text(raumName(o),o.von+6,50,'#ffffff60');
   }
   /* Wanddeko: Plakate/Spinde ueber die ganze Flurbreite, eine Sorte,
      wiederholt - passend zum Traum (PLAYTEST.md: obere Bildhaelfte leer).
