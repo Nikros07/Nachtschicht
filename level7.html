@@ -145,12 +145,57 @@ const TUNE = {
   durchstrichSek: 0.5,          // Listenlinie waechst in so vielen Sekunden
   rang: { liste:{schlecht:1, gut:4}, wurf:{schlecht:0.2, gut:0.6},
           gespr:{schlecht:1, gut:5}, zeit:{schlecht:240, gut:45} },   // S.zeit zaehlt NUR freies Spiel (ohne Gespraeche). Messung n3-level7-rang.js: Bot 19 s => Mensch grob 2-10x; vorher 420/180 war nie spuerbar
+  /* (11) DER ORT - der Spaeti, Haeuser, Daemmerung. Alles in Bildpunkten (Bild 320x180, Welt 900 breit).
+     Die Wand endet bei tiefeHinten (120); davor liegt die begehbare Flaeche. Warme Fenster stehen oben,
+     der Wandfuss (y 104-120) bleibt dunkel, damit Figuren und Einkaufsliste lesbar bleiben.
+     Gebacken wird einmal (verlauf-Cache 'ort7'); je Bild kommt nur das Leuchtschild dazu. */
+  ort:{
+    horizont:     92,                                   // hier endet der Himmel, dahinter die fernen Daecher
+    himmelAb:    [0,26,44,60,72,80,86],                 // Startzeile der Himmelsstufen (Farben P.himmel)
+    sterne:       { n:36, bis:50, schritt:149 },        // vereinzelte Sterne: Anzahl, unterste Zeile, Streuung
+    wolken:      [[40,74,70],[330,70,90],[560,76,60],[770,68,100]],   // duenne Daemmerungsstreifen: x, y, Breite
+    glutX:       840,                                   // im Osten (rechts) kommt das erste Licht
+    glutStaerke: .30,
+    ferne:        { ab:52, spanne:26, breiteMin:18, breiteVar:20, fensterJe:5 },   // Silhouetten ganz hinten
+    /* Haeuser links und rechts vom Laden: x, Breite, Dachzeile, Farbe (Index in P.haus) */
+    haeuser:     [[0,64,40,0],[64,70,30,1],[134,76,48,2],[210,86,36,0],
+                  [524,58,46,1],[582,72,36,2],[654,64,50,0],[718,76,32,1],[794,106,42,2]],
+    fensterAbst: [12,14],                               // Raster der Hausfenster: x, y
+    fensterGross:[6,8],
+    fensterBis:  100,                                   // unterste Fensterzeile (darunter dunkles Erdgeschoss)
+    lichtJe:      [3,5],                                // je [x,y]-Hash: 0..2 warm, 3..4 Fernseher-blau, sonst dunkel (von 11)
+    /* Der Laden */
+    laden:       { x0:296, x1:524, dach:34, markiseY:57, fensterX:306, fensterB:140, fensterY:64, fensterH:42,
+                   kuehlX:400, tuerX:456, tuerB:34, tuerY:66,
+                   schildX:346, schildB:128, schildY:37, schildH:17,
+                   brett:[76,89,102], neonHz:.5, neonStaerke:.10 },   // Leuchtschild pulsiert ueber FX.hz/FX.ruhig
+    kisten:      [[458,120],[472,120],[458,113],[472,113],[312,120],[326,120]],   // Getraenkekisten: linke obere Ecke-x, Fuss-y
+    muelleimerX:  534,
+    rad:         { x:604, n:5, abst:9, bikeX:620 },     // Fahrradstaender: erster Bogen, Anzahl, Abstand, Rad
+    laterneX:     690,
+    platte:      [30,9],                                // Gehwegplatten: Breite, Hoehe
+    bordsteinY:   170,
+  },
 };
 
 const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Ort (Level 7) */
+  himmel:['#05040d','#080a1c','#0c1230','#142040','#22305a','#3a3a62','#6a4660'],
+  glut:'255,150,90', ferne:'#141a30', ferneFenster:'#2a3050',
+  haus:['#1a1830','#1d1a2e','#221a2a'], hausKante:'#2a2646', fensterDunkel:'#0d0b18', fensterRahmen:'#241f3c',
+  fensterWarm:'#9a6a30', fensterTV:'#3a6a8a', erdgeschoss:'#120f1e', tuerDunkel:'#0b0912',
+  spWand:'#1c1628', spDach:'#2c2440', markiseA:'#6a2238', markiseB:'#2a1626',
+  ladenOben:'#4f3822', ladenUnten:'#2e2012', deckenLicht:'#ffe6a8', brett:'#1a1008', sockel:'#16111f',
+  waren:['#7a8a3a','#a8681f','#2e6a8a','#8a3a3a','#c8b070'],
+  kuehlHg:'#24505e', kuehlLicht:'#9ae6f0', kuehlWaren:['#48a0c0','#c8d8e0','#a8e060'],
+  tuerGlas:'#6a4a28', plakat:['#3a2a4a','#2a3a4a','#4a3a2a'],
+  kiste:'#4a3418', kisteDunkel:'#2a1c0c', kappe:['#48c070','#d88a2a'],
+  tonne:'#2c3a34', tonneHell:'#40524a', stahl:'#6a6488',
+  laterne:'#ffd9a0', mast:'#2b2540',
+  fuge:'#1f2640', fugeDrinnen:'#3a2e4c', bordstein:'#2e2640', strasse:'#0a0812',
 };
 
 /* ==========================================================================
@@ -1026,48 +1071,143 @@ function zeichneAnlauf(){
   ctx.globalAlpha=a; zeichneKarte(k.txt[k.i],H/2-10,P.weiss); ctx.globalAlpha=1;
 }
 
+/* ==========================================================================
+   DER ORT: Himmel, Haeuser, Spaeti, Dinge am Wegesrand (alles aus TUNE.ort, einmal gebacken)
+   ========================================================================== */
+function ortLinie(g,x0,y0,x1,y1,col){
+  g.fillStyle=col; const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))||1;
+  for(let i=0;i<=n;i++) g.fillRect(Math.round(x0+(x1-x0)*i/n),Math.round(y0+(y1-y0)*i/n),1,1);
+}
+function ortKreis(g,cx,cy,r,col){
+  g.fillStyle=col; const n=Math.round(r*7);
+  for(let i=0;i<n;i++){ const a=i/n*6.2832; g.fillRect(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r),1,1); }
+}
+function ortGlanz(g,x,y,rx,ry,rgb,a){      // weicher, ovaler Lichtfleck (Mitte x,y)
+  g.save(); g.translate(x,y); g.scale(rx/ry,1);
+  const gr=g.createRadialGradient(0,0,0,0,0,ry);
+  gr.addColorStop(0,`rgba(${rgb},${a})`); gr.addColorStop(1,`rgba(${rgb},0)`);
+  g.fillStyle=gr; g.fillRect(-ry,-ry,ry*2,ry*2); g.restore();
+}
+function ortKiste(g,x,fuss){
+  g.fillStyle=P.kisteDunkel; g.fillRect(x,fuss-7,13,7);
+  g.fillStyle=P.kiste; g.fillRect(x+1,fuss-5,11,2); g.fillRect(x+1,fuss-2,11,1);
+  for(let i=0;i<4;i++){ g.fillStyle=P.kappe[i%2]; g.fillRect(x+2+i*3,fuss-7,2,2); }
+}
+function malOrt(g){
+  const O=TUNE.ort, L=O.laden, WF=TUNE.tiefeHinten, B=LEVEL_B;
+  /* Boden: Gehwegplatten, drinnen warm; unten Bordstein und Strasse */
+  for(const o of ORTE){
+    g.fillStyle=o.boden; g.fillRect(o.von,WF,o.bis-o.von,H-WF);
+    g.fillStyle=P.bodenKante; g.fillRect(o.von,WF,o.bis-o.von,1);
+    g.fillStyle=o.drinnen?P.fugeDrinnen:P.fuge;
+    for(let r=0,y=WF+O.platte[1];y<O.bordsteinY;r++,y+=O.platte[1]){
+      g.fillRect(o.von,y,o.bis-o.von,1);
+      for(let x=o.von+(r%2)*(O.platte[0]>>1);x<o.bis;x+=O.platte[0]) g.fillRect(x,y+1,1,O.platte[1]-1);
+    }
+  }
+  g.fillStyle=P.bordstein; g.fillRect(0,O.bordsteinY,B,2);
+  g.fillStyle=P.strasse; g.fillRect(0,O.bordsteinY+2,B,H-O.bordsteinY-2);
+  /* Himmel in Stufen */
+  O.himmelAb.forEach((y0,i)=>{ g.fillStyle=P.himmel[i]; g.fillRect(0,y0,B,(O.himmelAb[i+1]||O.horizont)-y0); });
+  g.fillStyle=P.himmel[P.himmel.length-1]; g.fillRect(0,O.horizont,B,WF-O.horizont);
+  for(let i=0;i<O.sterne.n;i++){ g.fillStyle=i%4===0?'#ffffff77':'#ffffff33';
+    g.fillRect((i*O.sterne.schritt+13)%B,3+(i*53)%O.sterne.bis,1,1); }
+  O.wolken.forEach(([x,y,w])=>{ g.fillStyle=`rgba(${P.glut},.16)`; g.fillRect(x,y,w,1); g.fillRect(x+(w>>2),y+2,w>>1,1); });
+  ortGlanz(g,O.glutX,O.horizont,190,70,P.glut,O.glutStaerke);
+  /* ferne Daecher, gleichmaessig aus dem Index */
+  const F=O.ferne;
+  for(let x=0,i=0;x<B;i++){
+    const h=(i*37+11)%97, w=F.breiteMin+h%F.breiteVar, top=F.ab+(h*7)%F.spanne;
+    g.fillStyle=P.ferne; g.fillRect(x,top,w,WF-top);
+    for(let fy=top+4;fy<top+24;fy+=7) for(let fx=x+3;fx<x+w-3;fx+=6)
+      if((fx*5+fy+i)%F.fensterJe===0){ g.fillStyle=P.ferneFenster; g.fillRect(fx,fy,2,3); }
+    x+=w;
+  }
+  /* nahe Haeuser: Fassade, Dachkante, Fenster (warm / Fernseher / dunkel), dunkles Erdgeschoss mit Tuer */
+  O.haeuser.forEach(([x,w,top,f],hi)=>{
+    g.fillStyle=P.haus[f]; g.fillRect(x,top,w,WF-top);
+    g.fillStyle=P.hausKante; g.fillRect(x,top,w,2); g.fillRect(x,top,1,WF-top); g.fillRect(x+w-1,top,1,WF-top);
+    for(let cy=top+8,r=0;cy+O.fensterGross[1]<=O.fensterBis;cy+=O.fensterAbst[1],r++)
+      for(let cx=x+6,c=0;cx+O.fensterGross[0]<x+w-4;cx+=O.fensterAbst[0],c++){
+        const hh=(cx*O.lichtJe[0]+cy*O.lichtJe[1]+hi*7)%11;
+        g.fillStyle=P.fensterRahmen; g.fillRect(cx-1,cy-1,O.fensterGross[0]+2,O.fensterGross[1]+2);
+        g.fillStyle=hh<3?P.fensterWarm:hh<5?P.fensterTV:P.fensterDunkel;
+        g.fillRect(cx,cy,O.fensterGross[0],O.fensterGross[1]);
+        if(hh<3){ g.fillStyle=P.fensterRahmen; g.fillRect(cx+(O.fensterGross[0]>>1),cy,1,O.fensterGross[1]); }
+      }
+    g.fillStyle=P.erdgeschoss; g.fillRect(x+1,O.fensterBis+4,w-2,WF-O.fensterBis-4);
+    g.fillStyle=P.tuerDunkel; g.fillRect(x+(w>>1)-4,WF-14,8,14);
+    g.fillStyle=P.hausKante; g.fillRect(x+(w>>1)-4,WF-14,8,1);
+  });
+  /* der Spaeti: Wand, Dachkante, Schildbrett, Markise */
+  g.fillStyle=P.spWand; g.fillRect(L.x0,L.dach,L.x1-L.x0,WF-L.dach);
+  g.fillStyle=P.spDach; g.fillRect(L.x0-2,L.dach-2,L.x1-L.x0+4,3);
+  ortGlanz(g,L.fensterX+L.fensterB/2,L.fensterY+L.fensterH/2,150,70,'255,200,120',.22);      // Fensterlicht auf Wand, Gehweg
+  g.fillStyle=P.fensterDunkel; g.fillRect(L.schildX,L.schildY,L.schildB,L.schildH);
+  g.fillStyle=P.neon; g.globalAlpha=.7; g.fillRect(L.schildX,L.schildY,L.schildB,1); g.fillRect(L.schildX,L.schildY+L.schildH-1,L.schildB,1); g.globalAlpha=1;
+  for(let x=L.x0;x<L.x1;x+=8){ g.fillStyle=((x-L.x0)>>3)%2?P.markiseB:P.markiseA; g.fillRect(x,L.markiseY,8,5); }
+  g.fillStyle='#00000066'; g.fillRect(L.x0,L.markiseY+5,L.x1-L.x0,1);
+  /* Schaufenster: warmes Innenlicht, Regale mit Ware, Kuehlschrank */
+  const fx=L.fensterX, fy=L.fensterY, fb=L.fensterB, fh=L.fensterH;
+  const gl=g.createLinearGradient(0,fy,0,fy+fh); gl.addColorStop(0,P.ladenOben); gl.addColorStop(1,P.ladenUnten);
+  g.fillStyle=gl; g.fillRect(fx,fy,fb,fh);
+  g.fillStyle=P.kuehlHg; g.fillRect(L.kuehlX,fy,fx+fb-L.kuehlX,fh);
+  L.brett.forEach((by,r)=>{
+    for(let x=fx+2,i=0;x<L.kuehlX-3;x+=5,i++){ const hh=(i*7+r*3)%11; if(x>=fx+44&&x<fx+48) continue;
+      g.fillStyle=P.waren[(i+r*2)%P.waren.length]; g.fillRect(x,by-5-hh%4,3,5+hh%4); }
+    for(let x=L.kuehlX+3,i=0;x<fx+fb-3;x+=4,i++){ g.fillStyle=P.kuehlWaren[(i+r)%3]; g.fillRect(x,by-6-(i%2),2,6+(i%2)); }
+    g.fillStyle=P.brett; g.fillRect(fx,by,fb,2);
+  });
+  g.fillStyle=P.deckenLicht; g.globalAlpha=.55; g.fillRect(fx,fy+1,L.kuehlX-fx,1); g.globalAlpha=1;
+  g.fillStyle=P.kuehlLicht; g.globalAlpha=.7; g.fillRect(L.kuehlX,fy+1,fx+fb-L.kuehlX,1); g.globalAlpha=1;
+  g.fillStyle=P.brett; g.fillRect(fx,fy,fb,1); g.fillRect(fx,fy+fh-1,fb,1);
+  g.fillRect(fx-1,fy,1,fh); g.fillRect(fx+fb,fy,1,fh); g.fillRect(L.kuehlX-1,fy,2,fh); g.fillRect(fx+(L.kuehlX-fx>>1),fy,2,fh);
+  g.fillStyle=P.sockel; g.fillRect(L.x0,fy+fh,L.tuerX-L.x0,WF-fy-fh);
+  g.fillStyle=P.hausKante; g.fillRect(L.x0,fy+fh,L.tuerX-L.x0,1);
+  /* Tuer mit Glas und Griff; rechts daneben Plakate */
+  g.fillStyle=P.tuerDunkel; g.fillRect(L.tuerX-2,L.tuerY-2,L.tuerB+4,WF-L.tuerY+2);
+  g.fillStyle=P.tuerGlas; g.fillRect(L.tuerX,L.tuerY,L.tuerB,WF-L.tuerY-1);
+  g.fillStyle=P.ladenOben; g.fillRect(L.tuerX,L.tuerY,L.tuerB,6);
+  g.fillStyle=P.tuerDunkel; g.fillRect(L.tuerX+(L.tuerB>>1),L.tuerY,1,WF-L.tuerY); g.fillRect(L.tuerX+(L.tuerB>>1)-3,L.tuerY+22,1,5); g.fillRect(L.tuerX+(L.tuerB>>1)+2,L.tuerY+22,1,5);
+  g.fillStyle=P.sockel; g.fillRect(L.tuerX+L.tuerB+2,L.fensterY,L.x1-L.tuerX-L.tuerB-2,WF-L.fensterY);
+  for(let i=0;i<2;i++){ const px=L.tuerX+L.tuerB+6+i*13;
+    g.fillStyle=P.plakat[i]; g.fillRect(px,L.fensterY+6+i*6,10,15); g.fillStyle=P.dim; g.fillRect(px+2,L.fensterY+9+i*6,6,1); g.fillRect(px+2,L.fensterY+12+i*6,4,1); }
+  /* Kisten, Muelleimer, Fahrradstaender, Laterne */
+  O.kisten.forEach(([x,fuss])=>ortKiste(g,x,fuss));
+  const mx=O.muelleimerX;
+  g.fillStyle=P.tonne; g.fillRect(mx,WF-11,9,11); g.fillStyle=P.tonneHell; g.fillRect(mx-1,WF-12,11,2);
+  g.fillRect(mx+2,WF-8,1,6); g.fillRect(mx+6,WF-8,1,6); g.fillStyle=P.kappe[1]; g.fillRect(mx+4,WF-15,2,3);
+  const R=O.rad;
+  for(let i=0;i<R.n;i++){ const x=R.x+i*R.abst; ortLinie(g,x,WF-1,x,WF-7,P.stahl); ortLinie(g,x,WF-7,x+4,WF-7,P.stahl); ortLinie(g,x+4,WF-7,x+4,WF-1,P.stahl); }
+  ortKreis(g,R.bikeX,WF-4,4,P.stahl); ortKreis(g,R.bikeX+13,WF-4,4,P.stahl);
+  ortLinie(g,R.bikeX,WF-4,R.bikeX+5,WF-9,P.stahl); ortLinie(g,R.bikeX+5,WF-9,R.bikeX+13,WF-4,P.stahl); ortLinie(g,R.bikeX+5,WF-9,R.bikeX+10,WF-9,P.stahl);
+  ortLinie(g,R.bikeX+10,WF-9,R.bikeX+13,WF-4,P.stahl); ortLinie(g,R.bikeX+3,WF-10,R.bikeX+6,WF-10,P.stahl);
+  const lx=O.laterneX;
+  g.fillStyle=P.mast; g.fillRect(lx,56,2,WF-56); g.fillRect(lx-6,56,8,2); g.fillRect(lx-3,WF-3,8,3);
+  g.fillStyle=P.laterne; g.fillRect(lx-8,57,4,2);
+  ortGlanz(g,lx-6,66,46,46,'255,217,160',.28);
+  /* Licht des Schaufensters auf dem Gehweg */
+  ortGlanz(g,fx+fb/2,WF+4,110,26,'255,200,120',.20);
+}
+/* je Bild nur das Leuchtschild und das OFFEN-Schild (ruhig, Pulsieren nur ueber FX) */
+function zeichneLadenlicht(){
+  const L=TUNE.ort.laden, ruhig=FX.ruhig();
+  const puls=ruhig?.5:(Math.sin(S.t*FX.hz(L.neonHz)*6.283)*.5+.5);
+  ctx.globalAlpha=.16+puls*L.neonStaerke*2;
+  ctx.drawImage(verlauf('ladenhalo',200,70,g=>{ ortGlanz(g,100,35,100,34,'66,217,255',1); }),L.schildX+L.schildB/2-100,L.schildY+L.schildH/2-35);
+  ctx.globalAlpha=1;
+  ctx.globalAlpha=.9+puls*L.neonStaerke; textGlow('SPAETI 24/7',L.schildX+((L.schildB-textW('SPAETI 24/7',2))>>1),L.schildY+4,P.neon2,2); ctx.globalAlpha=1;
+  const ox=L.tuerX+((L.tuerB-23)>>1), oy=L.tuerY+9;
+  ctx.fillStyle=P.gold; ctx.globalAlpha=.8+puls*L.neonStaerke; ctx.fillRect(ox,oy,23,9); ctx.globalAlpha=1;
+  text('OFFEN',ox+2,oy+2,P.ink);
+}
+
 function zeichneSzene(){
   const kx=Math.round(S.kamX);
   ctx.save(); ctx.translate(-kx,0);
 
-  for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,TIEFE.hinten-20);
-    ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
-    text(o.name,o.von+6,26,'#ffffff18');
-    if(!o.drinnen){
-      for(let i=0;i<Math.round((o.bis-o.von)/9);i++){
-        const sx=o.von+(i*37)%(o.bis-o.von), sy=24+(i*17)%50;
-        ctx.fillStyle=i%4===0?'#ffffff55':'#ffffff22'; ctx.fillRect(sx,sy,1,1);
-      }
-    }
-  }
-  /* Regal an der Rueckwand und Leuchtreklame im Schaufenster - oben
-     fehlte die Ladenwand (PLAYTEST.md). Mittig in der Bildhoehe, sonst
-     schluckt die Vignette unten den Kontrast fast vollstaendig. */
-  ctx.fillStyle='#1a1424'; ctx.fillRect(302,70,216,24);
-  ctx.fillStyle='#000000aa'; ctx.fillRect(302,82,216,1);
-  for(let x=306;x<516;x+=18){
-    ctx.fillStyle=(Math.floor(x/18)%2===0)?'#4a7a5c':'#7a5a3a';
-    ctx.fillRect(x,73,12,8);
-    ctx.fillRect(x,85,12,7);
-  }
-  ctx.fillStyle='#1a1424'; ctx.fillRect(302,96,216,14);
-  ctx.fillStyle='#000000aa'; ctx.fillRect(302,100,216,1);
-  for(let x=310;x<510;x+=14){
-    ctx.fillStyle=(Math.floor(x/14)%2===0)?'#5c4a2a':'#2a3c4a';
-    ctx.fillRect(x,98,8,10);
-  }
-  ctx.globalAlpha=.55+Math.sin(S.t*4)*.25;
-  ctx.fillStyle=P.gold; ctx.fillRect(356,30,52,9);
-  ctx.globalAlpha=1;
-  text('OFFEN',356+26-textW('OFFEN')/2,32,'#1a1424');
-  /* Das Schaufenster wirft Licht auf den Gehweg */
-  ctx.globalAlpha=.10; ctx.fillStyle='#ffe08a'; ctx.fillRect(300,TIEFE.hinten,220,H-TIEFE.hinten); ctx.globalAlpha=1;
-  /* Die Ecke: der Himmel faengt an, heller zu werden */
-  ctx.globalAlpha=.18; ctx.fillStyle='#ff9a5a'; ctx.fillRect(760,20,140,30); ctx.globalAlpha=1;
+  ctx.drawImage(verlauf('ort7',LEVEL_B,H,malOrt),kx,0,W,H,kx,0,W,H);
+  zeichneLadenlicht();
 
   const naechst=S.modus==='spiel'&&!gespraechAktiv()?naechstesZiel():null;
   const blink=Math.floor(S.t*4)%2===0;
@@ -1171,6 +1311,7 @@ function hud(){
   const pf=NACHT.inventar.PFAND||0;
   if(pf) text('PFAND '+pf,6,14,P.gruen);
   /* Einkaufsliste wie in Level 2: erledigt = Haken, dann Durchstrich-Linie */
+  ctx.fillStyle='#08060fa0'; ctx.fillRect(3,22,76,LISTE.length*7+3);   // dunkle Unterlage: Liste bleibt auch vor dem warmen Fenster lesbar
   let y=24;
   for(const a of LISTE){
     const ok=a.fertig();
