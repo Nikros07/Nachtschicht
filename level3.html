@@ -100,6 +100,25 @@ const TUNE = {
   stolperDauer:      0.4,  // kurzer Tempoverlust nach einem Treffer
   stolperVerlust:    0.55, // Anteil vom Hoechsttempo, der beim Stolpern fehlt
 
+  /* (3b) KULISSE DER STRASSE im Sprint - nur Optik, alles ruhig (nichts blinkt).
+     Gemessen: vorher 66 % leere Bildzeilen (tools/nachttest.js level3). */
+  kulisse: {
+    sterne:       130,    // Anzahl, fest verteilt (Zufallszahl-frei)
+    mondX:        0.78,   // Anteil der Bildbreite
+    mondY:         26,
+    mondR:          9,
+    fernBreite:  1400,    // Breite der Silhouetten-Reihe (Parallax 0.25)
+    fernFaktor:  0.25,
+    nahFaktor:   0.5,
+    nahBreite:   1800,    // Breite der Haeuserreihe (Parallax 0.5)
+    fensterJede:    3,    // jedes n-te Fenster ist hell (deterministisch)
+    laterneAbstand: 210,  // Abstand der Strassenlaternen in Weltpixeln
+    laterneHoehe:    44,
+    laterneStart:    90,
+    haltestelleX:   -150, // Wartehaeuschen: Abstand vom Levelende
+    schildX:        -92,  // Haltestellenschild: Abstand vom Levelende
+  },
+
   /* (4) IM BUS - Kontrolleure */
   /* Gemessen: bei 740 Pixeln Laenge war der Bus in sieben Sekunden
      durchlaufen, und der Verdacht kam nie ueber 46 von 100. Ein Level,
@@ -233,6 +252,10 @@ const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Strassen-Kulisse (Sprint) */
+  himmelOben:'#07050f', himmelUnten:'#1d1535', mond:'#d8dcee', fern:'#16102a',
+  haus:'#171025', hausDach:'#211833', fenster:'#ffd447', fensterAus:'#2a2240',
+  laterne:'#3a3350', haltGelb:'#ffd447', haltDach:'#2b3a66',
 };
 
 /* ==========================================================================
@@ -1531,30 +1554,132 @@ function zeichneBusAussen(x){
   text('BUS',x+27,y+46+4,P.dim);
 }
 
+
+/* -- Kulisse der Strasse (Sprint): alles vorgezeichnet, pro Bild nur drawImage -- */
+function kulisseHimmel(){
+  const K=TUNE.kulisse;
+  return verlauf('sprintHimmel'+W,W,BODEN,g=>{
+    const gr=g.createLinearGradient(0,0,0,BODEN);
+    gr.addColorStop(0,P.himmelOben); gr.addColorStop(1,P.himmelUnten);
+    g.fillStyle=gr; g.fillRect(0,0,W,BODEN);
+    for(let i=0;i<K.sterne;i++){        // feste Verteilung, kein Zufall
+      g.fillStyle=i%5===0?'#ffffffcc':'#ffffff66';
+      g.fillRect((i*i*37+i*101+13)%W,(i*i*53+i*29+7)%78+3,1,1); }
+    const mx=Math.round(W*K.mondX), my=K.mondY;
+    g.fillStyle='rgba(216,220,238,0.10)';
+    g.beginPath(); g.arc(mx,my,K.mondR+6,0,Math.PI*2); g.fill();
+    g.fillStyle=P.mond; g.beginPath(); g.arc(mx,my,K.mondR,0,Math.PI*2); g.fill();
+    g.fillStyle=P.himmelOben;           // Sichel
+    g.beginPath(); g.arc(mx+4,my-3,K.mondR-1,0,Math.PI*2); g.fill();
+  });
+}
+function kulisseFern(){
+  const K=TUNE.kulisse;
+  return verlauf('sprintFern',K.fernBreite,BODEN,g=>{
+    g.fillStyle=P.fern;
+    for(let x=0,i=0;x<K.fernBreite;i++){ const bw=34+((i*29)%26), bh=48+((i*47)%34);
+      g.fillRect(x,BODEN-bh,bw,bh);
+      if(i%3===0) g.fillRect(x+bw*0.3,BODEN-bh-7,5,7);     // Schornstein
+      if(i%4===1){ g.fillRect(x+3,BODEN-bh-3,bw-6,3); }    // flaches Dach
+      for(let wy=BODEN-bh+5;wy<BODEN-6;wy+=9)               // ferne Fenster: wenige Goldpunkte
+        for(let wx=x+4;wx<x+bw-4;wx+=7)
+          if(((wx*7+wy*3+i)%11)<2){ g.fillStyle='rgba(255,212,71,0.55)'; g.fillRect(wx,wy,2,2); }
+      g.fillStyle=P.fern;
+      x+=bw+((i*13)%7); }
+  });
+}
+function kulisseNah(){
+  const K=TUNE.kulisse;
+  return verlauf('sprintNah',K.nahBreite,BODEN,g=>{
+    let n=0;
+    for(let i=0,x=0;x<K.nahBreite;i++){
+      const bw=40+((i*37)%14), bh=34+((i*53)%40);
+      g.fillStyle=P.haus; g.fillRect(x,BODEN-bh,bw,bh);
+      g.fillStyle=P.hausDach; g.fillRect(x,BODEN-bh,bw,2);
+      for(let wy=BODEN-bh+7;wy<BODEN-9;wy+=10)
+        for(let wx=x+6;wx<x+bw-8;wx+=12){
+          const hell=(n++%K.fensterJede)===0;
+          if(hell){ g.fillStyle='rgba(255,212,71,0.18)'; g.fillRect(wx-1,wy-1,8,8); }
+          g.fillStyle=hell?P.fenster:P.fensterAus; g.fillRect(wx,wy,6,6);
+          if(hell){ g.fillStyle=P.hausDach; g.fillRect(wx+3,wy,1,6); }   // Fensterkreuz
+        }
+      x+=bw+4+((i*11)%6); }
+  });
+}
+function kulisseLaterne(){
+  const K=TUNE.kulisse;
+  return verlauf('sprintLaterne',64,BODEN,g=>{
+    const kx=32, ky=BODEN-K.laterneHoehe;
+    const gr=g.createLinearGradient(0,ky,0,BODEN);   // weicher Lichtkegel
+    gr.addColorStop(0,'rgba(255,212,71,0.30)'); gr.addColorStop(1,'rgba(255,212,71,0.04)');
+    g.fillStyle=gr; g.beginPath(); g.moveTo(kx-3,ky+2); g.lineTo(kx+3,ky+2);
+    g.lineTo(kx+30,BODEN); g.lineTo(kx-30,BODEN); g.closePath(); g.fill();
+    g.fillStyle=P.laterne; g.fillRect(kx-1,ky+4,2,K.laterneHoehe-4);
+    g.fillRect(kx-4,BODEN-3,8,3);
+    g.fillRect(kx-4,ky+1,8,2);
+    g.fillStyle=P.fenster; g.fillRect(kx-3,ky+3,6,2);
+  });
+}
+function zeichneLaternen(kx){
+  const K=TUNE.kulisse, img=kulisseLaterne();
+  const von=Math.floor((kx-K.laterneStart-32)/K.laterneAbstand);
+  for(let i=Math.max(0,von);;i++){
+    const lx=K.laterneStart+i*K.laterneAbstand;
+    if(lx-32>kx+W||lx>SPRINT_B-200) break;
+    ctx.drawImage(img,lx-32,0);
+  }
+}
+function zeichneHaltestelle(){
+  const K=TUNE.kulisse, hx=SPRINT_B+K.haltestelleX, sx=SPRINT_B+K.schildX;
+  /* Wartehaeuschen: Rueckwand, Dach, Bank, Lichtfleck */
+  ctx.fillStyle='rgba(255,212,71,0.10)'; ctx.fillRect(hx-4,BODEN-34,50,34);
+  ctx.fillStyle='#0e1428'; ctx.fillRect(hx,BODEN-28,42,28);
+  ctx.fillStyle='rgba(66,217,255,0.18)'; ctx.fillRect(hx+2,BODEN-26,38,22);
+  ctx.fillStyle=P.haltDach; ctx.fillRect(hx-3,BODEN-31,48,3);
+  ctx.fillStyle=P.laterne; ctx.fillRect(hx,BODEN-28,2,28); ctx.fillRect(hx+40,BODEN-28,2,28);
+  ctx.fillStyle=P.boden; ctx.fillRect(hx+8,BODEN-8,26,2);
+  /* Schild mit H */
+  ctx.fillStyle=P.laterne; ctx.fillRect(sx+4,BODEN-38,2,38);
+  ctx.fillStyle=P.haltGelb; ctx.fillRect(sx-2,BODEN-48,14,12);
+  ctx.fillStyle=P.ink; ctx.fillRect(sx,BODEN-46,10,8);
+  text('H',sx+4,BODEN-45,P.haltGelb);
+}
+
+/* Gehweg-Fugen und Gullydeckel, nur im Bildausschnitt, feste Abstaende */
+function zeichneGehweg(kx){
+  ctx.fillStyle='#2c2740';
+  for(let x=Math.floor(kx/12)*12;x<kx+W+12;x+=12) ctx.fillRect(x,BODEN+1,1,4);
+  ctx.fillStyle='#2a2540'; ctx.fillRect(Math.floor(kx/12)*12,BODEN+13,W+24,1);
+  ctx.fillStyle='#3a3552';
+  for(let x=Math.floor(kx/18)*18;x<kx+W+18;x+=18) ctx.fillRect(x+((x/18)%3)*5,BODEN+20+((x/18)%2)*6,5,1);
+  for(let x=Math.ceil((kx-10)/170)*170+40;x<kx+W;x+=170){ ctx.fillStyle='#14111f'; ctx.fillRect(x,BODEN+26,10,3);
+    ctx.fillStyle='#2a2540'; ctx.fillRect(x+1,BODEN+27,8,1); }
+}
+
 function zeichneSprint(){
   const kx=Math.round(S.kamX);
 
-  /* Haeuser im Hintergrund, leichtes Parallax */
-  ctx.fillStyle='#0c0a18'; ctx.fillRect(0,0,W,BODEN);
-  ctx.save(); ctx.translate(-kx*0.5,0);
-  for(let i=0;i<24;i++){ const bx=i*70, bh=26+((i*53)%36);
-    ctx.fillStyle='#171025'; ctx.fillRect(bx,BODEN-bh,44,bh);
-    ctx.fillStyle='#2a2240';
-    for(let wy=BODEN-bh+4;wy<BODEN-4;wy+=8) ctx.fillRect(bx+6,wy,6,4);
-  }
-  ctx.restore();
+  /* Himmel, Mond, Sterne (ein vorgezeichnetes Bild), dann zwei Haeuserreihen */
+  const K=TUNE.kulisse;
+  ctx.drawImage(kulisseHimmel(),0,0);
+  ctx.drawImage(kulisseFern(),-Math.round(kx*K.fernFaktor)%K.fernBreite,0);
+  ctx.drawImage(kulisseFern(),K.fernBreite-Math.round(kx*K.fernFaktor)%K.fernBreite,0);
+  ctx.drawImage(kulisseNah(),-Math.round(kx*K.nahFaktor),0);
 
   ctx.save(); ctx.translate(-kx,0);
   ctx.fillStyle='#1a1622'; ctx.fillRect(0,BODEN,SPRINT_B,H-BODEN);
   ctx.fillStyle=P.bodenKante; ctx.fillRect(0,BODEN,SPRINT_B,1);
   ctx.fillStyle='#33304a';
   for(let x=0;x<SPRINT_B;x+=26) ctx.fillRect(x,BODEN+6,14,1);
+  zeichneGehweg(kx);
 
   for(const h of S.hindernisse){
     const rows=SPR[h.art]; const y=BODEN-rows.length;
     outline(rows,h.x,y,1,.5); sprite(rows,h.x,y,1,null,h.getroffen?0.55:1);
   }
 
+  zeichneLaternen(kx);
+  zeichneHaltestelle();
   zeichneBusAussen(SPRINT_B-70);
   zeichneSpieler();
 
