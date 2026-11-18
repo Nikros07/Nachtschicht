@@ -19,6 +19,8 @@ const PY=process.platform==='win32'?'python':'python3';
 const PRUEFUNGEN=[
   ['pruefe',     'node',['tools/pruefe.js']],
   ['nachttest',  'node',['tools/nachttest.js'].concat(KURZ?['--kurz']:[])],
+  /* Jedes Level ist noch gewinnbar (Bots aus tools/bots/, < 1 s). */
+  ['bots',       'node',['tools/nachttest.js','--bots']],
   ['flagcheck',  'node',['tools/flagcheck.js']],
   ...fs.readdirSync(path.join(WURZEL,'test')).filter(f=>f.endsWith('.test.js')).sort()
      .map(f=>[f.replace('.test.js',''),'node',['test/'+f],f==='sw.test.js']),
