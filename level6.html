@@ -149,6 +149,55 @@ const TUNE = {
 
   /* (10) RANG (WERTUNG): Erinnerungen 40, Lichter 25, Wachheit 20, Zeit 15.
      Je Kriterium linear zwischen schlecht und gut. Zeit: gut ist die kleinere. */
+  /* (11) KULISSE - traumhafte Waende. Je Raum ein weicher Verlauf, halb durchscheinende
+     Erinnerungs-Gegenstaende (art 'e') und Spuren der Afterhour (art 's'), dazu ruhig
+     treibender Staub. Alles wird einmal gebacken (verlauf-Cache 'ort6'), nur der Staub
+     lebt. Freihalten: y 20-56 (Uhren, Raumname, Listen), Tueren/Sofas/Sprites auf dem Boden.
+     Pro Ding: art, x, y (obere linke Ecke), dazu w/h/n je nach Art. */
+  kulisse:{
+    ueberblend:   46,    // Breite des weichen Uebergangs zwischen zwei Raeumen (px, je Seite)
+    obenDunkel:   .5,    // Deckenschatten (Alpha) ganz oben an der Wand
+    glanzAlpha:   .17,   // Lichtfleck mitten in jedem Raum
+    glanzRadius:  96,
+    erinnerungAlpha: .36,  // Schulgegenstaende, halb durchscheinend
+    spurAlpha:    .6,      // Afterhour-Spuren (Matratze, Lichterkette ...)
+    staub:{ anzahl:42, tempo:2.4, schweb:5, steig:1.6, alpha:.34, pegelPlus:.6 },
+    dinge:[
+      // FLUR (Anfang)
+      { art:'lichterkette', x:8,    x2:134,  y:62 },
+      { art:'flaschen',     x:20,   y:112, n:3 },
+      { art:'lautsprecher', x:112,  y:98 },
+      // RAUM 101: Tafel mit Kreide
+      { art:'kreidetafel',  x:156,  y:64, w:76, h:34, seed:1 },
+      { art:'matratze',     x:306,  y:96 },
+      // CHEMIE: Periodentafel, Kolben
+      { art:'periodentafel',x:358,  y:62 },
+      { art:'kolben',       x:446,  y:84 },
+      { art:'kolben',       x:466,  y:92, klein:1 },
+      { art:'flaschen',     x:496,  y:112, n:2 },
+      // RAUM 101 (zweites Mal): dieselbe Tafel, anders vollgekritzelt
+      { art:'kreidetafel',  x:534,  y:64, w:62, h:34, seed:1 },
+      { art:'lautsprecher', x:664,  y:98 },
+      // TURNHALLE: Basketballkorb, Sprossenwand
+      { art:'korb',         x:728,  y:62 },
+      { art:'sprossenwand', x:806,  y:62, w:44, h:56 },
+      { art:'flaschen',     x:862,  y:112, n:2 },
+      // BIBLIOTHEK: Buecherregal
+      { art:'regal',        x:892,  y:60, w:70, h:58 },
+      { art:'lichterkette', x:968,  x2:1044, y:66 },
+      // KELLER: Rohre
+      { art:'rohre',        x:1084, y:60, w:172, v:84 },
+      { art:'matratze',     x:1104, y:96 },
+      { art:'lautsprecher', x:1226, y:98 },
+      // EINE KUECHE (Afterhour pur)
+      { art:'lichterkette', x:1266, x2:1400, y:62 },
+      { art:'flaschen',     x:1286, y:112, n:3 },
+      // FLUR (Ende)
+      { art:'lautsprecher', x:1448, y:98 },
+      { art:'lichterkette', x:1478, x2:1594, y:64 },
+    ],
+  },
+
   rang:{ erinnerungSchlecht:0, erinnerungGut:3,
          lichtSchlecht:0,      lichtGut:3,
          wachSchlecht:20,      wachGut:80,
@@ -159,6 +208,10 @@ const P = {
   ink:'#08060f', weiss:'#f2f0ff', dim:'#8d86a8', dunkel:'#4a4363',
   neon:'#ff3d8b', neon2:'#42d9ff', gold:'#ffd447', rot:'#ff4d4d', gruen:'#48e08a',
   boden:'#20182a', bodenKante:'#4a3a58',
+  /* Kulisse (Traum) */
+  staub:'#d8d0f0', glas:'#8fd8c8', holz:'#a8845a', rohr:'#7a7490', orange:'#e8803a',
+  kreide:'#ece8f6', tafelGruen:'#1f3a32', matratze:'#8a78b8', flasche:'#6fb89a',
+  glanzGruen:'72,224,138', glanzLila:'160,110,255', glanzOrange:'255,150,70', glanzBlau:'66,217,255',
 };
 
 /* ==========================================================================
@@ -249,15 +302,15 @@ const BODEN=142;
    ========================================================================== */
 const LEVEL_B=1600;
 const ORTE=[
-  { von:0,    bis:140,  name:'FLUR',        wand:'#241c30', boden:'#170f20' },
-  { von:140,  bis:340,  name:'RAUM 101',    wand:'#2c2440', boden:'#1c1730' },
-  { von:340,  bis:520,  name:'CHEMIE',      wand:'#1d3028', boden:'#12201a' },
-  { von:520,  bis:700,  name:'RAUM 101',    wand:'#332a4a', boden:'#221c38', wiederholt:true },
-  { von:700,  bis:880,  name:'TURNHALLE',   wand:'#2a2030', boden:'#1d1624' },
-  { von:880,  bis:1080, name:'BIBLIOTHEK',  wand:'#302038', boden:'#1f1526' },
-  { von:1080, bis:1260, name:'KELLER',      wand:'#120e16', boden:'#0c0910' },
-  { von:1260, bis:1440, name:'EINE KUECHE', wand:'#2e2a22', boden:'#201c16' },
-  { von:1440, bis:1600, name:'FLUR',        wand:'#241c30', boden:'#170f20' },
+  { von:0,    bis:140,  name:'FLUR',        wand:'#241c30', boden:'#170f20', glanz:P.glanzLila },
+  { von:140,  bis:340,  name:'RAUM 101',    wand:'#2c2440', boden:'#1c1730', glanz:P.glanzLila },
+  { von:340,  bis:520,  name:'CHEMIE',      wand:'#1d3028', boden:'#12201a', glanz:P.glanzGruen },
+  { von:520,  bis:700,  name:'RAUM 101',    wand:'#332a4a', boden:'#221c38', wiederholt:true, glanz:P.glanzLila },
+  { von:700,  bis:880,  name:'TURNHALLE',   wand:'#3a2822', boden:'#221612', glanz:P.glanzOrange },
+  { von:880,  bis:1080, name:'BIBLIOTHEK',  wand:'#34203a', boden:'#1f1526', glanz:P.glanzOrange },
+  { von:1080, bis:1260, name:'KELLER',      wand:'#161420', boden:'#0c0910', glanz:P.glanzBlau },
+  { von:1260, bis:1440, name:'EINE KUECHE', wand:'#3a3024', boden:'#201c16', glanz:P.glanzOrange },
+  { von:1440, bis:1600, name:'FLUR',        wand:'#241c30', boden:'#170f20', glanz:P.glanzLila },
 ];
 const ortBei=x=>ORTE.find(o=>x>=o.von&&x<o.bis)||ORTE[0];
 const GLITCH_NAMEN=['RAUM ???','????','FALSCH.','DAS HIER NICHT.'];
@@ -959,31 +1012,150 @@ function draw(dt){
   erzaehlZeichne();
 }
 
+/* ---- Kulisse: kleine Zeichner (alle auf den Backcanvas g), Daten in TUNE.kulisse ---- */
+const kulZ=i=>{ const v=Math.sin(i*127.1+311.7)*43758.5453; return v-Math.floor(v); };
+const KUL_BUECHER=['#c0556a','#5a7fd0','#d8b04a','#5fbf8f','#9a6fd0','#d0763a'];
+const KUL_ART={ kreidetafel:'e', periodentafel:'e', kolben:'e', korb:'e', sprossenwand:'e', regal:'e', rohre:'e',
+  lichterkette:'s', flaschen:'s', lautsprecher:'s', matratze:'s' };
+const KUL={
+  kreidetafel(g,d){
+    g.fillStyle=P.holz; g.fillRect(d.x-1,d.y-1,d.w+2,d.h+2);
+    g.fillStyle=P.tafelGruen; g.fillRect(d.x,d.y,d.w,d.h);
+    g.fillStyle=P.kreide;
+    for(let z=0;z<4;z++){ const l=Math.round(d.w*(.35+.5*kulZ(d.seed*9+z))); g.fillRect(d.x+4,d.y+5+z*7,l,1); }
+    g.fillRect(d.x+d.w-14,d.y+d.h-9,3,1); g.fillRect(d.x+d.w-13,d.y+d.h-10,1,3);   // ein Plus
+    g.fillRect(d.x+3,d.y+d.h+1,7,1);                                                // Kreidestueck
+  },
+  periodentafel(g,d){
+    const zeilen=[[0,17],[0,1,12,13,14,15,16,17],[0,1,12,13,14,15,16,17]];
+    for(let r=3;r<7;r++){ const z=[]; for(let c=0;c<18;c++) z.push(c); zeilen.push(z); }
+    g.fillStyle='#0d0a14'; g.fillRect(d.x-2,d.y-2,18*4+3,7*4+3);
+    const farben=[P.glas,P.glas,P.glas,P.glas,P.gold,P.neon2];   // meist ein Ton, wenige Ausreisser
+    zeilen.forEach((z,r)=>z.forEach(c=>{ g.fillStyle=farben[Math.floor(kulZ(r*18+c)*farben.length)];
+      g.globalAlpha=TUNE.kulisse.erinnerungAlpha*.6; g.fillRect(d.x+c*4,d.y+r*4,3,3); }));
+  },
+  kolben(g,d){
+    const k=d.klein?.75:1, x=d.x, y=d.y, f=(a,b,w,h)=>g.fillRect(x+a*k|0,y+b*k|0,Math.max(1,w*k|0),Math.max(1,h*k|0));
+    g.fillStyle=P.glas; f(3,0,4,1); f(4,1,2,4);
+    for(let r=0;r<7;r++){ const w=4+r*2, w2=Math.min(w,12); f(5-w2/2+1,5+r,w2,1); }
+    g.fillStyle=P.gruen; f(-1,10,12,2);
+  },
+  regal(g,d){
+    g.fillStyle=P.holz; g.fillRect(d.x,d.y,d.w,d.h);
+    g.fillStyle='#1a1224'; g.fillRect(d.x+2,d.y+2,d.w-4,d.h-4);
+    const fach=Math.floor((d.h-2)/14);
+    for(let f=0;f<fach;f++){ const yb=d.y+2+(f+1)*14-2; let x=d.x+3;
+      g.fillStyle=P.holz; g.fillRect(d.x+2,yb,d.w-4,2);
+      for(let i=0;x<d.x+d.w-6;i++){ const w=2+Math.floor(kulZ(f*40+i)*3), h=8+Math.floor(kulZ(f*77+i)*4);
+        g.fillStyle=KUL_BUECHER[Math.floor(kulZ(f*13+i*3)*KUL_BUECHER.length)];
+        g.fillRect(x,yb-h,w,h); x+=w+(kulZ(i+f)>.8?3:0); } }
+  },
+  korb(g,d){
+    g.fillStyle=P.kreide; g.fillRect(d.x,d.y,24,1); g.fillRect(d.x,d.y+13,24,1); g.fillRect(d.x,d.y,1,14); g.fillRect(d.x+23,d.y,1,14);
+    g.fillRect(d.x+8,d.y+7,8,1); g.fillRect(d.x+8,d.y+4,1,4); g.fillRect(d.x+15,d.y+4,1,4); g.fillRect(d.x+8,d.y+4,8,1);
+    g.fillStyle=P.orange; g.fillRect(d.x+6,d.y+14,12,1);
+    g.fillStyle=P.kreide;
+    for(let r=0;r<5;r++){ g.fillRect(d.x+7+r%2,d.y+15+r*2,10-2*(r%2),1); g.fillRect(d.x+7+r,d.y+15+r*2,1,2); g.fillRect(d.x+16-r,d.y+15+r*2,1,2); }
+  },
+  sprossenwand(g,d){
+    g.fillStyle=P.holz; g.fillRect(d.x,d.y,2,d.h); g.fillRect(d.x+d.w-2,d.y,2,d.h);
+    for(let y=d.y+3;y<d.y+d.h;y+=5) g.fillRect(d.x,y,d.w,1);
+  },
+  rohre(g,d){
+    const h=(y)=>{ g.fillStyle=P.rohr; g.fillRect(d.x,y,d.w,3); g.fillStyle=P.kreide; g.fillRect(d.x,y,d.w,1); };
+    h(d.y); h(d.y+9);
+    g.fillStyle=P.rohr; g.fillRect(d.x+d.v,d.y,4,58); g.fillStyle=P.kreide; g.fillRect(d.x+d.v,d.y,1,58);
+    for(let x=d.x+20;x<d.x+d.w-6;x+=44){ g.fillStyle=P.rohr; g.fillRect(x,d.y-2,4,7); g.fillRect(x+6,d.y+7,4,7); }
+    g.fillStyle=P.neon2; g.fillRect(d.x+d.v+1,d.y+62,2,2);                     // ein Tropfen
+  },
+  lichterkette(g,d){
+    const farben=[P.gold,P.neon,P.neon2,P.gruen], n=Math.floor((d.x2-d.x)/8), tief=7;
+    for(let i=0;i<=n;i++){ const u=i/n, x=Math.round(d.x+u*(d.x2-d.x)), y=Math.round(d.y+tief*Math.sin(Math.PI*u));
+      g.fillStyle=P.dunkel; g.fillRect(x-4,y,8,1);
+      g.fillStyle=farben[i%4]; g.fillRect(x-1,y+1,2,2); }
+  },
+  flaschen(g,d){
+    for(let i=0;i<d.n;i++){ const x=d.x+i*7+(i%2), h=7+(i%3)*2;
+      g.fillStyle=P.flasche; g.fillRect(x,d.y+8-h,3,h); g.fillRect(x+1,d.y+8-h-3,1,3);
+      g.fillStyle=P.kreide; g.fillRect(x,d.y+8-h+2,1,2); }
+  },
+  lautsprecher(g,d){
+    g.fillStyle='#0d0a14'; g.fillRect(d.x,d.y,14,22);
+    g.fillStyle=P.dunkel; g.fillRect(d.x+1,d.y+1,12,20);
+    g.fillStyle='#0d0a14'; g.fillRect(d.x+4,d.y+3,6,4); g.fillRect(d.x+3,d.y+9,8,8);
+    g.fillStyle=P.dim; g.fillRect(d.x+5,d.y+4,4,2); g.fillRect(d.x+5,d.y+11,4,4);
+  },
+  matratze(g,d){
+    g.fillStyle='#0d0a14'; g.fillRect(d.x,d.y,16,24);
+    g.fillStyle=P.matratze; g.fillRect(d.x+1,d.y+1,14,22);
+    g.fillStyle=P.dunkel; for(let y=d.y+5;y<d.y+22;y+=6) g.fillRect(d.x+1,y,14,1);
+    g.fillStyle=P.kreide; g.fillRect(d.x+3,d.y+2,10,2);                          // Kissen
+  },
+};
+
+/* Wand, Boden, weiche Uebergaenge, Lichtflecken und alle Kulissen-Dinge: ein Mal. */
+function malKulisse(g){
+  const K=TUNE.kulisse, hi=TIEFE.hinten, u=K.ueberblend;
+  for(const o of ORTE){
+    g.fillStyle=o.wand; g.fillRect(o.von,20,o.bis-o.von,hi-20);
+    g.fillStyle=o.boden; g.fillRect(o.von,hi,o.bis-o.von,H-hi);
+  }
+  for(let i=0;i<ORTE.length-1;i++){
+    const a=ORTE[i], b=ORTE[i+1], x=a.bis;
+    for(const [y0,y1,k] of [[20,hi,'wand'],[hi,H,'boden']]){
+      const gr=g.createLinearGradient(x-u,0,x+u,0); gr.addColorStop(0,a[k]); gr.addColorStop(1,b[k]);
+      g.fillStyle=gr; g.fillRect(x-u,y0,2*u,y1-y0);
+    }
+  }
+  /* Deckenschatten oben, Dunkel am Wandfuss */
+  const ds=g.createLinearGradient(0,20,0,hi);
+  ds.addColorStop(0,`rgba(0,0,0,${K.obenDunkel})`); ds.addColorStop(.45,'rgba(0,0,0,0)');
+  ds.addColorStop(.8,'rgba(0,0,0,0)'); ds.addColorStop(1,'rgba(0,0,0,.28)');
+  g.fillStyle=ds; g.fillRect(0,20,LEVEL_B,hi-20);
+  /* Lichtfleck je Raum, in der Farbe des Raums */
+  for(const o of ORTE){
+    const cx=(o.von+o.bis)/2, r=K.glanzRadius;
+    const gr=g.createRadialGradient(cx,86,4,cx,86,r);
+    gr.addColorStop(0,`rgba(${o.glanz},${K.glanzAlpha})`); gr.addColorStop(1,`rgba(${o.glanz},0)`);
+    g.fillStyle=gr; g.fillRect(o.von-20,20,o.bis-o.von+40,hi-20);
+  }
+  g.fillStyle=P.bodenKante; g.fillRect(0,hi,LEVEL_B,1);
+  for(const d of K.dinge){
+    g.globalAlpha=KUL_ART[d.art]==='e'?K.erinnerungAlpha:K.spurAlpha;
+    KUL[d.art](g,d);
+  }
+  g.globalAlpha=1;
+}
+
+/* Ruhig treibender Staub: rein aus der Zeit berechnet, weiche Ein- und Ausblendung,
+   bei Flackerschutz steht er. Je hoeher der Pegel, desto mehr Schwebendes. */
+function zeichneStaub(kx){
+  const T=TUNE.kulisse.staub, t=FX.ruhig()?0:S.t, mehr=1+T.pegelPlus*S.pegel/100, hoehe=H-34;
+  ctx.fillStyle=P.staub;
+  for(let i=0;i<T.anzahl;i++){
+    const a=kulZ(i*3.1), b=kulZ(i*5.7+1), c=kulZ(i*7.3+2);
+    const x=(((a*LEVEL_B+T.tempo*(.4+c)*t)%LEVEL_B)+LEVEL_B)%LEVEL_B+Math.sin(t*.4+b*6.283)*T.schweb;
+    if(x<kx-3||x>kx+W+3) continue;
+    const ph=(((b-t*T.steig*(.3+c)/hoehe)%1)+1)%1, y=24+ph*hoehe+Math.sin(t*.3+a*6.283)*T.schweb;
+    const rand=Math.min(1,x/40,(LEVEL_B-x)/40);
+    ctx.globalAlpha=Math.min(.9,T.alpha*mehr*rand*Math.sin(Math.PI*ph)*(.55+.45*Math.sin(t*.5+a*20)));
+    ctx.fillRect(Math.round(x),Math.round(y),c>.8?2:1,c>.8?2:1);
+  }
+  ctx.globalAlpha=1;
+}
+
 function zeichneFlur(){
   ctx.save();
   const kx=Math.round(S.kamX);
   ctx.translate(-kx,0);
 
+  /* Wand und Boden samt Erinnerungen: einmal gebacken, hier nur der sichtbare Ausschnitt. */
+  ctx.drawImage(verlauf('ort6',LEVEL_B,H,malKulisse),kx,0,W,H,kx,0,W,H);
   for(const o of ORTE){
-    ctx.fillStyle=o.wand; ctx.fillRect(o.von,20,o.bis-o.von,TIEFE.hinten-20);
-    ctx.fillStyle='#00000044'; ctx.fillRect(o.von,20,o.bis-o.von,2);
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(o.bis-2,20,2,TIEFE.hinten-20);
-    ctx.fillStyle=o.boden; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,H-TIEFE.hinten);
-    ctx.fillStyle=P.bodenKante; ctx.fillRect(o.von,TIEFE.hinten,o.bis-o.von,1);
     /* Raumname unter der Uhrenreihe (y 50), nicht in der HUD-Zone: bei y 26 lag er unter der Erinnerungsliste und unter WACH (Screenshot-Pruefung 03.11.). */
     text(raumName(o),o.von+6,50,'#ffffff60');
   }
-  /* Wanddeko: Plakate/Spinde ueber die ganze Flurbreite, eine Sorte,
-     wiederholt - passend zum Traum (PLAYTEST.md: obere Bildhaelfte leer).
-     Naeher an der Bildmitte als die Decke, sonst schluckt die Vignette
-     (zeichneFlur unten) den Kontrast fast vollstaendig. */
-  for(let x=24;x<LEVEL_B;x+=60){
-    ctx.fillStyle='#0d0a14'; ctx.fillRect(x,70,24,22);
-    ctx.fillStyle='#3a3350'; ctx.fillRect(x+2,72,20,18);
-    ctx.globalAlpha=.4+Math.sin(S.t*2+x)*.2;
-    ctx.fillStyle=P.dim; ctx.fillRect(x+5,76,14,2); ctx.fillRect(x+5,81,14,2); ctx.fillRect(x+5,86,10,2);
-    ctx.globalAlpha=1;
-  }
+  zeichneStaub(kx);
   /* Dieselbe Tafel, zweimal - der Raum wiederholt sich absichtlich */
   sprite(SPR.tafel,260,TIEFE.hinten-34);
   sprite(SPR.tafel,640,TIEFE.hinten-34);
