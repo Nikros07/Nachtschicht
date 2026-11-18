@@ -14,7 +14,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="nacht/stil.css?v=202611181753">
+<link rel="stylesheet" href="nacht/stil.css?v=202611181754">
 <style>:root{ --raum:#1a1030; }</style>
 </head>
 <body>
@@ -29,18 +29,18 @@
   <div id="base"><span>INSERT COIN</span><span>CREDIT <b>01</b></span><span>M TON &nbsp; P PAUSE &nbsp; F VOLLBILD</span></div>
 </div>
 
-<script src="nacht/kern.js?v=202611181753"></script>
-<script src="nacht/geraet.js?v=202611181753"></script>
-<script src="nacht/bild.js?v=202611181753"></script>
-<script src="nacht/hud.js?v=202611181753"></script>
-<script src="nacht/ton.js?v=202611181753"></script>
-<script src="nacht/komfort.js?v=202611181753"></script>
-<script src="nacht/stand.js?v=202611181753"></script>
-<script src="nacht/eingabe.js?v=202611181753"></script>
-<script src="nacht/mobil.js?v=202611181753"></script>
-<script src="nacht/menue.js?v=202611181753"></script>
-<script src="nacht/hilfe.js?v=202611181753"></script>
-<script src="nacht/erfolge.js?v=202611181753"></script>
+<script src="nacht/kern.js?v=202611181754"></script>
+<script src="nacht/geraet.js?v=202611181754"></script>
+<script src="nacht/bild.js?v=202611181754"></script>
+<script src="nacht/hud.js?v=202611181754"></script>
+<script src="nacht/ton.js?v=202611181754"></script>
+<script src="nacht/komfort.js?v=202611181754"></script>
+<script src="nacht/stand.js?v=202611181754"></script>
+<script src="nacht/eingabe.js?v=202611181754"></script>
+<script src="nacht/mobil.js?v=202611181754"></script>
+<script src="nacht/menue.js?v=202611181754"></script>
+<script src="nacht/hilfe.js?v=202611181754"></script>
+<script src="nacht/erfolge.js?v=202611181754"></script>
 <script>
 /* ============================================================================
    NACHTSCHICHT  v0.3
@@ -136,7 +136,10 @@ const TUNE = {
   bossBonus:      750,
 
   /* (9) BOSS */
-  bossHp:           5,
+  /* Bosse der Etappen 1-4: der erste ist die Lehrstunde, danach zieht es an.
+     bossTelMul streckt die Vorwarnzeit (1 = TUNE.bossTelegraphMs). */
+  bossHp:     [4, 5, 6, 7],
+  bossTelMul: [1.35, 1.10, 1.00, 0.85],
   bossIFramesMs:  620,
   bossTelegraphMs:420,     // Vorwarnung vor jedem Angriff - fair bleiben
   bossPhase2At:     0.66,  // ab 66% Restleben Phase 2
@@ -150,11 +153,11 @@ const TUNE = {
 /* ---- ETAPPEN ------------------------------------------------------------- */
 const ETAPPEN = [
   { m:0,    name:'VORGLUEHEN', sky:['#1a1140','#0d0920'], hue:'#3b2f6e', neon:'#31e6ff', rain:0,   boss:null },
-  /* hp und telMul pro Boss: der erste ist die Lehrstunde, danach zieht es an */
-  { m:250,  name:'TUERSTEHER', sky:['#240f2c','#100617'], hue:'#5a2350', neon:'#ff3d8b', rain:0,   boss:{name:'DER TUERSTEHER', sub:'ZU VOLL HEUTE',    hp:4, telMul:1.35} },
-  { m:600,  name:'CLUB',       sky:['#2d0733','#14031a'], hue:'#7a1a6b', neon:'#ff2bd6', rain:0,   boss:{name:'DIE MEUTE',      sub:'ALLE WOLLEN WAS',  hp:5, telMul:1.10} },
-  { m:1000, name:'AFTERHOUR',  sky:['#0e1638','#050a1c'], hue:'#1f4d6b', neon:'#48ffd0', rain:.6,  boss:{name:'DIE MUEDIGKEIT', sub:'NUR NOCH KURZ',    hp:6, telMul:1.00} },
-  { m:1500, name:'HEIMWEG',    sky:['#4a2c10','#1a1020'], hue:'#8a5a1c', neon:'#ffb43d', rain:.25, boss:{name:'DIE SONNE',      sub:'ZU SPAET',         hp:7, telMul:0.85} },
+  /* hp und Vorwarnzeit der Bosse stehen im TUNE (bossHp, bossTelMul), Index = Etappe - 1 */
+  { m:250,  name:'TUERSTEHER', sky:['#240f2c','#100617'], hue:'#5a2350', neon:'#ff3d8b', rain:0,   boss:{name:'DER TUERSTEHER', sub:'ZU VOLL HEUTE'} },
+  { m:600,  name:'CLUB',       sky:['#2d0733','#14031a'], hue:'#7a1a6b', neon:'#ff2bd6', rain:0,   boss:{name:'DIE MEUTE',      sub:'ALLE WOLLEN WAS'} },
+  { m:1000, name:'AFTERHOUR',  sky:['#0e1638','#050a1c'], hue:'#1f4d6b', neon:'#48ffd0', rain:.6,  boss:{name:'DIE MUEDIGKEIT', sub:'NUR NOCH KURZ'} },
+  { m:1500, name:'HEIMWEG',    sky:['#4a2c10','#1a1020'], hue:'#8a5a1c', neon:'#ffb43d', rain:.25, boss:{name:'DIE SONNE',      sub:'ZU SPAET'} },
 ];
 
 const P = {
@@ -584,8 +587,8 @@ function spawn(){
    ========================================================================== */
 function startBoss(i){
   const b=ETAPPEN[i].boss; if(!b) return;
-  const hp=b.hp||TUNE.bossHp;
-  S.boss={ name:b.name, sub:b.sub, i, x:W+40, tx:214, hp, maxHp:hp, telMul:b.telMul||1,
+  const hp=TUNE.bossHp[i-1];
+  S.boss={ name:b.name, sub:b.sub, i, x:W+40, tx:214, hp, maxHp:hp, telMul:TUNE.bossTelMul[i-1],
            phase:1, state:'entry', t:0, tel:0, atk:null, iFrames:0, hurtT:0, dead:0, cd:1.2 };
   S.things=S.things.filter(o=>o.kind==='shot'||o.kind==='water');
   S.banner=2.2; S.bannerTxt=b.name; S.bannerSub=b.sub;
