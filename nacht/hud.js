@@ -20,6 +20,18 @@ function tasteText(pc,handy){ return (typeof IS_TOUCH!=='undefined'&&IS_TOUCH)?(
 /* Die blinkende Marke ueber Dingen, die man benutzen kann. */
 function aktionsMarke(){ return tasteText('E','!'); }
 
+/* Gemeinsame Kleinigkeiten der Level (vorher in jedem Level wortgleich kopiert).
+   Sie schreiben nur in das S des Levels; fehlt S (Seite ohne Spielzustand), tun sie nichts.
+   Level 1 (index.html) hat bei meldung() eine eigene Standarddauer (1.4) und behaelt seine Fassung. */
+function meldung(t,d=1.5){ if(typeof S==='undefined'||!S) return; S.meldung=t; S.meldungT=d; }
+function zeigeHinweis(t,d=2){ if(typeof S==='undefined'||!S) return; S.hinweis=t; S.hinweisT=d; }
+/* Pause-Umschalter fuer Level mit einem einzigen Spielmodus 'spiel' (Level 1, 2, 5, 6, 7:
+   dort `const pauseTaste=pauseTasteSpiel;`). Level 3, 4, 8 haben mehrere Spielmodi und eine eigene Fassung. */
+function pauseTasteSpiel(){
+  if(typeof S==='undefined'||!S) return;
+  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
+}
+
 /* Halten zum Ueberspringen: Hinweis plus Balken, wie lange noch. */
 function zeichneUeberspringen(t,dauer){
   if(!(t>0)) return;

@@ -757,12 +757,9 @@ function zeichneIntro(){
   if(!IS_TOUCH&&Math.floor(t*2)%2===0) text('E  WEITER',W-textW('E  WEITER')-6,H-10,P.dunkel);
   zeichneUeberspringen(S.skipT,INTRO_SKIP);
 }
-function zeigeHinweis(t,d=2){ S.hinweis=t; S.hinweisT=d; }
 
 /* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
-function pauseTaste(){
-  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
-}
+const pauseTaste=pauseTasteSpiel;   // gemeinsame Fassung aus nacht/hud.js
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
@@ -885,6 +882,7 @@ function raus(){
 const anTreppe=x=>Math.abs(x-TREPPE_L)<22 || Math.abs(x-TREPPE_R)<22;
 const amAusgang=x=>S.etage===AUSGANG.e && Math.abs(x-AUSGANG.x)<13;
 
+/* Eigene Fassung: Standarddauer 1.4 s statt 1.5 s der Engine (nacht/hud.js). */
 function meldung(t,d=1.4){ S.meldung=t; S.meldungT=d; }
 
 /* Wohin der Schluessel zeigt - haengt an der Spielart der Runde.

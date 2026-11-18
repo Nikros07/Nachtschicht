@@ -473,9 +473,7 @@ function druckAktion(){
   aktionPuffer.push(S.t);
 }
 /* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
-function pauseTaste(){
-  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
-}
+const pauseTaste=pauseTasteSpiel;   // gemeinsame Fassung aus nacht/hud.js
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
@@ -548,8 +546,6 @@ function pruefeBlackout(){
   if(SAFT_OK()) SAFT.schaden(1);
   return true;
 }
-const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
-const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 const alleFertig=()=>aktiveAufgaben().every(a=>S.erledigt[a.id]);
 
 /* ==========================================================================

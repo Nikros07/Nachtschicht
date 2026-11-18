@@ -566,9 +566,7 @@ function druckAktion(){
   aktionPuffer.push(S.t);
 }
 /* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
-function pauseTaste(){
-  if(S.modus==='spiel'||S.modus==='pause') S.modus=S.modus==='spiel'?'pause':'spiel';
-}
+const pauseTaste=pauseTasteSpiel;   // gemeinsame Fassung aus nacht/hud.js
 
 addEventListener('keydown',e=>{
   if(keys[e.code]) return; keys[e.code]=true;
@@ -618,8 +616,6 @@ function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteLevel(); else piep(420,.05,'sine',.025); } }
 
-const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
-const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 
 /* ==========================================================================
    AKTUALISIEREN

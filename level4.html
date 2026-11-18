@@ -439,6 +439,7 @@ function mobilKontext(){
 let linksAn=false, rechtsAn=false, hochAn=false, runterAn=false, rolleGedrueckt=false;
 
 /* Was P in diesem Level heisst. nacht/eingabe.js ruft es auf. */
+/* Eigene Fassung (nicht pauseTasteSpiel aus nacht/hud.js): dieses Level hat mehrere Spielmodi. */
 function pauseTaste(){
   if(S.modus==='kampf'||S.modus==='pause') S.modus=S.modus==='kampf'?'pause':'kampf';
 }
@@ -515,8 +516,6 @@ function intro(dt){ S.szeneT+=dt;
   if(S.szeneT>=INTRO[S.szene].d){ S.szene++; S.szeneT=0;
     if(S.szene>=INTRO.length) starteLevel(); else piep(440,.05,'sine',.03); } }
 
-const meldung=(t,d=1.5)=>{ S.meldung=t; S.meldungT=d; };
-const zeigeHinweis=(t,d=2)=>{ S.hinweis=t; S.hinweisT=d; };
 
 /* ==========================================================================
    DER TUERSTEHER - der Kampf

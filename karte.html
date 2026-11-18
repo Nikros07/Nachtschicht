@@ -192,7 +192,8 @@ const optionen=()=>{
   if(umwegOffen()) o.push({ art:'umweg', txt:'UMWEG: '+umweg().name });
   return o;
 };
-const meldung=(t,d=1.8)=>{ S.meldung=t; S.meldungT=d; };
+/* Eigene Fassung: Standarddauer 1.8 s (nacht/hud.js hat 1.5 s). */
+function meldung(t,d=1.8){ S.meldung=t; S.meldungT=d; }
 
 function weiter(){
   location.href=STATIONEN[NACH].seite;
