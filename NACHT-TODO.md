@@ -201,7 +201,6 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 - [ ] **P3 · Level 8: Popups waehrend RUNDE-Ansage pruefen** — in Level 4 behoben (TUNE.popupBeiAnsage); Level 8 setzt bei Handlanger-Treffern/Rundenwechsel ebenfalls SAFT-Popups. Wo: level8.html · Fertig wenn: Screenshot beim Rundenwechsel ohne Popup im Ansagesatz.
 - [ ] **P3 · Kulissen: Farben teils als Literale** — Level 8 (malStrasse8 u. a.) nutzt einzelne Farbliterale statt P; ARENEN.himmel/boden/kante sind seitdem ungenutzt. Wo: level8.html · Fertig wenn: Farben in P, ungenutzte Felder entfernt, n3-level8-kulisse.js gleiche Zahlen.
 
-- [ ] **P3 · Wortgleiche Hilfsfunktionen in den Leveln** — meldung und zeigeHinweis in allen 8 Leveln, pauseTaste in 5 gleich (3, 4, 8 weichen ab). Wo: level*.html, index.html · Fertig wenn: meldung/zeigeHinweis in der Engine; pauseTaste-Abweichungen kommentiert oder angeglichen. (Browser-Durchlauf noetig)
 - [ ] **P3 · Pruefwerkzeuge: Rest aus dem Architektur-Plan** — 6.4 grosse Seiten aufteilen (erst Level 4), 6.5 globale Namen buendeln, 6.6 Stempel-Merge-Ablauf, 6.7 Doku verschlanken (alte Erledigt-Eintraege nach docs/archiv/). Wo: docs/architektur/PLAN.md · Fertig wenn: je Schritt wie dort beschrieben.
 - [ ] **P3 · routinen/nacht.md nennt die alte Pruefliste** — dort stehen Einzelbefehle mit alten Zahlen ("22 bestanden"). Die Routine darf routinen/ nicht aendern; Nick/Eve von Hand: auf `node tools/pruefliste.js` umstellen. Wo: routinen/nacht.md (:35-38, :88) · Fertig wenn: Routine ruft pruefliste.js.
 
@@ -269,6 +268,8 @@ Morgens: `NACHT-LOG.md` lesen (was passiert ist), den Branch ansehen
 ## Erledigt (Nacht)
 
 *(Die 5-Uhr-Routine trägt hier ein: Datum · Titel · Commit-Hash)*
+
+- [x] ~~**P3 · Wortgleiche Hilfsfunktionen in den Leveln**~~ (erledigt 18.11., claude/gameplay) — meldung, zeigeHinweis und pauseTasteSpiel stehen in nacht/hud.js; abweichende Fassungen (meldung in index/karte, pauseTaste in Level 3/4/8) kommentiert. nachttest und Bots vorher/nachher gleich, test/hud.test.js neu, alle Seiten im Chromium ohne Fehler.
 
 - [x] ~~**P2 · Gewinn-Bots fuer jedes Level**~~ (erledigt 18.11., claude/gameplay) — tools/bots/ (ein Bot je Level, spielt ueber Tasten), `node tools/nachttest.js --bots`: alle 8 gewonnen in < 1 s; laeuft jetzt in tools/pruefliste.js mit (jedes Level bleibt gewinnbar).
 - [x] ~~**P2 · Level 4: PERFEKT!-Popup laeuft durch den PHASE-Ansagesatz**~~ (erledigt 18.11., claude/gameplay) — waehrend der PHASE-Ansage keine PERFEKT-/Combo-Popups (TUNE.popupBeiAnsage); Screenshot ohne Ueberlappung (headless Chromium).

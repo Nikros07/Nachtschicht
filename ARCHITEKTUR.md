@@ -55,7 +55,7 @@ Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach den Namen in
 | `kern.js` | Canvas, Skalierung, Vollbild, `keys`, Spielschleife `bild()`. Legt `cv`, `ctx`, `W`, `H`, `IS_TOUCH` an (`?touch=1` erzwingt Touch am Rechner). Fragt in jedem Bild erst `MENUE.laufe`, dann `LEHRE.pruefe`, dann `PAUSE.aktiv`, dann erst das Level. Treibt `MUSIK.takt`, gibt dem Level die Spielzeit aus `SAFT.takt` (Hitstop, Zeitlupe), verschiebt `draw()` um `SAFT.versatz()` und zeichnet danach `SAFT` und `WERTUNG` darüber. |
 | `geraet.js` | Alles fürs fertige Spiel auf fremden Geräten: Fehlerschutz mit Fehlerseite statt weißer Fläche, Toasts (`GERAET.hinweis`), Ton aus im Hintergrund, Speichertest, Service-Worker-Anmeldung samt „NEUE VERSION“-Hinweis, die Notausgänge (`?reset`, `?fehlertest`, `?sw`). Trägt `GERAET.version` und `GERAET.build`. Alles in try/catch, benutzt nur DOM und Browser-APIs, nie spätere Engine-Dateien. |
 | `bild.js` | 3×5-Bitmap-Font, Sprite-Cache, `text*`, `sprite`, `outline`, `verlauf`, `gehBeine` |
-| `hud.js` | Gemeinsame Anzeigen (Herzen, Balken u. ä.) |
+| `hud.js` | Gemeinsame Anzeigen (Herzen, Balken u. ä.) und die Level-Helfer `meldung(t,d)`, `zeigeHinweis(t,d)`, `pauseTasteSpiel()` (Level mit eigener Fassung kommentieren das) |
 | `ton.js` | Audio-Grundlagen: `AC`, `muted`, `piep`, `glissando`, `rauschen`. SFX und Musik bleiben im Level. |
 | `komfort.js` | Einstellungen des Spielers und die Schutzschalter für Effekte: `KOMFORT` (Flackerschutz, Wackeln, Röhren-Look, Inhaltshinweis bestätigt) und `FX` (siehe unten) |
 | `musik.js` | Musik-Planer `MUSIK`: spielt Songs mit Vorlauf (holt nie verpasste Noten nach), Abschnitte, Spannung (Ebenen), Tempo, Stinger, Dämpfen. Höchstens 32 Klänge gleichzeitig. |
@@ -102,6 +102,7 @@ Seiten ein; sie darf nur benutzen, was vor ihr geladen wird. Danach den Namen in
 | Offline/Version | nie von Hand: `python tools/version.py` |
 | eine Taste für alle Seiten | `nacht/eingabe.js` |
 | etwas messen | `tools/nachttest.js` (`lade(seite,abfrage)`), Skript nach `docs/gameplay/messung/` |
+| prüfen, ob jedes Level gewinnbar bleibt | `node tools/nachttest.js --bots` (Bots in `tools/bots/`, läuft in der Prüfliste mit) |
 | alles prüfen | `node tools/pruefliste.js` |
 
 ## Die vier zentralen Tabellen
