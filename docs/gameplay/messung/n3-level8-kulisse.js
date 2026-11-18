@@ -1,5 +1,5 @@
 /* Messung: leere Bildzeilen im Endkampf von Level 8, je Arena (Software-Canvas, Naeherung).
-   Aus der Projektwurzel: node docs/gameplay/messung/l8-kampf-leer.js */
+   Aus der Projektwurzel: node docs/gameplay/messung/n3-level8-kulisse.js */
 const path=require('path'); const N=require(path.resolve('tools/nachttest.js'));
 const L=N.lade('level8.html'); const E=c=>L.api.ev(c);
 E(`neuesSpiel(); starteGrossenKampf();`);
