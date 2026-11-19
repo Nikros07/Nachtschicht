@@ -1573,8 +1573,10 @@ function raumKulisse(ri){
 
 /* Raumschild ueber der Tuer (Text kommt zur Laufzeit, der Rest steckt in der Kulisse). */
 function raumDeko(st,deckeY){
-  ctx.fillStyle='#00000066'; ctx.fillRect(24,deckeY+50,44,9);
-  text(RAEUME[S.raum].name.slice(0,9),26,deckeY+52,st.schild);
+  /* Schild so breit wie der Name (vorher fest 44 px, BIBLIOTHEK/SEKRETARIAT/LEHRERZIMMER abgeschnitten). */
+  const n=RAEUME[S.raum].name;
+  ctx.fillStyle='#00000066'; ctx.fillRect(24,deckeY+50,textW(n)+4,9);
+  text(n,26,deckeY+52,st.schild);
 }
 
 function moebelPlaetze(r){
