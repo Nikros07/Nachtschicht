@@ -687,3 +687,12 @@ angesehen und, wo nötig, nachgebessert.
 - **Flackerschutz Level 5 gemessen:** mit Schutz ein Standbild (0,01 % Schwankung). Ohne Schutz schwankt das Bild wie vorher (Stroboskop-Konzept), bei höchstens einem Sprung über 10 % in 2 s.
 - **Leere Bildzeilen jetzt** (nachttest --kurz): L2 27 %, L3 44 %, L4 14 %, L5 19 %, L6 39 %, L7 18 %, L8 48 %.
 - **Offen:** die Klassenräume innen in Level 1, dünnere Club-Ecken (P3) sowie Ton und echtes Gerät.
+
+### 19.11.2026 – Level 1 Räume, Merge
+
+- `main` ist auf 436924a vorgezogen (Level 2, 5 und 6 sind live).
+- **Elf Räume in Level 1** haben jetzt eigene Kulissen; jeder im headless Chromium angesehen.
+  Leere Bildzeilen im Mittel 52,7 % → 13,2 %.
+- **Raumschild:** zeigt jetzt den vollen Namen.
+- **Tests:** Prüfliste grün, Bot gewinnt Level 1.
+- **Ungeprüft:** Ton, echtes Gerät.
